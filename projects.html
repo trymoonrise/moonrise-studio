@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projects · Moonrise Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/studio.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body data-page="projects">
+  <div id="shell"></div>
+  <div id="page-body" class="ms-projects-page">
+    <header class="ms-page-head">
+      <div class="ms-page-head-copy">
+        <h1>Projects</h1>
+      </div>
+    </header>
+
+    <section class="ms-card ms-projects-section" aria-label="All projects">
+      <header class="ms-projects-section-head">
+        <h2>All projects</h2>
+        <span class="ms-projects-count" id="projects-count" aria-live="polite">Loading…</span>
+      </header>
+
+      <div class="ms-projects-list" id="projects-list">
+        <div class="ms-projects-loading" id="projects-loading">Loading projects…</div>
+      </div>
+
+      <div class="ms-projects-empty" id="projects-empty" hidden>
+        <p class="ms-projects-empty-title">No projects yet</p>
+        <p class="ms-projects-empty-desc">Generate a site from Builder or Business Finder — it will show up here.</p>
+        <div class="ms-projects-empty-actions">
+          <a class="ms-btn" href="builder.html">Start a build</a>
+          <a class="ms-btn ms-btn-secondary" href="leads.html">Find a lead</a>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/segment-switch.js"></script>
+  <script src="js/ui-motion.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/projects.js"></script>
+</body>
+</html>

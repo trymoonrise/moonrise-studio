@@ -1,0 +1,23 @@
+# Moonrise Studio (static app)
+.env
+.env.*
+!.env.example
+worker/.env
+worker/.env.*
+!worker/.env.example
+*.local
+accesstokens.env
+**/secrets/
+**/*credentials*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# deps / build
+worker/node_modules/
+**/node_modules/
+dist/
+.cache/

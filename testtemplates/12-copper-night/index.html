@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kiln</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@600;700&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root{--bg:#0e0c0a;--text:#f3ebe3;--muted:#a09080;--accent:#c87941;--line:rgba(200,121,65,.2)}
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:"IBM Plex Sans",sans-serif;background:var(--bg);color:var(--text);line-height:1.55;overflow-x:hidden}
+    h1,h2,h3{font-family:"Archivo Narrow",sans-serif;line-height:.92;font-weight:700;text-transform:uppercase;letter-spacing:.02em}
+    a{color:inherit;text-decoration:none}
+    img,video{display:block;width:100%;height:100%;object-fit:cover}
+    .hidden{display:none!important}
+
+    .toggles{position:fixed;bottom:1rem;right:1rem;z-index:100;background:#1a1612;border:1px solid var(--line);border-radius:.35rem;padding:.85rem 1rem;width:12.5rem}
+    .toggles h4{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem}
+    .toggle-row{display:flex;align-items:center;justify-content:space-between;margin:.4rem 0;font-size:.82rem}
+    .switch{position:relative;width:2.3rem;height:1.25rem}.switch input{opacity:0;width:0;height:0}
+    .slider{position:absolute;inset:0;cursor:pointer;background:#3a322a;border-radius:999px;transition:.2s}
+    .slider::before{content:"";position:absolute;height:.9rem;width:.9rem;left:.18rem;top:.175rem;background:#fff;border-radius:50%;transition:.2s}
+    .switch input:checked+.slider{background:var(--accent)}.switch input:checked+.slider::before{transform:translateX(1rem)}
+
+    .hero{min-height:100vh;min-height:100dvh;display:grid;grid-template-columns:1fr 1fr;position:relative}
+    .left{padding:clamp(1.5rem,4vw,2.5rem);display:flex;flex-direction:column;justify-content:space-between;position:relative;z-index:2;background:var(--bg)}
+    .logo{font-family:"Archivo Narrow",sans-serif;font-size:1.5rem;color:var(--accent);letter-spacing:.08em}
+    .main{max-width:18ch}
+    .hero h1{font-size:clamp(3rem,8vw,5.5rem);margin-bottom:1.25rem}
+    .hero h1 span{display:inline-block;opacity:0;transform:translateX(-16px);animation:slide .7s ease forwards}
+    .hero h1 span:nth-child(1){animation-delay:.2s}
+    .hero h1 span:nth-child(2){animation-delay:.35s}
+    .hero p{color:var(--muted);margin:1rem 0 1.75rem;max-width:22rem;opacity:0;animation:fade .8s ease .8s forwards}
+    .btn{display:inline-block;background:var(--accent);color:#0e0c0a;padding:.85rem 1.25rem;font-weight:500;opacity:0;animation:fade .8s ease 1s forwards;transition:transform .25s}
+    .btn:hover{transform:translateY(-2px)}
+    .line{width:0;height:2px;background:var(--accent);margin-bottom:1.25rem;animation:widen 1s ease .4s forwards}
+    .right{position:relative;overflow:hidden;min-height:50vh}
+    .right video,.right img{filter:brightness(.55) saturate(1.05);transform:scale(1.08);animation:pan 18s ease-in-out infinite alternate}
+    .right::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--bg),transparent 40%);z-index:1;pointer-events:none}
+    @keyframes slide{to{opacity:1;transform:none}}
+    @keyframes fade{to{opacity:1}}
+    @keyframes widen{to{width:4rem}}
+    @keyframes pan{from{transform:scale(1.08) translateX(0)}to{transform:scale(1.08) translateX(-3%)}}
+    @media(max-width:800px){.hero{grid-template-columns:1fr}.right{order:-1;min-height:42vh}.right::before{background:linear-gradient(180deg,transparent,var(--bg))}}
+
+    .section{padding:clamp(4rem,10vh,7rem) clamp(1.5rem,4vw,2.5rem)}
+    .section h2{font-size:clamp(1.8rem,4vw,2.8rem);margin-bottom:.5rem}
+    .lead{color:var(--muted);margin-bottom:2.5rem;max-width:26rem;text-transform:none;letter-spacing:0;font-family:"IBM Plex Sans",sans-serif}
+    .eyebrow{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.6rem;display:block}
+
+    .material-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:.5rem}
+    .material-grid figure{aspect-ratio:1;overflow:hidden;background:#1a1612;position:relative;clip-path:inset(0 100% 0 0);transition:clip-path .9s cubic-bezier(.77,0,.18,1)}
+    .material-grid figure.in{clip-path:inset(0 0 0 0)}
+    .material-grid figure:nth-child(1),.material-grid figure:nth-child(2){grid-column:span 3;aspect-ratio:16/10}
+    .material-grid figure:nth-child(3),.material-grid figure:nth-child(4),.material-grid figure:nth-child(5),.material-grid figure:nth-child(6){grid-column:span 3}
+    .material-grid figure:nth-child(2).in{transition-delay:.1s}
+    .material-grid figure:nth-child(3).in{transition-delay:.15s}
+    .material-grid figure:nth-child(4).in{transition-delay:.2s}
+    .material-grid figure:nth-child(5).in{transition-delay:.25s}
+    .material-grid figure:nth-child(6).in{transition-delay:.3s}
+    .material-grid img{transition:transform .8s ease,filter .6s;filter:grayscale(.4)}
+    .material-grid figure:hover img{transform:scale(1.08);filter:none}
+    .material-grid figcaption{position:absolute;bottom:.75rem;left:.75rem;right:.75rem;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);opacity:0;transform:translateY(8px);transition:opacity .35s,transform .35s;font-family:"Archivo Narrow",sans-serif}
+    .material-grid figure:hover figcaption{opacity:1;transform:none}
+    @media(max-width:700px){.material-grid{grid-template-columns:1fr 1fr}.material-grid figure{grid-column:span 1!important;aspect-ratio:1!important}}
+
+    .process-pin{display:grid;grid-template-columns:1fr 1.2fr;gap:clamp(2rem,5vw,4rem);align-items:start}
+    .pin-side{position:sticky;top:clamp(2rem,8vh,4rem)}
+    .pin-side h2{margin-bottom:1rem}
+    .timeline{position:relative;padding-left:2rem}
+    .timeline::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--line);transform:scaleY(0);transform-origin:top;transition:transform 1.2s ease}
+    .timeline.in::before{transform:scaleY(1)}
+    .tl-item{position:relative;padding:0 0 2.5rem 1.5rem;opacity:0;transform:translateX(-20px);transition:opacity .6s ease,transform .6s ease}
+    .tl-item.in{opacity:1;transform:none}
+    .tl-item:nth-child(2).in{transition-delay:.15s}
+    .tl-item:nth-child(3).in{transition-delay:.3s}
+    .tl-item:nth-child(4).in{transition-delay:.45s}
+    .tl-item::before{content:"";position:absolute;left:-2rem;top:.35rem;width:10px;height:10px;background:var(--accent);border-radius:50%;transform:scale(0);transition:transform .4s ease .2s}
+    .tl-item.in::before{transform:scale(1)}
+    .tl-item h3{font-size:1.1rem;margin-bottom:.35rem}
+    .tl-item p{color:var(--muted);font-size:.9rem;text-transform:none;letter-spacing:0;font-family:"IBM Plex Sans",sans-serif}
+    @media(max-width:700px){.process-pin{grid-template-columns:1fr}.pin-side{position:relative;top:0}}
+
+    .about-split{display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:center}
+    .about-img-wrap{overflow:hidden;position:relative;clip-path:polygon(0 0,100% 0,100% 88%,0 100%)}
+    .about-img-wrap img{aspect-ratio:16/10;filter:brightness(.85);transition:transform 1.2s ease}
+    .about-split.in .about-img-wrap img{transform:scale(1)}
+    .about-split p{color:var(--muted);font-size:1rem;max-width:36ch;margin-bottom:1rem;text-transform:none;letter-spacing:0;font-family:"IBM Plex Sans",sans-serif}
+    @media(max-width:700px){.about-split{grid-template-columns:1fr}}
+
+    .forge-quote{text-align:center;padding:clamp(3rem,8vw,5rem) 1rem;border-block:1px solid var(--line);position:relative;overflow:hidden}
+    .forge-quote::before{content:"";position:absolute;inset:0;background:url("https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&w=1400&q=80") center/cover;opacity:.06;transform:scale(1.1);will-change:transform}
+    .forge-quote p{font-family:"Archivo Narrow",sans-serif;font-size:clamp(1.8rem,4vw,2.8rem);max-width:18ch;margin:0 auto 1rem;line-height:1;position:relative;text-transform:uppercase}
+    .forge-quote cite{font-style:normal;color:var(--muted);font-size:.85rem;position:relative;text-transform:none;font-family:"IBM Plex Sans",sans-serif}
+
+    .contact-workshop{display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:center}
+    .workshop-img{aspect-ratio:4/3;overflow:hidden;background:#1a1612;opacity:0;transform:translateX(30px);transition:opacity .8s ease,transform .8s ease}
+    .workshop-img.in{opacity:1;transform:none}
+    form{display:grid;gap:1rem;max-width:100%}
+    label{display:grid;gap:.3rem;font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+    input,textarea{background:#1a1612;border:1px solid var(--line);padding:.8rem 1rem;font:inherit;color:var(--text);border-radius:.2rem}
+    input:focus,textarea:focus{outline:1px solid var(--accent)}
+    button{justify-self:start;background:var(--accent);color:#0e0c0a;border:0;padding:.85rem 1.25rem;font:inherit;cursor:pointer;transition:transform .25s}
+    button:hover{transform:translateY(-2px)}
+    @media(max-width:700px){.contact-workshop{grid-template-columns:1fr}}
+
+    .scroll-progress{position:fixed;top:0;left:0;height:3px;width:0;background:var(--accent);z-index:200;transition:width .05s linear}
+    .forge-stats{display:flex;gap:2.5rem;flex-wrap:wrap;padding:2rem 0;margin:1rem 0;border-block:1px solid var(--line)}
+    .forge-stats div{opacity:0;transform:translateX(-12px);transition:opacity .6s ease,transform .6s ease}
+    .forge-stats div.in{opacity:1;transform:none}
+    .forge-stats div:nth-child(2).in{transition-delay:.1s}
+    .forge-stats div:nth-child(3).in{transition-delay:.2s}
+    .forge-stats strong{display:block;font-family:"Archivo Narrow",sans-serif;font-size:2rem;color:var(--accent)}
+    .forge-stats span{font-size:.75rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+
+    .studio-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:1.5rem}
+    .studio-card{padding:1.25rem;border:1px solid var(--line);background:#1a1612;transition:border-color .3s,transform .3s}
+    .studio-card:hover{border-color:var(--accent);transform:translateY(-3px)}
+    .studio-card h3{font-size:.95rem;margin-bottom:.35rem}
+    .studio-card p{color:var(--muted);font-size:.82rem;text-transform:none;letter-spacing:0;font-family:"IBM Plex Sans",sans-serif}
+    @media(max-width:700px){.studio-grid{grid-template-columns:1fr 1fr}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.marquee-track,.marquee,.partner-track{animation:none!important}}}
+
+
+    .awards-band{padding:clamp(3rem,8vw,5rem) clamp(1.5rem,4vw,3rem);border-top:1px solid var(--line);text-align:center}
+    .awards-band h3{font-size:clamp(1.2rem,3vw,1.6rem);margin-bottom:1.5rem;opacity:0;transform:translateY(12px);transition:opacity .7s ease,transform .7s ease}
+    .awards-band.in h3{opacity:1;transform:none}
+    .awards-row{display:flex;gap:2rem;justify-content:center;flex-wrap:wrap}
+    .awards-row span{font-size:.82rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;opacity:0;transform:translateY(8px);transition:opacity .5s ease,transform .5s ease,color .3s}
+    .awards-band.in .awards-row span{opacity:1;transform:none}
+    .awards-band.in .awards-row span:nth-child(2){transition-delay:.08s}
+    .awards-band.in .awards-row span:nth-child(3){transition-delay:.16s}
+    .awards-band.in .awards-row span:nth-child(4){transition-delay:.24s}
+    .awards-row span:hover{color:var(--accent)}
+    footer a{color:inherit;transition:color .25s}footer a:hover{color:var(--accent)}
+    footer{padding:2rem clamp(1.5rem,4vw,2.5rem);display:flex;justify-content:space-between;color:var(--muted);font-size:.85rem;border-top:1px solid var(--line)}
+
+    .partner-marquee{overflow:hidden;padding:1.5rem 0;border-block:1px solid var(--line);margin:2rem 0}
+    .partner-track{display:flex;width:max-content;gap:3rem;animation:partnerScroll 30s linear infinite}
+    .partner-track span{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+    @keyframes partnerScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+    .newsletter-band{padding:clamp(2.5rem,6vw,4rem);background:linear-gradient(135deg,rgba(255,255,255,.04),transparent);border:1px solid var(--line);border-radius:.5rem;margin:2rem 0;display:grid;grid-template-columns:1fr auto;gap:2rem;align-items:center}
+    .newsletter-band h3{font-size:1.2rem;margin-bottom:.35rem}
+    .newsletter-band p{color:var(--muted);font-size:.88rem;max-width:32ch}
+    .newsletter-band form{display:flex;gap:.5rem;flex-wrap:wrap}
+    .newsletter-band input{flex:1;min-width:180px;padding:.75rem 1rem;border:1px solid var(--line);background:transparent;font:inherit;border-radius:.35rem;color:inherit}
+    .newsletter-band button{padding:.75rem 1.25rem;border:0;background:var(--accent);color:#0e0c0a;font:inherit;cursor:pointer;border-radius:.35rem;white-space:nowrap}
+    @media(max-width:640px){.newsletter-band{grid-template-columns:1fr}}
+    .reveal{opacity:0;transform:translateY(20px);transition:opacity .75s ease,transform .75s ease}
+    .reveal.in{opacity:1;transform:none}
+
+    a:focus-visible,.btn:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,.tab-btn:focus-visible,.acc-head:focus-visible,.proc-card:focus-visible,.pstep:focus-visible,.testimonial-avatars img:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+    .switch input:focus-visible+.slider{outline:2px solid var(--accent);outline-offset:2px}
+    .form-status{font-size:.85rem;color:var(--accent);min-height:1.25rem;flex-basis:100%}
+    .form-status:empty{display:none}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1.5rem}
+    @media(max-width:700px){.grid-3{grid-template-columns:1fr}.toggles{right:.75rem;left:.75rem;width:auto;max-width:none}}
+  </style>
+</head>
+<body>
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+  <div class="toggles" aria-label="Section toggles">
+    <h4>Sections</h4>
+    <div class="toggle-row"><span>Material</span><label class="switch"><input type="checkbox" data-target="material" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Process</span><label class="switch"><input type="checkbox" data-target="process" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>About</span><label class="switch"><input type="checkbox" data-target="about" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Quote</span><label class="switch"><input type="checkbox" data-target="quote" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Studio</span><label class="switch"><input type="checkbox" data-target="studio" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Awards</span><label class="switch"><input type="checkbox" data-target="awards" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Newsletter</span><label class="switch"><input type="checkbox" data-target="newsletter" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Contact</span><label class="switch"><input type="checkbox" data-target="contact" checked /><span class="slider"></span></label></div>
+  </div>
+
+  <section class="hero">
+    <div class="left">
+      <a class="logo" href="#">Kiln</a>
+      <div class="main">
+        <div class="line" aria-hidden="true"></div>
+        <h1><span>Heat.</span><br /><span>Craft.</span></h1>
+        <p>Copper energy on night black — for makers and material brands.</p>
+        <a class="btn" href="#material">Start</a>
+      </div>
+      <span style="font-size:.75rem;color:var(--muted);letter-spacing:.06em">EST. 2014</span>
+    </div>
+    <div class="right">
+      <video autoplay muted loop playsinline poster="https://images.unsplash.com/photo-1452860606245-08befc0ff44b?auto=format&fit=crop&w=1400&q=80">
+        <source src="https://videos.pexels.com/video-files/5532788/5532788-uhd_2560_1440_25fps.mp4" type="video/mp4" />
+      </video>
+    </div>
+  </section>
+
+  <section class="section" id="material" data-section="material">
+    <div class="reveal"><span class="eyebrow">Material</span><h2>Hands, heat, form.</h2><p class="lead">Six textures. One workshop. Clip reveals on scroll.</p></div>
+    <div class="forge-stats reveal">
+      <div><strong>120+</strong><span>Artisan brands</span></div>
+      <div><strong>2014</strong><span>Est.</span></div>
+      <div><strong>4</strong><span>Workshops</span></div>
+    </div>
+    <div class="material-grid">
+      <figure><img src="https://images.unsplash.com/photo-1452860606245-08befc0ff44b?auto=format&fit=crop&w=900&q=80" alt="Workshop tools" /><figcaption>Steel — Forge series</figcaption></figure>
+      <figure><img src="https://images.unsplash.com/photo-1565193566173-7a0ee3dbe511?auto=format&fit=crop&w=900&q=80" alt="Ceramic craft" /><figcaption>Clay — Atelier Co.</figcaption></figure>
+      <figure><img src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=700&q=80" alt="Handmade pottery" /><figcaption>Glaze</figcaption></figure>
+      <figure><img src="https://images.unsplash.com/photo-1615529328331-f8917597711f?auto=format&fit=crop&w=700&q=80" alt="Wood grain" /><figcaption>Timber</figcaption></figure>
+      <figure><img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=700&q=80" alt="Copper metal" /><figcaption>Copper</figcaption></figure>
+      <figure><img src="https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&w=700&q=80" alt="Artisan hands" /><figcaption>Finish</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="section" id="process" data-section="process">
+    <div class="process-pin">
+      <div class="pin-side reveal"><span class="eyebrow">Process</span><h2>From raw to refined.</h2><p class="lead">Four phases pinned while you scroll the timeline.</p></div>
+      <div class="timeline" id="timeline">
+        <article class="tl-item"><h3>Forge</h3><p>Material research, mood boards, and prototype sketches with your team on the workshop floor.</p></article>
+        <article class="tl-item"><h3>Fire</h3><p>Identity systems with weight — logos, marks, and type that feel forged, not generated.</p></article>
+        <article class="tl-item"><h3>Form</h3><p>Packaging, signage, and tactile brand touchpoints across print and physical space.</p></article>
+        <article class="tl-item"><h3>Finish</h3><p>Web, motion, and launch assets ready for the kiln floor and the market.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="about" data-section="about">
+    <div class="about-split reveal" id="aboutSplit">
+      <div class="about-img-wrap">
+        <img src="https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&w=900&q=80" alt="Artisan at work" />
+      </div>
+      <div>
+        <span class="eyebrow">About</span>
+        <h2>Built by hand.</h2>
+        <p>Kiln partners with artisans, ateliers, and material-first brands who believe craft still matters.</p>
+        <p>We design like we make — with heat, patience, and precision.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="forge-quote reveal" id="quote" data-section="quote">
+    <p>"Every mark feels earned — like it passed through fire."</p>
+    <cite>— Tomas Reed, Atelier Co.</cite>
+  </section>
+
+  <section class="section" id="studio" data-section="studio" style="background:linear-gradient(180deg,rgba(200,121,65,.05),transparent)">
+    <div class="reveal"><span class="eyebrow">Studio</span><h2>The workshop floor.</h2><p class="lead">Where material meets mark — our in-house capabilities.</p></div>
+    <div class="studio-grid">
+      <article class="reveal studio-card"><h3>Print</h3><p>Letterpress, foil, and emboss sampling.</p></article>
+      <article class="reveal studio-card"><h3>Photo</h3><p>Product and process documentation.</p></article>
+      <article class="reveal studio-card"><h3>Motion</h3><p>Workshop films and launch reels.</p></article>
+      <article class="reveal studio-card"><h3>Web</h3><p>E-commerce and catalog builds.</p></article>
+    </div>
+  </section>  <section class="section" id="newsletter" data-section="newsletter">
+    <div class="newsletter-band reveal">
+      <div><h3>Studio notes</h3><p>Occasional updates on process, launches, and open slots.</p></div>
+      <form class="js-form" data-success="Subscribed — welcome to studio notes."><input type="email" name="email" placeholder="Email" aria-label="Email address" required autocomplete="email" /><button type="submit">Join</button><p class="form-status" role="status" aria-live="polite"></p></form>
+    </div>
+  </section>
+
+
+
+    <div class="partner-marquee" aria-hidden="true">
+      <div class="partner-track">
+        <span>Selected Clients</span><span aria-hidden="true">·</span><span>Global Partners</span><span aria-hidden="true">·</span><span>Studio Network</span><span aria-hidden="true">·</span><span>Field Office</span><span aria-hidden="true">·</span>
+        <span>Selected Clients</span><span aria-hidden="true">·</span><span>Global Partners</span><span aria-hidden="true">·</span><span>Studio Network</span><span aria-hidden="true">·</span><span>Field Office</span><span aria-hidden="true">·</span>
+      </div>
+    </div>
+    <section class="section" id="contact" data-section="contact">
+    <div class="reveal"><span class="eyebrow">Contact</span><h2>Send the brief.</h2><p class="lead">We respond within 48 hours.</p></div>
+    <div class="contact-workshop">
+      <div class="workshop-img reveal">
+        <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=900&q=80" alt="Workshop interior" />
+      </div>
+      <form class="reveal js-form" data-success="Thanks — message received. We'll reply within a few days.">
+        <label>Name<input name="name" required /></label>
+        <label>Email<input type="email" name="email" required /></label>
+        <label>Message<textarea name="message" rows="4" required></textarea></label>
+        <button type="submit">Send</button>
+      <p class="form-status" role="status" aria-live="polite"></p></form>
+    </div>
+  </section>
+
+
+  <section class="awards-band reveal" id="awards" data-section="awards">
+    <h3>Recognition</h3>
+    <div class="awards-row">
+      <span>Awwwards Nominee</span>
+      <span>CSS Design Awards</span>
+      <span>FWA Site of Day</span>
+      <span>Type Directors Club</span>
+    </div>
+  </section>
+  <footer><span>Kiln</span><span><a href="#">Instagram</a> · <a href="#">Behance</a></span><span>© 2026</span></footer>
+
+  <script>
+    document.querySelectorAll(".toggles input").forEach((input)=>{
+      input.addEventListener("change",()=>{
+        const el=document.querySelector(`[data-section="${input.dataset.target}"]`);
+        if(el) el.classList.toggle("hidden",!input.checked);
+      });
+    });
+    const io=new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{if(e.isIntersecting) e.target.classList.add("in");});
+    },{threshold:.15});
+    document.querySelectorAll(".reveal,.material-grid figure,#timeline,.tl-item,#aboutSplit,.forge-quote,.workshop-img,.forge-stats div,.awards-band").forEach(el=>io.observe(el));
+
+    const progress=document.getElementById("scrollProgress");
+    window.addEventListener("scroll",()=>{
+      const h=document.documentElement.scrollHeight-window.innerHeight;
+      if(progress&&h>0) progress.style.width=`${(window.scrollY/h)*100}%`;
+    },{passive:true});
+
+
+    document.querySelectorAll(".js-form").forEach((form)=>{
+      form.addEventListener("submit",(e)=>{
+        e.preventDefault();
+        const status=form.querySelector(".form-status");
+        if(status) status.textContent=form.dataset.success||"Submitted.";
+        form.reset();
+      });
+    });
+  </script>
+</body>
+</html>

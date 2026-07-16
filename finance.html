@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Finance · Moonrise Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/studio.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body data-page="finance">
+  <div id="shell"></div>
+  <div id="page-body" class="ms-finance-page">
+    <header class="ms-page-head ms-fin-hero">
+      <div class="ms-page-head-copy">
+        <h1>Finance</h1>
+      </div>
+    </header>
+
+    <nav class="ms-fin-steps" aria-label="Setup progress">
+        <div class="ms-fin-step is-active" data-step-indicator="1">
+          <span class="ms-fin-step-dot"><span class="ms-fin-step-num">1</span><span class="ms-fin-step-check" aria-hidden="true">✓</span></span>
+          <span class="ms-fin-step-label">Contact</span>
+        </div>
+        <div class="ms-fin-step-line" aria-hidden="true"></div>
+        <div class="ms-fin-step" data-step-indicator="2">
+          <span class="ms-fin-step-dot"><span class="ms-fin-step-num">2</span><span class="ms-fin-step-check" aria-hidden="true">✓</span></span>
+          <span class="ms-fin-step-label">Payment Methods</span>
+        </div>
+        <div class="ms-fin-step-line" aria-hidden="true"></div>
+        <div class="ms-fin-step" data-step-indicator="3">
+          <span class="ms-fin-step-dot"><span class="ms-fin-step-num">3</span><span class="ms-fin-step-check" aria-hidden="true">✓</span></span>
+          <span class="ms-fin-step-label">Review</span>
+        </div>
+    </nav>
+
+    <section class="ms-fin-card" id="fin-wizard" hidden>
+      <div class="ms-fin-panel is-active" data-step-panel="1">
+        <h2>Contact</h2>
+        <p class="ms-fin-panel-sub">We’ll use this to reach you about commission payouts.</p>
+        <div class="ms-field">
+          <label class="ms-label" for="fin-biz-email">Email <span class="ms-req">*</span></label>
+          <input class="ms-input" id="fin-biz-email" type="email" required autocomplete="email" placeholder="you@studio.com">
+        </div>
+        <div class="ms-field">
+          <label class="ms-label" for="fin-biz-phone">Phone number <span class="ms-req">*</span></label>
+          <div class="ms-phone" id="fin-phone">
+            <div class="ms-phone-country" id="fin-phone-country">
+              <button type="button" class="ms-phone-trigger" id="fin-phone-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Country code">
+                <span class="ms-phone-flag" id="fin-phone-flag" aria-hidden="true">🇺🇸</span>
+                <span class="ms-phone-dial" id="fin-phone-dial">+1</span>
+                <svg class="ms-phone-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+              <div class="ms-phone-menu" id="fin-phone-menu" role="listbox" hidden></div>
+            </div>
+            <input class="ms-input ms-phone-input" id="fin-biz-phone" type="tel" required autocomplete="tel" inputmode="tel" placeholder="(555) 000-0000" data-country="US">
+          </div>
+        </div>
+        <div class="ms-fin-actions ms-fin-actions--end">
+          <button type="button" class="ms-btn ms-fin-next" id="fin-next-1">Next →</button>
+        </div>
+      </div>
+
+      <div class="ms-fin-panel" data-step-panel="2" hidden>
+        <h2>Payment Methods</h2>
+        <p class="ms-fin-panel-sub">Enable at least one method and add your handle or link.</p>
+        <div class="ms-fin-methods" id="fin-methods"></div>
+        <div class="ms-fin-actions">
+          <button type="button" class="ms-btn ms-btn-secondary ms-fin-back" id="fin-back-2">← Back</button>
+          <button type="button" class="ms-btn ms-fin-next" id="fin-next-2">Next →</button>
+        </div>
+      </div>
+
+      <div class="ms-fin-panel" data-step-panel="3" hidden>
+        <h2>Review Your Profile</h2>
+        <div class="ms-fin-review" id="fin-review"></div>
+        <div class="ms-fin-actions">
+          <button type="button" class="ms-btn ms-btn-secondary ms-fin-back" id="fin-back-3">← Back</button>
+          <button type="button" class="ms-btn ms-fin-save" id="fin-save">✓ Save Profile</button>
+        </div>
+      </div>
+
+      <p class="ms-error" id="fin-error" hidden></p>
+      <p class="ms-muted" id="fin-ok" hidden></p>
+    </section>
+
+    <section class="ms-fin-saved" id="fin-saved" hidden>
+      <div class="ms-fin-saved-head">
+        <div>
+          <h2>Payment profile ready</h2>
+          <p class="ms-muted" id="fin-saved-meta">You can pay commissioners with the methods below.</p>
+        </div>
+        <button type="button" class="ms-btn ms-btn-secondary" id="fin-edit">Edit profile</button>
+      </div>
+      <div class="ms-fin-review" id="fin-saved-review"></div>
+    </section>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/segment-switch.js"></script>
+  <script src="js/ui-motion.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/finance.js"></script>
+</body>
+</html>

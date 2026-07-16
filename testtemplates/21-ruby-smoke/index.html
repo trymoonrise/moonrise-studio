@@ -1,0 +1,316 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Crimson</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Work+Sans:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root{--bg:#121014;--text:#f5f0f0;--muted:#a09095;--accent:#d62839;--line:rgba(214,40,57,.25)}
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:"Work Sans",sans-serif;background:var(--bg);color:var(--text);line-height:1.55;overflow-x:hidden}
+    h1,h2,h3{font-family:"Bebas Neue",sans-serif;line-height:.9;font-weight:400;letter-spacing:.02em}
+    a{color:inherit;text-decoration:none}
+    img,video{display:block;width:100%;height:100%;object-fit:cover}
+    .hidden{display:none!important}
+
+    .toggles{position:fixed;bottom:1rem;right:1rem;z-index:100;background:rgba(28,24,28,.94);border:1px solid var(--line);border-radius:.35rem;padding:.85rem 1rem;width:12.5rem;backdrop-filter:blur(10px)}
+    .toggles h4{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem}
+    .toggle-row{display:flex;align-items:center;justify-content:space-between;margin:.4rem 0;font-size:.82rem}
+    .switch{position:relative;width:2.3rem;height:1.25rem}.switch input{opacity:0;width:0;height:0}
+    .slider{position:absolute;inset:0;cursor:pointer;background:#3a3034;border-radius:999px;transition:.2s}
+    .slider::before{content:"";position:absolute;height:.9rem;width:.9rem;left:.18rem;top:.175rem;background:#fff;border-radius:50%;transition:.2s}
+    .switch input:checked+.slider{background:var(--accent)}.switch input:checked+.slider::before{transform:translateX(1rem)}
+
+    .hero{min-height:100vh;min-height:100dvh;display:grid;grid-template-rows:1fr auto;position:relative;overflow:hidden}
+    .media{position:absolute;inset:0}
+    .media img{filter:brightness(.38) contrast(1.08);clip-path:inset(0 0 100% 0);animation:revealUp 1.3s cubic-bezier(.77,0,.18,1) .15s forwards, ken 18s ease-in-out 1.4s infinite alternate;will-change:transform}
+    .bar{position:absolute;left:0;right:0;height:4px;background:var(--accent);bottom:0;transform:scaleX(0);transform-origin:left;animation:bar 1s ease .4s forwards;z-index:2;box-shadow:0 0 24px var(--accent)}
+    .top{position:relative;z-index:2;padding:clamp(1.5rem,4vw,2.5rem);display:flex;justify-content:space-between;align-items:center}
+    .logo{font-family:"Bebas Neue",sans-serif;font-size:1.9rem;letter-spacing:.08em;color:var(--accent)}
+    .top a:last-child{font-size:.85rem;color:var(--muted);transition:color .25s}.top a:last-child:hover{color:var(--text)}
+    .bottom{position:relative;z-index:2;padding:clamp(2rem,6vw,4rem);max-width:42rem}
+    .hero h1{font-size:clamp(4rem,12vw,8.5rem);margin-bottom:.5rem;opacity:0;transform:translateY(30px);animation:up 1s cubic-bezier(.22,1,.36,1) .6s forwards}
+    .hero p{color:var(--muted);max-width:26rem;margin-bottom:1.5rem;opacity:0;animation:up .9s ease .85s forwards}
+    .btn{display:inline-block;background:var(--accent);color:#fff;padding:.9rem 1.4rem;opacity:0;animation:up .9s ease 1s forwards;transition:transform .25s,box-shadow .25s}
+    .btn:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(214,40,57,.45)}
+    @keyframes revealUp{to{clip-path:inset(0 0 0 0)}}
+    @keyframes ken{from{transform:scale(1)}to{transform:scale(1.1)}}
+    @keyframes bar{to{transform:scaleX(1)}}
+    @keyframes up{to{opacity:1;transform:none}}
+
+    .section{padding:clamp(4rem,12vh,7rem) clamp(1.5rem,4vw,3rem)}
+    .section h2{font-size:clamp(2.4rem,5vw,3.5rem);margin-bottom:.5rem}
+    .lead{color:var(--muted);margin-bottom:2rem}
+    .eyebrow{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.6rem;display:block}
+
+    .strip{display:grid;grid-template-columns:2fr 1fr 1fr;gap:.5rem;min-height:50vh;margin-bottom:.5rem}
+    .strip figure{overflow:hidden;background:#1c181c;min-height:220px;position:relative;opacity:0;transform:translateY(30px);transition:opacity .7s ease,transform .7s ease}
+    .strip figure.in{opacity:1;transform:none}
+    .strip figure:nth-child(2).in{transition-delay:.1s}
+    .strip figure:nth-child(3).in{transition-delay:.2s}
+    .strip img{transition:transform .8s ease,filter .6s;filter:grayscale(.5)}
+    .strip figure:hover img{transform:scale(1.06);filter:grayscale(0)}
+    .strip figcaption{position:absolute;left:.75rem;bottom:.75rem;font-family:"Bebas Neue",sans-serif;font-size:1.2rem;letter-spacing:.05em;opacity:0;transition:opacity .35s}
+    .strip figure:hover figcaption{opacity:1}
+    .strip-row2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem}
+    .strip-row2 figure{aspect-ratio:16/10;overflow:hidden;background:#1c181c;position:relative;clip-path:inset(0 100% 0 0);transition:clip-path .85s cubic-bezier(.77,0,.18,1)}
+    .strip-row2 figure.in{clip-path:inset(0 0 0 0)}
+    .strip-row2 figure:nth-child(2).in{transition-delay:.1s}
+    .strip-row2 figure:nth-child(3).in{transition-delay:.2s}
+    .strip-row2 img{transition:transform .8s ease}
+    .strip-row2 figure:hover img{transform:scale(1.06)}
+    @media(max-width:800px){.strip,.strip-row2{grid-template-columns:1fr}}
+
+    .bold-svc{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line)}
+    .bs{padding:clamp(2rem,4vw,3rem);background:var(--bg);transition:background .3s,color .3s;opacity:0;transform:scale(.95);transition:opacity .65s ease,transform .65s ease,background .3s,color .3s}
+    .bs.in{opacity:1;transform:scale(1)}
+    .bs:nth-child(2).in{transition-delay:.1s}
+    .bs:nth-child(3).in{transition-delay:.2s}
+    .bs:hover{background:var(--accent);color:#fff}
+    .bs h3{font-size:clamp(2rem,4vw,2.8rem);margin-bottom:.35rem}
+    .bs p{font-size:.88rem;opacity:.75}
+    @media(max-width:640px){.bold-svc{grid-template-columns:1fr}}
+
+    .about-smoke{display:grid;grid-template-columns:1fr 1fr;gap:clamp(2rem,5vw,4rem);align-items:center}
+    .about-smoke p{color:var(--muted);font-size:1rem;max-width:36ch;margin-bottom:1rem;font-family:"Work Sans",sans-serif;letter-spacing:0}
+    .smoke-visual{position:relative;aspect-ratio:3/4;overflow:hidden;background:#1c181c}
+    .smoke-visual img{filter:brightness(.6);transition:transform 1.2s ease,filter .6s}
+    .smoke-visual.in img{transform:scale(1)}
+    .smoke-visual:hover img{transform:scale(1.05);filter:brightness(.75)}
+    .smoke-visual::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(18,16,20,.8));pointer-events:none}
+    @media(max-width:700px){.about-smoke{grid-template-columns:1fr}}
+
+    .quote-block{position:relative;padding:clamp(4rem,10vh,6rem) 0;text-align:center;border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden}
+    .quote-block::before{content:"";position:absolute;inset:0;background:url("https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=2000&q=80") center/cover;opacity:.08;will-change:transform}
+    .quote-block blockquote{font-family:"Bebas Neue",sans-serif;font-size:clamp(2.5rem,6vw,4.5rem);letter-spacing:.03em;position:relative;max-width:16ch;margin:0 auto;line-height:.95;opacity:0;transform:scale(.92);transition:opacity .8s ease,transform .8s ease}
+    .quote-block.in blockquote{opacity:1;transform:scale(1)}
+    .quote-block cite{display:block;margin-top:1rem;font-family:"Work Sans",sans-serif;font-size:.85rem;font-style:normal;color:var(--muted);opacity:0;transition:opacity .6s .4s}
+    .quote-block.in cite{opacity:1}
+
+    .contact-cut{display:grid;grid-template-columns:1.3fr 1fr;gap:0;border:2px solid var(--accent);overflow:hidden}
+    .contact-cut .video-side{position:relative;min-height:320px;background:#1c181c}
+    .contact-cut .video-side video,.contact-cut .video-side img{filter:brightness(.45)}
+    .contact-cut .video-side .overlay-text{position:absolute;inset:0;display:grid;place-items:end start;padding:2rem;background:linear-gradient(transparent,rgba(18,16,20,.85))}
+    .contact-cut .video-side h3{font-size:clamp(2.5rem,5vw,4rem);color:var(--accent)}
+    .contact-cut .form-side{padding:clamp(2rem,4vw,3rem);display:flex;flex-direction:column;justify-content:center}
+    form{display:grid;gap:1rem}
+    label{display:grid;gap:.3rem;font-size:.8rem;color:var(--muted)}
+    input,textarea{background:#1c181c;border:1px solid var(--line);padding:.85rem 1rem;font:inherit;color:var(--text);border-radius:.2rem}
+    input:focus,textarea:focus{outline:1px solid var(--accent)}
+    button{justify-self:start;background:var(--accent);color:#fff;border:0;padding:.9rem 1.4rem;font:inherit;cursor:pointer;font-family:"Bebas Neue",sans-serif;font-size:1.1rem;letter-spacing:.05em;transition:transform .25s,box-shadow .25s}
+    button:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(214,40,57,.4)}
+    @media(max-width:760px){.contact-cut{grid-template-columns:1fr}}
+
+    .scroll-progress{position:fixed;top:0;left:0;height:4px;width:0;background:var(--accent);z-index:200;box-shadow:0 0 20px var(--accent);transition:width .05s linear}
+    .crimson-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-bottom:2rem}
+    .crimson-stats div{padding:1.5rem;background:var(--bg);text-align:center;opacity:0;transform:scale(.94);transition:opacity .6s ease,transform .6s ease}
+    .crimson-stats div.in{opacity:1;transform:scale(1)}
+    .crimson-stats div:nth-child(2).in{transition-delay:.1s}
+    .crimson-stats div:nth-child(3).in{transition-delay:.2s}
+    .crimson-stats strong{display:block;font-family:"Bebas Neue",sans-serif;font-size:2.5rem;color:var(--accent);letter-spacing:.04em}
+    .crimson-stats span{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+    @media(max-width:600px){.crimson-stats{grid-template-columns:1fr}}
+
+
+    .awards-band{padding:clamp(3rem,8vw,5rem) clamp(1.5rem,4vw,3rem);border-top:1px solid var(--line);text-align:center}
+    .awards-band h3{font-size:clamp(1.2rem,3vw,1.6rem);margin-bottom:1.5rem;opacity:0;transform:translateY(12px);transition:opacity .7s ease,transform .7s ease}
+    .awards-band.in h3{opacity:1;transform:none}
+    .awards-row{display:flex;gap:2rem;justify-content:center;flex-wrap:wrap}
+    .awards-row span{font-size:.82rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;opacity:0;transform:translateY(8px);transition:opacity .5s ease,transform .5s ease,color .3s}
+    .awards-band.in .awards-row span{opacity:1;transform:none}
+    .awards-band.in .awards-row span:nth-child(2){transition-delay:.08s}
+    .awards-band.in .awards-row span:nth-child(3){transition-delay:.16s}
+    .awards-band.in .awards-row span:nth-child(4){transition-delay:.24s}
+    .awards-row span:hover{color:var(--accent)}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}html{scroll-behavior:auto}.partner-track,.marquee-track{animation:none!important}}
+    footer a{color:inherit;transition:color .25s}footer a:hover{color:var(--accent)}
+    @media(max-width:380px){.hero h1{font-size:clamp(2rem,11vw,3rem)}.section{padding:3rem 1rem}.toggles{width:11rem;font-size:.75rem}}
+    .cta-strip a{transition:transform .25s,box-shadow .25s}.cta-strip a:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.12)}
+    footer{padding:2rem clamp(1.5rem,4vw,3rem);display:flex;justify-content:space-between;color:var(--muted);font-size:.85rem;border-top:1px solid var(--line)}
+    footer span:first-child{font-family:"Bebas Neue",sans-serif;color:var(--accent);font-size:1.3rem;letter-spacing:.06em}
+
+    .partner-marquee{overflow:hidden;padding:1.5rem 0;border-block:1px solid var(--line);margin:2rem 0}
+    .partner-track{display:flex;width:max-content;gap:3rem;animation:partnerScroll 30s linear infinite}
+    .partner-track span{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+    @keyframes partnerScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+    .newsletter-band{padding:clamp(2.5rem,6vw,4rem);background:linear-gradient(135deg,rgba(255,255,255,.04),transparent);border:1px solid var(--line);border-radius:.5rem;margin:2rem 0;display:grid;grid-template-columns:1fr auto;gap:2rem;align-items:center}
+    .newsletter-band h3{font-size:1.2rem;margin-bottom:.35rem}
+    .newsletter-band p{color:var(--muted);font-size:.88rem;max-width:32ch}
+    .newsletter-band form{display:flex;gap:.5rem;flex-wrap:wrap}
+    .newsletter-band input{flex:1;min-width:180px;padding:.75rem 1rem;border:1px solid var(--line);background:transparent;font:inherit;border-radius:.35rem;color:inherit}
+    .newsletter-band button{padding:.75rem 1.25rem;border:0;background:var(--accent);color:#fff;font:inherit;cursor:pointer;border-radius:.35rem;white-space:nowrap}
+    @media(max-width:640px){.newsletter-band{grid-template-columns:1fr}}
+    .reveal{opacity:0;transform:translateY(24px);transition:opacity .75s ease,transform .75s ease}
+    .reveal.in{opacity:1;transform:none}
+    a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,.btn:focus-visible,.switch input:focus-visible+.slider{outline:2px solid var(--accent);outline-offset:2px}
+    .form-note{font-size:.8rem;color:var(--accent);min-height:1.25em}
+  </style>
+</head>
+<body>
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+  <div class="toggles" aria-label="Section toggles">
+    <h4>Sections</h4>
+    <div class="toggle-row"><span>Work</span><label class="switch"><input type="checkbox" data-target="work" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Services</span><label class="switch"><input type="checkbox" data-target="services" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>About</span><label class="switch"><input type="checkbox" data-target="about" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Quote</span><label class="switch"><input type="checkbox" data-target="quote" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Reel</span><label class="switch"><input type="checkbox" data-target="reel" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Awards</span><label class="switch"><input type="checkbox" data-target="awards" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Newsletter</span><label class="switch"><input type="checkbox" data-target="newsletter" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Contact</span><label class="switch"><input type="checkbox" data-target="contact" checked /><span class="slider"></span></label></div>
+  </div>
+
+  <section class="hero">
+    <div class="media">
+      <img id="heroImg" src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=2400&q=80" alt="Camera and smoke mood" />
+      <div class="bar" aria-hidden="true"></div>
+    </div>
+    <div class="top"><a class="logo" href="#">Crimson</a><a href="#contact">Contact</a></div>
+    <div class="bottom">
+      <h1>Bold cut.</h1>
+      <p>Ruby heat on smoke — film, fashion, nightlife brands.</p>
+      <a class="btn" href="#work">View work</a>
+    </div>
+  </section>
+
+  <section class="section" id="work" data-section="work">
+    <div class="reveal"><span class="eyebrow">Work</span><h2>Fashion. Concert. Smoke.</h2><p class="lead">Reveal-bar hero meets clip-wipe gallery rows.</p></div>
+    <div class="crimson-stats reveal">
+      <div><strong>60+</strong><span>Launches</span></div>
+      <div><strong>24</strong><span>Fashion drops</span></div>
+      <div><strong>12</strong><span>Film titles</span></div>
+    </div>
+    <div class="strip reveal">
+      <figure><img src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=1400&q=80" alt="Concert lights" /><figcaption>Neon Pulse</figcaption></figure>
+      <figure><img src="https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=900&q=80" alt="Fashion silhouette" /><figcaption>Noir Line</figcaption></figure>
+      <figure><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=900&q=80" alt="Portrait fashion" /><figcaption>Ruby Edit</figcaption></figure>
+    </div>
+    <div class="strip-row2">
+      <figure><img src="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80" alt="Fashion editorial" /></figure>
+      <figure><img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=900&q=80" alt="Event crowd" /></figure>
+      <figure><img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=900&q=80" alt="Stage lights" /></figure>
+    </div>
+  </section>
+
+  <section class="section" id="services" data-section="services">
+    <div class="reveal"><span class="eyebrow">Services</span><h2>No half measures.</h2></div>
+    <div class="bold-svc reveal">
+      <div class="bs"><h3>Film</h3><p>Title sequences, promos, cuts.</p></div>
+      <div class="bs"><h3>Fashion</h3><p>Lookbooks, campaigns, drops.</p></div>
+      <div class="bs"><h3>Events</h3><p>Nightlife, launches, live.</p></div>
+    </div>
+  </section>
+
+  <section class="section" id="about" data-section="about">
+    <div class="about-smoke">
+      <div class="reveal">
+        <span class="eyebrow">About</span>
+        <h2>Cut through.</h2>
+        <p>Crimson is a studio for film, fashion, and nightlife brands that refuse to whisper.</p>
+        <p>We design with heat — ruby accents, smoke depth, and motion that hits.</p>
+      </div>
+      <div class="smoke-visual reveal">
+        <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=900&q=80" alt="Smoke and light" />
+      </div>
+    </div>
+  </section>
+
+  <section class="quote-block reveal" id="quote" data-section="quote">
+    <blockquote>"They don't do subtle. Thank god."</blockquote>
+    <cite>— Mira Vale, Neon Pulse</cite>
+  </section>
+
+  <section class="section" id="reel" data-section="reel">
+    <div class="reveal"><span class="eyebrow">Reel</span><h2>Motion cuts.</h2><p class="lead">Title sequences and promo edits from recent work.</p></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:1.5rem">
+      <figure class="reveal" style="aspect-ratio:16/9;overflow:hidden;background:#1c181c"><img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=900&q=80" alt="Film reel still" /></figure>
+      <figure class="reveal" style="aspect-ratio:16/9;overflow:hidden;background:#1c181c"><img src="https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=900&q=80" alt="Cinema still" /></figure>
+    </div>
+  </section>  <section class="section" id="newsletter" data-section="newsletter">
+    <div class="newsletter-band reveal">
+      <div><h3>Studio notes</h3><p>Occasional updates on process, launches, and open slots.</p></div>
+      <form><input type="email" placeholder="Email" required /><button type="submit">Join</button></form>
+    </div>
+  </section>
+
+
+
+    <div class="partner-marquee" aria-hidden="true">
+      <div class="partner-track">
+        <span>Selected Clients</span><span>�</span><span>Global Partners</span><span>�</span><span>Studio Network</span><span>�</span><span>Field Office</span><span>�</span>
+        <span>Selected Clients</span><span>�</span><span>Global Partners</span><span>�</span><span>Studio Network</span><span>�</span><span>Field Office</span><span>�</span>
+      </div>
+    </div>
+    <section class="section" id="contact" data-section="contact">
+    <div class="contact-cut reveal">
+      <div class="video-side">
+        <video autoplay muted loop playsinline poster="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=1200&q=80">
+          <source src="https://videos.pexels.com/video-files/3129671/3129671-uhd_2560_1440_25fps.mp4" type="video/mp4" />
+        </video>
+        <div class="overlay-text"><h3>Send it.</h3></div>
+      </div>
+      <div class="form-side">
+        <form>
+          <label>Name<input name="name" required /></label>
+          <label>Email<input type="email" name="email" required /></label>
+          <label>Message<textarea name="message" rows="3" required></textarea></label>
+          <button type="submit">Send</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="awards-band reveal" id="awards" data-section="awards">
+    <h3>Recognition</h3>
+    <div class="awards-row">
+      <span>Awwwards Nominee</span>
+      <span>CSS Design Awards</span>
+      <span>FWA Site of Day</span>
+      <span>Type Directors Club</span>
+    </div>
+  </section>
+  <footer><span>Crimson</span><span>hello@crimson.studio</span><span>© 2026</span></footer>
+
+  <script>
+    const heroImg=document.getElementById("heroImg");
+    window.addEventListener("scroll",()=>{
+      const y=Math.min(window.scrollY,600);
+      if(heroImg) heroImg.style.transform=`scale(${1.05-y*0.00008}) translateY(${y*0.2}px)`;
+    },{passive:true});
+
+    const io=new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{if(e.isIntersecting) e.target.classList.add("in");});
+    },{threshold:0.12});
+    document.querySelectorAll(".reveal,.strip figure,.strip-row2 figure,.bs,.smoke-visual,.quote-block,.crimson-stats div,.awards-band").forEach(el=>io.observe(el));
+
+    const progress=document.getElementById("scrollProgress");
+    window.addEventListener("scroll",()=>{
+      const h=document.documentElement.scrollHeight-window.innerHeight;
+      if(progress&&h>0) progress.style.width=`${(window.scrollY/h)*100}%`;
+    },{passive:true});
+
+    document.querySelectorAll(".toggles input").forEach((input)=>{
+      input.addEventListener("change",()=>{
+        const el=document.querySelector(`[data-section="${input.dataset.target}"]`);
+        if(el) el.classList.toggle("hidden",!input.checked);
+      });
+    });
+    document.querySelectorAll("form").forEach((form)=>{
+      form.addEventListener("submit",(e)=>{
+        e.preventDefault();
+        let note=form.querySelector(".form-note");
+        if(!note){note=document.createElement("p");note.className="form-note";note.setAttribute("role","status");form.appendChild(note);}
+        note.textContent=form.closest(".newsletter-band")?"Subscribed — thank you.":"Thanks — message received.";
+        form.reset();
+        setTimeout(()=>{note.textContent="";},4000);
+      });
+    });
+  </script>
+</body>
+</html>

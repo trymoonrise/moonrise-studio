@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Beacon — Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --surface: #ffffff;
+      --text: #0b1c3a;
+      --muted: #5a6b85;
+      --accent: #1d4ed8;
+      --gold: #eab308;
+      --line: rgba(11, 28, 58, 0.1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: "IBM Plex Sans", sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+    h1, h2, h3 { font-family: "Archivo", sans-serif; line-height: 1.05; }
+    a { color: inherit; text-decoration: none; }
+    .wrap { width: min(1100px, 92%); margin-inline: auto; }
+    .section { padding: 5rem 0; }
+    .section h2 { font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 0.75rem; }
+    .section p.lead { color: var(--muted); max-width: 36rem; margin-bottom: 2rem; }
+    .hidden { display: none !important; }
+
+    .toggles {
+      position: fixed; bottom: 1rem; right: 1rem; z-index: 100;
+      background: var(--surface); border: 1px solid var(--line);
+      border-radius: 1rem; padding: 0.9rem 1rem; width: 13rem;
+      box-shadow: 0 10px 30px rgba(11,28,58,.08);
+    }
+    .toggles h4 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.7rem; }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin: 0.45rem 0; font-size: 0.85rem; }
+    .switch { position: relative; width: 2.4rem; height: 1.35rem; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; inset: 0; cursor: pointer; background: #cfd7e6; border-radius: 999px; transition: .2s; }
+    .slider::before { content: ""; position: absolute; height: 1rem; width: 1rem; left: 0.18rem; top: 0.175rem; background: white; border-radius: 50%; transition: .2s; }
+    .switch input:checked + .slider { background: var(--accent); }
+    .switch input:checked + .slider::before { transform: translateX(1.05rem); }
+
+    .nav { position: sticky; top: 0; z-index: 50; backdrop-filter: blur(12px); background: color-mix(in srgb, var(--bg) 90%, transparent); border-bottom: 1px solid var(--line); }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0; gap: 1rem; }
+    .logo { font-family: "Archivo", sans-serif; font-weight: 700; font-size: 1.25rem; color: var(--accent); }
+    .nav-links { display: flex; gap: 1.25rem; flex-wrap: wrap; }
+    .nav-links a { color: var(--muted); font-size: 0.9rem; }
+    .nav-links a:hover { color: var(--text); }
+
+    .hero {
+      min-height: 88vh; display: grid; place-items: center;
+      background:
+        linear-gradient(135deg, rgba(29,78,216,.12), transparent 45%),
+        linear-gradient(225deg, rgba(234,179,8,.18), transparent 40%),
+        var(--bg);
+    }
+    .hero-content { padding: 4rem 0; }
+    .hero h1 { font-size: clamp(3rem, 8vw, 5.2rem); max-width: 13ch; margin-bottom: 1rem; }
+    .hero p { color: var(--muted); font-size: 1.15rem; max-width: 28rem; margin-bottom: 2rem; }
+    .btn { display: inline-block; background: var(--accent); color: #fff; padding: 0.85rem 1.5rem; border-radius: 0.35rem; font-weight: 500; border: none; cursor: pointer; }
+    .btn:hover { filter: brightness(1.08); }
+    .btn-ghost { background: var(--gold); color: var(--text); margin-left: 0.5rem; }
+
+    .creds { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; }
+    .cred { background: var(--surface); padding: 1.5rem; border-radius: 0.5rem; border-left: 4px solid var(--gold); }
+    .cred strong { display: block; font-family: "Archivo", sans-serif; font-size: 2rem; color: var(--accent); }
+    .cred span { color: var(--muted); font-size: 0.85rem; }
+
+    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; }
+    .service { padding: 1.5rem 0; border-top: 1px solid var(--line); }
+    .service h3 { margin-bottom: 0.4rem; }
+    .service p { color: var(--muted); font-size: 0.95rem; }
+
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; }
+    .about-visual { aspect-ratio: 5/4; border-radius: 0.35rem; background: linear-gradient(145deg, var(--accent), #0b1c3a 55%, var(--gold)); }
+    @media (max-width: 760px) { .about-grid { grid-template-columns: 1fr; } }
+
+    .gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+    .gallery figure { aspect-ratio: 1; border-radius: 0.35rem; }
+    .gallery figure:nth-child(1) { background: linear-gradient(135deg, #1d4ed8, #0b1c3a); }
+    .gallery figure:nth-child(2) { background: linear-gradient(135deg, #eab308, #1d4ed8); }
+    .gallery figure:nth-child(3) { background: linear-gradient(135deg, #93c5fd, #1d4ed8); }
+    .gallery figure:nth-child(4) { background: linear-gradient(160deg, #0b1c3a, #eab308); }
+    .gallery figure:nth-child(5) { background: linear-gradient(120deg, #1d4ed8, #fef08a); }
+    .gallery figure:nth-child(6) { background: linear-gradient(200deg, #2563eb, #0b1c3a); }
+    @media (max-width: 600px) { .gallery { grid-template-columns: repeat(2, 1fr); } }
+
+    .quotes { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; }
+    .quote { padding: 1.5rem; background: var(--surface); border-radius: 0.5rem; }
+    .quote p { font-size: 1.05rem; margin-bottom: 0.75rem; }
+    .quote cite { color: var(--muted); font-style: normal; font-size: 0.85rem; }
+
+    form { display: grid; gap: 1rem; max-width: 32rem; }
+    label { display: grid; gap: 0.35rem; font-size: 0.85rem; color: var(--muted); }
+    input, textarea { background: var(--surface); border: 1px solid var(--line); color: var(--text); padding: 0.85rem 1rem; border-radius: 0.35rem; font: inherit; }
+    input:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+    footer { border-top: 1px solid var(--line); padding: 2.5rem 0; margin-top: 2rem; background: var(--surface); }
+    .footer-inner { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; color: var(--muted); font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <div class="toggles" aria-label="Section toggles">
+    <h4>Sections</h4>
+    <div class="toggle-row"><span>Credibility</span><label class="switch"><input type="checkbox" data-target="credibility" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Gallery</span><label class="switch"><input type="checkbox" data-target="gallery" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Testimonials</span><label class="switch"><input type="checkbox" data-target="testimonials" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Contact</span><label class="switch"><input type="checkbox" data-target="contact" checked /><span class="slider"></span></label></div>
+  </div>
+
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <a class="logo" href="#">Beacon</a>
+      <nav class="nav-links">
+        <a href="#services">Services</a>
+        <a href="#about">About</a>
+        <a href="#gallery">Work</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="wrap hero-content">
+      <h1>Clear signal. Strong brand.</h1>
+      <p>Cobalt confidence with a gold highlight — for companies that need to be seen.</p>
+      <a class="btn" href="#contact">Talk to us</a>
+      <a class="btn btn-ghost" href="#gallery">View work</a>
+    </div>
+  </section>
+
+  <section class="section" id="credibility" data-section="credibility">
+    <div class="wrap">
+      <div class="creds">
+        <div class="cred"><strong>200+</strong><span>Campaigns</span></div>
+        <div class="cred"><strong>50</strong><span>Enterprise clients</span></div>
+        <div class="cred"><strong>11</strong><span>Years live</span></div>
+        <div class="cred"><strong>4.8</strong><span>Review score</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="services">
+    <div class="wrap">
+      <h2>Services</h2>
+      <p class="lead">Direct. Professional. Fast.</p>
+      <div class="services-grid">
+        <div class="service"><h3>Corporate sites</h3><p>Trust-building layouts with crisp hierarchy.</p></div>
+        <div class="service"><h3>Pitch systems</h3><p>Decks and microsites that close rooms.</p></div>
+        <div class="service"><h3>Design ops</h3><p>Component libraries your team can own.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="about">
+    <div class="wrap about-grid">
+      <div class="about-visual" aria-hidden="true"></div>
+      <div>
+        <h2>About</h2>
+        <p class="lead">Beacon is a communication-first studio.</p>
+        <p style="color:var(--muted)">We help serious brands look decisive online — without looking cold.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="gallery" data-section="gallery">
+    <div class="wrap">
+      <h2>Gallery</h2>
+      <p class="lead">Frames from recent launches.</p>
+      <div class="gallery">
+        <figure></figure><figure></figure><figure></figure>
+        <figure></figure><figure></figure><figure></figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="testimonials" data-section="testimonials">
+    <div class="wrap">
+      <h2>Testimonials</h2>
+      <p class="lead">Trusted in the boardroom.</p>
+      <div class="quotes">
+        <blockquote class="quote"><p>“They made us look like the category leader overnight.”</p><cite>— Dana S., CMO</cite></blockquote>
+        <blockquote class="quote"><p>“Sharp thinking, zero fluff, on schedule.”</p><cite>— Leo W., Ops</cite></blockquote>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="contact" data-section="contact">
+    <div class="wrap">
+      <h2>Contact</h2>
+      <p class="lead">Brief us in a few lines.</p>
+      <form onsubmit="event.preventDefault(); alert('Thanks — message noted.'); this.reset();">
+        <label>Name<input type="text" name="name" required /></label>
+        <label>Email<input type="email" name="email" required /></label>
+        <label>Message<textarea name="message" rows="4" required></textarea></label>
+        <button class="btn" type="submit">Send message</button>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap footer-inner">
+      <span class="logo">Beacon</span>
+      <span>© 2026 Beacon Studio. All rights reserved.</span>
+    </div>
+  </footer>
+
+  <script>
+    document.querySelectorAll(".toggles input[type=checkbox]").forEach((input) => {
+      input.addEventListener("change", () => {
+        const el = document.querySelector(`[data-section="${input.dataset.target}"]`);
+        if (el) el.classList.toggle("hidden", !input.checked);
+      });
+    });
+  </script>
+</body>
+</html>

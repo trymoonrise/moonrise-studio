@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Drift</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root{--bg:#0f1419;--text:#e8eef5;--muted:#8a9aab;--accent:#4ea1ff;--line:rgba(78,161,255,.18)}
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:Inter,sans-serif;background:var(--bg);color:var(--text);line-height:1.55;overflow-x:hidden}
+    h1,h2,h3{font-family:Sora,sans-serif;line-height:.96;font-weight:700}
+    a{color:inherit;text-decoration:none}
+    img{display:block;width:100%;height:100%;object-fit:cover}
+    .hidden{display:none!important}
+
+    .toggles{position:fixed;bottom:1rem;right:1rem;z-index:100;background:#171d24;border:1px solid var(--line);border-radius:.5rem;padding:.85rem 1rem;width:12.5rem}
+    .toggles h4{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem}
+    .toggle-row{display:flex;align-items:center;justify-content:space-between;margin:.4rem 0;font-size:.82rem}
+    .switch{position:relative;width:2.3rem;height:1.25rem}.switch input{opacity:0;width:0;height:0}
+    .slider{position:absolute;inset:0;cursor:pointer;background:#2a3440;border-radius:999px;transition:.2s}
+    .slider::before{content:"";position:absolute;height:.9rem;width:.9rem;left:.18rem;top:.175rem;background:#fff;border-radius:50%;transition:.2s}
+    .switch input:checked+.slider{background:var(--accent)}.switch input:checked+.slider::before{transform:translateX(1rem)}
+
+    .hero{min-height:100vh;min-height:100dvh;position:relative;display:grid;place-items:center;overflow:hidden}
+    .mask{position:absolute;inset:0;clip-path:circle(0% at 50% 50%);animation:expand 1.4s cubic-bezier(.22,1,.36,1) .1s forwards}
+    .mask img{transform:scale(1.1);animation:driftImg 16s ease-in-out infinite alternate;filter:brightness(.45)}
+    .mask::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at center,transparent 20%,rgba(15,20,25,.7))}
+    .inner{position:relative;z-index:2;text-align:center;padding:2rem;max-width:36rem}
+    .logo{font-family:Sora,sans-serif;font-weight:700;font-size:clamp(1.8rem,4vw,2.4rem);color:var(--accent);display:block;margin-bottom:1rem;opacity:0;animation:up .8s ease .9s forwards}
+    .hero h1{font-size:clamp(2.8rem,7vw,5rem);margin-bottom:1rem;opacity:0;animation:up .9s ease 1.05s forwards}
+    .hero p{color:var(--muted);margin-bottom:1.75rem;opacity:0;animation:up .9s ease 1.2s forwards}
+    .btn{display:inline-block;background:var(--accent);color:#0f1419;padding:.85rem 1.3rem;font-weight:500;opacity:0;animation:up .9s ease 1.35s forwards;transition:box-shadow .3s}
+    .btn:hover{box-shadow:0 8px 24px rgba(78,161,255,.2)}
+    @keyframes expand{to{clip-path:circle(120% at 50% 50%)}}
+    @keyframes driftImg{from{transform:scale(1.1) translate(0,0)}to{transform:scale(1.15) translate(-2%,1%)}}
+    @keyframes up{to{opacity:1;transform:none}}
+    .logo,.hero h1,.hero p,.btn{transform:translateY(16px)}
+
+    .section{padding:clamp(4rem,10vh,7rem) clamp(1.5rem,4vw,3rem)}
+    .section h2{font-size:clamp(1.8rem,4vw,2.8rem);margin-bottom:.5rem}
+    .lead{color:var(--muted);margin-bottom:2.5rem;max-width:28rem}
+    .eyebrow{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:.6rem;display:block}
+
+    .vista-wrap{position:relative;overflow:hidden;border-radius:.5rem;margin-bottom:3rem}
+    .vista-wrap .wide{aspect-ratio:21/9;overflow:hidden;background:#171d24;min-height:220px;will-change:transform}
+    .vista-wrap .wide img{transform:scale(1.08);transition:transform .1s linear}
+    .vista-caption{position:absolute;bottom:1.5rem;left:1.5rem;font-family:Sora,sans-serif;font-size:.85rem;color:var(--text);opacity:.8}
+    .vista-meta{position:absolute;top:1.5rem;right:1.5rem;font-size:.72rem;color:var(--accent);letter-spacing:.1em;text-transform:uppercase}
+
+    .hscroll-wrap{overflow:hidden;margin:0 calc(-1 * clamp(1.5rem,4vw,3rem));padding:1rem 0}
+    .hscroll{display:flex;gap:1rem;padding:0 clamp(1.5rem,4vw,3rem);overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+    .hscroll::-webkit-scrollbar{display:none}
+    .card{flex:0 0 min(320px,85vw);scroll-snap-align:start;background:#171d24;border:1px solid var(--line);border-radius:.5rem;overflow:hidden;opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease,box-shadow .3s}
+    .card.in{opacity:1;transform:none}
+    .card:nth-child(2).in{transition-delay:.08s}
+    .card:nth-child(3).in{transition-delay:.16s}
+    .card:nth-child(4).in{transition-delay:.24s}
+    .card:nth-child(5).in{transition-delay:.32s}
+    .card:hover{box-shadow:0 12px 40px rgba(78,161,255,.12)}
+    .card-img{aspect-ratio:16/10;overflow:hidden;position:relative}
+    .card-img img{transition:transform .8s ease}
+    .card:hover .card-img img{transform:scale(1.06)}
+    .card-img .clip{position:absolute;inset:0;background:var(--accent);mix-blend-mode:multiply;opacity:0;transition:opacity .4s}
+    .card:hover .clip{opacity:.15}
+    .card-body{padding:1.25rem}
+    .card-body h3{font-size:1rem;margin-bottom:.35rem}
+    .card-body p{color:var(--muted);font-size:.85rem}
+
+    .services-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-top:1rem}
+    .svc-cell{padding:clamp(1.5rem,3vw,2rem);background:var(--bg);opacity:0;transform:translateY(20px);transition:opacity .65s ease,transform .65s ease,background .3s}
+    .svc-cell.in{opacity:1;transform:none}
+    .svc-cell:nth-child(2).in{transition-delay:.1s}
+    .svc-cell:nth-child(3).in{transition-delay:.2s}
+    .svc-cell:hover{background:#171d24}
+    .svc-cell h3{font-size:1rem;margin-bottom:.4rem;color:var(--accent)}
+    .svc-cell p{color:var(--muted);font-size:.88rem}
+    @media(max-width:640px){.services-strip{grid-template-columns:1fr}}
+
+    .about-drift{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center}
+    .about-drift p{color:var(--muted);font-size:1rem;max-width:36ch;margin-bottom:1rem}
+    .stat-pills{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1.5rem}
+    .pill{padding:.5rem 1rem;border:1px solid var(--line);border-radius:999px;font-size:.82rem;color:var(--accent);transition:border-color .3s,transform .3s}
+    .pill:hover{border-color:var(--accent);transform:translateY(-2px)}
+    .about-visual{aspect-ratio:1;overflow:hidden;border-radius:50%;border:2px solid var(--line);opacity:0;transform:scale(.8);transition:opacity .8s ease,transform .8s ease}
+    .about-visual.in{opacity:1;transform:scale(1)}
+    @media(max-width:700px){.about-drift{grid-template-columns:1fr}}
+
+    .testimonial-drift{text-align:center;padding:clamp(3rem,8vw,5rem) 1rem;border-top:1px solid var(--line)}
+    .testimonial-drift p{font-family:Sora,sans-serif;font-size:clamp(1.3rem,3vw,1.8rem);max-width:28ch;margin:0 auto 1rem;line-height:1.25;opacity:0;filter:blur(8px);transition:opacity .9s ease,filter .9s ease}
+    .testimonial-drift.in p{opacity:1;filter:blur(0)}
+    .testimonial-drift cite{font-style:normal;color:var(--muted);font-size:.85rem}
+
+    .contact-row{display:grid;grid-template-columns:1.2fr 1fr;gap:3rem;align-items:start}
+    .contact-map{aspect-ratio:16/10;background:#171d24;border:1px solid var(--line);border-radius:.5rem;overflow:hidden;clip-path:inset(0 100% 0 0);transition:clip-path 1s cubic-bezier(.77,0,.18,1)}
+    .contact-map.in{clip-path:inset(0 0 0 0)}
+    form{display:grid;gap:1rem}
+    label{display:grid;gap:.3rem;font-size:.8rem;color:var(--muted)}
+    input,textarea{background:#171d24;border:1px solid var(--line);padding:.8rem 1rem;font:inherit;color:var(--text);border-radius:.35rem}
+    input:focus,textarea:focus{outline:1px solid var(--accent)}
+    button{justify-self:start;background:var(--accent);color:#0f1419;border:0;padding:.85rem 1.3rem;font:inherit;cursor:pointer;transition:transform .25s}
+    button:hover{transform:translateY(-2px)}
+    @media(max-width:700px){.contact-row{grid-template-columns:1fr}}
+
+    .scroll-progress{position:fixed;top:0;left:0;height:2px;width:0;background:var(--accent);z-index:200;transition:width .05s linear}
+    .drift-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2.5rem}
+    .drift-stats div{padding:1.25rem;border:1px solid var(--line);border-radius:.5rem;text-align:center;opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease}
+    .drift-stats div.in{opacity:1;transform:none}
+    .drift-stats div:nth-child(2).in{transition-delay:.1s}
+    .drift-stats div:nth-child(3).in{transition-delay:.2s}
+    .drift-stats strong{display:block;font-family:Sora,sans-serif;font-size:1.8rem;color:var(--accent)}
+    .drift-stats span{font-size:.75rem;color:var(--muted)}
+
+
+    .awards-band{padding:clamp(3rem,8vw,5rem) clamp(1.5rem,4vw,3rem);border-top:1px solid var(--line);text-align:center}
+    .awards-band h3{font-size:clamp(1.2rem,3vw,1.6rem);margin-bottom:1.5rem;opacity:0;transform:translateY(12px);transition:opacity .7s ease,transform .7s ease}
+    .awards-band.in h3{opacity:1;transform:none}
+    .awards-row{display:flex;gap:2rem;justify-content:center;flex-wrap:wrap}
+    .awards-row span{font-size:.82rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;opacity:0;transform:translateY(8px);transition:opacity .5s ease,transform .5s ease,color .3s}
+    .awards-band.in .awards-row span{opacity:1;transform:none}
+    .awards-band.in .awards-row span:nth-child(2){transition-delay:.08s}
+    .awards-band.in .awards-row span:nth-child(3){transition-delay:.16s}
+    .awards-band.in .awards-row span:nth-child(4){transition-delay:.24s}
+    .awards-row span:hover{color:var(--accent)}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.marquee-track,.marquee,.partner-track{animation:none!important}}}
+    footer a{color:inherit;transition:color .25s}footer a:hover{color:var(--accent)}
+    footer{padding:2rem clamp(1.5rem,4vw,3rem);display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem;color:var(--muted);font-size:.85rem;border-top:1px solid var(--line)}
+
+    .partner-marquee{overflow:hidden;padding:1.5rem 0;border-block:1px solid var(--line);margin:2rem 0}
+    .partner-track{display:flex;width:max-content;gap:3rem;animation:partnerScroll 30s linear infinite}
+    .partner-track span{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+    @keyframes partnerScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+    .newsletter-band{padding:clamp(2.5rem,6vw,4rem);background:linear-gradient(135deg,rgba(255,255,255,.04),transparent);border:1px solid var(--line);border-radius:.5rem;margin:2rem 0;display:grid;grid-template-columns:1fr auto;gap:2rem;align-items:center}
+    .newsletter-band h3{font-size:1.2rem;margin-bottom:.35rem}
+    .newsletter-band p{color:var(--muted);font-size:.88rem;max-width:32ch}
+    .newsletter-band form{display:flex;gap:.5rem;flex-wrap:wrap}
+    .newsletter-band input{flex:1;min-width:180px;padding:.75rem 1rem;border:1px solid var(--line);background:transparent;font:inherit;border-radius:.35rem;color:inherit}
+    .newsletter-band button{padding:.75rem 1.25rem;border:0;background:var(--accent);color:#fff;font:inherit;cursor:pointer;border-radius:.35rem;white-space:nowrap}
+    @media(max-width:640px){.newsletter-band{grid-template-columns:1fr}}
+    .reveal{opacity:0;transform:translateY(20px);transition:opacity .75s ease,transform .75s ease}
+    .reveal.in{opacity:1;transform:none}
+
+    a:focus-visible,.btn:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,.tab-btn:focus-visible,.acc-head:focus-visible,.proc-card:focus-visible,.pstep:focus-visible,.testimonial-avatars img:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+    .switch input:focus-visible+.slider{outline:2px solid var(--accent);outline-offset:2px}
+    .form-status{font-size:.85rem;color:var(--accent);min-height:1.25rem;flex-basis:100%}
+    .form-status:empty{display:none}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1.5rem}
+    @media(max-width:700px){.grid-3{grid-template-columns:1fr}.toggles{right:.75rem;left:.75rem;width:auto;max-width:none}}
+  </style>
+</head>
+<body>
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+  <div class="toggles" aria-label="Section toggles">
+    <h4>Sections</h4>
+    <div class="toggle-row"><span>Vista</span><label class="switch"><input type="checkbox" data-target="vista" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Expeditions</span><label class="switch"><input type="checkbox" data-target="cards" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Services</span><label class="switch"><input type="checkbox" data-target="services" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>About</span><label class="switch"><input type="checkbox" data-target="about" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Quote</span><label class="switch"><input type="checkbox" data-target="quote" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Gear</span><label class="switch"><input type="checkbox" data-target="gear" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Awards</span><label class="switch"><input type="checkbox" data-target="awards" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Newsletter</span><label class="switch"><input type="checkbox" data-target="newsletter" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Contact</span><label class="switch"><input type="checkbox" data-target="contact" checked /><span class="slider"></span></label></div>
+  </div>
+
+  <section class="hero">
+    <div class="mask">
+      <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=2200&q=80" alt="Mountain sky" />
+    </div>
+    <div class="inner">
+      <a class="logo" href="#">Drift</a>
+      <h1>Open sky.</h1>
+      <p>Sky blue on graphite — travel and outdoor brands.</p>
+      <a class="btn" href="#vista">Reach out</a>
+    </div>
+  </section>
+
+  <section class="section" id="vista" data-section="vista">
+    <div class="reveal"><span class="eyebrow">Vista</span><h2>One wide frame.</h2><p class="lead">Parallax depth for brands that go further.</p></div>
+    <div class="drift-stats reveal">
+      <div><strong>24</strong><span>Expeditions</span></div>
+      <div><strong>12</strong><span>Countries</span></div>
+      <div><strong>2018</strong><span>Since</span></div>
+    </div>
+    <div class="vista-wrap reveal">
+      <div class="wide" id="vistaParallax">
+        <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=2000&q=80" alt="Alpine ridge" />
+      </div>
+      <span class="vista-caption">Summit Ridge · 2026</span>
+      <span class="vista-meta">Expedition 24</span>
+    </div>
+  </section>
+
+  <section class="section" id="cards" data-section="cards">
+    <div class="reveal"><span class="eyebrow">Expeditions</span><h2>Scroll the horizon.</h2><p class="lead">Recent campaigns — drag to explore.</p></div>
+    <div class="hscroll-wrap">
+      <div class="hscroll">
+        <article class="card"><div class="card-img"><div class="clip"></div><img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=800&q=80" alt="Lake reflection" /></div><div class="card-body"><h3>Horizon Co.</h3><p>Brand refresh for an expedition outfitter.</p></div></article>
+        <article class="card"><div class="card-img"><div class="clip"></div><img src="https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=800&q=80" alt="Snow peaks" /></div><div class="card-body"><h3>Peakline</h3><p>Launch site with circle-expand hero motion.</p></div></article>
+        <article class="card"><div class="card-img"><div class="clip"></div><img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=800&q=80" alt="Coastal vista" /></div><div class="card-body"><h3>Tideline</h3><p>Coastal travel brand identity system.</p></div></article>
+        <article class="card"><div class="card-img"><div class="clip"></div><img src="https://images.unsplash.com/photo-1682687220063-4742bd7fd538?auto=format&fit=crop&w=800&q=80" alt="Desert dunes" /></div><div class="card-body"><h3>Dune Field</h3><p>Photography direction and web build.</p></div></article>
+        <article class="card"><div class="card-img"><div class="clip"></div><img src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80" alt="Open road" /></div><div class="card-body"><h3>Wayfarer</h3><p>Full identity for a road-trip app.</p></div></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="services" data-section="services">
+    <div class="reveal"><span class="eyebrow">Services</span><h2>Built for distance.</h2></div>
+    <div class="services-strip">
+      <div class="svc-cell"><h3>Brand</h3><p>Identity systems for outdoor and travel companies.</p></div>
+      <div class="svc-cell"><h3>Digital</h3><p>Immersive sites with scroll-driven motion.</p></div>
+      <div class="svc-cell"><h3>Content</h3><p>Art direction for campaigns and social.</p></div>
+    </div>
+  </section>
+
+  <section class="section" id="about" data-section="about">
+    <div class="about-drift">
+      <div class="reveal">
+        <span class="eyebrow">About</span>
+        <h2>Design for the open.</h2>
+        <p>Drift is a studio for travel, outdoor, and adventure brands that need room to breathe.</p>
+        <p>We build digital experiences as expansive as the landscapes they represent.</p>
+        <div class="stat-pills"><span class="pill">24 expeditions</span><span class="pill">12 countries</span><span class="pill">Since 2018</span></div>
+      </div>
+      <div class="about-visual" id="aboutCircle">
+        <img src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80" alt="Road through landscape" />
+      </div>
+    </div>
+  </section>
+
+  <section class="testimonial-drift reveal" id="quote" data-section="quote">
+    <p>"They gave our brand the horizon it deserved."</p>
+    <cite>— Kai Morrison, Horizon Co.</cite>
+  </section>
+
+  <section class="section" id="gear" data-section="gear">
+    <div class="reveal"><span class="eyebrow">Gear</span><h2>Built for the field.</h2><p class="lead">Identity systems for outfitters and expedition brands.</p></div>
+    <div class="grid-3">
+      <article class="reveal svc-cell" style="border:1px solid var(--line);border-radius:.5rem"><h3>Apparel</h3><p>Tags, patches, and hangtag systems.</p></article>
+      <article class="reveal svc-cell" style="border:1px solid var(--line);border-radius:.5rem"><h3>Digital</h3><p>Trip planners and booking experiences.</p></article>
+      <article class="reveal svc-cell" style="border:1px solid var(--line);border-radius:.5rem"><h3>Film</h3><p>Documentary-style campaign films.</p></article>
+    </div>
+  </section>  <section class="section" id="newsletter" data-section="newsletter">
+    <div class="newsletter-band reveal">
+      <div><h3>Studio notes</h3><p>Occasional updates on process, launches, and open slots.</p></div>
+      <form class="js-form" data-success="Subscribed — welcome to studio notes."><input type="email" name="email" placeholder="Email" aria-label="Email address" required autocomplete="email" /><button type="submit">Join</button><p class="form-status" role="status" aria-live="polite"></p></form>
+    </div>
+  </section>
+
+
+
+    <div class="partner-marquee" aria-hidden="true">
+      <div class="partner-track">
+        <span>Selected Clients</span><span aria-hidden="true">·</span><span>Global Partners</span><span aria-hidden="true">·</span><span>Studio Network</span><span aria-hidden="true">·</span><span>Field Office</span><span aria-hidden="true">·</span>
+        <span>Selected Clients</span><span aria-hidden="true">·</span><span>Global Partners</span><span aria-hidden="true">·</span><span>Studio Network</span><span aria-hidden="true">·</span><span>Field Office</span><span aria-hidden="true">·</span>
+      </div>
+    </div>
+    <section class="section" id="contact" data-section="contact">
+    <div class="reveal"><span class="eyebrow">Contact</span><h2>Drop a line.</h2></div>
+    <div class="contact-row">
+      <div class="contact-map reveal" id="contactMap">
+        <img src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1200&q=80" alt="Misty landscape" />
+      </div>
+      <form class="reveal js-form" data-success="Thanks — message received. We'll reply within a few days.">
+        <label>Name<input name="name" required /></label>
+        <label>Email<input type="email" name="email" required /></label>
+        <label>Message<textarea name="message" rows="4" required></textarea></label>
+        <button type="submit">Send</button>
+        <p style="color:var(--muted);margin-top:.5rem;font-size:.85rem">hello@drift.studio · Remote · Worldwide</p>
+      <p class="form-status" role="status" aria-live="polite"></p></form>
+    </div>
+  </section>
+
+
+  <section class="awards-band reveal" id="awards" data-section="awards">
+    <h3>Recognition</h3>
+    <div class="awards-row">
+      <span>Awwwards Nominee</span>
+      <span>CSS Design Awards</span>
+      <span>FWA Site of Day</span>
+      <span>Type Directors Club</span>
+    </div>
+  </section>
+  <footer><span>Drift</span><span><a href="mailto:hello@drift.studio">hello@drift.studio</a></span><span>© 2026</span></footer>
+
+  <script>
+    document.querySelectorAll(".toggles input").forEach((input)=>{
+      input.addEventListener("change",()=>{
+        const el=document.querySelector(`[data-section="${input.dataset.target}"]`);
+        if(el) el.classList.toggle("hidden",!input.checked);
+      });
+    });
+
+    const io=new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{if(e.isIntersecting) e.target.classList.add("in");});
+    },{threshold:.12});
+    document.querySelectorAll(".reveal,.card,#aboutCircle,.svc-cell,.testimonial-drift,#contactMap,.drift-stats div,.awards-band").forEach(el=>io.observe(el));
+
+    const progress=document.getElementById("scrollProgress");
+    window.addEventListener("scroll",()=>{
+      const h=document.documentElement.scrollHeight-window.innerHeight;
+      if(progress&&h>0) progress.style.width=`${(window.scrollY/h)*100}%`;
+    },{passive:true});
+
+    const vista=document.getElementById("vistaParallax");
+    const vistaImg=vista?.querySelector("img");
+    if(vista&&vistaImg){
+      window.addEventListener("scroll",()=>{
+        const rect=vista.getBoundingClientRect();
+        const vh=window.innerHeight;
+        if(rect.top<vh&&rect.bottom>0){
+          const p=(vh-rect.top)/(vh+rect.height);
+          const y=(p-.5)*40;
+          const s=1.08+p*.04;
+          vistaImg.style.transform=`scale(${s}) translateY(${y}px)`;
+        }
+      },{passive:true});
+    }
+
+    document.querySelectorAll(".js-form").forEach((form)=>{
+      form.addEventListener("submit",(e)=>{
+        e.preventDefault();
+        const status=form.querySelector(".form-status");
+        if(status) status.textContent=form.dataset.success||"Submitted.";
+        form.reset();
+      });
+    });
+  </script>
+</body>
+</html>

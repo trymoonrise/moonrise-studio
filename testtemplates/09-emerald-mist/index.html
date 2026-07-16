@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Verdant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&family=Fraunces:opsz,wght@9..144,600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root{--bg:#f3f7f4;--text:#123028;--muted:#5e756b;--accent:#0f8a5f;--line:rgba(18,48,40,.12);--leaf:#dce8e1;--surface:#fff}
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:Manrope,sans-serif;background:var(--bg);color:var(--text);line-height:1.55;overflow-x:hidden}
+    h1,h2,h3{font-family:Fraunces,serif;line-height:.96;font-weight:700}
+    a{color:inherit;text-decoration:none}
+    img{display:block;width:100%;height:100%;object-fit:cover}
+    .hidden{display:none!important}
+
+    .scroll-progress{position:fixed;top:0;left:0;height:2px;width:0;background:linear-gradient(90deg,var(--accent),#3cb88a);z-index:200;transition:width .05s linear}
+
+    .toggles{position:fixed;bottom:1rem;right:1rem;z-index:100;background:var(--surface);border:1px solid var(--line);border-radius:.75rem;padding:.85rem 1rem;width:12.5rem;box-shadow:0 8px 28px rgba(18,48,40,.08)}
+    .toggles h4{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem}
+    .toggle-row{display:flex;align-items:center;justify-content:space-between;margin:.4rem 0;font-size:.82rem}
+    .switch{position:relative;width:2.3rem;height:1.25rem}.switch input{opacity:0;width:0;height:0}
+    .slider{position:absolute;inset:0;cursor:pointer;background:#cdd8d1;border-radius:999px;transition:.2s}
+    .slider::before{content:"";position:absolute;height:.9rem;width:.9rem;left:.18rem;top:.175rem;background:#fff;border-radius:50%;transition:.2s}
+    .switch input:checked+.slider{background:var(--accent)}.switch input:checked+.slider::before{transform:translateX(1rem)}
+
+    .hero{position:relative;min-height:100vh;min-height:100dvh;display:grid;place-items:center;overflow:hidden;text-align:center}
+    .curtain{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;z-index:3;pointer-events:none}
+    .curtain span{background:var(--bg);animation:part 1.2s cubic-bezier(.77,0,.18,1) .15s forwards}
+    .curtain span:first-child{transform-origin:left;animation-name:partL}
+    .curtain span:last-child{transform-origin:right;animation-name:partR}
+    .bg{position:absolute;inset:0;z-index:0}
+    .bg img{animation:slowPan 20s ease-in-out infinite alternate;transform:scale(1.12);filter:brightness(.88)}
+    .bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(243,247,244,.2),rgba(243,247,244,.85))}
+    .inner{position:relative;z-index:2;padding:2rem;max-width:36rem}
+    .logo{display:block;font-family:Fraunces,serif;font-size:clamp(2rem,5vw,3rem);color:var(--accent);margin-bottom:1rem;opacity:0;animation:up .8s ease 1s forwards}
+    .hero h1{font-size:clamp(2.8rem,7vw,5rem);margin-bottom:1rem;opacity:0;animation:up .9s ease 1.15s forwards}
+    .hero p{color:var(--muted);margin-bottom:1.75rem;opacity:0;animation:up .9s ease 1.3s forwards}
+    .btn{display:inline-block;background:var(--accent);color:#fff;padding:.9rem 1.4rem;border-radius:999px;opacity:0;animation:up .9s ease 1.45s forwards;transition:transform .25s,box-shadow .25s}
+    .btn:hover{transform:scale(1.03);box-shadow:0 8px 28px rgba(15,138,95,.25)}
+    .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+    @keyframes partL{to{transform:translateX(-105%)}}
+    @keyframes partR{to{transform:translateX(105%)}}
+    @keyframes up{to{opacity:1;transform:none}}
+    @keyframes slowPan{from{transform:scale(1.12) translateY(0)}to{transform:scale(1.12) translateY(-3%)}}
+
+    .section{padding:clamp(4rem,10vh,7rem) clamp(1.5rem,4vw,3rem)}
+    .section h2{font-size:clamp(1.8rem,4vw,2.8rem);margin-bottom:.5rem}
+    .lead{color:var(--muted);margin-bottom:2.5rem;max-width:28rem}
+    .eyebrow{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:.6rem;display:block}
+
+    .marquee-strip{overflow:hidden;border-block:1px solid var(--line);padding:1rem 0;margin-bottom:2.5rem}
+    .marquee-track{display:flex;width:max-content;animation:marquee 30s linear infinite}
+    .marquee-track span{font-family:Fraunces,serif;font-size:clamp(1.1rem,2.5vw,1.55rem);color:var(--muted);padding-right:3rem;white-space:nowrap}
+    @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+    .work-asym{display:grid;grid-template-columns:repeat(12,1fr);gap:1rem;min-height:60vh}
+    .work-asym figure{overflow:hidden;background:var(--leaf);position:relative;min-height:200px}
+    .work-asym .mask-wrap{clip-path:inset(0 100% 0 0);transition:clip-path .9s cubic-bezier(.77,0,.18,1);height:100%}
+    .work-asym figure.in .mask-wrap{clip-path:inset(0 0 0 0)}
+    .work-asym figure:nth-child(1){grid-column:span 5;grid-row:span 2;min-height:320px}
+    .work-asym figure:nth-child(2){grid-column:span 4;aspect-ratio:16/10}
+    .work-asym figure:nth-child(3){grid-column:span 3;aspect-ratio:3/4;margin-top:2.5rem}
+    .work-asym figure:nth-child(4){grid-column:span 4;aspect-ratio:4/3}
+    .work-asym figure:nth-child(5){grid-column:span 3;aspect-ratio:1}
+    .work-asym figure:nth-child(2) .mask-wrap{transition-delay:.08s}
+    .work-asym figure:nth-child(3) .mask-wrap{transition-delay:.16s}
+    .work-asym figure:nth-child(4) .mask-wrap{transition-delay:.24s}
+    .work-asym figure:nth-child(5) .mask-wrap{transition-delay:.32s}
+    .work-asym img{transition:transform 1s ease,filter .5s}
+    .work-asym figure:hover img{transform:scale(1.06);filter:saturate(1.1)}
+    .work-asym figcaption{position:absolute;inset:auto 0 0;padding:1rem 1.25rem;background:linear-gradient(transparent,rgba(18,48,40,.7));color:#fff;font-family:Fraunces,serif;font-size:1.05rem;transform:translateY(100%);transition:transform .4s ease;z-index:2}
+    .work-asym figure:hover figcaption{transform:translateY(0)}
+    .work-asym .tag{position:absolute;top:1rem;left:1rem;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:rgba(15,138,95,.75);padding:.3rem .65rem;border-radius:999px;z-index:2;opacity:0;transform:translateY(-8px);transition:.35s}
+    .work-asym figure:hover .tag{opacity:1;transform:none}
+    @media(max-width:800px){.work-asym{grid-template-columns:1fr 1fr;grid-template-rows:auto}.work-asym figure{grid-column:span 1!important;grid-row:span 1!important;margin-top:0!important;min-height:180px!important}}
+
+    .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;padding:2rem 0;border-block:1px solid var(--line);margin:2rem 0}
+    .metric{text-align:center;opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease}
+    .metric.in{opacity:1;transform:none}
+    .metric:nth-child(2).in{transition-delay:.08s}
+    .metric:nth-child(3).in{transition-delay:.16s}
+    .metric:nth-child(4).in{transition-delay:.24s}
+    .metric strong{display:block;font-family:Fraunces,serif;font-size:clamp(1.8rem,4vw,2.5rem);color:var(--accent);line-height:1}
+    .metric span{font-size:.76rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+    @media(max-width:600px){.metrics{grid-template-columns:1fr 1fr}}
+
+    .process-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1.25rem;margin-top:1rem}
+    .proc-step{padding:1.35rem 0;border-top:2px solid var(--line);opacity:0;transform:translateY(24px);transition:opacity .65s ease,transform .65s ease,border-color .3s}
+    .proc-step.in{opacity:1;transform:none;border-top-color:var(--accent)}
+    .proc-step:nth-child(2).in{transition-delay:.1s}
+    .proc-step:nth-child(3).in{transition-delay:.2s}
+    .proc-step:nth-child(4).in{transition-delay:.3s}
+    .proc-step .num{font-family:Fraunces,serif;font-size:1.75rem;color:var(--accent);display:block;margin-bottom:.5rem}
+    .proc-step h3{font-size:1.05rem;font-family:Manrope,sans-serif;font-weight:700;margin-bottom:.35rem}
+    .proc-step p{color:var(--muted);font-size:.88rem}
+    @media(max-width:760px){.process-row{grid-template-columns:1fr 1fr}}
+    @media(max-width:480px){.process-row{grid-template-columns:1fr}}
+
+    .services-list{max-width:40rem;margin-left:auto}
+    .svc-item{display:grid;grid-template-columns:auto 1fr auto;gap:1.25rem;align-items:center;padding:1.35rem 0;border-bottom:1px solid var(--line);transform:translateX(-40px);opacity:0;transition:transform .65s ease,opacity .65s ease}
+    .svc-item.in{transform:none;opacity:1}
+    .svc-item:nth-child(2).in{transition-delay:.1s}
+    .svc-item:nth-child(3).in{transition-delay:.2s}
+    .svc-item:nth-child(4).in{transition-delay:.3s}
+    .svc-num{font-family:Fraunces,serif;font-size:1.5rem;color:var(--accent)}
+    .svc-item h3{font-size:1.1rem;font-family:Manrope,sans-serif;font-weight:700}
+    .svc-item p{color:var(--muted);font-size:.88rem;margin-top:.2rem}
+    .svc-arrow{color:var(--accent);font-size:1.2rem;transition:transform .3s}
+    .svc-item:hover .svc-arrow{transform:translateX(4px)}
+
+    .story{display:grid;grid-template-columns:1fr 1fr;gap:clamp(2rem,5vw,4rem);align-items:start}
+    .story-sticky{position:sticky;top:clamp(1.5rem,6vh,3rem)}
+    .story-mask{aspect-ratio:4/5;overflow:hidden;border-radius:1rem;background:var(--leaf);clip-path:ellipse(22% 28% at 50% 50%);transition:clip-path 1.5s cubic-bezier(.22,1,.36,1)}
+    .story-mask.in{clip-path:ellipse(75% 75% at 50% 50%)}
+    .story-panel{display:grid;gap:2.5rem;padding-top:1rem}
+    .story-chapter{opacity:0;transform:translateX(30px);transition:opacity .7s ease,transform .7s ease;padding-left:1rem;border-left:2px solid transparent}
+    .story-chapter.in{opacity:1;transform:none;border-left-color:var(--accent)}
+    .story-chapter:nth-child(2).in{transition-delay:.12s}
+    .story-chapter:nth-child(3).in{transition-delay:.24s}
+    .story-chapter h3{font-size:1.35rem;margin-bottom:.5rem}
+    .story-chapter p{color:var(--muted);font-size:.95rem;max-width:36ch}
+    @media(max-width:760px){.story{grid-template-columns:1fr}.story-sticky{position:relative;top:0}}
+
+    .testimonial{text-align:center;padding:clamp(3rem,8vw,5rem) 1rem;position:relative}
+    .testimonial::before{content:"\201C";font-family:Fraunces,serif;font-size:6rem;color:var(--accent);opacity:.15;position:absolute;top:0;left:50%;transform:translateX(-50%);line-height:1}
+    .testimonial .wipe{position:absolute;left:10%;right:10%;top:55%;height:2px;background:var(--accent);width:0;transition:width 1.1s cubic-bezier(.22,1,.36,1)}
+    .testimonial.in .wipe{width:80%;margin:0 auto}
+    .testimonial p{font-family:Fraunces,serif;font-size:clamp(1.4rem,3vw,2rem);max-width:26ch;margin:0 auto 1rem;line-height:1.25;opacity:0;filter:blur(6px);transition:opacity .9s ease,filter .9s ease;position:relative;z-index:1}
+    .testimonial.in p{opacity:1;filter:blur(0)}
+    .testimonial cite{font-style:normal;color:var(--muted);font-size:.88rem;position:relative;z-index:1}
+
+    .contact-diagonal{display:grid;grid-template-columns:1fr 1fr;gap:0;background:var(--surface);border:1px solid var(--line);overflow:hidden;border-radius:.75rem}
+    .contact-diagonal .form-side{padding:clamp(2rem,4vw,3rem);display:grid;align-content:center}
+    .contact-diagonal .img-side{position:relative;min-height:320px;clip-path:polygon(10% 0,100% 0,100% 100%,0 100%);overflow:hidden;opacity:0;transform:translateX(30px);transition:opacity .9s ease,transform .9s ease}
+    .contact-diagonal .img-side.in{opacity:1;transform:none}
+    .contact-diagonal .img-side img{transition:transform 1s ease}
+    .contact-diagonal:hover .img-side img{transform:scale(1.05)}
+    form{display:grid;gap:1rem}
+    label{display:grid;gap:.3rem;font-size:.8rem;color:var(--muted)}
+    input,textarea{background:var(--bg);border:1px solid var(--line);padding:.8rem 1rem;font:inherit;border-radius:.5rem;color:var(--text)}
+    input:focus,textarea:focus{outline:1px solid var(--accent)}
+    input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+    button{justify-self:start;background:var(--accent);color:#fff;border:0;padding:.85rem 1.3rem;font:inherit;border-radius:999px;cursor:pointer;transition:transform .25s}
+    button:hover{transform:translateY(-2px)}
+    button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+    .form-note{font-size:.85rem;margin-top:.25rem;min-height:1.25em;color:var(--accent)}
+    .form-note.err{color:#a03030}
+
+    a:focus-visible,.switch input:focus-visible+.slider{outline:2px solid var(--accent);outline-offset:2px}
+    footer nav a:focus-visible{outline-offset:4px}
+    .contact-info{margin-top:1.25rem}
+    .contact-info p{color:var(--muted);font-size:.9rem;margin-bottom:.35rem}
+    .contact-info a{color:var(--accent)}
+    @media(max-width:700px){.contact-diagonal{grid-template-columns:1fr}.contact-diagonal .img-side{clip-path:none;min-height:220px}}
+
+    footer{padding:2rem clamp(1.5rem,4vw,3rem);display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem;color:var(--muted);font-size:.85rem;border-top:1px solid var(--line)}
+    footer nav{display:flex;gap:1.5rem}
+    footer nav a{transition:color .25s}
+    footer nav a:hover{color:var(--accent)}
+
+    .reveal{opacity:0;transform:translateY(20px);transition:opacity .75s ease,transform .75s ease}
+    .reveal.in{opacity:1;transform:none}
+
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}html{scroll-behavior:auto}.logo,.hero h1,.hero p,.btn{opacity:1;animation:none}.reveal,.work-asym figure,.story-mask,.story-chapter,.svc-item,.proc-step,#testimonial,#contactImg,.metric{opacity:1;transform:none;clip-path:none;filter:none}}
+  </style>
+</head>
+<body>
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+
+  <div class="toggles" aria-label="Section toggles">
+    <h4>Sections</h4>
+    <div class="toggle-row"><span>Work</span><label class="switch"><input type="checkbox" data-target="work" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Process</span><label class="switch"><input type="checkbox" data-target="process" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Services</span><label class="switch"><input type="checkbox" data-target="services" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Story</span><label class="switch"><input type="checkbox" data-target="story" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Quote</span><label class="switch"><input type="checkbox" data-target="quote" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Contact</span><label class="switch"><input type="checkbox" data-target="contact" checked /><span class="slider"></span></label></div>
+  </div>
+
+  <section class="hero">
+    <div class="curtain" aria-hidden="true"><span></span><span></span></div>
+    <div class="bg" id="heroBg"><img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=2000&q=80" alt="Forest canopy" /></div>
+    <div class="inner">
+      <a class="logo" href="#">Verdant</a>
+      <h1>Grow gently.</h1>
+      <p>Emerald systems for nature-led brands — identity, packaging, and web that feel alive.</p>
+      <a class="btn" href="#work">Talk</a>
+    </div>
+  </section>
+
+  <section class="section" id="work" data-section="work">
+    <div class="reveal">
+      <span class="eyebrow">Work</span>
+      <h2>Soft structure. Real green.</h2>
+      <p class="lead">Asymmetric frames for outdoor, wellness, and sustainable goods makers.</p>
+    </div>
+    <div class="marquee-strip" aria-hidden="true">
+      <div class="marquee-track">
+        <span>Peak Co. · Root Lab · Field Notes · Canopy · Wildgrain · Moss &amp; Co. ·</span>
+        <span>Peak Co. · Root Lab · Field Notes · Canopy · Wildgrain · Moss &amp; Co. ·</span>
+      </div>
+    </div>
+    <div class="work-asym">
+      <figure><span class="tag">Outdoor</span><div class="mask-wrap"><img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1200&q=80" alt="Mountain landscape" /></div><figcaption>Peak Co.</figcaption></figure>
+      <figure><span class="tag">Botanical</span><div class="mask-wrap"><img src="https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=800&q=80" alt="Plant close-up" /></div><figcaption>Root Lab</figcaption></figure>
+      <figure><span class="tag">Editorial</span><div class="mask-wrap"><img src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=900&q=80" alt="Misty hills" /></div><figcaption>Field Notes</figcaption></figure>
+      <figure><span class="tag">Retreat</span><div class="mask-wrap"><img src="https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=900&q=80" alt="Forest path" /></div><figcaption>Canopy</figcaption></figure>
+      <figure><span class="tag">Packaging</span><div class="mask-wrap"><img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=800&q=80" alt="Garden detail" /></div><figcaption>Wildgrain</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="metrics">
+      <div class="metric"><strong>38</strong><span>Brands grown</span></div>
+      <div class="metric"><strong>9</strong><span>Years rooted</span></div>
+      <div class="metric"><strong>3</strong><span>Continents</span></div>
+      <div class="metric"><strong>B-Corp</strong><span>Certified</span></div>
+    </div>
+  </section>
+
+  <section class="section" id="process" data-section="process" style="background:linear-gradient(180deg,rgba(15,138,95,.04),transparent)">
+    <div class="reveal">
+      <span class="eyebrow">Process</span>
+      <h2>From seed to canopy.</h2>
+      <p class="lead">Four phases — each one earns the next, with room to grow.</p>
+    </div>
+    <div class="process-row">
+      <article class="proc-step"><span class="num">01</span><h3>Listen</h3><p>We map your ecosystem — audience, values, and the feeling you want held.</p></article>
+      <article class="proc-step"><span class="num">02</span><h3>Root</h3><p>Identity systems that grow with you — flexible, organic, never over-designed.</p></article>
+      <article class="proc-step"><span class="num">03</span><h3>Build</h3><p>Packaging, web, and motion with curtain reveals and gentle scroll.</p></article>
+      <article class="proc-step"><span class="num">04</span><h3>Harvest</h3><p>Launch assets, seasonal campaigns, and living brand guides.</p></article>
+    </div>
+  </section>
+
+  <section class="section" id="services" data-section="services">
+    <div class="reveal" style="margin-bottom:2rem">
+      <span class="eyebrow">Services</span>
+      <h2>What we cultivate.</h2>
+      <p class="lead">Full-stack design for earth-first companies.</p>
+    </div>
+    <div class="services-list">
+      <article class="svc-item"><span class="svc-num">01</span><div><h3>Brand identity</h3><p>Logos, palettes, and voice for nature-led companies.</p></div><span class="svc-arrow">→</span></article>
+      <article class="svc-item"><span class="svc-num">02</span><div><h3>Packaging</h3><p>Sustainable materials with tactile, honest design.</p></div><span class="svc-arrow">→</span></article>
+      <article class="svc-item"><span class="svc-num">03</span><div><h3>Web &amp; motion</h3><p>Sites that feel alive — mask reveals, gentle scroll.</p></div><span class="svc-arrow">→</span></article>
+      <article class="svc-item"><span class="svc-num">04</span><div><h3>Content direction</h3><p>Photography briefs and seasonal campaign systems.</p></div><span class="svc-arrow">→</span></article>
+    </div>
+  </section>
+
+  <section class="section" id="story" data-section="story">
+    <div class="story">
+      <div class="story-sticky">
+        <div class="story-mask" id="storyMask">
+          <img src="https://images.unsplash.com/photo-1502082553048-f009c6714b9f?auto=format&fit=crop&w=900&q=80" alt="Sunlit forest" />
+        </div>
+      </div>
+      <div class="story-panel">
+        <div class="reveal"><span class="eyebrow">Our story</span><h2>Rooted in restraint.</h2></div>
+        <article class="story-chapter"><h3>Seed</h3><p>Verdant began as a studio for brands that treat nature as a collaborator, not a backdrop.</p></article>
+        <article class="story-chapter"><h3>Soil</h3><p>We build identity systems that grow with you — flexible, organic, never over-designed.</p></article>
+        <article class="story-chapter"><h3>Canopy</h3><p>Today we partner with farms, retreats, and outdoor goods makers across three continents.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="quote" data-section="quote">
+    <blockquote class="testimonial" id="testimonial">
+      <div class="wipe" aria-hidden="true"></div>
+      <p>Verdant understood our brand before we could articulate it — rooted, honest, and unmistakably green.</p>
+      <cite>— Eli Torres, Wildgrain</cite>
+    </blockquote>
+  </section>
+
+  <section class="section" id="contact" data-section="contact">
+    <div class="reveal"><span class="eyebrow">Contact</span><h2>Say hello.</h2><p class="lead">Tell us about your project — we reply within three days.</p></div>
+    <div class="contact-diagonal reveal">
+      <div class="form-side">
+        <form id="contactForm" novalidate>
+          <label>Name<input name="name" required autocomplete="name" /></label>
+          <label>Email<input type="email" name="email" required autocomplete="email" /></label>
+          <label>Message<textarea name="message" rows="4" required></textarea></label>
+          <button type="submit">Send</button>
+          <p class="form-note" id="formNote" role="status" aria-live="polite"></p>
+        </form>
+        <div class="contact-info">
+          <p><a href="mailto:hello@verdant.co">hello@verdant.co</a></p>
+          <p>Portland · Remote worldwide</p>
+        </div>
+      </div>
+      <div class="img-side" id="contactImg">
+        <img src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=900&q=80" alt="Green forest trail" />
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Verdant</span>
+    <nav><a href="#work">Work</a><a href="#story">Story</a><a href="#contact">Contact</a></nav>
+    <span>© 2026</span>
+  </footer>
+
+  <script>
+    document.querySelectorAll(".toggles input").forEach((input)=>{
+      input.addEventListener("change",()=>{
+        const el=document.querySelector(`[data-section="${input.dataset.target}"]`);
+        if(el) el.classList.toggle("hidden",!input.checked);
+      });
+    });
+
+    const io=new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting) e.target.classList.add("in");
+      });
+    },{threshold:.12,rootMargin:"0px 0px -50px 0px"});
+
+    document.querySelectorAll(".reveal,.work-asym figure,.story-mask,.story-chapter,.svc-item,.proc-step,#testimonial,#contactImg,.metric").forEach(el=>io.observe(el));
+
+    document.getElementById("contactForm")?.addEventListener("submit",(e)=>{
+      e.preventDefault();
+      const form=e.target;
+      const note=document.getElementById("formNote");
+      if(!form.checkValidity()){
+        note.textContent="Please fill in all fields.";
+        note.className="form-note err";
+        form.reportValidity();
+        return;
+      }
+      note.textContent="Thanks — we'll be in touch shortly.";
+      note.className="form-note";
+      form.reset();
+    });
+
+    const progress=document.getElementById("scrollProgress");
+    const heroBg=document.getElementById("heroBg");
+    const heroImg=heroBg?.querySelector("img");
+    const reducedMotion=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    window.addEventListener("scroll",()=>{
+      const h=document.documentElement.scrollHeight-window.innerHeight;
+      if(progress&&h>0) progress.style.width=`${(window.scrollY/h)*100}%`;
+      if(reducedMotion||!heroImg) return;
+      const y=Math.min(window.scrollY,700);
+      heroImg.style.transform=`scale(${1.12-y*0.00005}) translateY(${-y*0.08}px)`;
+    },{passive:true});
+  </script>
+</body>
+</html>

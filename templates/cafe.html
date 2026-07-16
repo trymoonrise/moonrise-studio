@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{BUSINESS_NAME}}</title>
+  <style>
+    body { margin: 0; font-family: Georgia, serif; background: #fff8f1; color: #3f2a1d; }
+    .hero { padding: 4rem 1.5rem; background: radial-gradient(circle at top left, #fdba74, #fff8f1 55%); }
+    .wrap { max-width: 880px; margin: 0 auto; }
+    h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); margin: 0 0 .5rem; }
+    .menu { display: grid; gap: .75rem; padding: 2rem 1.5rem 3rem; }
+    .item { background: #fff; border-radius: 12px; padding: 1rem 1.1rem; border: 1px solid #fed7aa; }
+    a.btn { display: inline-block; margin-top: 1rem; background: #9a3412; color: #fff; text-decoration: none; padding: .7rem 1.1rem; border-radius: 999px; }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <div class="wrap">
+      <p>{{CATEGORY}}</p>
+      <h1>{{BUSINESS_NAME}}</h1>
+      <p>Fresh flavors, warm atmosphere. {{ADDRESS}}</p>
+      <a class="btn" href="tel:{{PHONE_TEL}}">Reserve · {{PHONE}}</a>
+    </div>
+  </div>
+  <div class="wrap menu">
+    <div class="item"><strong>House favorites</strong><p>Seasonal plates and drinks crafted daily.</p></div>
+    <div class="item"><strong>Visit us</strong><p>{{ADDRESS}}</p></div>
+    <div class="item"><strong>Contact</strong><p>{{PHONE}}</p></div>
+  </div>
+</body>
+</html>

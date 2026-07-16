@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bloomrose</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Figtree:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root{--bg:#f7f2f0;--text:#2a2224;--muted:#7a6a6e;--accent:#c45c6a;--line:rgba(42,34,36,.12);--rose:#e8ddd9}
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:Figtree,sans-serif;background:var(--bg);color:var(--text);line-height:1.55;overflow-x:hidden}
+    h1,h2,h3{font-family:"Cormorant Garamond",serif;line-height:.95;font-weight:700}
+    a{color:inherit;text-decoration:none}
+    img{display:block;width:100%;height:100%;object-fit:cover}
+    .hidden{display:none!important}
+
+    .toggles{position:fixed;bottom:1rem;right:1rem;z-index:100;background:#fff;border:1px solid var(--line);border-radius:.75rem;padding:.85rem 1rem;width:12.5rem;box-shadow:0 8px 28px rgba(42,34,36,.06)}
+    .toggles h4{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem}
+    .toggle-row{display:flex;align-items:center;justify-content:space-between;margin:.4rem 0;font-size:.82rem}
+    .switch{position:relative;width:2.3rem;height:1.25rem}.switch input{opacity:0;width:0;height:0}
+    .slider{position:absolute;inset:0;cursor:pointer;background:#ddd2cf;border-radius:999px;transition:.2s}
+    .slider::before{content:"";position:absolute;height:.9rem;width:.9rem;left:.18rem;top:.175rem;background:#fff;border-radius:50%;transition:.2s}
+    .switch input:checked+.slider{background:var(--accent)}.switch input:checked+.slider::before{transform:translateX(1rem)}
+
+    .hero{min-height:100vh;min-height:100dvh;display:grid;align-items:end;position:relative;overflow:hidden}
+    .hero-media{position:absolute;inset:0}
+    .hero-media img{transform:scale(.92);opacity:0;filter:blur(12px);animation:clarify 1.6s cubic-bezier(.22,1,.36,1) .1s forwards}
+    .hero-media::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,rgba(247,242,240,.96))}
+    .content{position:relative;z-index:2;padding:clamp(2rem,6vw,4rem);max-width:42rem}
+    .logo{font-family:"Cormorant Garamond",serif;font-size:clamp(2rem,4vw,2.8rem);color:var(--accent);display:block;margin-bottom:.75rem;opacity:0;animation:up .8s ease .7s forwards}
+    .hero h1{font-size:clamp(3rem,8vw,5.5rem);margin-bottom:1rem;opacity:0;animation:up .9s ease .9s forwards}
+    .hero p{color:var(--muted);max-width:24rem;margin-bottom:1.75rem;opacity:0;animation:up .9s ease 1.05s forwards}
+    .btn{display:inline-block;border-bottom:1px solid var(--accent);color:var(--accent);padding-bottom:.2rem;opacity:0;animation:up .9s ease 1.2s forwards;transition:letter-spacing .3s}
+    .btn:hover{letter-spacing:.04em}
+    @keyframes clarify{to{transform:scale(1);opacity:1;filter:blur(0)}}
+    @keyframes up{to{opacity:1;transform:translateY(0)}}
+    .hero h1,.logo,.hero p,.btn{transform:translateY(18px)}
+
+    .section{padding:clamp(4rem,10vh,7rem) clamp(1.5rem,4vw,3rem)}
+    .section h2{font-size:clamp(2rem,4vw,2.8rem);margin-bottom:.5rem}
+    .lead{color:var(--muted);margin-bottom:2.5rem;max-width:26rem}
+    .eyebrow{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:.6rem;display:block}
+
+    .marquee-strip{overflow:hidden;border-block:1px solid var(--line);padding:1rem 0;margin-bottom:3rem}
+    .marquee-track{display:flex;width:max-content;animation:marquee 28s linear infinite}
+    .marquee-track span{font-family:"Cormorant Garamond",serif;font-size:clamp(1.2rem,3vw,1.8rem);color:var(--muted);padding-right:3rem;white-space:nowrap}
+    @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+    .gallery-masonry{display:grid;grid-template-columns:repeat(12,1fr);gap:1rem}
+    .g-item{overflow:hidden;background:var(--rose);position:relative;cursor:pointer;clip-path:inset(0 100% 0 0);transition:clip-path .9s cubic-bezier(.77,0,.18,1)}
+    .g-item.in{clip-path:inset(0 0 0 0)}
+    .g-item:nth-child(1){grid-column:span 5;aspect-ratio:4/5}
+    .g-item:nth-child(2){grid-column:span 4;aspect-ratio:1;margin-top:2.5rem}
+    .g-item:nth-child(3){grid-column:span 3;aspect-ratio:3/4}
+    .g-item:nth-child(4){grid-column:span 4;aspect-ratio:16/10}
+    .g-item:nth-child(5){grid-column:span 5;aspect-ratio:4/3}
+    .g-item:nth-child(6){grid-column:span 3;aspect-ratio:1}
+    .g-item:nth-child(2).in{transition-delay:.08s}
+    .g-item:nth-child(3).in{transition-delay:.16s}
+    .g-item:nth-child(4).in{transition-delay:.24s}
+    .g-item:nth-child(5).in{transition-delay:.32s}
+    .g-item:nth-child(6).in{transition-delay:.4s}
+    .g-item::before{content:"";position:absolute;inset:0;background:var(--accent);opacity:0;mix-blend-mode:multiply;transition:opacity .5s;z-index:1;pointer-events:none}
+    .g-item:hover::before{opacity:.22}
+    .g-item img{transition:transform .9s cubic-bezier(.22,1,.36,1),filter .5s}
+    .g-item:hover img{transform:scale(1.07);filter:saturate(1.12)}
+    .g-item figcaption{position:absolute;bottom:0;left:0;right:0;padding:1.25rem;background:linear-gradient(transparent,rgba(42,34,36,.6));color:#fff;font-family:"Cormorant Garamond",serif;font-size:1.15rem;z-index:2;transform:translateY(100%);transition:transform .45s ease}
+    .g-item:hover figcaption{transform:translateY(0)}
+    .g-item .tag{position:absolute;top:1rem;left:1rem;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:rgba(196,92,106,.75);padding:.3rem .65rem;border-radius:999px;z-index:2;opacity:0;transform:translateY(-8px);transition:.35s}
+    .g-item:hover .tag{opacity:1;transform:none}
+    @media(max-width:760px){.gallery-masonry{grid-template-columns:1fr 1fr}.g-item{grid-column:span 1!important;margin-top:0!important;aspect-ratio:4/5!important}}
+
+    .about-pin-wrap{display:grid;grid-template-columns:1fr 1fr;gap:clamp(2rem,5vw,4rem);align-items:start}
+    .about-sticky{position:sticky;top:clamp(2rem,8vh,4rem)}
+    .circle-mask{width:min(420px,100%);aspect-ratio:1;border-radius:50%;overflow:hidden;margin:0 auto;background:var(--rose);clip-path:circle(0% at 50% 50%);transition:clip-path 1.5s cubic-bezier(.22,1,.36,1)}
+    .circle-mask.in{clip-path:circle(50% at 50% 50%)}
+    .about-scroll{display:grid;gap:2rem;padding-top:3rem}
+    .about-chapter{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease;padding-bottom:1.5rem;border-bottom:1px solid var(--line)}
+    .about-chapter.in{opacity:1;transform:none}
+    .about-chapter:nth-child(2).in{transition-delay:.12s}
+    .about-chapter:nth-child(3).in{transition-delay:.24s}
+    .about-chapter h3{font-size:1.35rem;margin-bottom:.4rem}
+    .about-chapter p{color:var(--muted);font-size:.95rem;max-width:36ch}
+    @media(max-width:680px){.about-pin-wrap{grid-template-columns:1fr}.about-sticky{position:relative;top:0}.about-scroll{padding-top:0}}
+
+    .process-interactive{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1rem}
+    .proc-card{padding:1.5rem;background:#fff;border:1px solid var(--line);cursor:pointer;opacity:0;transform:scale(.92);transition:opacity .6s ease,transform .6s ease,box-shadow .3s,border-color .3s}
+    .proc-card.in{opacity:1;transform:scale(1)}
+    .proc-card:nth-child(2).in{transition-delay:.12s}
+    .proc-card:nth-child(3).in{transition-delay:.24s}
+    .proc-card.active,.proc-card:hover{box-shadow:0 12px 40px rgba(196,92,106,.12);border-color:var(--accent)}
+    .proc-card h3{font-size:1.25rem;margin-bottom:.4rem}
+    .proc-card p{color:var(--muted);font-size:.9rem;max-height:0;overflow:hidden;transition:max-height .45s ease,margin .45s}
+    .proc-card.active p{max-height:80px;margin-top:.5rem}
+    .proc-num{font-size:.72rem;color:var(--accent);letter-spacing:.1em;margin-bottom:.5rem}
+    @media(max-width:680px){.process-interactive{grid-template-columns:1fr}}
+
+    .testimonial-soft{text-align:center;padding:clamp(3rem,8vw,5rem) 1rem;position:relative}
+    .testimonial-soft .glow{position:absolute;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(196,92,106,.12),transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%) scale(.5);transition:transform 1.2s ease}
+    .testimonial-soft.in .glow{transform:translate(-50%,-50%) scale(1.5)}
+    .testimonial-soft p{font-family:"Cormorant Garamond",serif;font-size:clamp(1.6rem,3.5vw,2.2rem);max-width:24ch;margin:0 auto 1rem;line-height:1.25;position:relative;opacity:0;transform:translateY(16px);transition:.8s ease .2s}
+    .testimonial-soft.in p{opacity:1;transform:none}
+    .testimonial-soft cite{font-style:normal;color:var(--muted);font-size:.85rem;position:relative}
+    .testimonial-avatars{display:flex;justify-content:center;gap:.5rem;margin-top:1.5rem}
+    .testimonial-avatars img{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--rose);opacity:.6;transition:opacity .3s,transform .3s;cursor:pointer}
+    .testimonial-avatars img.active,.testimonial-avatars img:hover{opacity:1;transform:scale(1.1)}
+
+    .contact-split{display:grid;grid-template-columns:1fr 1fr;gap:clamp(2rem,5vw,4rem);align-items:center}
+    .contact-visual{aspect-ratio:4/5;overflow:hidden;background:var(--rose);clip-path:polygon(0 0,100% 0,100% 85%,0 100%);opacity:0;transform:translateX(-30px);transition:opacity .9s ease,transform .9s ease}
+    .contact-visual.in{opacity:1;transform:none}
+    .contact-visual img{transition:transform 1.2s ease}
+    .contact-visual:hover img{transform:scale(1.05)}
+    form{display:grid;gap:1rem;text-align:left}
+    label{display:grid;gap:.3rem;font-size:.8rem;color:var(--muted)}
+    input,textarea{background:transparent;border:0;border-bottom:1px solid var(--line);padding:.7rem 0;font:inherit;color:var(--text)}
+    input:focus,textarea:focus{outline:none;border-color:var(--accent)}
+    button{justify-self:start;background:var(--accent);color:#fff;border:0;padding:.85rem 2rem;font:inherit;cursor:pointer;margin-top:.5rem;transition:transform .25s}
+    button:hover{transform:translateY(-2px)}
+    @media(max-width:700px){.contact-split{grid-template-columns:1fr}}
+
+    .stats-band{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;padding:2.5rem 0;border-block:1px solid var(--line);margin:2rem 0}
+    .stat-item{text-align:center;opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease}
+    .stat-item.in{opacity:1;transform:none}
+    .stat-item:nth-child(2).in{transition-delay:.08s}
+    .stat-item:nth-child(3).in{transition-delay:.16s}
+    .stat-item:nth-child(4).in{transition-delay:.24s}
+    .stat-item strong{display:block;font-family:"Cormorant Garamond",serif;font-size:clamp(2rem,4vw,2.8rem);color:var(--accent);line-height:1}
+    .stat-item span{font-size:.78rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+    @media(max-width:600px){.stats-band{grid-template-columns:1fr 1fr}}
+
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.marquee-track,.marquee,.partner-track{animation:none!important}}}
+    footer a{color:inherit;transition:color .25s}footer a:hover{color:var(--accent)}
+
+    .scroll-progress{position:fixed;top:0;left:0;height:2px;width:0;background:var(--accent);z-index:200;transition:width .05s linear}
+
+    footer{padding:2rem clamp(1.5rem,4vw,3rem);display:flex;justify-content:space-between;color:var(--muted);font-size:.85rem;border-top:1px solid var(--line)}
+
+    .partner-marquee{overflow:hidden;padding:1.5rem 0;border-block:1px solid var(--line);margin:2rem 0}
+    .partner-track{display:flex;width:max-content;gap:3rem;animation:partnerScroll 30s linear infinite}
+    .partner-track span{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+    @keyframes partnerScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+    .newsletter-band{padding:clamp(2.5rem,6vw,4rem);border:1px solid var(--line);border-radius:.5rem;margin:2rem 0;display:grid;grid-template-columns:1fr auto;gap:2rem;align-items:center}
+    .newsletter-band h3{font-size:1.2rem;margin-bottom:.35rem}
+    .newsletter-band p{color:var(--muted);font-size:.88rem;max-width:32ch}
+    .newsletter-band form{display:flex;gap:.5rem;flex-wrap:wrap}
+    .newsletter-band input{flex:1;min-width:180px;padding:.75rem 1rem;border:1px solid var(--line);background:transparent;font:inherit;border-radius:.35rem;color:inherit}
+    .newsletter-band button{padding:.75rem 1.25rem;border:0;background:var(--accent);color:#fff;font:inherit;cursor:pointer;border-radius:.35rem}
+    @media(max-width:640px){.newsletter-band{grid-template-columns:1fr}}
+    .reveal{opacity:0;transform:translateY(20px);transition:opacity .75s ease,transform .75s ease}
+    .reveal.in{opacity:1;transform:none}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+    a:focus-visible,.btn:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,.tab-btn:focus-visible,.acc-head:focus-visible,.proc-card:focus-visible,.pstep:focus-visible,.testimonial-avatars img:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+    .switch input:focus-visible+.slider{outline:2px solid var(--accent);outline-offset:2px}
+    .form-status{font-size:.85rem;color:var(--accent);min-height:1.25rem;flex-basis:100%}
+    .form-status:empty{display:none}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1.5rem}
+    @media(max-width:700px){.grid-3{grid-template-columns:1fr}.toggles{right:.75rem;left:.75rem;width:auto;max-width:none}}
+  </style>
+</head>
+<body>
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+  <div class="toggles" aria-label="Section toggles">
+    <h4>Sections</h4>
+    <div class="toggle-row"><span>Gallery</span><label class="switch"><input type="checkbox" data-target="gallery" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>About</span><label class="switch"><input type="checkbox" data-target="about" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Process</span><label class="switch"><input type="checkbox" data-target="process" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Quote</span><label class="switch"><input type="checkbox" data-target="quote" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Newsletter</span><label class="switch"><input type="checkbox" data-target="newsletter" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Contact</span><label class="switch"><input type="checkbox" data-target="contact" checked /><span class="slider"></span></label></div>
+  </div>
+
+  <section class="hero">
+    <div class="hero-media" id="heroParallax">
+      <img src="https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=2000&q=80" alt="Soft rose flowers" />
+    </div>
+    <div class="content">
+      <a class="logo" href="#">Bloomrose</a>
+      <h1>Soft focus.</h1>
+      <p>Rose warmth on stone quiet — beauty brands, refined.</p>
+      <a class="btn" href="#gallery">Inquire</a>
+    </div>
+  </section>
+
+  <section class="section" id="gallery" data-section="gallery">
+    <div class="reveal">
+      <span class="eyebrow">Gallery</span>
+      <h2>Texture and tone.</h2>
+      <p class="lead">Skincare, fragrance, and soft goods — hover to reveal.</p>
+    </div>
+    <div class="marquee-strip" aria-hidden="true">
+      <div class="marquee-track">
+        <span>Aurum Skincare · Petals &amp; Clay · Rosewater · Silk Line · Lumière · Bloom Atelier ·</span>
+        <span>Aurum Skincare · Petals &amp; Clay · Rosewater · Silk Line · Lumière · Bloom Atelier ·</span>
+      </div>
+    </div>
+    <div class="gallery-masonry">
+      <figure class="g-item"><span class="tag">Packaging</span><img src="https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=800&q=80" alt="Skincare still life" /><figcaption>Petals &amp; Clay</figcaption></figure>
+      <figure class="g-item"><span class="tag">Campaign</span><img src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80" alt="Beauty products" /><figcaption>Rosewater</figcaption></figure>
+      <figure class="g-item"><span class="tag">Editorial</span><img src="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=700&q=80" alt="Soft fabric" /><figcaption>Silk Line</figcaption></figure>
+      <figure class="g-item"><span class="tag">Identity</span><img src="https://images.unsplash.com/photo-1596462502278-27bfdd403348?auto=format&fit=crop&w=900&q=80" alt="Beauty portrait" /><figcaption>Lumière</figcaption></figure>
+      <figure class="g-item"><span class="tag">Print</span><img src="https://images.unsplash.com/photo-1608248543801-ba977795e702?auto=format&fit=crop&w=900&q=80" alt="Cosmetic bottles" /><figcaption>Velvet Mist</figcaption></figure>
+      <figure class="g-item"><span class="tag">Web</span><img src="https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=700&q=80" alt="Minimal product" /><figcaption>Bloom Atelier</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="stats-band">
+      <div class="stat-item"><strong>84</strong><span>Projects</span></div>
+      <div class="stat-item"><strong>12</strong><span>Years</span></div>
+      <div class="stat-item"><strong>6</strong><span>Countries</span></div>
+      <div class="stat-item"><strong>3</strong><span>Awards</span></div>
+    </div>
+  </section>
+
+  <section class="section" id="about" data-section="about">
+    <div class="about-pin-wrap">
+      <div class="about-sticky">
+        <div class="circle-mask" id="circleMask">
+          <img src="https://images.unsplash.com/photo-1596755389378-c793a2641a28?auto=format&fit=crop&w=800&q=80" alt="Beauty studio" />
+        </div>
+      </div>
+      <div>
+        <div class="reveal"><span class="eyebrow">About</span><h2>Beauty, unhurried.</h2></div>
+        <div class="about-scroll">
+          <article class="about-chapter"><h3>Philosophy</h3><p>Bloomrose crafts visual worlds for brands that believe in softness — never saccharine, always intentional.</p></article>
+          <article class="about-chapter"><h3>Approach</h3><p>From packaging to campaign, we blur the line between product and poetry with tactile, warm motion.</p></article>
+          <article class="about-chapter"><h3>Clients</h3><p>Skincare founders, fragrance houses, and slow-fashion labels across Europe and North America.</p></article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="process" data-section="process" style="background:linear-gradient(180deg,rgba(196,92,106,.04),transparent)">
+    <div class="reveal"><span class="eyebrow">Process</span><h2>Three gentle phases.</h2><p class="lead">Click each phase to unfold.</p></div>
+    <div class="process-interactive">
+      <article class="proc-card active" tabindex="0"><div class="proc-num">01</div><h3>Discover</h3><p>Mood boards, texture studies, and voice mapping with your team.</p></article>
+      <article class="proc-card" tabindex="0"><div class="proc-num">02</div><h3>Design</h3><p>Identity, packaging, art direction, and campaign systems.</p></article>
+      <article class="proc-card" tabindex="0"><div class="proc-num">03</div><h3>Deliver</h3><p>Launch assets, social templates, and living brand guides.</p></article>
+    </div>
+  </section>
+
+  <section class="section" id="quote" data-section="quote">
+    <blockquote class="testimonial-soft" id="softQuote">
+      <div class="glow" aria-hidden="true"></div>
+      <p id="quoteText">"Every detail feels considered — like a whisper, not a shout."</p>
+      <cite id="quoteCite">— Lena Voss, Aurum Skincare</cite>
+      <div class="testimonial-avatars">
+        <img class="active" src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80" alt="Lena Voss, Aurum Skincare" data-q="Every detail feels considered — like a whisper, not a shout." data-c="Lena Voss, Aurum Skincare" />
+        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" alt="Marco Chen, Petals and Clay" data-q="They made our launch feel like a ritual, not a rollout." data-c="Marco Chen, Petals &amp; Clay" />
+        <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80" alt="Sofia Reyes, Silk Line" data-q="The softest rebrand we've ever had — and the most effective." data-c="Sofia Reyes, Silk Line" />
+      </div>
+    </blockquote>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <div class="reveal grid-3">
+      <article style="padding:1.5rem;background:#fff;border:1px solid var(--line)"><span class="eyebrow">Packaging</span><p style="color:var(--muted);font-size:.9rem;margin-top:.5rem">Bottle, box, and label systems with tactile print specs.</p></article>
+      <article style="padding:1.5rem;background:#fff;border:1px solid var(--line)"><span class="eyebrow">Campaign</span><p style="color:var(--muted);font-size:.9rem;margin-top:.5rem">Seasonal launches with art direction and social templates.</p></article>
+      <article style="padding:1.5rem;background:#fff;border:1px solid var(--line)"><span class="eyebrow">Retail</span><p style="color:var(--muted);font-size:.9rem;margin-top:.5rem">In-store displays and counter experiences.</p></article>
+    </div>
+  </section>  <section class="section" id="newsletter" data-section="newsletter">
+    <div class="newsletter-band reveal">
+      <div><h3>Studio notes</h3><p>Occasional updates on process, launches, and open slots.</p></div>
+      <form class="js-form" data-success="Subscribed — welcome to studio notes."><label class="sr-only" for="newsletter-email">Email</label><input id="newsletter-email" type="email" name="email" placeholder="Email" required autocomplete="email" /><button type="submit">Join</button><p class="form-status" role="status" aria-live="polite"></p></form>
+    </div>
+  </section>
+
+
+
+    <div class="partner-marquee" aria-hidden="true">
+      <div class="partner-track">
+        <span>Selected Clients</span><span aria-hidden="true">·</span><span>Global Partners</span><span aria-hidden="true">·</span><span>Studio Network</span><span aria-hidden="true">·</span><span>Field Office</span><span aria-hidden="true">·</span>
+        <span>Selected Clients</span><span aria-hidden="true">·</span><span>Global Partners</span><span aria-hidden="true">·</span><span>Studio Network</span><span aria-hidden="true">·</span><span>Field Office</span><span aria-hidden="true">·</span>
+      </div>
+    </div>
+    <section class="section" id="contact" data-section="contact">
+    <div class="contact-split">
+      <div class="contact-visual reveal">
+        <img src="https://images.unsplash.com/photo-1615485925617-553f1a834282?auto=format&fit=crop&w=900&q=80" alt="Studio desk with flowers" />
+      </div>
+      <div>
+        <div class="reveal"><span class="eyebrow">Contact</span><h2>A brief note.</h2><p class="lead">We take on a handful of projects each season.</p></div>
+        <form class="reveal js-form" data-success="Thanks — message received. We'll reply within a few days.">
+          <label>Name<input name="name" required /></label>
+          <label>Email<input type="email" name="email" required /></label>
+          <label>Message<textarea name="message" rows="3" required></textarea></label>
+          <button type="submit">Send</button>
+        <p class="form-status" role="status" aria-live="polite"></p></form>
+      </div>
+    </div>
+  </section>
+
+  <footer><span>Bloomrose</span><span><a href="#">Instagram</a> · <a href="#">Pinterest</a></span><span>© 2026</span></footer>
+
+  <script>
+    document.querySelectorAll(".toggles input").forEach((input)=>{
+      input.addEventListener("change",()=>{
+        const el=document.querySelector(`[data-section="${input.dataset.target}"]`);
+        if(el) el.classList.toggle("hidden",!input.checked);
+      });
+    });
+
+    const io=new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{if(e.isIntersecting) e.target.classList.add("in");});
+    },{threshold:.12});
+    document.querySelectorAll(".reveal,.g-item,.circle-mask,.proc-card,.about-chapter,#softQuote,.contact-visual,.stat-item").forEach(el=>io.observe(el));
+
+    const progress=document.getElementById("scrollProgress");
+    window.addEventListener("scroll",()=>{
+      const h=document.documentElement.scrollHeight-window.innerHeight;
+      if(progress&&h>0) progress.style.width=`${(window.scrollY/h)*100}%`;
+    },{passive:true});
+
+    const activateProc=(card)=>{
+      document.querySelectorAll(".proc-card").forEach(c=>c.classList.remove("active"));
+      card.classList.add("active");
+    };
+    document.querySelectorAll(".proc-card").forEach((card)=>{
+      card.addEventListener("click",()=>activateProc(card));
+      card.addEventListener("keydown",(e)=>{
+        if(e.key==="Enter"||e.key===" "){e.preventDefault();activateProc(card);}
+      });
+    });
+
+    document.querySelectorAll(".testimonial-avatars img").forEach((av)=>{
+      av.addEventListener("click",()=>{
+        document.querySelectorAll(".testimonial-avatars img").forEach(a=>a.classList.remove("active"));
+        av.classList.add("active");
+        document.getElementById("quoteText").textContent=`"${av.dataset.q}"`;
+        document.getElementById("quoteCite").textContent=`— ${av.dataset.c}`;
+      });
+    });
+
+    const heroParallax=document.getElementById("heroParallax");
+    const heroImg=heroParallax?.querySelector("img");
+    window.addEventListener("scroll",()=>{
+      const y=Math.min(window.scrollY,700);
+      if(heroImg) heroImg.style.transform=`scale(${1-y*0.00006}) translateY(${y*0.12}px)`;
+    },{passive:true});
+
+    document.querySelectorAll(".js-form").forEach((form)=>{
+      form.addEventListener("submit",(e)=>{
+        e.preventDefault();
+        const status=form.querySelector(".form-status");
+        if(status) status.textContent=form.dataset.success||"Submitted.";
+        form.reset();
+      });
+    });
+  </script>
+</body>
+</html>

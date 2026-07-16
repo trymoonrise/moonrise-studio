@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Help · Moonrise Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/studio.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body data-page="help">
+  <div id="shell"></div>
+  <div id="page-body" class="ms-content-page">
+    <header class="ms-page-head">
+      <div class="ms-page-head-copy">
+        <h1>Help</h1>
+      </div>
+    </header>
+
+    <section class="ms-card ms-help-contact" aria-label="Contact details">
+      <h2 class="ms-help-contact-title">Contact</h2>
+      <p class="ms-muted ms-help-contact-lead">Reach the Moonrise team directly.</p>
+      <ul class="ms-help-contact-list">
+        <li>
+          <a class="ms-help-contact-link" href="tel:+14013000957">
+            <span class="ms-help-contact-label">Phone</span>
+            <span class="ms-help-contact-value">(401) 300-0957</span>
+          </a>
+        </li>
+        <li>
+          <a class="ms-help-contact-link" href="mailto:trymoonrise@gmail.com">
+            <span class="ms-help-contact-label">Email</span>
+            <span class="ms-help-contact-value">trymoonrise@gmail.com</span>
+          </a>
+        </li>
+      </ul>
+    </section>
+
+    <form class="ms-card ms-help-form" id="help-form">
+      <h2 class="ms-help-contact-title">Send a message</h2>
+      <div class="ms-field">
+        <label class="ms-label" for="help-email">Email</label>
+        <input class="ms-input" id="help-email" type="email" required autocomplete="email" placeholder="you@email.com">
+      </div>
+      <div class="ms-field">
+        <label class="ms-label" for="help-message">Message</label>
+        <textarea class="ms-textarea" id="help-message" required rows="4" placeholder="How can we help?"></textarea>
+      </div>
+      <button type="submit" class="ms-btn" id="help-submit">Send</button>
+      <p class="ms-error" id="help-error" hidden></p>
+      <p class="ms-muted" id="help-ok" hidden>Thanks — we’ll get back to you.</p>
+    </form>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/segment-switch.js"></script>
+  <script src="js/ui-motion.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    (async function () {
+      const form = document.getElementById("help-form");
+      const email = document.getElementById("help-email");
+      const message = document.getElementById("help-message");
+      const err = document.getElementById("help-error");
+      const ok = document.getElementById("help-ok");
+      const btn = document.getElementById("help-submit");
+
+      try {
+        const user = await window.StudioAuth.getUser();
+        if (user?.email && email) email.value = user.email;
+      } catch (e) {
+        /* ignore */
+      }
+
+      form?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        err.hidden = true;
+        err.textContent = "";
+        ok.hidden = true;
+        if (!email.value.trim() || !message.value.trim()) {
+          window.StudioToast?.error?.("Please fill in both fields.");
+          return;
+        }
+        btn.disabled = true;
+        try {
+          // Local acknowledgment for now — wire to support inbox / Supabase later
+          await new Promise((r) => setTimeout(r, 350));
+          message.value = "";
+          ok.hidden = false;
+        } catch (ex) {
+          window.StudioToast?.error?.(ex.message || "Could not send.");
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

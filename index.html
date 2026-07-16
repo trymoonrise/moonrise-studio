@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Moonrise Studio — For business owners and creators</title>
+  <meta name="description" content="Moonrise Studio helps business owners and creators build digital presence and lasting wealth — without a development team.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/studio.css">
+  <meta name="color-scheme" content="light">
+</head>
+<body data-page="home">
+  <div class="ms-home-field" aria-hidden="true">
+    <div class="ms-home-wash ms-home-wash-a"></div>
+    <div class="ms-home-wash ms-home-wash-b"></div>
+  </div>
+
+  <header class="ms-home-nav">
+    <a class="ms-home-brand" href="index.html">
+      <img src="doc/MoonriseLogo.png" alt="" width="40" height="40">
+      <strong>Moonrise Studio</strong>
+    </a>
+    <div class="ms-home-nav-actions">
+      <a class="ms-home-signin" href="apply.html">Sign in</a>
+      <a class="ms-home-apply" href="apply.html?mode=signup">Apply</a>
+    </div>
+  </header>
+
+  <main class="ms-home-hero">
+    <div class="ms-home-hero-copy">
+      <h1 class="ms-home-title">Moonrise Studio</h1>
+      <p class="ms-home-sub">Build digital presence that compounds into lasting wealth.</p>
+      <div class="ms-home-ctas">
+        <a class="ms-home-cta-primary" href="apply.html?mode=signup">Build Wealth</a>
+        <a class="ms-home-cta-secondary" href="#archive">Archive</a>
+      </div>
+    </div>
+
+    <section class="ms-home-stats" aria-label="Who it’s for">
+      <div class="ms-home-stat">
+        <span class="ms-home-stat-label">Owners</span>
+        <span class="ms-home-stat-value">Sites that close</span>
+      </div>
+      <div class="ms-home-stat">
+        <span class="ms-home-stat-label">Creators</span>
+        <span class="ms-home-stat-value">Clarity, not clutter</span>
+      </div>
+      <div class="ms-home-stat">
+        <span class="ms-home-stat-label">Operators</span>
+        <span class="ms-home-stat-value">Ship, get paid, move on</span>
+      </div>
+    </section>
+  </main>
+
+  <section class="ms-home-section" id="archive">
+    <h2>Archive</h2>
+    <p class="ms-home-section-lead">
+      Every build becomes a lasting record — client sites that stay live, owned, and ready to grow.
+    </p>
+  </section>
+
+  <section class="ms-home-section" id="method">
+    <h2>Method</h2>
+    <div class="ms-home-method">
+      <div class="ms-home-method-step">
+        <span class="ms-home-method-num">1</span>
+        <div>
+          <strong>Find</strong>
+          <p>Surface businesses and briefs that need a real presence.</p>
+        </div>
+      </div>
+      <div class="ms-home-method-step">
+        <span class="ms-home-method-num">2</span>
+        <div>
+          <strong>Form</strong>
+          <p>Generate a clean page, refine until it feels inevitable.</p>
+        </div>
+      </div>
+      <div class="ms-home-method-step">
+        <span class="ms-home-method-num">3</span>
+        <div>
+          <strong>Close</strong>
+          <p>Collect payment, publish, archive the win.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="ms-home-footer">
+    <a class="ms-home-brand" href="index.html">
+      <img src="doc/MoonriseLogo.png" alt="" width="32" height="32">
+      <strong>Moonrise Studio</strong>
+    </a>
+    <a href="apply.html">Sign in</a>
+  </footer>
+
+  <script src="js/ui-motion.js"></script>
+  <script src="js/toast.js"></script>
+  <script>
+    (async function () {
+      if (new URLSearchParams(location.search).get("go") === "app") {
+        location.replace("dashboard.html");
+      }
+    })();
+  </script>
+</body>
+</html>

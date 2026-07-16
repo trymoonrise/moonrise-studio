@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tide — Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;700&family=Manrope:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #041e22;
+      --surface: #0a2f35;
+      --text: #e8f7f4;
+      --muted: #7fadb4;
+      --accent: #2dd4bf;
+      --warm: #f5b942;
+      --line: rgba(45, 212, 191, 0.15);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: "Manrope", sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+    h1, h2, h3 { font-family: "Sora", sans-serif; line-height: 1.1; }
+    a { color: inherit; text-decoration: none; }
+    .wrap { width: min(1100px, 92%); margin-inline: auto; }
+    .section { padding: 5rem 0; }
+    .section h2 { font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 0.75rem; }
+    .section p.lead { color: var(--muted); max-width: 36rem; margin-bottom: 2rem; }
+    .hidden { display: none !important; }
+
+    .toggles {
+      position: fixed; bottom: 1rem; right: 1rem; z-index: 100;
+      background: var(--surface); border: 1px solid var(--line);
+      border-radius: 1rem; padding: 0.9rem 1rem; width: 13rem;
+    }
+    .toggles h4 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.7rem; }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin: 0.45rem 0; font-size: 0.85rem; }
+    .switch { position: relative; width: 2.4rem; height: 1.35rem; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; inset: 0; cursor: pointer; background: #1a454c; border-radius: 999px; transition: .2s; }
+    .slider::before { content: ""; position: absolute; height: 1rem; width: 1rem; left: 0.18rem; top: 0.175rem; background: white; border-radius: 50%; transition: .2s; }
+    .switch input:checked + .slider { background: var(--accent); }
+    .switch input:checked + .slider::before { transform: translateX(1.05rem); }
+
+    .nav { position: sticky; top: 0; z-index: 50; backdrop-filter: blur(12px); background: color-mix(in srgb, var(--bg) 85%, transparent); border-bottom: 1px solid var(--line); }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0; gap: 1rem; }
+    .logo { font-family: "Sora", sans-serif; font-weight: 700; font-size: 1.25rem; color: var(--accent); }
+    .nav-links { display: flex; gap: 1.25rem; flex-wrap: wrap; }
+    .nav-links a { color: var(--muted); font-size: 0.9rem; }
+    .nav-links a:hover { color: var(--text); }
+
+    .hero {
+      min-height: 88vh; display: grid; place-items: center;
+      background:
+        radial-gradient(ellipse 60% 50% at 15% 40%, rgba(45,212,191,.25), transparent),
+        radial-gradient(ellipse 40% 35% at 85% 75%, rgba(245,185,66,.15), transparent),
+        var(--bg);
+    }
+    .hero-content { padding: 4rem 0; }
+    .hero h1 { font-size: clamp(3rem, 8vw, 5.2rem); max-width: 12ch; margin-bottom: 1rem; }
+    .hero p { color: var(--muted); font-size: 1.15rem; max-width: 28rem; margin-bottom: 2rem; }
+    .btn { display: inline-block; background: var(--accent); color: #041e22; padding: 0.85rem 1.5rem; border-radius: 999px; font-weight: 500; border: none; cursor: pointer; }
+    .btn:hover { filter: brightness(1.08); }
+    .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--line); margin-left: 0.5rem; }
+
+    .creds { display: flex; flex-wrap: wrap; gap: 2.5rem; justify-content: space-between; }
+    .cred strong { display: block; font-family: "Sora", sans-serif; font-size: 2rem; color: var(--warm); }
+    .cred span { color: var(--muted); font-size: 0.85rem; }
+
+    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; }
+    .service { padding: 1.75rem; border: 1px solid var(--line); border-radius: 1rem; }
+    .service h3 { margin-bottom: 0.4rem; color: var(--accent); }
+    .service p { color: var(--muted); font-size: 0.95rem; }
+
+    .about-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 3rem; align-items: center; }
+    .about-visual { aspect-ratio: 16/11; border-radius: 1.25rem; background: linear-gradient(135deg, var(--accent), #0a4a52 40%, var(--warm)); }
+    @media (max-width: 760px) { .about-grid { grid-template-columns: 1fr; } }
+
+    .gallery { display: grid; grid-template-columns: 2fr 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 0.75rem; min-height: 360px; }
+    .gallery figure { border-radius: 0.75rem; min-height: 140px; }
+    .gallery figure:nth-child(1) { grid-row: span 2; background: linear-gradient(160deg, #2dd4bf, #041e22); }
+    .gallery figure:nth-child(2) { background: linear-gradient(135deg, #f5b942, #0a2f35); }
+    .gallery figure:nth-child(3) { background: linear-gradient(200deg, #0a4a52, #2dd4bf); }
+    .gallery figure:nth-child(4) { background: linear-gradient(120deg, #f5b942, #2dd4bf); }
+    .gallery figure:nth-child(5) { background: linear-gradient(180deg, #041e22, #7fadb4); }
+    .gallery figure:nth-child(6) { display: none; }
+    @media (max-width: 700px) {
+      .gallery { grid-template-columns: 1fr 1fr; }
+      .gallery figure:nth-child(1) { grid-row: auto; }
+      .gallery figure:nth-child(6) { display: block; background: linear-gradient(220deg, #2dd4bf, #f5b942); }
+    }
+
+    .quotes { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; }
+    .quote { padding: 1.5rem; border-radius: 1rem; background: var(--surface); }
+    .quote p { font-size: 1.05rem; margin-bottom: 0.75rem; }
+    .quote cite { color: var(--warm); font-style: normal; font-size: 0.85rem; }
+
+    form { display: grid; gap: 1rem; max-width: 32rem; }
+    label { display: grid; gap: 0.35rem; font-size: 0.85rem; color: var(--muted); }
+    input, textarea { background: var(--surface); border: 1px solid var(--line); color: var(--text); padding: 0.85rem 1rem; border-radius: 0.6rem; font: inherit; }
+    input:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+    footer { border-top: 1px solid var(--line); padding: 2.5rem 0; margin-top: 2rem; }
+    .footer-inner { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; color: var(--muted); font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <div class="toggles" aria-label="Section toggles">
+    <h4>Sections</h4>
+    <div class="toggle-row"><span>Credibility</span><label class="switch"><input type="checkbox" data-target="credibility" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Gallery</span><label class="switch"><input type="checkbox" data-target="gallery" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Testimonials</span><label class="switch"><input type="checkbox" data-target="testimonials" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Contact</span><label class="switch"><input type="checkbox" data-target="contact" checked /><span class="slider"></span></label></div>
+  </div>
+
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <a class="logo" href="#">Tide</a>
+      <nav class="nav-links">
+        <a href="#services">Services</a>
+        <a href="#about">About</a>
+        <a href="#gallery">Work</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="wrap hero-content">
+      <h1>Flow with purpose.</h1>
+      <p>Calm interfaces with a warm pulse — built for wellness, travel, and lifestyle brands.</p>
+      <a class="btn" href="#contact">Get in touch</a>
+      <a class="btn btn-ghost" href="#services">Services</a>
+    </div>
+  </section>
+
+  <section class="section" id="credibility" data-section="credibility">
+    <div class="wrap">
+      <div class="creds">
+        <div class="cred"><strong>40+</strong><span>Brand systems</span></div>
+        <div class="cred"><strong>8yr</strong><span>Studio age</span></div>
+        <div class="cred"><strong>A+</strong><span>Client NPS</span></div>
+        <div class="cred"><strong>15</strong><span>Active retainers</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="services">
+    <div class="wrap">
+      <h2>Services</h2>
+      <p class="lead">Soft edges. Hard results.</p>
+      <div class="services-grid">
+        <div class="service"><h3>Brand refresh</h3><p>Color, type, and tone tuned for modern calm.</p></div>
+        <div class="service"><h3>Marketing sites</h3><p>Airy layouts that still convert.</p></div>
+        <div class="service"><h3>Motion kits</h3><p>Subtle loops and transitions for launch films.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="about">
+    <div class="wrap about-grid">
+      <div>
+        <h2>About</h2>
+        <p class="lead">Tide designs digital spaces that feel like a deep breath.</p>
+        <p style="color:var(--muted)">Teal for trust. Amber for warmth. Minimal structure so your story can float.</p>
+      </div>
+      <div class="about-visual" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <section class="section" id="gallery" data-section="gallery">
+    <div class="wrap">
+      <h2>Gallery</h2>
+      <p class="lead">Mood boards made real.</p>
+      <div class="gallery">
+        <figure></figure><figure></figure><figure></figure>
+        <figure></figure><figure></figure><figure></figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="testimonials" data-section="testimonials">
+    <div class="wrap">
+      <h2>Testimonials</h2>
+      <p class="lead">Partners on the shore.</p>
+      <div class="quotes">
+        <blockquote class="quote"><p>“Tide gave our brand the stillness we needed.”</p><cite>— Ava L., Wellness Co.</cite></blockquote>
+        <blockquote class="quote"><p>“Beautiful without being fragile.”</p><cite>— Chris M., Travel Lab</cite></blockquote>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="contact" data-section="contact">
+    <div class="wrap">
+      <h2>Contact</h2>
+      <p class="lead">Send a wave our way.</p>
+      <form onsubmit="event.preventDefault(); alert('Thanks — message noted.'); this.reset();">
+        <label>Name<input type="text" name="name" required /></label>
+        <label>Email<input type="email" name="email" required /></label>
+        <label>Message<textarea name="message" rows="4" required></textarea></label>
+        <button class="btn" type="submit">Send message</button>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap footer-inner">
+      <span class="logo">Tide</span>
+      <span>© 2026 Tide Studio. All rights reserved.</span>
+    </div>
+  </footer>
+
+  <script>
+    document.querySelectorAll(".toggles input[type=checkbox]").forEach((input) => {
+      input.addEventListener("change", () => {
+        const el = document.querySelector(`[data-section="${input.dataset.target}"]`);
+        if (el) el.classList.toggle("hidden", !input.checked);
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Volt</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Space+Grotesk:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0c0f0a;
+      --text: #f2f7e8;
+      --muted: #9aaa88;
+      --accent: #c8f542;
+      --line: rgba(200, 245, 66, 0.18);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: "Space Grotesk", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+    h1, h2, h3 { font-family: "Syne", sans-serif; line-height: 0.92; font-weight: 800; }
+    a { color: inherit; text-decoration: none; }
+    img, video { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .hidden { display: none !important; }
+
+    .toggles {
+      position: fixed; bottom: 1rem; right: 1rem; z-index: 100;
+      background: rgba(12, 15, 10, 0.94); border: 1px solid var(--line);
+      border-radius: 0.5rem; padding: 0.85rem 1rem; width: 12.5rem;
+    }
+    .toggles h4 { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.6rem; }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; margin: 0.4rem 0; font-size: 0.82rem; }
+    .switch { position: relative; width: 2.3rem; height: 1.25rem; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; inset: 0; cursor: pointer; background: #2a3224; border-radius: 999px; transition: .2s; }
+    .slider::before { content: ""; position: absolute; height: 0.9rem; width: 0.9rem; left: 0.18rem; top: 0.175rem; background: #fff; border-radius: 50%; transition: .2s; }
+    .switch input:checked + .slider { background: var(--accent); }
+    .switch input:checked + .slider::before { transform: translateX(1rem); }
+
+    /* Split video hero */
+    .hero {
+      min-height: 100vh; min-height: 100dvh;
+      display: grid; grid-template-columns: 1fr 1fr;
+    }
+    .hero-copy {
+      display: flex; flex-direction: column; justify-content: space-between;
+      padding: clamp(1.5rem, 4vw, 2.5rem);
+      position: relative; z-index: 2; background: var(--bg);
+    }
+    .logo { font-family: "Syne", sans-serif; font-weight: 800; font-size: 1.4rem; color: var(--accent); }
+    .hero-main { margin: auto 0; max-width: 18ch; }
+    .hero h1 { font-size: clamp(3rem, 7vw, 5.5rem); margin-bottom: 1.25rem; }
+    .hero h1 span {
+      display: inline-block;
+      opacity: 0; transform: translateY(40px) rotate(-2deg);
+      animation: pop 0.7s cubic-bezier(.22,1,.36,1) forwards;
+    }
+    .hero h1 span:nth-child(1) { animation-delay: 0.05s; }
+    .hero h1 span:nth-child(2) { animation-delay: 0.12s; }
+    .hero h1 span:nth-child(3) { animation-delay: 0.2s; }
+    .hero p { color: var(--muted); margin-bottom: 2rem; max-width: 22rem; }
+    .btn {
+      display: inline-block;
+      background: var(--accent); color: #0c0f0a;
+      padding: 0.9rem 1.35rem; font-weight: 500; border: 0; cursor: pointer;
+      font: inherit; border-radius: 0.25rem; transition: transform .15s ease, background .2s;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    .form-note { font-size: 0.85rem; margin-top: 0.25rem; min-height: 1.25em; color: var(--accent); }
+    .form-note.err { color: #e07070; }
+
+    a:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible,
+    .switch input:focus-visible + .slider { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .hero-meta { font-size: 0.8rem; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+    .hero-media { position: relative; overflow: hidden; min-height: 50vh; }
+    .hero-media video { transform: scale(1.05); filter: saturate(1.1) contrast(1.05); }
+    .hero-media::after {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(90deg, var(--bg), transparent 30%);
+      pointer-events: none;
+    }
+    .cursor-spot {
+      position: absolute; width: 180px; height: 180px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(200,245,66,.25), transparent 70%);
+      pointer-events: none; mix-blend-mode: screen;
+      transform: translate(-50%, -50%); opacity: 0; transition: opacity .3s; z-index: 2;
+    }
+    .hero-media:hover .cursor-spot { opacity: 1; }
+
+    @keyframes pop { to { opacity: 1; transform: translateY(0) rotate(0); } }
+
+    /* Horizontal work rail */
+    .rail-wrap {
+      padding: clamp(4rem, 10vh, 6rem) 0;
+      border-top: 1px solid var(--line);
+    }
+    .rail-head {
+      display: flex; justify-content: space-between; align-items: end;
+      padding: 0 clamp(1.5rem, 4vw, 2.5rem) 1.5rem;
+    }
+    .rail-head h2 { font-size: clamp(1.6rem, 3vw, 2.4rem); }
+    .rail-head span { color: var(--muted); font-size: 0.85rem; }
+    .rail {
+      display: flex; gap: 1rem;
+      overflow-x: auto; scroll-snap-type: x mandatory;
+      padding: 0 clamp(1.5rem, 4vw, 2.5rem) 1rem;
+      scrollbar-width: thin; scrollbar-color: var(--accent) transparent;
+    }
+    .rail figure {
+      flex: 0 0 min(72vw, 420px);
+      aspect-ratio: 4/5; scroll-snap-align: start;
+      overflow: hidden; background: #1a2014; position: relative;
+      opacity: 0; transform: translateX(40px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+    .rail figure.in { opacity: 1; transform: translateX(0); }
+    .rail img { transition: transform 0.8s ease; }
+    .rail figure:hover img { transform: scale(1.08); }
+    .rail figcaption {
+      position: absolute; inset: auto 0 0; padding: 1rem;
+      background: linear-gradient(transparent, rgba(12,15,10,.85));
+      font-size: 0.9rem;
+    }
+    .rail .year { color: var(--accent); font-size: 0.75rem; display: block; margin-bottom: 0.2rem; }
+
+    /* Kinetic services */
+    .services {
+      padding: clamp(4rem, 10vh, 6rem) clamp(1.5rem, 4vw, 2.5rem);
+      border-top: 1px solid var(--line);
+    }
+    .services h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); margin-bottom: 2rem; }
+    .kinetic-list { list-style: none; }
+    .kinetic-list li {
+      font-family: "Syne", sans-serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--line);
+      display: flex; justify-content: space-between; align-items: center;
+      cursor: default;
+      transition: color .3s, letter-spacing .3s, padding-left .3s;
+    }
+    .kinetic-list li:hover,
+    .kinetic-list li:focus-within {
+      color: var(--accent);
+      letter-spacing: 0.02em;
+      padding-left: 1rem;
+    }
+    .kinetic-list li span { font-family: "Space Grotesk", sans-serif; font-size: 0.85rem; font-weight: 400; color: var(--muted); }
+
+    /* About */
+    .about {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
+      padding: clamp(4rem, 10vh, 6rem) clamp(1.5rem, 4vw, 2.5rem);
+      border-top: 1px solid var(--line); align-items: center;
+    }
+    .about-img {
+      aspect-ratio: 16/10; overflow: hidden;
+      clip-path: polygon(0 0, 100% 8%, 100% 100%, 0 92%);
+    }
+    .about-img img { transition: transform 1s ease; }
+    .about:hover .about-img img { transform: scale(1.05); }
+    .about h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); margin-bottom: 1rem; }
+    .about p { color: var(--muted); max-width: 32ch; }
+
+    /* Testimonials */
+    .testi {
+      padding: clamp(3rem, 8vh, 5rem) clamp(1.5rem, 4vw, 2.5rem);
+      border-top: 1px solid var(--line);
+      text-align: center;
+    }
+    .testi blockquote {
+      font-family: "Syne", sans-serif;
+      font-size: clamp(1.4rem, 3vw, 2.2rem);
+      max-width: 22ch; margin: 0 auto 1rem;
+      opacity: 0; transform: translateY(20px);
+      transition: opacity .8s ease, transform .8s ease;
+    }
+    .testi blockquote.in { opacity: 1; transform: translateY(0); }
+    .testi cite { color: var(--muted); font-style: normal; font-size: 0.85rem; }
+
+    /* Contact */
+    .contact {
+      padding: clamp(4rem, 10vh, 6rem) clamp(1.5rem, 4vw, 2.5rem);
+      display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
+      border-top: 1px solid var(--line);
+    }
+    .contact h2 { font-size: clamp(2rem, 5vw, 3.5rem); max-width: 8ch; }
+    form { display: grid; gap: 1rem; align-content: start; }
+    label { display: grid; gap: 0.3rem; font-size: 0.8rem; color: var(--muted); }
+    input, textarea {
+      background: #141910; border: 1px solid var(--line); color: var(--text);
+      padding: 0.8rem 0.9rem; font: inherit; border-radius: 0.25rem;
+    }
+    input:focus, textarea:focus { outline: 1px solid var(--accent); }
+
+    footer {
+      padding: 1.5rem clamp(1.5rem, 4vw, 2.5rem);
+      display: flex; justify-content: space-between; color: var(--muted); font-size: 0.85rem;
+      border-top: 1px solid var(--line);
+    }
+
+    @media (max-width: 700px) {
+      .about, .contact { gap: 1.5rem; }
+    }
+    @media (max-width: 860px) {
+      .hero { grid-template-columns: 1fr; }
+      .hero-media { order: -1; min-height: 42vh; }
+      .hero-media::after { background: linear-gradient(180deg, transparent, var(--bg)); }
+      .about, .contact { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      .hero h1 span { opacity: 1; transform: none; }
+      .rail figure { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="toggles" aria-label="Section toggles">
+    <h4>Sections</h4>
+    <div class="toggle-row"><span>Work</span><label class="switch"><input type="checkbox" data-target="work" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Services</span><label class="switch"><input type="checkbox" data-target="services" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>About</span><label class="switch"><input type="checkbox" data-target="about" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Testimonials</span><label class="switch"><input type="checkbox" data-target="testimonials" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Contact</span><label class="switch"><input type="checkbox" data-target="contact" checked /><span class="slider"></span></label></div>
+  </div>
+
+  <section class="hero">
+    <div class="hero-copy">
+      <a class="logo" href="#">Volt</a>
+      <div class="hero-main">
+        <h1><span>Charge</span> <span>the</span> <span>release.</span></h1>
+        <p>Product design with voltage — fast interfaces for teams that ship.</p>
+        <a class="btn" href="#contact" id="magBtn">Book a call</a>
+      </div>
+      <div class="hero-meta">Product · Web · Motion</div>
+    </div>
+    <div class="hero-media" id="heroMedia">
+      <div class="cursor-spot" id="spot"></div>
+      <video autoplay muted loop playsinline poster="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1600&q=80">
+        <source src="https://videos.pexels.com/video-files/3129957/3129957-uhd_2560_1440_25fps.mp4" type="video/mp4" />
+      </video>
+    </div>
+  </section>
+
+  <section class="rail-wrap" id="work" data-section="work">
+    <div class="rail-head">
+      <h2>Work</h2>
+      <span>Scroll →</span>
+    </div>
+    <div class="rail">
+      <figure>
+        <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=900&q=80" alt="Neon tech setup" />
+        <figcaption><span class="year">2025</span>Pulse OS</figcaption>
+      </figure>
+      <figure>
+        <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=900&q=80" alt="Team workspace" />
+        <figcaption><span class="year">2024</span>Relay Desk</figcaption>
+      </figure>
+      <figure>
+        <img src="https://images.unsplash.com/photo-1551650975-87deedd944c3?auto=format&fit=crop&w=900&q=80" alt="Mobile product UI" />
+        <figcaption><span class="year">2024</span>Spark App</figcaption>
+      </figure>
+      <figure>
+        <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=900&q=80" alt="Dashboard analytics" />
+        <figcaption><span class="year">2023</span>Flux Analytics</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="services" id="services" data-section="services">
+    <h2>Services</h2>
+    <ul class="kinetic-list">
+      <li>Product UI <span>Web & mobile</span></li>
+      <li>Design systems <span>Tokens & docs</span></li>
+      <li>Motion <span>Micro-interactions</span></li>
+      <li>Prototyping <span>Ship faster</span></li>
+    </ul>
+  </section>
+
+  <section class="about" id="about" data-section="about">
+    <div class="about-img">
+      <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1400&q=80" alt="Design team collaborating" />
+    </div>
+    <div>
+      <h2>Built for speed.</h2>
+      <p>Volt is a product design studio for teams that move fast. Lime energy, charcoal focus — interfaces that feel alive without getting in the way.</p>
+    </div>
+  </section>
+
+  <section class="testi" id="testimonials" data-section="testimonials">
+    <blockquote id="testiQuote">“They shipped our entire product UI in six weeks. Unreal velocity.”</blockquote>
+    <cite>— Priya K., Pulse OS</cite>
+  </section>
+
+  <section class="contact" id="contact" data-section="contact">
+    <h2>Say when.</h2>
+    <form id="contactForm" novalidate>
+      <label>Name<input type="text" name="name" required autocomplete="name" /></label>
+      <label>Email<input type="email" name="email" required autocomplete="email" /></label>
+      <label>Message<textarea name="message" rows="3" required></textarea></label>
+      <button class="btn" type="submit">Send</button>
+      <p class="form-note" id="formNote" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <footer>
+    <span>Volt</span>
+    <span>© 2026</span>
+  </footer>
+
+  <script>
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const media = document.getElementById("heroMedia");
+    const spot = document.getElementById("spot");
+    if (media && spot && !reducedMotion) {
+      media.addEventListener("pointermove", (e) => {
+        const r = media.getBoundingClientRect();
+        spot.style.left = `${e.clientX - r.left}px`;
+        spot.style.top = `${e.clientY - r.top}px`;
+      });
+    }
+
+    const btn = document.getElementById("magBtn");
+    if (btn && !reducedMotion) {
+      btn.addEventListener("pointermove", (e) => {
+        const r = btn.getBoundingClientRect();
+        const x = (e.clientX - r.left - r.width / 2) * 0.3;
+        const y = (e.clientY - r.top - r.height / 2) * 0.3;
+        btn.style.transform = `translate(${x}px, ${y}px) scale(1.04)`;
+      });
+      btn.addEventListener("pointerleave", () => { btn.style.transform = ""; });
+    }
+
+    document.getElementById("contactForm")?.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const note = document.getElementById("formNote");
+      if (!form.checkValidity()) {
+        note.textContent = "Please fill in all fields.";
+        note.className = "form-note err";
+        form.reportValidity();
+        return;
+      }
+      note.textContent = "Thanks — we'll be in touch shortly.";
+      note.className = "form-note";
+      form.reset();
+    });
+
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("in"); });
+    }, { threshold: 0.15 });
+    document.querySelectorAll(".rail figure, #testiQuote").forEach((el, i) => {
+      el.style.transitionDelay = `${i * 0.1}s`;
+      io.observe(el);
+    });
+
+    document.querySelectorAll(".toggles input[type=checkbox]").forEach((input) => {
+      input.addEventListener("change", () => {
+        const el = document.querySelector(`[data-section="${input.dataset.target}"]`);
+        if (el) el.classList.toggle("hidden", !input.checked);
+      });
+    });
+  </script>
+</body>
+</html>

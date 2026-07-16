@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings · Moonrise Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/studio.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body data-page="settings">
+  <div id="shell"></div>
+  <div id="page-body" class="ms-settings-page">
+    <header class="ms-page-head">
+      <div class="ms-page-head-copy">
+        <h1>Settings</h1>
+        <p class="lead">Update your profile, password, and account preferences.</p>
+      </div>
+    </header>
+
+    <div class="ms-settings-stack">
+      <div class="ms-settings-row">
+        <section class="ms-card ms-settings-card" id="settings-profile">
+          <h2 class="ms-settings-card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Profile
+          </h2>
+
+          <div class="ms-settings-profile-layout">
+            <div class="ms-settings-photo-col">
+              <div class="ms-set-photo-frame" id="set-avatar-wrap">
+                <label class="ms-set-photo-preview" title="Change profile photo">
+                  <input type="file" id="set-avatar-file" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
+                  <img class="ms-set-photo-img" id="set-avatar-img" alt="" width="96" height="96" hidden>
+                  <span class="ms-set-photo-initials" id="set-avatar-initials" aria-hidden="true">?</span>
+                </label>
+                <button type="button" class="ms-set-photo-reset" id="set-avatar-remove" hidden aria-label="Reset profile picture" title="Reset profile picture">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 4 3 9 8 9"/></svg>
+                </button>
+              </div>
+              <p class="ms-settings-photo-hint ms-muted">Click photo to upload</p>
+            </div>
+
+            <div class="ms-settings-profile-details">
+              <div class="ms-field">
+                <label class="ms-label" for="set-handle">Handle</label>
+                <div class="ms-input-affix">
+                  <span class="ms-input-prefix" aria-hidden="true">@</span>
+                  <input class="ms-input ms-input--prefixed" id="set-handle" placeholder="moonrise" autocomplete="username" maxlength="24">
+                </div>
+              </div>
+              <div class="ms-field">
+                <label class="ms-label" for="set-display">Display name</label>
+                <input class="ms-input" id="set-display" autocomplete="name" maxlength="40" placeholder="Your name">
+              </div>
+            </div>
+          </div>
+
+          <div class="ms-pref-row ms-settings-pref">
+            <div class="ms-pref-copy">
+              <span class="ms-pref-label">Email notifications</span>
+              <span class="ms-muted ms-pref-hint">Product updates and account alerts</span>
+            </div>
+            <label class="ms-switch" title="Email notifications">
+              <input type="checkbox" id="set-email-notif" checked>
+              <span class="ms-switch-track" aria-hidden="true"></span>
+              <span class="ms-sr-only">Email notifications</span>
+            </label>
+          </div>
+
+          <div class="ms-settings-actions">
+            <button type="button" class="ms-btn" id="set-save">Save profile</button>
+          </div>
+          <p class="ms-error" id="set-error" hidden></p>
+          <p class="ms-settings-status is-ok" id="set-ok" hidden>Saved.</p>
+        </section>
+
+        <section class="ms-card ms-settings-card" id="settings-security">
+          <h2 class="ms-settings-card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Security
+          </h2>
+          <p class="ms-settings-hint ms-muted">Update the password for your account.</p>
+          <div class="ms-field">
+            <label class="ms-label" for="set-pw-current">Current password</label>
+            <input class="ms-input" id="set-pw-current" type="password" autocomplete="current-password">
+          </div>
+          <div class="ms-field">
+            <label class="ms-label" for="set-pw-new">New password</label>
+            <input class="ms-input" id="set-pw-new" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters">
+          </div>
+          <div class="ms-field">
+            <label class="ms-label" for="set-pw-confirm">Confirm new password</label>
+            <input class="ms-input" id="set-pw-confirm" type="password" autocomplete="new-password" minlength="8">
+          </div>
+          <div class="ms-settings-actions">
+            <button type="button" class="ms-btn" id="set-pw-save">Update password</button>
+          </div>
+          <p class="ms-error" id="set-pw-error" hidden></p>
+          <p class="ms-settings-status is-ok" id="set-pw-ok" hidden>Password updated.</p>
+        </section>
+      </div>
+
+      <div class="ms-settings-row">
+        <section class="ms-card ms-settings-card" id="settings-payments">
+          <h2 class="ms-settings-card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+            Payout methods
+          </h2>
+          <p class="ms-settings-hint ms-muted">How commissions get paid to you. Add Cash App, Venmo, PayPal, and more.</p>
+
+          <ul class="ms-payout-list" id="set-payout-list" hidden></ul>
+          <p class="ms-settings-hint ms-muted" id="set-payout-empty">No payment methods saved yet.</p>
+
+          <div class="ms-payout-add-panel" id="set-payout-add-panel" hidden>
+            <p class="ms-label" id="set-payout-add-label">Choose a payment app</p>
+            <div class="ms-payout-methods" id="set-payout-methods" role="group" aria-label="Payment app"></div>
+            <div class="ms-payout-input-panel" id="set-payout-input-panel" hidden>
+              <div class="ms-field">
+                <label class="ms-label" for="set-payout-handle" id="set-payout-field-label">Payout details</label>
+                <input class="ms-input" id="set-payout-handle" autocomplete="off" spellcheck="false">
+              </div>
+              <p class="ms-settings-hint ms-muted" id="set-payout-hint"></p>
+              <div class="ms-settings-actions ms-payout-add-actions">
+                <button type="button" class="ms-btn" id="set-payout-save">Save</button>
+                <button type="button" class="ms-btn ms-btn-secondary" id="set-payout-cancel">Cancel</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="ms-settings-actions ms-payout-toolbar" id="set-payout-toolbar">
+            <button type="button" class="ms-btn" id="set-payout-add">Add payment method</button>
+            <a class="ms-dash-link" href="finance.html">Full payout profile →</a>
+          </div>
+          <p class="ms-error" id="set-payout-error" hidden></p>
+          <p class="ms-settings-status is-ok" id="set-payout-ok" hidden></p>
+        </section>
+
+        <section class="ms-card ms-settings-card ms-settings-card--danger" id="settings-session">
+          <h2 class="ms-settings-card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Session
+          </h2>
+          <p class="ms-settings-hint ms-muted">Sign out on this device. You will need your password again.</p>
+          <div class="ms-settings-actions">
+            <button type="button" class="ms-btn ms-btn-danger" id="set-sign-out">Sign out</button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/handles.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/segment-switch.js"></script>
+  <script src="js/ui-motion.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/settings.js"></script>
+</body>
+</html>

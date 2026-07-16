@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{BUSINESS_NAME}}</title>
+  <style>
+    body { margin: 0; font-family: "Helvetica Neue", Arial, sans-serif; color: #111827; background: #f9fafb; }
+    header { background: #111827; color: #fff; padding: 3.5rem 1.5rem; }
+    .wrap { max-width: 920px; margin: 0 auto; }
+    h1 { margin: 0 0 .75rem; }
+    .panel { background: #fff; margin: -2rem auto 2rem; max-width: 920px; border-radius: 16px; padding: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,.08); }
+    .row { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); }
+    a { color: #1d4ed8; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <p style="opacity:.75;margin:0 0 .4rem">{{CATEGORY}}</p>
+      <h1>{{BUSINESS_NAME}}</h1>
+      <p>Professional care you can trust.</p>
+    </div>
+  </header>
+  <div class="wrap panel">
+    <div class="row">
+      <div><h3>Office</h3><p>{{ADDRESS}}</p></div>
+      <div><h3>Phone</h3><p><a href="tel:{{PHONE_TEL}}">{{PHONE}}</a></p></div>
+      <div><h3>Next step</h3><p>Call to schedule a consultation.</p></div>
+    </div>
+  </div>
+</body>
+</html>

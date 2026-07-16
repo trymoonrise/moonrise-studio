@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard · Moonrise Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://erfaxgmnzdropviormpj.supabase.co" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/studio.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body data-page="dashboard">
+  <div id="shell"></div>
+  <div id="page-body" class="ms-dash-page">
+    <header class="ms-page-head ms-dash-head">
+      <div class="ms-page-head-copy">
+        <h1>Dashboard</h1>
+      </div>
+    </header>
+
+    <div class="ms-dash-stack">
+      <section class="ms-dash-card ms-dash-progress-card" aria-label="Overview">
+        <div class="ms-dash-metrics" aria-label="Key metrics">
+          <div class="ms-dash-metric ms-dash-metric--goal" id="stat-goal-wrap">
+            <span class="ms-dash-metric-label">Goal</span>
+            <button type="button" class="ms-dash-metric-value ms-dash-goal-display" id="stat-goal" title="Click to edit goal" aria-label="Sales goal, click to edit">1,000</button>
+            <input class="ms-dash-goal-input" id="stat-goal-input" type="number" inputmode="numeric" min="1" max="1000000" step="1" value="1000" aria-label="Edit sales goal" hidden>
+          </div>
+          <div class="ms-dash-metric">
+            <span class="ms-dash-metric-label">Published</span>
+            <strong class="ms-dash-metric-value" id="stat-published">0</strong>
+          </div>
+        </div>
+
+        <div class="ms-dash-ring-wrap">
+          <div class="ms-dash-ring" role="img" aria-labelledby="stat-close-label">
+            <svg class="ms-dash-ring-svg" viewBox="0 0 280 280" aria-hidden="true">
+              <circle class="ms-dash-ring-track" cx="140" cy="140" r="118" fill="none" />
+              <circle class="ms-dash-ring-prog" id="stat-close-ring" cx="140" cy="140" r="118" fill="none" pathLength="100" />
+            </svg>
+            <div class="ms-dash-ring-center">
+              <span class="ms-dash-ring-value" id="stat-close">0%</span>
+              <span class="ms-dash-stat-label" id="stat-close-label">Close rate</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="ms-dash-tools" aria-label="Quick actions">
+          <a class="ms-dash-tool" href="builder.html">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 12l-8.5 8.5a2.12 2.12 0 1 1-3-3L12 9"/><path d="M17.64 15L22 10.64"/></svg>
+            <span>Start a build</span>
+          </a>
+          <a class="ms-dash-tool" href="leads.html">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <span>Find a lead</span>
+          </a>
+        </div>
+      </section>
+
+      <section class="ms-dash-card ms-dash-sales-card" aria-label="Sales">
+        <header class="ms-dash-card-head">
+          <h2>Sales</h2>
+          <div class="ms-dash-card-meta">
+            <span class="ms-dash-count" id="dash-sales-progress">0</span>
+          </div>
+        </header>
+        <div class="ms-dash-list" id="dash-sales-list">
+          <div class="ms-dash-empty">Loading…</div>
+        </div>
+      </section>
+
+      <section class="ms-dash-card ms-dash-island" aria-label="Recent projects">
+        <button type="button" class="ms-dash-island-toggle" id="dash-projects-toggle" aria-expanded="false" aria-controls="dash-projects-panel">
+          <span class="ms-dash-island-title">Recent projects</span>
+          <span class="ms-dash-island-count" id="dash-projects-count">0 projects</span>
+        </button>
+        <div class="ms-dash-island-panel" id="dash-projects-panel" hidden>
+          <div class="ms-dash-list ms-dash-list--plain" id="dash-projects-list">
+            <div class="ms-dash-empty"><p>No projects yet.</p></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/segment-switch.js"></script>
+  <script src="js/ui-motion.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/install-hint.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

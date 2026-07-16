@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Manrope:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #03181c;
+      --text: #e8f7f4;
+      --muted: #7fadb4;
+      --accent: #2dd4bf;
+      --warm: #f5b942;
+      --line: rgba(45, 212, 191, 0.16);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: "Manrope", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      overflow-x: hidden;
+    }
+    h1, h2, h3 { font-family: "Sora", sans-serif; line-height: 0.98; font-weight: 700; }
+    a { color: inherit; text-decoration: none; }
+    img, video { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .hidden { display: none !important; }
+
+    .toggles {
+      position: fixed; bottom: 1rem; right: 1rem; z-index: 100;
+      background: rgba(3, 24, 28, 0.92); border: 1px solid var(--line);
+      border-radius: 1rem; padding: 0.85rem 1rem; width: 12.5rem;
+      backdrop-filter: blur(8px);
+    }
+    .toggles h4 { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.6rem; }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; margin: 0.4rem 0; font-size: 0.82rem; }
+    .switch { position: relative; width: 2.3rem; height: 1.25rem; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; inset: 0; cursor: pointer; background: #1a454c; border-radius: 999px; transition: .2s; }
+    .slider::before { content: ""; position: absolute; height: 0.9rem; width: 0.9rem; left: 0.18rem; top: 0.175rem; background: #fff; border-radius: 50%; transition: .2s; }
+    .switch input:checked + .slider { background: var(--accent); }
+    .switch input:checked + .slider::before { transform: translateX(1rem); }
+
+    /* Ocean video hero + morph blob */
+    .hero {
+      position: relative;
+      min-height: 100vh; min-height: 100dvh;
+      display: grid; place-items: center; text-align: center;
+      overflow: hidden;
+    }
+    .hero-video { position: absolute; inset: 0; z-index: 0; }
+    .hero-video video { filter: brightness(0.55) saturate(1.05); }
+    .hero-video::after {
+      content: ""; position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 40%, transparent, rgba(3,24,28,.55)),
+        linear-gradient(180deg, rgba(3,24,28,.35), rgba(3,24,28,.75));
+    }
+    .blob {
+      position: absolute; z-index: 1; width: min(70vw, 520px); height: min(70vw, 520px);
+      border-radius: 42% 58% 60% 40% / 45% 42% 58% 55%;
+      background: radial-gradient(circle at 35% 35%, rgba(45,212,191,.22), rgba(245,185,66,.08) 50%, transparent 70%);
+      animation: morph 14s ease-in-out infinite;
+      pointer-events: none; filter: blur(2px);
+    }
+    .hero-inner {
+      position: relative; z-index: 2; padding: 2rem; max-width: 36rem;
+    }
+    .logo {
+      font-family: "Sora", sans-serif; font-weight: 700;
+      font-size: clamp(2rem, 5vw, 3rem); color: var(--accent);
+      display: block; margin-bottom: 1.5rem; letter-spacing: -0.02em;
+    }
+    .hero h1 {
+      font-size: clamp(2.6rem, 7vw, 4.8rem); margin-bottom: 1rem;
+      opacity: 0; transform: translateY(20px);
+      animation: up 1s cubic-bezier(.22,1,.36,1) 0.2s forwards;
+    }
+    .hero p {
+      color: rgba(232,247,244,.8); margin-bottom: 2rem;
+      opacity: 0; animation: up 1s cubic-bezier(.22,1,.36,1) 0.4s forwards;
+    }
+    .cta {
+      display: inline-block; background: var(--accent); color: #03181c;
+      padding: 0.9rem 1.5rem; font-weight: 500; border-radius: 999px;
+      opacity: 0; animation: up 1s cubic-bezier(.22,1,.36,1) 0.55s forwards, float 4s ease-in-out 1.5s infinite;
+      transition: transform .25s ease, background .25s;
+    }
+    .cta:hover { transform: translateY(-2px); background: var(--warm); color: #03181c; }
+    .cta:focus-visible { outline: 2px solid var(--warm); outline-offset: 3px; }
+
+    @keyframes morph {
+      0%, 100% { border-radius: 42% 58% 60% 40% / 45% 42% 58% 55%; transform: translate(0,0) rotate(0deg); }
+      50% { border-radius: 58% 42% 40% 60% / 55% 58% 42% 45%; transform: translate(12px, -18px) rotate(8deg); }
+    }
+    @keyframes up { to { opacity: 1; transform: translateY(0); } }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+
+    /* Work gallery */
+    .work {
+      padding: clamp(4rem, 10vh, 6rem) clamp(1.5rem, 5vw, 4rem);
+      border-top: 1px solid var(--line);
+    }
+    .work h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); margin-bottom: 2rem; }
+    .work-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem;
+    }
+    .work-grid figure {
+      aspect-ratio: 4/5; overflow: hidden; position: relative;
+      opacity: 0; transform: scale(0.92);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+    .work-grid figure.in { opacity: 1; transform: scale(1); }
+    .work-grid figure:nth-child(2) { margin-top: 2rem; }
+    .work-grid img { transition: transform 1s ease; }
+    .work-grid figure:hover img { transform: scale(1.08); }
+    .work-grid figcaption {
+      position: absolute; bottom: 1rem; left: 1rem;
+      font-size: 0.85rem; color: var(--warm);
+    }
+
+    /* Staggered services */
+    .services {
+      padding: clamp(4rem, 10vh, 6rem) clamp(1.5rem, 5vw, 4rem);
+      display: grid; grid-template-columns: 1fr 1.2fr; gap: 3rem;
+      align-items: start; border-top: 1px solid var(--line);
+    }
+    .services h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); }
+    .list { list-style: none; }
+    .list li {
+      padding: 1.25rem 0; border-bottom: 1px solid var(--line);
+      display: flex; justify-content: space-between; gap: 1rem; align-items: baseline;
+      opacity: 0; transform: translateX(16px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+    .list li.in { opacity: 1; transform: translateX(0); }
+    .list strong { font-family: "Sora", sans-serif; font-weight: 600; }
+    .list span { color: var(--muted); font-size: 0.95rem; text-align: right; }
+
+    /* Parallax moment */
+    .moment {
+      position: relative; min-height: 80vh;
+      display: grid; place-items: end start; overflow: hidden;
+    }
+    .moment img { position: absolute; inset: 0; transform: scale(1.15); will-change: transform; }
+    .moment::after {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(180deg, transparent 30%, rgba(3,24,28,.92));
+    }
+    .moment p {
+      position: relative; z-index: 1;
+      padding: 2.5rem clamp(1.5rem, 5vw, 4rem);
+      font-family: "Sora", sans-serif;
+      font-size: clamp(1.4rem, 3vw, 2.2rem);
+      max-width: 18ch; color: var(--warm);
+    }
+
+    /* Testimonials */
+    .testi {
+      padding: clamp(4rem, 10vh, 6rem) clamp(1.5rem, 5vw, 4rem);
+      border-top: 1px solid var(--line);
+    }
+    .testi h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); margin-bottom: 2rem; }
+    .testi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .testi-card {
+      padding: 1.5rem; border: 1px solid var(--line); border-radius: 1rem;
+      opacity: 0; transform: translateY(20px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+    .testi-card.in { opacity: 1; transform: translateY(0); }
+    .testi-card blockquote { font-size: 1rem; margin-bottom: 0.75rem; line-height: 1.5; }
+    .testi-card cite { color: var(--muted); font-style: normal; font-size: 0.8rem; }
+
+    /* Contact */
+    .contact {
+      padding: clamp(4rem, 10vh, 6rem) clamp(1.5rem, 5vw, 4rem);
+      border-top: 1px solid var(--line);
+    }
+    .contact h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); margin-bottom: 0.5rem; }
+    .contact .lead { color: var(--muted); margin-bottom: 2rem; }
+    form { display: grid; gap: 1rem; max-width: 28rem; }
+    label { display: grid; gap: 0.3rem; font-size: 0.8rem; color: var(--muted); }
+    input, textarea {
+      background: rgba(10,47,53,.6); border: 1px solid var(--line); color: var(--text);
+      padding: 0.85rem 1rem; font: inherit; border-radius: 0.75rem;
+    }
+    input:focus, textarea:focus { outline: 1px solid var(--accent); }
+    button {
+      justify-self: start; background: var(--warm); color: #03181c; border: 0;
+      padding: 0.85rem 1.4rem; font: inherit; font-weight: 500; border-radius: 999px; cursor: pointer;
+      transition: transform .25s ease, background .25s;
+    }
+    button:hover { transform: translateY(-2px); }
+    button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    .form-note { font-size: 0.85rem; margin-top: 0.25rem; min-height: 1.25em; color: var(--warm); }
+    .form-note.err { color: #e07070; }
+
+    a:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible,
+    .switch input:focus-visible + .slider { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    footer {
+      padding: 1.5rem clamp(1.5rem, 5vw, 4rem);
+      display: flex; justify-content: space-between; color: var(--muted); font-size: 0.85rem;
+      border-top: 1px solid var(--line);
+    }
+
+    @media (max-width: 720px) {
+      .services, .testi-grid { grid-template-columns: 1fr; }
+      .work-grid { grid-template-columns: 1fr 1fr; }
+      .work-grid figure:nth-child(2) { margin-top: 0; }
+      .list li { flex-direction: column; align-items: flex-start; }
+      .list span { text-align: left; }
+    }
+    @media (max-width: 480px) { .work-grid { grid-template-columns: 1fr; } }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      .hero h1, .hero p, .cta { opacity: 1; transform: none; animation: none; }
+      .blob { display: none; }
+      .list li, .work-grid figure, .testi-card { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="toggles" aria-label="Section toggles">
+    <h4>Sections</h4>
+    <div class="toggle-row"><span>Work</span><label class="switch"><input type="checkbox" data-target="work" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Services</span><label class="switch"><input type="checkbox" data-target="services" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Moment</span><label class="switch"><input type="checkbox" data-target="moment" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Testimonials</span><label class="switch"><input type="checkbox" data-target="testimonials" checked /><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>Contact</span><label class="switch"><input type="checkbox" data-target="contact" checked /><span class="slider"></span></label></div>
+  </div>
+
+  <section class="hero">
+    <div class="hero-video">
+      <video autoplay muted loop playsinline poster="https://images.unsplash.com/photo-1505142468610-359e7d316be0?auto=format&fit=crop&w=1800&q=80">
+        <source src="https://videos.pexels.com/video-files/1409899/1409899-uhd_2560_1440_25fps.mp4" type="video/mp4" />
+      </video>
+    </div>
+    <div class="blob" aria-hidden="true"></div>
+    <div class="hero-inner">
+      <a class="logo" href="#">Tide</a>
+      <h1>Flow with purpose.</h1>
+      <p>Calm digital spaces for wellness and lifestyle brands.</p>
+      <a class="cta" href="#contact">Get in touch</a>
+    </div>
+  </section>
+
+  <section class="work" id="work" data-section="work">
+    <h2>Recent tides</h2>
+    <div class="work-grid">
+      <figure><img src="https://images.unsplash.com/photo-1540555700478-4be289fbbe4f?auto=format&fit=crop&w=800&q=80" alt="Spa wellness" /><figcaption>Serene Spa</figcaption></figure>
+      <figure><img src="https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=800&q=80" alt="Yoga retreat" /><figcaption>Still Retreat</figcaption></figure>
+      <figure><img src="https://images.unsplash.com/photo-1515377901643-4a9748a77d5e?auto=format&fit=crop&w=800&q=80" alt="Coastal lifestyle" /><figcaption>Coast Living</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="services" id="services" data-section="services">
+    <h2>What we do</h2>
+    <ul class="list">
+      <li><strong>Brand refresh</strong><span>Color, type, tone</span></li>
+      <li><strong>Marketing sites</strong><span>Airy, converting</span></li>
+      <li><strong>Motion kits</strong><span>Soft launch loops</span></li>
+      <li><strong>Content strategy</strong><span>Calm, consistent</span></li>
+    </ul>
+  </section>
+
+  <section class="moment" id="moment" data-section="moment">
+    <img id="parImg" src="https://images.unsplash.com/photo-1473116763249-2faaef81ccda?auto=format&fit=crop&w=2000&q=80" alt="Coastal horizon at dusk" />
+    <p>Stillness that still converts.</p>
+  </section>
+
+  <section class="testi" id="testimonials" data-section="testimonials">
+    <h2>Voices</h2>
+    <div class="testi-grid">
+      <article class="testi-card"><blockquote>“Tide gave our wellness brand a digital home that breathes.”</blockquote><cite>— Elena M., Serene Spa</cite></article>
+      <article class="testi-card"><blockquote>“Soft motion, clear message. Our bookings doubled.”</blockquote><cite>— James R., Still Retreat</cite></article>
+    </div>
+  </section>
+
+  <section class="contact" id="contact" data-section="contact">
+    <h2>Contact</h2>
+    <p class="lead">Send a wave our way.</p>
+    <form id="contactForm" novalidate>
+      <label>Name<input type="text" name="name" required autocomplete="name" /></label>
+      <label>Email<input type="email" name="email" required autocomplete="email" /></label>
+      <label>Message<textarea name="message" rows="3" required></textarea></label>
+      <button type="submit">Send</button>
+      <p class="form-note" id="formNote" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <footer>
+    <span>Tide</span>
+    <span>© 2026</span>
+  </footer>
+
+  <script>
+    const parImg = document.getElementById("parImg");
+    const moment = document.getElementById("moment");
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (parImg && moment && !reducedMotion) {
+      window.addEventListener("scroll", () => {
+        if (moment.classList.contains("hidden")) return;
+        const rect = moment.getBoundingClientRect();
+        const p = 1 - Math.max(0, Math.min(1, rect.top / window.innerHeight));
+        parImg.style.transform = `scale(${1.15 - p * 0.1}) translateY(${p * -50}px)`;
+      }, { passive: true });
+    }
+
+    document.getElementById("contactForm")?.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const note = document.getElementById("formNote");
+      if (!form.checkValidity()) {
+        note.textContent = "Please fill in all fields.";
+        note.className = "form-note err";
+        form.reportValidity();
+        return;
+      }
+      note.textContent = "Thanks — we'll be in touch shortly.";
+      note.className = "form-note";
+      form.reset();
+    });
+
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          const idx = e.target.parentElement ? [...e.target.parentElement.children].indexOf(e.target) : 0;
+          setTimeout(() => e.target.classList.add("in"), idx * 90);
+        }
+      });
+    }, { threshold: 0.15 });
+    document.querySelectorAll(".list li, .work-grid figure, .testi-card").forEach((el) => io.observe(el));
+
+    document.querySelectorAll(".toggles input[type=checkbox]").forEach((input) => {
+      input.addEventListener("change", () => {
+        const el = document.querySelector(`[data-section="${input.dataset.target}"]`);
+        if (el) el.classList.toggle("hidden", !input.checked);
+      });
+    });
+  </script>
+</body>
+</html>

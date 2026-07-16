@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Business Finder · Moonrise Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/studio.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body data-page="leads">
+  <div id="shell"></div>
+  <div id="page-body" class="ms-lf-page">
+    <header class="ms-page-head">
+      <div class="ms-page-head-copy">
+        <h1>Business Finder</h1>
+      </div>
+    </header>
+
+    <form class="ms-lf-search" id="lf-form">
+      <div class="ms-lf-field">
+        <label for="lf-type">Business type</label>
+        <div class="ms-lf-suggest-wrap" id="lf-type-wrap" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-owns="lf-type-suggest">
+          <div class="ms-lf-input">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+            <input id="lf-type" name="type" type="text" placeholder="e.g. Barbershop, Dentist, Gym…" autocomplete="off" aria-autocomplete="list" aria-controls="lf-type-suggest">
+          </div>
+          <ul id="lf-type-suggest" class="ms-lf-suggest" role="listbox" hidden></ul>
+        </div>
+      </div>
+      <div class="ms-lf-field">
+        <label for="lf-location">Location</label>
+        <div class="ms-lf-suggest-wrap" id="lf-location-wrap" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-owns="lf-location-suggest">
+          <div class="ms-lf-input">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <input id="lf-location" name="location" type="text" placeholder="City, state, or ZIP" autocomplete="off" aria-autocomplete="list" aria-controls="lf-location-suggest">
+          </div>
+          <ul id="lf-location-suggest" class="ms-lf-suggest" role="listbox" hidden></ul>
+        </div>
+      </div>
+      <button type="submit" class="ms-lf-find" id="lf-find">Find businesses →</button>
+
+      <div class="ms-lf-filters-row">
+        <div class="ms-lf-list-filter" role="group" aria-label="List">
+          <span class="ms-lf-website-filter-label">List</span>
+          <div class="ms-lf-website-seg" id="lf-list-view">
+            <button type="button" class="ms-lf-website-btn lf-toggle-btn is-active active" data-list-view="default" aria-pressed="true">Available</button>
+            <button type="button" class="ms-lf-website-btn lf-toggle-btn" data-list-view="saved" aria-pressed="false">Quick Save</button>
+          </div>
+        </div>
+        <div class="ms-lf-website-filter" role="group" aria-label="Website filter">
+          <span class="ms-lf-website-filter-label">Website</span>
+          <div class="ms-lf-website-seg" id="lf-website-filter">
+            <button type="button" class="ms-lf-website-btn" data-website="all">All</button>
+            <button type="button" class="ms-lf-website-btn is-active" data-website="without">No website</button>
+            <button type="button" class="ms-lf-website-btn" data-website="with">Has website</button>
+          </div>
+        </div>
+        <a class="ms-btn ms-lf-purchase-scraper" href="store.html#lead-scraper">Purchase lead scraper</a>
+      </div>
+    </form>
+
+    <div class="ms-lf-popular">
+      <span>Popular</span>
+      <div class="ms-lf-tags" id="lf-tags" role="group" aria-label="Popular categories"></div>
+    </div>
+
+    <div class="ms-lf-list-section">
+      <div class="ms-lf-list-head" id="lf-list-head" hidden>
+        <span class="ms-lf-list-count" id="lf-list-count"></span>
+      </div>
+      <p class="ms-muted ms-lf-status" id="lf-status" hidden></p>
+      <p class="ms-error" id="lf-error" hidden></p>
+      <div class="ms-lead-list" id="lf-results" hidden></div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/lead-csv-format.js"></script>
+  <script src="js/lead-display.js"></script>
+  <script src="js/leads-loader.js"></script>
+  <script src="js/segment-switch.js"></script>
+  <script src="js/ui-motion.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/leads-search.js"></script>
+</body>
+</html>

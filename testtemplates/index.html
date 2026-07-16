@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Test Templates</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0b0c0e;
+      --text: #eee;
+      --muted: #7a7f88;
+      --line: #22262c;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      font-family: "DM Sans", sans-serif;
+      background:
+        radial-gradient(ellipse 80% 50% at 10% 0%, rgba(255,106,0,.12), transparent),
+        radial-gradient(ellipse 60% 40% at 90% 100%, rgba(45,212,191,.08), transparent),
+        var(--bg);
+      color: var(--text);
+      padding: clamp(2rem, 6vw, 4rem);
+    }
+    main { width: min(560px, 100%); }
+    h1 {
+      font-family: "Syne", sans-serif;
+      font-size: clamp(2rem, 5vw, 2.8rem);
+      letter-spacing: -0.03em;
+      margin-bottom: 0.5rem;
+    }
+    .lede { color: var(--muted); margin-bottom: 2.5rem; max-width: 36ch; line-height: 1.5; }
+    a {
+      display: flex; align-items: baseline; justify-content: space-between; gap: 1rem;
+      padding: 0.9rem 0;
+      color: var(--text); text-decoration: none;
+      border-bottom: 1px solid var(--line);
+      font-size: 1.02rem;
+      transition: color .2s, padding-left .25s ease;
+    }
+    a:hover { color: #ff6a00; padding-left: 0.4rem; }
+    a:focus-visible { outline: 2px solid #ff6a00; outline-offset: 3px; }
+    a strong { font-family: "Syne", sans-serif; font-weight: 700; }
+    span { color: var(--muted); font-size: 0.78rem; white-space: nowrap; }
+    @media (prefers-reduced-motion: reduce) {
+      a { transition: color .2s; }
+      a:hover { padding-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Test Templates</h1>
+    <p class="lede">27 unique full sites — motion, stock media, sparse copy, polished details.</p>
+    <a href="01-coral-navy/index.html"><strong>01 Coral</strong><span>scroll zoom</span></a>
+    <a href="02-lime-charcoal/index.html"><strong>02 Volt</strong><span>split + video</span></a>
+    <a href="03-crimson-ink/index.html"><strong>03 Ink</strong><span>type wipe</span></a>
+    <a href="04-teal-amber/index.html"><strong>04 Tide</strong><span>ocean film</span></a>
+    <a href="05-cobalt-gold/index.html"><strong>05 Beacon</strong><span>clip path</span></a>
+    <a href="06-magenta-mint/index.html"><strong>06 Bloom</strong><span>parallax</span></a>
+    <a href="07-orange-slate/index.html"><strong>07 Forge</strong><span>grain + wipe</span></a>
+    <a href="08-sapphire-sand/index.html"><strong>08 Aura</strong><span>float zoom</span></a>
+    <a href="09-emerald-mist/index.html"><strong>09 Verdant</strong><span>curtain part</span></a>
+    <a href="10-rose-stone/index.html"><strong>10 Bloomrose</strong><span>blur clarify</span></a>
+    <a href="11-indigo-cream/index.html"><strong>11 North</strong><span>word blur-in</span></a>
+    <a href="12-copper-night/index.html"><strong>12 Kiln</strong><span>line + video</span></a>
+    <a href="13-sky-graphite/index.html"><strong>13 Drift</strong><span>circle expand</span></a>
+    <a href="14-olive-bone/index.html"><strong>14 Grove</strong><span>image stack</span></a>
+    <a href="15-wine-fog/index.html"><strong>15 Vellum</strong><span>fog veil</span></a>
+    <a href="16-canary-ink/index.html"><strong>16 Spark</strong><span>marquee pop</span></a>
+    <a href="17-glacier-slate/index.html"><strong>17 Frost</strong><span>sheet lift</span></a>
+    <a href="18-clay-fog/index.html"><strong>18 Terra</strong><span>split slide</span></a>
+    <a href="19-cyan-void/index.html"><strong>19 Pulse</strong><span>scan grid</span></a>
+    <a href="20-forest-cream/index.html"><strong>20 Canopy</strong><span>triple sway</span></a>
+    <a href="21-ruby-smoke/index.html"><strong>21 Crimson</strong><span>reveal bar</span></a>
+    <a href="22-azure-paper/index.html"><strong>22 Paper</strong><span>underline draw</span></a>
+    <a href="23-honey-espresso/index.html"><strong>23 Amber</strong><span>breathe glow</span></a>
+    <a href="24-pearl-midnight/index.html"><strong>24 Lumen</strong><span>split meet</span></a>
+    <a href="25-moss-porcelain/index.html"><strong>25 Moss</strong><span>unmask slide</span></a>
+    <a href="26-flame-coal/index.html"><strong>26 Ember</strong><span>rising embers</span></a>
+    <a href="27-arctic-navy/index.html"><strong>27 Polar</strong><span>aurora poly</span></a>
+  </main>
+</body>
+</html>
