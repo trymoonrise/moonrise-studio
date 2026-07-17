@@ -970,6 +970,125 @@
     return { href: "builder.html?" + params.toString(), pick };
   }
 
+  function launchBuilderForLead(lead) {
+    if (!lead) return;
+    const handoff = builderHrefForLead(lead);
+    storeBuilderPick(handoff.pick);
+    location.href = handoff.href;
+  }
+
+  function resetSlide(slide) {
+    if (!slide) return;
+    const thumb = slide.querySelector(".ms-lf-slide-thumb");
+    const fill = slide.querySelector(".ms-lf-slide-fill");
+    slide.classList.remove("is-dragging", "is-done");
+    slide.style.removeProperty("--ms-lf-slide-x");
+    if (thumb) thumb.style.transform = "";
+    if (fill) fill.style.width = "";
+  }
+
+  function setSlideX(slide, x, max) {
+    const clamped = Math.max(0, Math.min(max, x));
+    const pct = max > 0 ? (clamped / max) * 100 : 0;
+    const thumb = slide.querySelector(".ms-lf-slide-thumb");
+    const fill = slide.querySelector(".ms-lf-slide-fill");
+    slide.style.setProperty("--ms-lf-slide-x", clamped + "px");
+    if (thumb) thumb.style.transform = "translateX(" + clamped + "px)";
+    if (fill) fill.style.width = "calc(" + pct + "% + 22px)";
+    return clamped;
+  }
+
+  function completeSlide(slide) {
+    if (!slide || slide.classList.contains("is-done")) return;
+    const id = slide.getAttribute("data-lead-slide") || "";
+    const track = slide.querySelector(".ms-lf-slide-track");
+    const thumb = slide.querySelector(".ms-lf-slide-thumb");
+    const max = Math.max(0, (track?.clientWidth || 0) - (thumb?.offsetWidth || 0));
+    setSlideX(slide, max, max);
+    slide.classList.add("is-done");
+    slide.classList.remove("is-dragging");
+    const lead =
+      lastLeads.find((item) => leadId(item) === id) || savedMap[id] || null;
+    window.setTimeout(() => launchBuilderForLead(lead), 140);
+  }
+
+  function bindGenerateSlides() {
+    if (!resultsEl || resultsEl.dataset.slideBound === "1") return;
+    resultsEl.dataset.slideBound = "1";
+
+    resultsEl.addEventListener("pointerdown", (e) => {
+      const thumb = e.target.closest(".ms-lf-slide-thumb");
+      if (!thumb) return;
+      const slide = thumb.closest(".ms-lf-slide");
+      if (!slide || slide.classList.contains("is-disabled") || slide.classList.contains("is-done")) {
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+
+      const track = slide.querySelector(".ms-lf-slide-track");
+      if (!track) return;
+      const max = Math.max(0, track.clientWidth - thumb.offsetWidth);
+      const startX = e.clientX;
+      const startLeft = Number.parseFloat(slide.style.getPropertyValue("--ms-lf-slide-x")) || 0;
+      let current = startLeft;
+      let finished = false;
+
+      slide.classList.add("is-dragging");
+      thumb.setPointerCapture?.(e.pointerId);
+
+      const onMove = (ev) => {
+        if (finished) return;
+        current = setSlideX(slide, startLeft + (ev.clientX - startX), max);
+      };
+
+      const onUp = () => {
+        if (finished) return;
+        finished = true;
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+        window.removeEventListener("pointercancel", onUp);
+        try {
+          thumb.releasePointerCapture?.(e.pointerId);
+        } catch (_) {
+          /* ignore */
+        }
+        if (current >= max * 0.86) {
+          completeSlide(slide);
+        } else {
+          resetSlide(slide);
+        }
+      };
+
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+      window.addEventListener("pointercancel", onUp);
+    });
+
+    resultsEl.addEventListener("keydown", (e) => {
+      const thumb = e.target.closest(".ms-lf-slide-thumb");
+      if (!thumb) return;
+      const slide = thumb.closest(".ms-lf-slide");
+      if (!slide || slide.classList.contains("is-done")) return;
+      const track = slide.querySelector(".ms-lf-slide-track");
+      if (!track) return;
+      const max = Math.max(0, track.clientWidth - thumb.offsetWidth);
+      const cur = Number.parseFloat(slide.style.getPropertyValue("--ms-lf-slide-x")) || 0;
+
+      if (e.key === "ArrowRight" || e.key === "End") {
+        e.preventDefault();
+        if (e.key === "End" || cur >= max * 0.86) {
+          completeSlide(slide);
+        } else {
+          setSlideX(slide, cur + Math.max(24, max * 0.2), max);
+        }
+      } else if (e.key === "ArrowLeft" || e.key === "Home" || e.key === "Escape") {
+        e.preventDefault();
+        resetSlide(slide);
+      }
+    });
+  }
+
   function renderLeadCard(lead, index) {
     const id = leadId(lead);
     const revealDelay = Math.min((index || 0) % 8, 7) * 45;
@@ -985,7 +1104,6 @@
     const ratingLine = LD?.formatRatingLine ? LD.formatRatingLine(lead) : "";
     const saved = isSaved(lead);
     const tel = telHref(phone || lead.phone);
-    const handoff = builderHrefForLead(lead);
 
     const addressEmpty = !address;
     const phoneEmpty = !phone;
@@ -1081,13 +1199,20 @@
       sideRows.join("") +
       "</div></div>" +
       '<footer class="ms-lf-pro-foot">' +
-      '<a class="ms-btn ms-lf-pro-generate" href="' +
-      escapeHtml(handoff.href) +
-      '" data-lead-builder="' +
+      '<div class="ms-lf-slide" data-lead-slide="' +
       escapeHtml(id) +
+      '" role="group" aria-label="Slide to generate site for ' +
+      escapeHtml(name) +
+      '">' +
+      '<div class="ms-lf-slide-track">' +
+      '<div class="ms-lf-slide-fill" aria-hidden="true"></div>' +
+      '<span class="ms-lf-slide-label" aria-hidden="true">Slide to generate</span>' +
+      '<button type="button" class="ms-lf-slide-thumb" aria-label="Slide to generate site for ' +
+      escapeHtml(name) +
       '">' +
       ICO.hammer +
-      "Generate</a></footer></article>"
+      "</button>" +
+      "</div></div></footer></article>"
     );
   }
 
@@ -1540,19 +1665,8 @@
       refreshVisibleLeads();
       return;
     }
-    const builderLink = e.target.closest("[data-lead-builder]");
-    if (builderLink) {
-      const id = builderLink.getAttribute("data-lead-builder") || "";
-      const lead =
-        lastLeads.find((item) => leadId(item) === id) ||
-        savedMap[id] ||
-        null;
-      if (lead) {
-        e.preventDefault();
-        const handoff = builderHrefForLead(lead);
-        storeBuilderPick(handoff.pick);
-        location.href = handoff.href;
-      }
+    if (e.target.closest(".ms-lf-slide")) {
+      e.preventDefault();
       return;
     }
     const btn = e.target.closest("[data-lead-save]");
@@ -1574,6 +1688,8 @@
     if (card) card.classList.toggle("is-saved", on);
     if (listView === "saved") refreshVisibleLeads();
   });
+
+  bindGenerateSlides();
 
   document.getElementById("lf-tags")?.addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-type]");

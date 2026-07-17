@@ -1303,9 +1303,11 @@
     const dollars = PRICE_CHAPTERS[idx] || 300;
     const pct = (idx / (PRICE_CHAPTERS.length - 1)) * 100;
     const valueEl = document.getElementById("lb-price-value");
+    const commissionEl = document.getElementById("lb-commission-value");
     const fillEl = document.getElementById("lb-price-fill");
     const rangeEl = document.getElementById("lb-price-range");
     if (valueEl) valueEl.textContent = formatPriceLabel(dollars);
+    if (commissionEl) commissionEl.textContent = formatPriceLabel(dollars * 0.4);
     if (fillEl) fillEl.style.width = pct + "%";
     if (rangeEl) {
       rangeEl.value = String(idx);
@@ -1315,6 +1317,10 @@
       const selected = Number(btn.dataset.price) === dollars;
       btn.classList.toggle("is-active", selected);
       btn.setAttribute("aria-pressed", String(selected));
+    });
+    document.querySelectorAll(".ms-lb-price-marks i").forEach((mark, markIdx) => {
+      mark.classList.toggle("is-reached", markIdx <= idx);
+      mark.classList.toggle("is-current", markIdx === idx);
     });
   }
 

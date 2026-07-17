@@ -2582,10 +2582,15 @@
         </div>
 
         <footer class="lf-pro-foot">
-          <button type="button" class="lf-action-btn lf-action-builder lf-action-builder--full${canEditStatus ? "" : " is-disabled"}" data-lead-builder="${escapeHtml(leadId)}" aria-label="Generate site for ${escapeHtml(bizName)}"${canEditStatus ? "" : " disabled aria-disabled=\"true\""}>
-            <span data-icon="hammer" data-icon-class="lf-action-ico"></span>
-            Generate
-          </button>
+          <div class="lf-slide${canEditStatus ? "" : " is-disabled"}" data-lead-slide="${escapeHtml(leadId)}" role="group" aria-label="Slide to generate site for ${escapeHtml(bizName)}">
+            <div class="lf-slide-track">
+              <div class="lf-slide-fill" aria-hidden="true"></div>
+              <span class="lf-slide-label" aria-hidden="true">Slide to generate</span>
+              <button type="button" class="lf-slide-thumb" data-lead-builder="${escapeHtml(leadId)}" aria-label="Slide to generate site for ${escapeHtml(bizName)}"${canEditStatus ? "" : " disabled aria-disabled=\"true\""}>
+                <span data-icon="hammer" data-icon-class="lf-action-ico"></span>
+              </button>
+            </div>
+          </div>
         </footer>
       </article>
     `;
@@ -3071,6 +3076,90 @@
     if (!grid || grid.dataset.markActionsBound === "1") return;
     grid.dataset.markActionsBound = "1";
 
+    function resetLfSlide(slide) {
+      if (!slide) return;
+      const thumb = slide.querySelector(".lf-slide-thumb");
+      const fill = slide.querySelector(".lf-slide-fill");
+      slide.classList.remove("is-dragging", "is-done");
+      slide.style.removeProperty("--lf-slide-x");
+      if (thumb) thumb.style.transform = "";
+      if (fill) fill.style.width = "";
+    }
+
+    function setLfSlideX(slide, x, max) {
+      const clamped = Math.max(0, Math.min(max, x));
+      const pct = max > 0 ? (clamped / max) * 100 : 0;
+      const thumb = slide.querySelector(".lf-slide-thumb");
+      const fill = slide.querySelector(".lf-slide-fill");
+      slide.style.setProperty("--lf-slide-x", clamped + "px");
+      if (thumb) thumb.style.transform = "translateX(" + clamped + "px)";
+      if (fill) fill.style.width = "calc(" + pct + "% + 22px)";
+      return clamped;
+    }
+
+    function completeLfSlide(slide) {
+      if (!slide || slide.classList.contains("is-done")) return;
+      const id =
+        slide.getAttribute("data-lead-slide") ||
+        slide.querySelector("[data-lead-builder]")?.getAttribute("data-lead-builder") ||
+        "";
+      const track = slide.querySelector(".lf-slide-track");
+      const thumb = slide.querySelector(".lf-slide-thumb");
+      const max = Math.max(0, (track?.clientWidth || 0) - (thumb?.offsetWidth || 0));
+      setLfSlideX(slide, max, max);
+      slide.classList.add("is-done");
+      slide.classList.remove("is-dragging");
+      if (!id) return;
+      window.setTimeout(() => void handleBuildLeadClick(id), 140);
+    }
+
+    grid.addEventListener("pointerdown", (e) => {
+      const thumb = e.target.closest(".lf-slide-thumb");
+      if (!thumb) return;
+      const slide = thumb.closest(".lf-slide");
+      if (
+        !slide ||
+        slide.classList.contains("is-disabled") ||
+        slide.classList.contains("is-done") ||
+        thumb.disabled ||
+        thumb.getAttribute("aria-disabled") === "true"
+      ) {
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      const track = slide.querySelector(".lf-slide-track");
+      if (!track) return;
+      const max = Math.max(0, track.clientWidth - thumb.offsetWidth);
+      const startX = e.clientX;
+      const startLeft = Number.parseFloat(slide.style.getPropertyValue("--lf-slide-x")) || 0;
+      let current = startLeft;
+      let finished = false;
+      slide.classList.add("is-dragging");
+      thumb.setPointerCapture?.(e.pointerId);
+      const onMove = (ev) => {
+        if (finished) return;
+        current = setLfSlideX(slide, startLeft + (ev.clientX - startX), max);
+      };
+      const onUp = () => {
+        if (finished) return;
+        finished = true;
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+        window.removeEventListener("pointercancel", onUp);
+        try {
+          thumb.releasePointerCapture?.(e.pointerId);
+        } catch (_) {
+          /* ignore */
+        }
+        if (current >= max * 0.86) completeLfSlide(slide);
+        else resetLfSlide(slide);
+      };
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+      window.addEventListener("pointercancel", onUp);
+    });
+
     grid.addEventListener("click", (e) => {
       const saveBtn = e.target.closest("[data-lead-save]");
       if (saveBtn) {
@@ -3096,16 +3185,9 @@
         void handleOwnerQuickPromptClick(id, quickPromptBtn);
         return;
       }
-      const builderBtn = e.target.closest("[data-lead-builder]");
-      if (builderBtn) {
+      if (e.target.closest(".lf-slide")) {
         e.preventDefault();
         e.stopPropagation();
-        if (builderBtn.disabled || builderBtn.getAttribute("aria-disabled") === "true") {
-          return;
-        }
-        const id = builderBtn.getAttribute("data-lead-builder");
-        if (!id) return;
-        void handleBuildLeadClick(id);
       }
     });
   }

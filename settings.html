@@ -70,6 +70,37 @@
             </label>
           </div>
 
+          <div class="ms-settings-mvp" id="set-mvp-active" hidden>
+            <div class="ms-settings-mvp-head">
+              <strong>MVP+ profile style</strong>
+              <span class="ms-settings-mvp-badge">Active</span>
+            </div>
+            <p class="ms-settings-hint ms-muted">Customize how your name and avatar appear in the sidebar.</p>
+            <div class="ms-field">
+              <label class="ms-label" for="set-mvp-name-color">Name color</label>
+              <div class="ms-mvp-color-row">
+                <input class="ms-mvp-color-input" type="color" id="set-mvp-name-color" value="#2563eb" aria-label="Name color">
+                <input class="ms-input ms-mvp-color-hex" id="set-mvp-name-color-hex" maxlength="7" spellcheck="false" placeholder="#2563eb" aria-label="Name color hex">
+                <button type="button" class="ms-btn ms-btn-secondary ms-mvp-color-reset" id="set-mvp-name-color-reset">Reset</button>
+              </div>
+            </div>
+            <div class="ms-field">
+              <p class="ms-label" id="set-mvp-hat-label">Profile hat</p>
+              <div class="ms-mvp-hats" id="set-mvp-hats" role="group" aria-labelledby="set-mvp-hat-label"></div>
+            </div>
+            <div class="ms-settings-actions">
+              <button type="button" class="ms-btn" id="set-mvp-save">Save MVP+ style</button>
+            </div>
+            <p class="ms-settings-status is-ok" id="set-mvp-ok" hidden></p>
+          </div>
+
+          <div class="ms-settings-mvp-upsell" id="set-mvp-upsell" hidden>
+            <p class="ms-settings-hint ms-muted">
+              MVP+ unlocks custom name color and a profile hat.
+              <a class="ms-dash-link" href="store.html#mvp-plus">View MVP+ in Store →</a>
+            </p>
+          </div>
+
           <div class="ms-settings-actions">
             <button type="button" class="ms-btn" id="set-save">Save profile</button>
           </div>
@@ -159,6 +190,7 @@
   <script src="js/segment-switch.js"></script>
   <script src="js/ui-motion.js"></script>
   <script src="js/toast.js"></script>
+  <script src="js/mvp-cosmetics.js"></script>
   <script src="js/app.js"></script>
   <script src="js/settings.js"></script>
 </body>

@@ -16,6 +16,11 @@
 
   let avatarUrl = "";
   let started = false;
+  let mvpPlus = false;
+  let brandingDefaults = {};
+  let selectedHat = "none";
+
+  const mvpCosmetics = () => window.MoonriseMvpCosmetics;
 
   function defaultAvatar() {
     return (window.SITE_CONFIG && window.SITE_CONFIG.defaultAvatarUrl) || "doc/pfp.png";
@@ -114,6 +119,61 @@
     imgEl.addEventListener("error", onError);
     imgEl.src = displayUrl;
     if (imgEl.complete && imgEl.naturalWidth > 0) void onLoad();
+    syncMvpPreview();
+  }
+
+  function syncMvpPreview() {
+    if (!mvpPlus) return;
+    const cosmetics = mvpCosmetics();
+    if (!cosmetics) return;
+    const handleInput = document.getElementById("set-handle");
+    const color = document.getElementById("set-mvp-name-color")?.value || "";
+    if (handleInput && /^#[0-9a-fA-F]{6}$/.test(color)) {
+      handleInput.style.color = color;
+    } else if (handleInput) {
+      handleInput.style.color = "";
+    }
+    cosmetics.applyProfileCosmetics(
+      { name_color: color, profile_hat: selectedHat },
+      { avatarWrap: wrapEl, hatElId: "set-avatar-hat" }
+    );
+  }
+
+  function syncMvpSection() {
+    const active = document.getElementById("set-mvp-active");
+    const upsell = document.getElementById("set-mvp-upsell");
+    if (active) active.hidden = !mvpPlus;
+    if (upsell) upsell.hidden = mvpPlus;
+    if (!mvpPlus) return;
+
+    const branding = mvpCosmetics()?.normalizeBranding(brandingDefaults) || {
+      name_color: "",
+      profile_hat: "none",
+    };
+    selectedHat = branding.profile_hat;
+    const colorInput = document.getElementById("set-mvp-name-color");
+    const hexInput = document.getElementById("set-mvp-name-color-hex");
+    const defaultColor = "#2563eb";
+    const color = branding.name_color || defaultColor;
+    if (colorInput) colorInput.value = color;
+    if (hexInput) hexInput.value = branding.name_color || "";
+
+    mvpCosmetics()?.renderHatPicker(
+      document.getElementById("set-mvp-hats"),
+      selectedHat,
+      (hatId) => {
+        selectedHat = hatId;
+        syncMvpPreview();
+      }
+    );
+    syncMvpPreview();
+  }
+
+  function setMvpOk(msg) {
+    const el = document.getElementById("set-mvp-ok");
+    if (!el) return;
+    el.hidden = !msg;
+    el.textContent = msg || "";
   }
 
   function notifyShell(handle, url) {
@@ -122,6 +182,11 @@
     if (nameEl && clean) nameEl.textContent = clean;
     document.dispatchEvent(
       new CustomEvent("ms:avatar-changed", { detail: { url: url || "", handle: clean } })
+    );
+    document.dispatchEvent(
+      new CustomEvent("ms:profile-cosmetics-changed", {
+        detail: { branding: brandingDefaults, mvpPlus },
+      })
     );
   }
 
@@ -592,6 +657,11 @@
         profile.payout_profile && typeof profile.payout_profile === "object"
           ? profile.payout_profile
           : {};
+      mvpPlus = !!profile.mvp_plus;
+      brandingDefaults =
+        profile.branding_defaults && typeof profile.branding_defaults === "object"
+          ? profile.branding_defaults
+          : {};
     } else {
       const fallback =
         user.user_metadata?.handle ||
@@ -603,10 +673,13 @@
       document.getElementById("set-email-notif").checked = true;
       avatarUrl = "";
       payoutProfile = {};
+      mvpPlus = false;
+      brandingDefaults = {};
     }
     refreshPreview();
     renderPayoutList();
     syncFinanceSetupLink();
+    syncMvpSection();
   }
 
   fileInput?.addEventListener("change", async () => {
@@ -659,6 +732,71 @@
 
   document.getElementById("set-handle")?.addEventListener("input", refreshPreview);
   document.getElementById("set-display")?.addEventListener("input", refreshPreview);
+
+  document.getElementById("set-mvp-name-color")?.addEventListener("input", (e) => {
+    const hex = document.getElementById("set-mvp-name-color-hex");
+    if (hex) hex.value = e.target.value;
+    syncMvpPreview();
+  });
+  document.getElementById("set-mvp-name-color-hex")?.addEventListener("input", (e) => {
+    const raw = String(e.target.value || "").trim();
+    if (!/^#[0-9a-fA-F]{6}$/.test(raw)) {
+      syncMvpPreview();
+      return;
+    }
+    const color = document.getElementById("set-mvp-name-color");
+    if (color) color.value = raw;
+    syncMvpPreview();
+  });
+  document.getElementById("set-mvp-name-color-reset")?.addEventListener("click", () => {
+    const color = document.getElementById("set-mvp-name-color");
+    const hex = document.getElementById("set-mvp-name-color-hex");
+    if (color) color.value = "#2563eb";
+    if (hex) hex.value = "";
+    syncMvpPreview();
+  });
+
+  document.getElementById("set-mvp-save")?.addEventListener("click", async () => {
+    const btn = document.getElementById("set-mvp-save");
+    setMvpOk("");
+    if (!mvpPlus) return;
+    if (btn) btn.disabled = true;
+    try {
+      const user = await window.StudioAuth.getUser();
+      if (!user) throw new Error("Not signed in");
+      const hex = String(document.getElementById("set-mvp-name-color-hex")?.value || "").trim();
+      const colorFromPicker = document.getElementById("set-mvp-name-color")?.value || "";
+      const nameColor = /^#[0-9a-fA-F]{6}$/.test(hex)
+        ? hex
+        : /^#[0-9a-fA-F]{6}$/.test(colorFromPicker)
+          ? colorFromPicker
+          : "";
+      const nextBranding = mvpCosmetics()?.normalizeBranding({
+        ...brandingDefaults,
+        name_color: nameColor,
+        profile_hat: selectedHat,
+      });
+      const { error } = await window.SiteSupabase.getClient()
+        .from("profiles")
+        .update({
+          branding_defaults: nextBranding,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", user.id);
+      if (error) throw error;
+      brandingDefaults = nextBranding;
+      setMvpOk("MVP+ style saved.");
+      document.dispatchEvent(
+        new CustomEvent("ms:profile-cosmetics-changed", {
+          detail: { branding: brandingDefaults, mvpPlus: true },
+        })
+      );
+    } catch (e) {
+      setError(e.message || "Could not save MVP+ style");
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  });
 
   document.getElementById("set-save")?.addEventListener("click", async () => {
     const btn = document.getElementById("set-save");

@@ -804,12 +804,15 @@
         if (client) {
           const { data } = await client
             .from("profiles")
-            .select("handle, display_name, avatar_url")
+            .select("handle, display_name, avatar_url, mvp_plus, branding_defaults")
             .eq("id", user.id)
             .maybeSingle();
           if (data?.handle) handle = data.handle;
           else if (data?.display_name) handle = data.display_name;
           avatarUrl = String(data?.avatar_url || "").trim();
+          if (data?.mvp_plus && global.MoonriseMvpCosmetics) {
+            global.MoonriseMvpCosmetics.applyProfileCosmetics(data.branding_defaults);
+          }
         }
       } catch (e) {
         /* keep metadata fallback */
@@ -850,6 +853,10 @@
       const handle = e.detail?.handle || nameEl?.textContent || "M";
       if (nameEl && e.detail?.handle) nameEl.textContent = e.detail.handle;
       setSidebarAvatar(e.detail?.url || "", handle);
+    });
+    document.addEventListener("ms:profile-cosmetics-changed", (e) => {
+      if (!e.detail?.mvpPlus || !global.MoonriseMvpCosmetics) return;
+      global.MoonriseMvpCosmetics.applyProfileCosmetics(e.detail.branding);
     });
     document.body.dataset.msAuthFired = "1";
     document.dispatchEvent(new Event("ms:auth-ready"));
