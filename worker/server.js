@@ -1834,7 +1834,7 @@ app.get("/public-orders", async (req, res) => {
     let query = supabase
       .from("projects")
       .select("id,business_name,status,watermark_enabled,price_cents,vercel_url,updated_at,created_at,business_context")
-      .eq("status", "published")
+      .in("status", ["published", "paid"])
       .not("vercel_url", "is", null)
       .neq("vercel_url", "")
       .order("updated_at", { ascending: false })
@@ -1847,7 +1847,7 @@ app.get("/public-orders", async (req, res) => {
     const { data, error } = await query;
     if (error) throw error;
 
-    const orders = (data || [])
+    const mapped = (data || [])
       .filter((row) => String(row.vercel_url || "").trim())
       .map((row) => {
         const priceCents = Number(row.price_cents);
@@ -1873,17 +1873,18 @@ app.get("/public-orders", async (req, res) => {
           publishedAt,
           publishedYear: Number.isFinite(publishedYear) ? publishedYear : null,
         };
-      })
-      .filter((order) => (year ? order.publishedYear === year : true));
+      });
 
     const years = [
       ...new Set(
-        orders
+        mapped
           .map((o) => o.publishedYear)
           .filter((y) => Number.isFinite(y))
           .sort((a, b) => b - a)
       ),
     ];
+
+    const orders = mapped.filter((order) => (year ? order.publishedYear === year : true));
 
     res.setHeader("Cache-Control", "public, max-age=30");
     res.json({ orders, years, total: orders.length });
