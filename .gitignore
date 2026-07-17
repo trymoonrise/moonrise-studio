@@ -33,3 +33,5 @@ supabase/.temp/
 .vercel
 css/studio.css.restored
 worker/scripts/lead-structure-analysis.json
+website-presets/
+experimental-landings/

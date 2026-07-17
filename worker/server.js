@@ -30,8 +30,8 @@ const WEBSITE_GENERATION_MODEL = String(
 ).trim();
 /** Assemble output budget (output tokens dominate cost + latency). */
 const WEBSITE_MAX_OUTPUT_TOKENS = Math.max(
-  4000,
-  Number(process.env.WEBSITE_MAX_OUTPUT_TOKENS || 12000)
+  8000,
+  Number(process.env.WEBSITE_MAX_OUTPUT_TOKENS || 14000)
 );
 /** Edit output budget. */
 const WEBSITE_EDIT_MAX_OUTPUT_TOKENS = Math.max(
@@ -45,13 +45,24 @@ const WEBSITE_EDIT_MAX_INPUT_CHARS = Math.max(
 );
 const TEMPLATES_DIR = path.join(__dirname, "..", "templates");
 /**
- * Website Presets gallery used as the only visual reference for generation.
- * Default: moonrise-studio/Website Presets
- * Override with WEBSITE_PRESETS_DIR if needed.
+ * Website Presets gallery used as the visual kit for generation.
+ * Prefer a no-space path (Vercel includeFiles + brace globs), then the
+ * human-named folder. Override with WEBSITE_PRESETS_DIR if needed.
  */
-const WEBSITE_PRESETS_DIR = String(
-  process.env.WEBSITE_PRESETS_DIR || path.join(__dirname, "..", "Website Presets")
-).trim();
+function resolveWebsitePresetsDir() {
+  const fromEnv = String(process.env.WEBSITE_PRESETS_DIR || "").trim();
+  const candidates = [
+    fromEnv,
+    path.join(__dirname, "..", "website-presets"),
+    path.join(__dirname, "website-presets"),
+    path.join(__dirname, "..", "Website Presets"),
+  ].filter(Boolean);
+  for (const dir of candidates) {
+    if (fs.existsSync(path.join(dir, "presets", "manifest.json"))) return dir;
+  }
+  return candidates[candidates.length - 1] || path.join(__dirname, "..", "Website Presets");
+}
+const WEBSITE_PRESETS_DIR = resolveWebsitePresetsDir();
 /** Prefer one component from each of these real manifest categories. */
 const PRESET_PACK_CATEGORIES = [
   "navigation",
@@ -65,12 +76,15 @@ const PRESET_PACK_CATEGORIES = [
   "buttons",
   "sections",
 ];
-/** Lean kit = fewer input tokens, faster assemble. */
-const PRESET_MAX_FILES = Math.max(6, Number(process.env.WEBSITE_PRESET_MAX_FILES || 10));
-const PRESET_MAX_CHARS_EACH = Math.max(600, Number(process.env.WEBSITE_PRESET_MAX_CHARS_EACH || 1500));
+/**
+ * Kit budget floors are intentionally high so low Vercel env overrides cannot
+ * starve generation into "invent a hero from scratch" mode.
+ */
+const PRESET_MAX_FILES = Math.max(10, Number(process.env.WEBSITE_PRESET_MAX_FILES || 12));
+const PRESET_MAX_CHARS_EACH = Math.max(2800, Number(process.env.WEBSITE_PRESET_MAX_CHARS_EACH || 3600));
 const PRESET_MAX_TOTAL_CHARS = Math.max(
-  8000,
-  Number(process.env.WEBSITE_PRESET_MAX_TOTAL_CHARS || 14000)
+  24000,
+  Number(process.env.WEBSITE_PRESET_MAX_TOTAL_CHARS || 32000)
 );
 
 const {
@@ -278,6 +292,16 @@ app.use(
 );
 
 app.get("/health", (_req, res) => {
+  const manifest = loadPresetManifest();
+  let sampleKit = 0;
+  try {
+    sampleKit = selectKitIdsLocally({
+      businessName: "Health Check Plumbing",
+      category: "plumber",
+    }).ids.length;
+  } catch (_) {
+    sampleKit = 0;
+  }
   res.json({
     ok: true,
     service: "moonrise-studio-worker",
@@ -287,6 +311,12 @@ app.get("/health", (_req, res) => {
       maxFiles: PRESET_MAX_FILES,
       maxCharsEach: PRESET_MAX_CHARS_EACH,
       maxTotalChars: PRESET_MAX_TOTAL_CHARS,
+    },
+    websitePresets: {
+      dir: WEBSITE_PRESETS_DIR,
+      manifestCount: manifest.length,
+      sampleKitCount: sampleKit,
+      ready: manifest.length > 0 && sampleKit > 0,
     },
     hasSupabase: !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY),
     hasAuthAnon: !!(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY),
@@ -743,12 +773,17 @@ function extractPresetSnippet(html) {
   const styleMatch = text.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
   const bodyMatch = text.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
   const style = styleMatch ? compactSnippet(styleMatch[1]) : "";
-  const body = compactSnippet(bodyMatch ? bodyMatch[1] : text);
-  // Prefer structure over giant CSS — cap style share so body markup still arrives.
-  const styleBudget = Math.floor(PRESET_MAX_CHARS_EACH * 0.45);
+  // Drop demo chrome panels so the model sees real layout, not gallery toggles.
+  let body = compactSnippet(bodyMatch ? bodyMatch[1] : text)
+    .replace(/<aside\b[^>]*>[\s\S]*?<\/aside>/gi, "")
+    .replace(/<div[^>]*(?:demo-controls|preset-controls|section-toggles)[^>]*>[\s\S]*?<\/div>/gi, "");
+  // Keep most of the budget for markup structure; CSS is supporting context.
+  const styleBudget = Math.floor(PRESET_MAX_CHARS_EACH * 0.35);
+  const bodyBudget = Math.max(900, PRESET_MAX_CHARS_EACH - styleBudget - 40);
   const stylePart = style
     ? `<style>${style.length > styleBudget ? style.slice(0, styleBudget) : style}</style>`
     : "";
+  if (body.length > bodyBudget) body = body.slice(0, bodyBudget);
   let out = stylePart + body;
   if (out.length > PRESET_MAX_CHARS_EACH) {
     return out.slice(0, PRESET_MAX_CHARS_EACH);
@@ -1313,7 +1348,22 @@ app.post("/generate", requireUser, generateLimiter, async (req, res) => {
     }
     let presetPack = loadPresetsByIds(ids, roleById);
     if (!presetPack.length) {
+      console.warn("Local kit load returned 0 presets; falling back to category pack", {
+        presetsDir: WEBSITE_PRESETS_DIR,
+        manifestCount: loadPresetManifest().length,
+        ids,
+      });
       presetPack = loadWebsitePresetPack(ctx);
+    }
+    if (!presetPack.length) {
+      console.error("Website Presets kit is empty — generation will freestyle without kit HTML", {
+        presetsDir: WEBSITE_PRESETS_DIR,
+        manifestExists: fs.existsSync(path.join(WEBSITE_PRESETS_DIR, "presets", "manifest.json")),
+      });
+    } else {
+      console.log(
+        `Website Presets kit ready: ${presetPack.length} components from ${WEBSITE_PRESETS_DIR}`
+      );
     }
     if (jobInsert?.data?.id) {
       await supabase

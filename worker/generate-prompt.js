@@ -56,24 +56,29 @@ Rules:
 - Do not write HTML. Do not invent contact facts.`;
 
 /** Stage 2 — assemble collected components into one site. */
-const GENERATION_SYSTEM_PROMPT = `You assemble complete premium single-page business websites.
+const GENERATION_SYSTEM_PROMPT = `You assemble complete premium single-page business websites FROM a Website Presets kit.
 
-You receive business facts, an atmosphere/palette plan, a trade-specific page bone structure, Website Preset HTML/CSS components (visual references), and a REQUIRED stock media pack of absolute https image + video URLs.
+You receive business facts, an atmosphere/palette plan, a trade-specific page bone structure, Website Preset HTML/CSS components (REQUIRED visual building blocks), and a REQUIRED stock media pack of absolute https image + video URLs.
 
 Return ONLY one complete HTML document (doctype + html). No markdown fences. No preamble. No commentary.
+
+## Website Presets kit rule (critical)
+1) The kit is NOT optional inspiration. For every kit item, ADAPT that preset's real HTML structure and CSS patterns into the matching bone-structure section.
+2) Keep the preset's layout skeleton: wrappers, grids, media placement, button styles, spacing rhythm. Recolor to the palette. Rewrite ALL demo/placeholder copy with THIS business's facts.
+3) Do NOT invent a generic hero or section layout when a kit preset already covers that role. Start from the kit markup, then customize.
+4) Merge kit CSS into ONE <style> block. Strip demo chrome, toggles, and gallery controls.
+5) Sections without a kit preset: still build them in the same design system (palette, fonts, spacing, stock media).
 
 ## Full-page requirement (critical)
 1) Build EVERY section listed in the bone structure, in order, as real on-page sections.
 2) Do NOT stop after the hero. The finished page must scroll through services, proof, about/gallery, pricing/FAQ when listed, contact form, and footer.
-3) Each Website Preset kit item is a visual reference for its role: keep layout/CSS patterns, replace ALL placeholder/demo copy with the business facts below.
-4) Sections without a kit preset: still build them in the same design system (palette, fonts, spacing, stock media).
-5) Different trades get different structures. Follow the bone structure you are given; do not collapse everything into one hero block.
+3) Different trades get different structures. Follow the bone structure you are given; do not collapse everything into one hero block.
 
 ## Design system
 1) Lock :root CSS variables from the palette.
 2) Map each bone-structure section to a kit preset by role when available.
 3) Adapt presets: rewrite demo copy with business facts, recolor to palette, strip demo chrome/toggles.
-4) Merge into ONE <style> block. Prefer short selectors. No CSS comments. No unused rules.
+4) Prefer short selectors. No CSS comments. No unused rules.
 
 ## Media (mandatory aesthetics)
 - Use ONLY URLs from the stock media pack. Never invent URLs. Never leave ../stock/ relative paths.
@@ -170,7 +175,9 @@ function formatPresetPack(presetPack, media) {
       return [
         `### Kit ${i + 1} | role: ${role} | ${p.title || p.id || "untitled"}`,
         `id: ${p.id || ""}`,
-        "Use this preset's layout and styling. Replace every placeholder with the business facts above.",
+        `REQUIRED: Adapt this preset into the "${role}" bone-structure section.`,
+        "Keep its HTML structure and CSS patterns. Rewrite every placeholder with the business facts above. Recolor to the palette.",
+        "Do not replace this with a generic invented layout.",
         "```html",
         html,
         "```",
@@ -213,12 +220,13 @@ function buildGenerationUserPrompt(ctx, presetPack, plan, media, options = {}) {
     formatStockMediaForPrompt(stock),
     "",
     "## Website Presets component kit",
-    "Adapt each preset for THIS business. Keep visual structure; replace demo text with real business facts.",
+    "These kit components are REQUIRED building blocks. Adapt each one into its matching bone-structure section.",
+    "Keep preset structure/CSS. Replace demo copy with business facts. Do not freestyle a different layout when a kit item exists for that role.",
     formatPresetPack(presetPack, stock),
     "",
     "## Task",
     `Assemble one complete single-page site with all ${sectionCount} bone-structure sections.`,
-    "Use Website Presets for layout inspiration and fill every section with the business facts above.",
+    "Build from the Website Presets kit above (adapt, do not ignore).",
     "Hero must include real image or muted looping video from the pack.",
     "Include contact form and footer. Do not use em dashes in visible copy.",
     "Start with <!DOCTYPE html>.",

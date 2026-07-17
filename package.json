@@ -6,6 +6,10 @@
   "engines": {
     "node": ">=18"
   },
+  "scripts": {
+    "vercel-build": "node worker/scripts/ensure-website-presets.js",
+    "presets:link": "node worker/scripts/ensure-website-presets.js"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",
     "cors": "^2.8.5",
