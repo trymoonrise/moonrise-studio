@@ -1,5 +1,5 @@
 /**
- * Worker security helpers — rate limits + password lockouts.
+ * Worker security helpers — rate limits, password lockouts, HTTP hardening.
  * Lockout state prefers public.auth_lockouts (service role), with in-memory fallback.
  */
 const crypto = require("crypto");
@@ -45,6 +45,45 @@ function getMemoryRow(subjectType, subjectHash) {
 
 function setMemoryRow(row) {
   memoryLockouts.set(memKey(row.subject_type, row.subject_hash), { ...row });
+}
+
+function isProductionRuntime() {
+  return (
+    process.env.NODE_ENV === "production" ||
+    !!process.env.VERCEL ||
+    String(process.env.VERCEL_ENV || "") === "production"
+  );
+}
+
+/**
+ * Baseline browser / API hardening headers (OWASP-style basics).
+ */
+function applySecurityHeaders(req, res, next) {
+  res.removeHeader("X-Powered-By");
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("X-DNS-Prefetch-Control", "off");
+  res.setHeader(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=(), payment=(self), usb=(), interest-cohort=()"
+  );
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+
+  const proto = String(req.headers["x-forwarded-proto"] || req.protocol || "")
+    .split(",")[0]
+    .trim()
+    .toLowerCase();
+  if (proto === "https" || isProductionRuntime()) {
+    res.setHeader("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
+  }
+
+  if (req.path && !req.path.startsWith("/embed.js") && !/\.(js|css|png|jpg|svg|ico)$/i.test(req.path)) {
+    res.setHeader("Cache-Control", "no-store");
+  }
+
+  next();
 }
 
 /** In-memory sliding window rate limiter (per process). */
@@ -255,6 +294,8 @@ module.exports = {
   clientIp,
   normalizeEmail,
   createRateLimiter,
+  applySecurityHeaders,
+  isProductionRuntime,
   assertNotLocked,
   recordAuthFailure,
   clearAuthFailures,

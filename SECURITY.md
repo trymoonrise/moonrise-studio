@@ -19,6 +19,19 @@ Please include:
 
 We aim to acknowledge reports as soon as practical, investigate in good faith, and follow up when a fix or next step is available.
 
+## Baseline protections (implemented)
+
+- HTTPS + HSTS on production
+- Security headers: `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, CSP
+- CORS allowlist for Studio API (public checkout/embed remain open for live sites)
+- Auth lockouts + rate limits on sign-in / sign-up / password reset
+- Per-route rate limits on generate, edit, publish, checkout, maps, public orders
+- Authenticated routes require a valid Supabase Bearer token
+- Stripe webhooks verified with signing secret
+- Request body size limits + prompt/input sanitization
+- Secrets stay in server env (`.env` is gitignored); public anon keys only in the browser
+- Production `/health` does not expose filesystem paths or verbose internals
+
 ## Scope
 
 In scope:

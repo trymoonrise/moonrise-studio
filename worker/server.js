@@ -134,7 +134,7 @@ const {
   TOPUP_MAX_DOLLARS,
   publicPlansCatalog,
 } = require("./credits");
-const { clientIp, createRateLimiter } = security;
+const { clientIp, createRateLimiter, applySecurityHeaders, isProductionRuntime } = security;
 
 /** Roles the atmosphere planner should cover. */
 const PLAN_ROLE_CATEGORIES = {
@@ -242,7 +242,9 @@ function createGoLiveCheckoutSession(stripe, opts) {
 }
 
 const app = express();
+app.disable("x-powered-by");
 app.set("trust proxy", 1);
+app.use(applySecurityHeaders);
 
 /**
  * Public endpoints reachable from any deployed (Vercel) site, where an
@@ -261,7 +263,16 @@ app.use((req, res, next) => {
   next();
 });
 
-const corsOrigins = String(process.env.CORS_ORIGINS || "*")
+/** Production defaults to Moonrise hosts; local keeps LAN + * for convenience. */
+const DEFAULT_CORS_ORIGINS = isProductionRuntime()
+  ? [
+      "https://moonrise-studio.vercel.app",
+      "https://trymoonrise.com",
+      "https://www.trymoonrise.com",
+    ].join(",")
+  : "*";
+
+const corsOrigins = String(process.env.CORS_ORIGINS || DEFAULT_CORS_ORIGINS)
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
@@ -277,13 +288,26 @@ function isPrivateLanHost(hostname) {
   return false;
 }
 
+function isMoonriseHost(hostname) {
+  const host = String(hostname || "").toLowerCase();
+  return (
+    host === "trymoonrise.com" ||
+    host === "www.trymoonrise.com" ||
+    host === "moonrise-studio.vercel.app" ||
+    host.endsWith(".moonrise-studio.vercel.app") ||
+    /^moonrise-studio-[a-z0-9-]+-trymoonrise\.vercel\.app$/i.test(host)
+  );
+}
+
 function isAllowedOrigin(origin) {
   if (!origin) return true;
   if (corsOrigins.includes("*") || corsOrigins.includes(origin)) return true;
-  // Local Studio may run on any port / LAN IP (Live Server, phone testing, etc.)
   try {
     const url = new URL(origin);
     if ((url.protocol === "http:" || url.protocol === "https:") && isPrivateLanHost(url.hostname)) {
+      return true;
+    }
+    if (url.protocol === "https:" && isMoonriseHost(url.hostname)) {
       return true;
     }
   } catch (_) {
@@ -302,6 +326,20 @@ app.use(
 );
 
 app.get("/health", (_req, res) => {
+  const verbose =
+    String(process.env.SECURITY_HEALTH_VERBOSE || "").trim() === "1" || !isProductionRuntime();
+  const base = {
+    ok: true,
+    service: "moonrise-studio-worker",
+  };
+  if (!verbose) {
+    return res.json({
+      ...base,
+      hasAuth: !!(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY),
+      hasPayments: !!process.env.STRIPE_SECRET_KEY,
+    });
+  }
+
   const manifest = loadPresetManifest();
   let sampleKit = 0;
   try {
@@ -313,12 +351,10 @@ app.get("/health", (_req, res) => {
     sampleKit = 0;
   }
   res.json({
-    ok: true,
-    service: "moonrise-studio-worker",
+    ...base,
     websiteGenerationModel: WEBSITE_GENERATION_MODEL,
     websiteMaxOutputTokens: WEBSITE_MAX_OUTPUT_TOKENS,
     workerPublicUrl: WORKER_PUBLIC_URL,
-    watermarkEmbedPath: WATERMARK_EMBED_PATH,
     watermarkEmbedExists: fs.existsSync(WATERMARK_EMBED_PATH),
     websitePresetBudget: {
       maxFiles: PRESET_MAX_FILES,
@@ -326,7 +362,6 @@ app.get("/health", (_req, res) => {
       maxTotalChars: PRESET_MAX_TOTAL_CHARS,
     },
     websitePresets: {
-      dir: WEBSITE_PRESETS_DIR,
       manifestCount: manifest.length,
       sampleKitCount: sampleKit,
       ready: manifest.length > 0 && sampleKit > 0,
@@ -583,7 +618,7 @@ app.post("/webhooks/stripe", express.raw({ type: "application/json" }), async (r
   }
 });
 
-app.use(express.json({ limit: "2mb" }));
+app.use(express.json({ limit: "1mb" }));
 
 async function requireUser(req, res, next) {
   try {
@@ -594,8 +629,8 @@ async function requireUser(req, res, next) {
     if (error || !data?.user) return res.status(401).json({ error: "Invalid auth token" });
     req.user = data.user;
     next();
-  } catch (e) {
-    res.status(401).json({ error: e.message || "Unauthorized" });
+  } catch (_) {
+    res.status(401).json({ error: "Unauthorized" });
   }
 }
 
@@ -637,7 +672,19 @@ const mapsLimiter = createRateLimiter({
   name: "resolve-maps",
   keyFn: (req) => "maps:" + (req.user?.id || clientIp(req)),
 });
-
+const publicOrdersLimiter = createRateLimiter({
+  windowMs: 60 * 1000,
+  max: 60,
+  name: "public-orders",
+  keyFn: (req) => "orders:" + clientIp(req),
+});
+const globalApiLimiter = createRateLimiter({
+  windowMs: 60 * 1000,
+  max: 180,
+  name: "api",
+  keyFn: (req) => "api:" + clientIp(req),
+});
+app.use(globalApiLimiter);
 
 function stripDemoChrome(html) {
   return String(html || "")
@@ -1887,7 +1934,7 @@ app.get("/embed.js", (_req, res) => {
  * Every successful /publish writes vercel_url + status=published, so sites appear here automatically.
  * Safe fields only — no HTML, no owner identity.
  */
-app.get("/public-orders", async (req, res) => {
+app.get("/public-orders", publicOrdersLimiter, async (req, res) => {
   try {
     const supabase = db();
     const q = String(req.query.q || "").trim();
