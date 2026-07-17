@@ -2,36 +2,37 @@
  * Builder — business details → generate with Website Presets, then AI edit / publish.
  */
 (function () {
-  const DEFAULT_TEMPLATE_ID = "local-service";
+  const DEFAULT_TEMPLATE_ID = "coral-navy";
 
+  /** Style vibes for onboard chooser — visual preview via stock CDN images (no local HTML templates). */
   const TEMPLATES = [
-    { id: "coral-navy", name: "Coral", desc: "Scroll zoom", preview: "testtemplates/01-coral-navy/index.html" },
-    { id: "lime-charcoal", name: "Volt", desc: "Split + video", preview: "testtemplates/02-lime-charcoal/index.html" },
-    { id: "crimson-ink", name: "Ink", desc: "Type wipe", preview: "testtemplates/03-crimson-ink/index.html" },
-    { id: "teal-amber", name: "Tide", desc: "Ocean film", preview: "testtemplates/04-teal-amber/index.html" },
-    { id: "cobalt-gold", name: "Beacon", desc: "Clip path", preview: "testtemplates/05-cobalt-gold/index.html" },
-    { id: "magenta-mint", name: "Bloom", desc: "Parallax", preview: "testtemplates/06-magenta-mint/index.html" },
-    { id: "orange-slate", name: "Forge", desc: "Grain + wipe", preview: "testtemplates/07-orange-slate/index.html" },
-    { id: "sapphire-sand", name: "Aura", desc: "Float zoom", preview: "testtemplates/08-sapphire-sand/index.html" },
-    { id: "emerald-mist", name: "Verdant", desc: "Curtain part", preview: "testtemplates/09-emerald-mist/index.html" },
-    { id: "rose-stone", name: "Bloomrose", desc: "Blur clarify", preview: "testtemplates/10-rose-stone/index.html" },
-    { id: "indigo-cream", name: "North", desc: "Word blur-in", preview: "testtemplates/11-indigo-cream/index.html" },
-    { id: "copper-night", name: "Kiln", desc: "Line + video", preview: "testtemplates/12-copper-night/index.html" },
-    { id: "sky-graphite", name: "Drift", desc: "Circle expand", preview: "testtemplates/13-sky-graphite/index.html" },
-    { id: "olive-bone", name: "Grove", desc: "Image stack", preview: "testtemplates/14-olive-bone/index.html" },
-    { id: "wine-fog", name: "Vellum", desc: "Fog veil", preview: "testtemplates/15-wine-fog/index.html" },
-    { id: "canary-ink", name: "Spark", desc: "Marquee pop", preview: "testtemplates/16-canary-ink/index.html" },
-    { id: "glacier-slate", name: "Frost", desc: "Sheet lift", preview: "testtemplates/17-glacier-slate/index.html" },
-    { id: "clay-fog", name: "Terra", desc: "Split slide", preview: "testtemplates/18-clay-fog/index.html" },
-    { id: "cyan-void", name: "Pulse", desc: "Scan grid", preview: "testtemplates/19-cyan-void/index.html" },
-    { id: "forest-cream", name: "Canopy", desc: "Triple sway", preview: "testtemplates/20-forest-cream/index.html" },
-    { id: "ruby-smoke", name: "Crimson", desc: "Reveal bar", preview: "testtemplates/21-ruby-smoke/index.html" },
-    { id: "azure-paper", name: "Paper", desc: "Underline draw", preview: "testtemplates/22-azure-paper/index.html" },
-    { id: "honey-espresso", name: "Amber", desc: "Breathe glow", preview: "testtemplates/23-honey-espresso/index.html" },
-    { id: "pearl-midnight", name: "Lumen", desc: "Split meet", preview: "testtemplates/24-pearl-midnight/index.html" },
-    { id: "moss-porcelain", name: "Moss", desc: "Unmask slide", preview: "testtemplates/25-moss-porcelain/index.html" },
-    { id: "flame-coal", name: "Ember", desc: "Rising embers", preview: "testtemplates/26-flame-coal/index.html" },
-    { id: "arctic-navy", name: "Polar", desc: "Aurora poly", preview: "testtemplates/27-arctic-navy/index.html" },
+    { id: "coral-navy", name: "Coral", desc: "Warm bold local", previewImage: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=900&q=80" },
+    { id: "lime-charcoal", name: "Volt", desc: "High-energy contrast", previewImage: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=900&q=80" },
+    { id: "crimson-ink", name: "Ink", desc: "Editorial type", previewImage: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=900&q=80" },
+    { id: "teal-amber", name: "Tide", desc: "Ocean calm", previewImage: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=900&q=80" },
+    { id: "cobalt-gold", name: "Beacon", desc: "Pro trust", previewImage: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=900&q=80" },
+    { id: "magenta-mint", name: "Bloom", desc: "Beauty soft", previewImage: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=900&q=80" },
+    { id: "orange-slate", name: "Forge", desc: "Trades ready", previewImage: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=900&q=80" },
+    { id: "sapphire-sand", name: "Aura", desc: "Spa wellness", previewImage: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=900&q=80" },
+    { id: "emerald-mist", name: "Verdant", desc: "Garden green", previewImage: "https://images.unsplash.com/photo-1558904541-efa843a96f01?auto=format&fit=crop&w=900&q=80" },
+    { id: "rose-stone", name: "Bloomrose", desc: "Salon polish", previewImage: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=80" },
+    { id: "indigo-cream", name: "North", desc: "Clean modern", previewImage: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=900&q=80" },
+    { id: "copper-night", name: "Kiln", desc: "Craft warm", previewImage: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=900&q=80" },
+    { id: "sky-graphite", name: "Drift", desc: "Airy open", previewImage: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=80" },
+    { id: "olive-bone", name: "Grove", desc: "Natural calm", previewImage: "https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=900&q=80" },
+    { id: "wine-fog", name: "Vellum", desc: "Quiet luxury", previewImage: "https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=900&q=80" },
+    { id: "canary-ink", name: "Spark", desc: "Cafe bright", previewImage: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=900&q=80" },
+    { id: "glacier-slate", name: "Frost", desc: "Cool clinical", previewImage: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=900&q=80" },
+    { id: "clay-fog", name: "Terra", desc: "Earthy home", previewImage: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80" },
+    { id: "cyan-void", name: "Pulse", desc: "Tech sharp", previewImage: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=900&q=80" },
+    { id: "forest-cream", name: "Canopy", desc: "Outdoor green", previewImage: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=900&q=80" },
+    { id: "ruby-smoke", name: "Crimson", desc: "Bold dining", previewImage: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80" },
+    { id: "azure-paper", name: "Paper", desc: "Learn bright", previewImage: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=900&q=80" },
+    { id: "honey-espresso", name: "Amber", desc: "Warm bakery", previewImage: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=900&q=80" },
+    { id: "pearl-midnight", name: "Lumen", desc: "Night polish", previewImage: "https://images.unsplash.com/photo-1512917772120-2f13304f0931?auto=format&fit=crop&w=900&q=80" },
+    { id: "moss-porcelain", name: "Moss", desc: "Pet friendly", previewImage: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&w=900&q=80" },
+    { id: "flame-coal", name: "Ember", desc: "Auto grit", previewImage: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&w=900&q=80" },
+    { id: "arctic-navy", name: "Polar", desc: "Legal cool", previewImage: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=900&q=80" },
   ];
 
   const GALLERY_IDS = new Set(TEMPLATES.map((t) => t.id));
@@ -74,11 +75,23 @@
   ];
 
   const state = {
+    userId: "",
     projectId: null,
     project: null,
     templateId: DEFAULT_TEMPLATE_ID,
     mode: "preview",
     viewport: "desktop",
+    viewportBeforeFullscreen: "desktop",
+    viewportWidths: {
+      desktop: null,
+      tablet: 768,
+      phone: 390,
+    },
+    viewportHeights: {
+      desktop: null,
+      tablet: null,
+      phone: null,
+    },
     priceCents: 30000,
     html: "",
     profile: null,
@@ -88,6 +101,10 @@
     aiImages: false,
     pro: false,
     mvpPlus: false,
+    paidPlan: false,
+    totalCredits: 0,
+    generationCost: 5,
+    builderOnboarded: false,
     onboardDone: false,
     onboardStep: 1,
     mapsReady: false,
@@ -112,6 +129,18 @@
     },
   };
 
+  const BUILDER_SIDE_WIDTH_KEY = "ms_lb_side_width_v2";
+  const BUILDER_SHELL_NAV_KEY = "ms_lb_show_shell";
+  const BUILDER_SIDE_MIN = 280;
+  const BUILDER_SIDE_DEFAULT = 340;
+  const BUILDER_SIDE_MAX = 520;
+
+  /** Active /generate AbortController so sidebar cancel can stop the request. */
+  let generateAbort = null;
+  let previewSizeLabelHideTimer = null;
+  let previewSizeLabelFadeTimer = null;
+  const PREVIEW_SIZE_LABEL_MS = 1400;
+
   const BUSINESS_FIELDS = {
     businessName: "onb-name",
     category: "onb-category",
@@ -134,35 +163,23 @@
   }
 
   function workerUrl() {
-    const configured = String(window.SITE_CONFIG?.workerUrl || "").replace(/\/$/, "");
-    if (!configured) return "";
-    try {
-      const pageHost = location.hostname;
-      const worker = new URL(configured);
-      const pageIsLocal =
-        pageHost === "localhost" ||
-        pageHost === "127.0.0.1" ||
-        pageHost === "[::1]";
-      const workerIsLoopback =
-        worker.hostname === "localhost" ||
-        worker.hostname === "127.0.0.1" ||
-        worker.hostname === "[::1]";
+    if (typeof window.resolveWorkerUrl === "function") return window.resolveWorkerUrl();
+    return String(window.SITE_CONFIG?.workerUrl || "").replace(/\/$/, "");
+  }
 
-      // If Studio is opened via a LAN IP (phone / another device), talk to the
-      // worker on that same host instead of 127.0.0.1 (which would be the phone).
-      if (!pageIsLocal && workerIsLoopback && location.protocol.startsWith("http")) {
-        worker.hostname = pageHost;
-        return worker.origin;
-      }
-      // Prefer matching localhost <-> 127.0.0.1 to the page host to avoid CORS quirks.
-      if (pageIsLocal && workerIsLoopback && pageHost !== worker.hostname) {
-        worker.hostname = pageHost;
-        return worker.origin;
-      }
-    } catch (_) {
-      /* keep configured */
-    }
-    return configured;
+  function clampBuilderSideWidth(width, bodyWidth) {
+    const maxFromBody =
+      Number.isFinite(bodyWidth) && bodyWidth > 0
+        ? Math.max(BUILDER_SIDE_MIN, Math.min(BUILDER_SIDE_MAX, Math.floor(bodyWidth - 420)))
+        : BUILDER_SIDE_MAX;
+    return Math.max(BUILDER_SIDE_MIN, Math.min(maxFromBody, Math.round(width)));
+  }
+
+  function applyBuilderSideWidth(width) {
+    const body = document.querySelector(".ms-lb-body");
+    if (!body) return;
+    const next = clampBuilderSideWidth(width, body.getBoundingClientRect().width);
+    body.style.setProperty("--ms-lb-side-w", next + "px");
   }
 
   function sb() {
@@ -209,9 +226,30 @@
   function setPromptBusy(busy, label) {
     const status = document.getElementById("builder-status");
     document.body.classList.toggle("ms-lb-generating", !!busy);
+    // Only show channel progress while a generate request is actually in flight
+    window.StudioShell?.setChannelGenerating?.("builder", !!busy && !!generateAbort);
     if (status && busy) status.textContent = label || "";
-    if (!busy) syncEmptyState();
+    if (!busy) {
+      generateAbort = null;
+      window.StudioShell?.setChannelGenerating?.(null, false);
+      syncEmptyState();
+    }
   }
+
+  function cancelActiveGeneration() {
+    if (!generateAbort) return false;
+    try {
+      generateAbort.abort();
+    } catch (_) {
+      /* ignore */
+    }
+    generateAbort = null;
+    return true;
+  }
+
+  document.addEventListener("ms:cancel-generation", () => {
+    cancelActiveGeneration();
+  });
 
   function syncPromptActionUi() {
     /* Ask AI bar removed — edits happen outside this UI. */
@@ -267,11 +305,29 @@
       const desc = document.getElementById("template-viewer-desc");
       if (title) title.textContent = template.name;
       if (desc) desc.textContent = template.desc;
-      // Full real page — never card mode
-      frame.src = template.preview || "";
+      // Stock image preview (legacy HTML template folders removed)
+      frame.removeAttribute("src");
+      frame.srcdoc = [
+        "<!DOCTYPE html><html><head><meta charset='utf-8'><style>",
+        "html,body{margin:0;height:100%;background:#0f172a}",
+        "img{width:100%;height:100%;object-fit:cover;display:block}",
+        ".cap{position:absolute;left:1rem;bottom:1rem;right:1rem;color:#fff;",
+        "font:600 1.1rem/1.3 system-ui,sans-serif;text-shadow:0 2px 12px rgba(0,0,0,.55)}",
+        "</style></head><body style='position:relative'>",
+        template.previewImage
+          ? "<img src='" + String(template.previewImage).replace(/'/g, "%27") + "' alt=''>"
+          : "",
+        "<div class='cap'>" +
+          String(template.name || "").replace(/</g, "&lt;") +
+          " · " +
+          String(template.desc || "").replace(/</g, "&lt;") +
+          "</div>",
+        "</body></html>",
+      ].join("");
       frame.removeAttribute("scrolling");
     } else {
       frame.removeAttribute("src");
+      frame.removeAttribute("srcdoc");
     }
 
     viewer.hidden = !open;
@@ -379,34 +435,25 @@
     grid.innerHTML = slice
       .map((t) => {
         const active = t.id === state.templateId ? " is-selected" : "";
-        const previewUrl = t.preview
-          ? t.preview + (t.preview.includes("?") ? "&" : "?") + "preview=card"
-          : "";
-        const preview = previewUrl
-          ? '<iframe class="ms-lb-tpl-preview" title="' +
-            t.name +
-            ' preview" loading="lazy" scrolling="no" tabindex="-1" sandbox="allow-scripts allow-same-origin"></iframe>'
+        const imgUrl = String(t.previewImage || "").replace(/"/g, "&quot;");
+        const preview = imgUrl
+          ? '<img class="ms-lb-tpl-preview-img" src="' +
+            imgUrl +
+            '" alt="" loading="lazy" decoding="async">'
           : '<div class="ms-lb-tpl-fallback">' + t.name + "</div>";
-        const frameAttrs = previewUrl
-          ? ' class="ms-lb-tpl-frame is-loading" data-preview-src="' +
-            previewUrl.replace(/"/g, "&quot;") +
-            '"'
-          : ' class="ms-lb-tpl-frame is-ready"';
-      return (
+        return (
           '<button type="button" class="ms-lb-tpl-card' +
           active +
           '" role="option" aria-selected="' +
           (t.id === state.templateId ? "true" : "false") +
           '" data-template-id="' +
-        t.id +
+          t.id +
           '">' +
-          "<div" +
-          frameAttrs +
-        ">" +
+          '<div class="ms-lb-tpl-frame is-ready">' +
           preview +
           "</div>" +
           '<div class="ms-lb-tpl-meta"><strong>' +
-        t.name +
+          t.name +
           "</strong></div>" +
           "</button>"
         );
@@ -427,8 +474,6 @@
     if (count) count.textContent = onboardTemplatePage + 1 + " / " + pages;
     if (prev) prev.disabled = onboardTemplatePage <= 0;
     if (next) next.disabled = onboardTemplatePage >= pages - 1;
-
-    hydrateOnboardPreviews(grid);
   }
 
   function renderOnboardTemplates() {
@@ -475,6 +520,7 @@
       const next = state.business[key] || "";
       if (force || !input.value) input.value = next;
     });
+    syncManualFieldsExpanded();
   }
 
   function applyLeadIntake(payload, opts) {
@@ -636,7 +682,7 @@
   }
 
   function setOnboardOpen(open) {
-    if (!open && !state.onboardDone) {
+    if (!open && !state.onboardDone && !state.builderOnboarded) {
       setBuilderPhase("setup");
       return;
     }
@@ -662,12 +708,102 @@
     location.href = target;
   }
 
+  const BUILDER_ONBOARD_KEY = "ms_builder_onboard_done_v1";
+
+  function userScopedKey(base) {
+    return base + "_" + (state.userId || "anon");
+  }
+
+  function profileBranding(profile) {
+    return profile?.branding_defaults &&
+      typeof profile.branding_defaults === "object" &&
+      !Array.isArray(profile.branding_defaults)
+      ? profile.branding_defaults
+      : {};
+  }
+
+  function profileHasBuilderOnboarded(profile) {
+    const branding = profileBranding(profile);
+    return !!(
+      branding.builderOnboarded ||
+      branding.builder_onboarded ||
+      branding.builderOnboardingDone
+    );
+  }
+
+  function localHasBuilderOnboarded() {
+    try {
+      return localStorage.getItem(userScopedKey(BUILDER_ONBOARD_KEY)) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function syncBuilderOnboardedFromProfile(profile) {
+    state.builderOnboarded = profileHasBuilderOnboarded(profile) || localHasBuilderOnboarded();
+  }
+
+  async function markBuilderOnboarded() {
+    if (state.builderOnboarded) return;
+    state.builderOnboarded = true;
+    try {
+      localStorage.setItem(userScopedKey(BUILDER_ONBOARD_KEY), "1");
+    } catch (_) {
+      /* ignore */
+    }
+    try {
+      const user = await window.StudioAuth.getUser();
+      if (!user) return;
+      const nextBranding = {
+        ...profileBranding(state.profile),
+        builderOnboarded: true,
+      };
+      const { error } = await sb()
+        .from("profiles")
+        .update({ branding_defaults: nextBranding })
+        .eq("id", user.id);
+      if (!error) {
+        state.profile = {
+          ...(state.profile || {}),
+          branding_defaults: nextBranding,
+        };
+      }
+    } catch (_) {
+      /* Local flag is enough if the profile update fails. */
+    }
+  }
+
+  async function inferBuilderOnboardedFromProjects() {
+    if (state.builderOnboarded || !state.userId) return;
+    try {
+      const { data, error } = await sb()
+        .from("projects")
+        .select("id")
+        .eq("user_id", state.userId)
+        .limit(1)
+        .maybeSingle();
+      if (!error && data?.id) {
+        await markBuilderOnboarded();
+      }
+    } catch (_) {
+      /* First-time users or network failures can continue through setup. */
+    }
+  }
+
   /**
    * Wipe everything the builder is holding so the page is a blank slate next
    * time it's opened. Runs on leave (pagehide), on bfcache restore, and at the
    * start of a fresh setup visit so the form is always ready for new paste-in.
    */
   function clearBuilderForNextVisit() {
+    clearTimeout(editState.saveTimer);
+    exitEditMode({ serialize: false });
+    editState.history = [];
+    editState.historyIndex = -1;
+    editState.lastWrittenHtml = "";
+    editState.saveGeneration = 0;
+    setEditSaveStatus("idle");
+
     Object.values(BUSINESS_FIELDS).forEach((id) => {
       const input = document.getElementById(id);
       if (input) input.value = "";
@@ -689,6 +825,7 @@
     state.mapsScraping = false;
     state.mode = "preview";
     Object.keys(state.business).forEach((k) => (state.business[k] = ""));
+    syncManualFieldsExpanded();
     Object.keys(state.linkBusiness).forEach((k) => (state.linkBusiness[k] = ""));
 
     try {
@@ -723,7 +860,7 @@
 
   /** Keep incomplete setup on the survey page — cannot skip to the workspace. */
   function ensureOnboardSurvey() {
-    if (state.onboardDone) return false;
+    if (state.onboardDone || state.builderOnboarded) return false;
     setBuilderPhase("setup");
     showOnboardStep(1);
     updateOnboardContinue();
@@ -803,6 +940,8 @@
   }
 
   function canContinueOnboard() {
+    // Wait until Maps lookup finishes so Generate uses resolved details.
+    if (state.mapsScraping) return false;
     const fields = readOnboardFields();
     if (isMapsPathReady(fields) || isManualComplete(fields)) return true;
     // Business Finder handoff may omit phone — still let them continue with the rest.
@@ -821,6 +960,22 @@
     if (btn) btn.disabled = !canContinueOnboard();
   }
 
+  function shouldExpandManualFields() {
+    const name = String(document.getElementById("onb-name")?.value || "").trim();
+    const category = String(document.getElementById("onb-category")?.value || "").trim();
+    const phone = String(document.getElementById("onb-phone")?.value || "").trim();
+    const address = String(document.getElementById("onb-address")?.value || "").trim();
+    const active = document.activeElement?.id;
+    const primaryFocused = active === "onb-name" || active === "onb-phone";
+    return !!(name || category || phone || address || primaryFocused);
+  }
+
+  function syncManualFieldsExpanded() {
+    const section = document.querySelector(".ms-bs-path--manual");
+    if (!section) return;
+    section.classList.toggle("is-manual-expanded", shouldExpandManualFields());
+  }
+
   function setScrapeStatus(msg, tone) {
     const el = document.getElementById("onboard-scrape-status");
     const shell = document.querySelector(".ms-lb-onboard-maps-shell");
@@ -830,8 +985,8 @@
       shell.classList.toggle("is-err", tone === "err");
     }
     if (!el) return;
-    // Success is shown on the input (green) — no status line.
-    if (tone === "ok" || !msg) {
+    // Busy/success are shown on the input shell — no status line text.
+    if (tone === "ok" || tone === "busy" || !msg) {
       el.hidden = true;
       el.textContent = "";
       el.className = "ms-lb-onboard-scrape";
@@ -1006,7 +1161,8 @@
     }
 
     state.mapsScraping = true;
-    setScrapeStatus("Fetching business details…", "busy");
+    setScrapeStatus("", "busy");
+    updateOnboardContinue();
     setOnboardError("");
     try {
       const base = workerUrl();
@@ -1110,37 +1266,132 @@
     syncEmptyState();
   }
 
-  function hasMvpPlus() {
-    if (state.mvpPlus || state.pro) return true;
-    const handle = String(state.profile?.handle || "")
-      .toLowerCase()
-      .replace(/^@/, "");
-    const owners = window.SITE_CONFIG?.ownerHandles || [];
-    return owners.some((h) => String(h || "").toLowerCase() === handle);
+  function hasPaidPlan() {
+    return !!(state.paidPlan || state.mvpPlus || state.pro);
   }
 
-  function requireMvpPlus() {
-    if (hasMvpPlus()) return true;
-    location.href = "store.html#mvp-plus";
+  function hasMvpPlus() {
+    return hasPaidPlan();
+  }
+
+  const MVP_STAR_TONES = 6;
+
+  function cycleMvpStar(star) {
+    if (!star) return;
+    const next = (Number(star.dataset.tone || 0) + 1) % MVP_STAR_TONES;
+    star.dataset.tone = String(next);
+    star.classList.remove("is-flash");
+    void star.offsetWidth;
+    star.classList.add("is-flash");
+  }
+
+  function ensureMvpStar(btn, locked) {
+    if (!btn) return;
+    let star = btn.querySelector(".ms-mvp-star");
+    if (!locked) {
+      star?.remove();
+      return;
+    }
+    if (!star) {
+      star = document.createElement("span");
+      star.className = "ms-mvp-star";
+      star.dataset.tone = "0";
+      star.setAttribute("role", "button");
+      star.setAttribute("tabindex", "0");
+      star.setAttribute("aria-label", "Premium feature");
+      star.title = "Premium - click the star to shift colors";
+      star.innerHTML = '<span class="ms-mvp-star-glyph" aria-hidden="true"></span>';
+      star.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        cycleMvpStar(star);
+      });
+      star.addEventListener("keydown", (e) => {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        e.preventDefault();
+        e.stopPropagation();
+        cycleMvpStar(star);
+      });
+      btn.appendChild(star);
+    }
+  }
+
+  /** Gate Code / Download — requires any active paid plan (Starter+). */
+  function requirePaidPlan(feature) {
+    if (hasPaidPlan()) return true;
+    const label = feature === "download" ? "Download HTML" : "View Code";
+    const btn =
+      feature === "download"
+        ? document.getElementById("btn-download-html")
+        : document.querySelector('.is-mode[data-mode="code"]');
+    cycleMvpStar(btn?.querySelector(".ms-mvp-star"));
+    window.StudioToast?.error?.(label + " requires a paid plan. Subscribe on Pricing to unlock.");
+    if (state.mode === "code") {
+      state.mode = "preview";
+      try {
+        updatePreview();
+      } catch (_) {
+        /* ignore */
+      }
+    }
+    location.href = "pricing.html";
     return false;
   }
 
+  /** @deprecated alias */
+  function requireMvpPlus(feature) {
+    return requirePaidPlan(feature);
+  }
+
   function syncMvpAccessUi() {
-    const locked = !hasMvpPlus();
+    const locked = !hasPaidPlan();
     const codeBtn = document.querySelector('.is-mode[data-mode="code"]');
     const downloadBtn = document.getElementById("btn-download-html");
     if (codeBtn) {
       codeBtn.classList.toggle("is-mvp-locked", locked);
-      codeBtn.title = locked ? "MVP+ required — View Code" : "Code";
-      codeBtn.setAttribute("aria-label", locked ? "View Code (MVP+ required)" : "Code");
+      codeBtn.setAttribute("aria-disabled", locked ? "true" : "false");
+      codeBtn.title = locked ? "Paid plan required - View Code" : "Code";
+      codeBtn.setAttribute("aria-label", locked ? "View Code (paid plan required)" : "Code");
+      ensureMvpStar(codeBtn, locked);
     }
     if (downloadBtn) {
       downloadBtn.classList.toggle("is-mvp-locked", locked);
-      downloadBtn.title = locked ? "MVP+ required — Download HTML" : "Download HTML";
+      downloadBtn.setAttribute("aria-disabled", locked ? "true" : "false");
+      downloadBtn.title = locked ? "Paid plan required - Download HTML" : "Download HTML";
       downloadBtn.setAttribute(
         "aria-label",
-        locked ? "Download HTML (MVP+ required)" : "Download HTML"
+        locked ? "Download HTML (paid plan required)" : "Download HTML"
       );
+      ensureMvpStar(downloadBtn, locked);
+    }
+    // Never leave a non‑MVP+ user stuck in code mode.
+    if (locked && state.mode === "code") {
+      state.mode = "preview";
+      try {
+        updatePreview();
+      } catch (_) {
+        /* ignore */
+      }
+    }
+  }
+
+  async function syncCreditsFromWorker() {
+    try {
+      const base = workerUrl();
+      if (!base) return;
+      const headers = await authHeaders();
+      const res = await fetch(base + "/credits/balance", { headers });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) return;
+      state.totalCredits = Number(data.totalCredits) || 0;
+      state.paidPlan = !!data.paidPlan;
+      state.mvpPlus = state.paidPlan;
+      state.pro = state.paidPlan;
+      state.generationCost = Number(data.generationCost) || 5;
+      syncMvpAccessUi();
+      document.dispatchEvent(new CustomEvent("ms:credits-changed", { detail: data }));
+    } catch (_) {
+      /* ignore */
     }
   }
 
@@ -1151,9 +1402,38 @@
       !Array.isArray(profile.branding_defaults)
         ? profile.branding_defaults
         : {};
-    state.mvpPlus = !!(profile?.mvp_plus || branding.mvp_plus);
-    state.pro = state.mvpPlus;
-    syncMvpAccessUi();
+    if (profile?.mvp_plus && global.MoonriseMvpCosmetics) {
+      global.MoonriseMvpCosmetics.applyProfileCosmetics(branding);
+    }
+    void syncCreditsFromWorker();
+  }
+
+  function releaseFinderLeadHold() {
+    const id = String(state.leadId || "").trim();
+    if (!id || !state.fromFinder) return;
+    if (window.LeadHandoff?.release?.(id)) return;
+    try {
+      const key = "ms_lf_claimed_v1";
+      const raw = JSON.parse(localStorage.getItem(key) || "{}");
+      if (raw && typeof raw === "object" && !Array.isArray(raw) && raw[id] && raw[id].from !== "project") {
+        delete raw[id];
+        localStorage.setItem(key, JSON.stringify(raw));
+      }
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  async function ensureCreditsForGeneration(fromOnboard) {
+    await syncCreditsFromWorker();
+    const cost = state.generationCost || 5;
+    if (state.totalCredits >= cost) return true;
+    const msg = "Sorry, you need credits to generate a website. Visit our pricing page!";
+    if (fromOnboard) setOnboardError(msg);
+    else setError(msg);
+    window.StudioToast?.error?.(msg);
+    releaseFinderLeadHold();
+    return false;
   }
 
   function readIntake() {
@@ -1179,7 +1459,7 @@
       usePresets: true,
       fromFinder: !!state.fromFinder,
       aiImages: state.aiImages,
-      pro: hasMvpPlus(),
+      pro: hasPaidPlan(),
     };
   }
 
@@ -1218,8 +1498,436 @@
     const empty = document.getElementById("preview-empty");
     const frame = document.getElementById("preview-frame");
     const hasHtml = !!(state.html && state.html.trim());
-    if (empty) empty.hidden = hasHtml || state.mode === "code";
-    if (frame) frame.hidden = !hasHtml || state.mode === "code";
+    const showCode = state.mode === "code";
+    if (empty) empty.hidden = hasHtml || showCode;
+    if (frame) frame.hidden = !hasHtml || showCode;
+  }
+
+  function syncFullscreenUi() {
+    const isFs = state.viewport === "fullscreen";
+    document.body.classList.toggle("ms-lb-fullscreen", isFs);
+    const exitBtn = document.getElementById("lb-exit-fullscreen");
+    if (exitBtn) exitBtn.hidden = !isFs;
+    const browser = document.getElementById("preview-browser");
+    if (browser) browser.classList.toggle("is-fullscreen", isFs);
+  }
+
+  const VIEWPORT_WIDTH_LIMITS = {
+    desktop: { min: 480, defaultWidth: null },
+    tablet: { min: 560, defaultWidth: 768 },
+    phone: { min: 280, defaultWidth: 390 },
+  };
+
+  const VIEWPORT_HEIGHT_LIMITS = {
+    desktop: { min: 360, defaultHeight: null },
+    tablet: { min: 360, defaultHeight: null },
+    phone: { min: 360, defaultHeight: null },
+  };
+
+  function isResizableViewport(vp) {
+    return vp === "desktop" || vp === "tablet" || vp === "phone";
+  }
+
+  function previewWrapPadding(vp) {
+    return vp === "desktop" ? 0 : 16;
+  }
+
+  function getViewportMaxWidth(vp) {
+    const wrap = document.getElementById("preview-wrap");
+    if (!wrap) return VIEWPORT_WIDTH_LIMITS[vp]?.defaultWidth || 1200;
+    return Math.max(VIEWPORT_WIDTH_LIMITS[vp]?.min || 280, wrap.clientWidth - previewWrapPadding(vp));
+  }
+
+  function getViewportMaxHeight(vp) {
+    const wrap = document.getElementById("preview-wrap");
+    if (!wrap) return 900;
+    const pad = vp === "desktop" ? 0 : 12;
+    return Math.max(VIEWPORT_HEIGHT_LIMITS[vp]?.min || 360, wrap.clientHeight - pad);
+  }
+
+  function clampViewportWidth(vp, width) {
+    const limits = VIEWPORT_WIDTH_LIMITS[vp];
+    if (!limits) return width;
+    const max = getViewportMaxWidth(vp);
+    return Math.max(limits.min, Math.min(max, Math.round(width)));
+  }
+
+  function clampViewportHeight(vp, height) {
+    const limits = VIEWPORT_HEIGHT_LIMITS[vp];
+    if (!limits) return height;
+    const max = getViewportMaxHeight(vp);
+    return Math.max(limits.min, Math.min(max, Math.round(height)));
+  }
+
+  function ensureViewportWidth(vp) {
+    if (!isResizableViewport(vp)) return null;
+    if (state.viewportWidths[vp] != null) return state.viewportWidths[vp];
+    const shell = document.getElementById("preview-frame-shell");
+    if (shell) {
+      const measured = Math.round(shell.getBoundingClientRect().width);
+      if (measured > 0) {
+        if (vp === "desktop" && measured >= getViewportMaxWidth(vp) - 2) {
+          state.viewportWidths.desktop = null;
+          return null;
+        }
+        state.viewportWidths[vp] = measured;
+        return measured;
+      }
+    }
+    state.viewportWidths[vp] = limitsDefaultWidth(vp);
+    return state.viewportWidths[vp];
+  }
+
+  function ensureViewportHeight(vp) {
+    if (!isResizableViewport(vp)) return null;
+    if (state.viewportHeights[vp] != null) return state.viewportHeights[vp];
+    const shell = document.getElementById("preview-frame-shell");
+    if (shell) {
+      const measured = Math.round(shell.getBoundingClientRect().height);
+      if (measured > 0) {
+        if (measured >= getViewportMaxHeight(vp) - 2) {
+          state.viewportHeights[vp] = null;
+          return null;
+        }
+        state.viewportHeights[vp] = measured;
+        return measured;
+      }
+    }
+    state.viewportHeights[vp] = limitsDefaultHeight(vp);
+    return state.viewportHeights[vp];
+  }
+
+  function limitsDefaultWidth(vp) {
+    return VIEWPORT_WIDTH_LIMITS[vp]?.defaultWidth ?? null;
+  }
+
+  function limitsDefaultHeight(vp) {
+    return VIEWPORT_HEIGHT_LIMITS[vp]?.defaultHeight ?? null;
+  }
+
+  function resolveViewportWidthPx(vp) {
+    const stored = state.viewportWidths[vp];
+    if (stored != null) return clampViewportWidth(vp, stored);
+    return getViewportMaxWidth(vp);
+  }
+
+  function resolveViewportHeightPx(vp) {
+    const stored = state.viewportHeights[vp];
+    if (stored != null) return clampViewportHeight(vp, stored);
+    return getViewportMaxHeight(vp);
+  }
+
+  function pinShellSizeForTransition(shell) {
+    if (!shell) return;
+    const rect = shell.getBoundingClientRect();
+    if (rect.width > 0) shell.style.width = Math.round(rect.width) + "px";
+    if (rect.height > 0) shell.style.height = Math.round(rect.height) + "px";
+  }
+
+  function beginViewportEase(shell) {
+    if (!shell) return;
+    pinShellSizeForTransition(shell);
+    shell.classList.add("is-vp-easing");
+    shell.addEventListener(
+      "transitionend",
+      (event) => {
+        if (event.target !== shell) return;
+        if (event.propertyName !== "width" && event.propertyName !== "height") return;
+        shell.classList.remove("is-vp-easing");
+        syncPreviewSizeLabel(
+          Math.round(shell.getBoundingClientRect().width),
+          Math.round(shell.getBoundingClientRect().height)
+        );
+        if (state.mode === "edit") positionEditToolbar();
+      },
+      { once: true }
+    );
+  }
+
+  function scheduleViewportSizeApply() {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => applyPreviewViewportSize());
+    });
+  }
+
+  function resetViewportSize(vp) {
+    if (!isResizableViewport(vp)) return;
+    const shell = document.getElementById("preview-frame-shell");
+    const shouldEase = shell && state.viewport === vp && state.mode !== "code";
+    if (shouldEase) beginViewportEase(shell);
+    state.viewportWidths[vp] = limitsDefaultWidth(vp);
+    state.viewportHeights[vp] = limitsDefaultHeight(vp);
+    if (shouldEase) scheduleViewportSizeApply();
+    else applyPreviewViewportSize();
+  }
+
+  function hidePreviewSizeLabel(immediate) {
+    const label = document.getElementById("preview-vp-size");
+    if (!label) return;
+    clearTimeout(previewSizeLabelHideTimer);
+    clearTimeout(previewSizeLabelFadeTimer);
+    previewSizeLabelHideTimer = null;
+    previewSizeLabelFadeTimer = null;
+    label.classList.remove("is-visible");
+    if (immediate) {
+      label.hidden = true;
+      label.textContent = "";
+      return;
+    }
+    previewSizeLabelFadeTimer = window.setTimeout(() => {
+      label.hidden = true;
+      previewSizeLabelFadeTimer = null;
+    }, 460);
+  }
+
+  function syncPreviewSizeLabel(width, height) {
+    const label = document.getElementById("preview-vp-size");
+    if (!label) return;
+    const show = isResizableViewport(state.viewport) && state.mode !== "code";
+    if (!show) {
+      hidePreviewSizeLabel(true);
+      return;
+    }
+    const shell = document.getElementById("preview-frame-shell");
+    const w = width ?? (shell ? Math.round(shell.getBoundingClientRect().width) : null);
+    const h = height ?? (shell ? Math.round(shell.getBoundingClientRect().height) : null);
+    if (!w || !h) {
+      hidePreviewSizeLabel(true);
+      return;
+    }
+    label.textContent = w + " × " + h;
+    label.hidden = false;
+    window.requestAnimationFrame(() => label.classList.add("is-visible"));
+    clearTimeout(previewSizeLabelHideTimer);
+    clearTimeout(previewSizeLabelFadeTimer);
+    previewSizeLabelFadeTimer = null;
+    previewSizeLabelHideTimer = window.setTimeout(() => {
+      hidePreviewSizeLabel(false);
+      previewSizeLabelHideTimer = null;
+    }, PREVIEW_SIZE_LABEL_MS);
+  }
+
+  function applyPreviewViewportSize() {
+    const shell = document.getElementById("preview-frame-shell");
+    const wrap = document.getElementById("preview-wrap");
+    const frame = document.getElementById("preview-frame");
+    if (!shell || !wrap) return;
+
+    const vp = state.viewport;
+    const resizable = isResizableViewport(vp) && state.mode !== "code" && state.viewport !== "fullscreen";
+    wrap.classList.toggle("is-vp-resizable", resizable);
+    shell.className =
+      "ms-preview-frame-shell" +
+      (vp && vp !== "fullscreen" ? " is-" + vp : "") +
+      (resizable ? " is-resizable" : "");
+
+    if (!resizable) {
+      shell.style.width = "";
+      shell.style.height = "";
+      syncPreviewSizeLabel(null, null);
+      return;
+    }
+
+    let width = resolveViewportWidthPx(vp);
+    let height = resolveViewportHeightPx(vp);
+    if (state.viewportWidths[vp] == null && vp !== "desktop") {
+      state.viewportWidths[vp] = width;
+    }
+    shell.style.width = width + "px";
+    shell.style.height = height + "px";
+
+    syncPreviewSizeLabel(width, height);
+
+    if (frame) frame.className = "ms-preview-frame is-" + vp;
+    if (state.mode === "edit") positionEditToolbar();
+  }
+
+  function applyPreviewViewportWidth() {
+    applyPreviewViewportSize();
+  }
+
+  function applyViewportFrameClass() {
+    const frame = document.getElementById("preview-frame");
+    if (frame) frame.className = "ms-preview-frame is-" + state.viewport;
+    syncFullscreenUi();
+    setModeUi();
+    applyPreviewViewportSize();
+  }
+
+  function setViewport(vp) {
+    const prev = state.viewport;
+    const shell = document.getElementById("preview-frame-shell");
+
+    if (vp === "fullscreen") {
+      if (state.viewport !== "fullscreen") {
+        state.viewportBeforeFullscreen =
+          state.viewport && state.viewport !== "fullscreen" ? state.viewport : state.viewportBeforeFullscreen;
+      }
+    } else {
+      state.viewportBeforeFullscreen = vp;
+    }
+
+    const shouldEase =
+      shell &&
+      prev !== vp &&
+      isResizableViewport(prev) &&
+      isResizableViewport(vp) &&
+      state.mode !== "code";
+
+    if (shouldEase) beginViewportEase(shell);
+
+    state.viewport = vp;
+    syncFullscreenUi();
+    setModeUi();
+    const frame = document.getElementById("preview-frame");
+    if (frame) frame.className = "ms-preview-frame is-" + vp;
+
+    if (shouldEase) scheduleViewportSizeApply();
+    else applyPreviewViewportSize();
+  }
+
+  function bindPreviewViewportResizer() {
+    const shell = document.getElementById("preview-frame-shell");
+    const wrap = document.getElementById("preview-wrap");
+    const left = document.getElementById("preview-vp-resizer-left");
+    const right = document.getElementById("preview-vp-resizer-right");
+    const top = document.getElementById("preview-vp-resizer-top");
+    const bottom = document.getElementById("preview-vp-resizer-bottom");
+    if (!shell || !wrap || !left || !right || !top || !bottom) return;
+
+    let dragging = false;
+    let axis = "x";
+    let startX = 0;
+    let startY = 0;
+    let startWidth = 0;
+    let startHeight = 0;
+    let edge = "right";
+
+    const applyDragSize = (width, height) => {
+      const vp = state.viewport;
+      if (width != null) {
+        state.viewportWidths[vp] = width;
+        shell.style.width = width + "px";
+      }
+      if (height != null) {
+        state.viewportHeights[vp] = height;
+        shell.style.height = height + "px";
+      }
+      syncPreviewSizeLabel(
+        width ?? state.viewportWidths[vp] ?? Math.round(shell.getBoundingClientRect().width),
+        height ?? state.viewportHeights[vp] ?? Math.round(shell.getBoundingClientRect().height)
+      );
+      if (state.mode === "edit") positionEditToolbar();
+    };
+
+    const onPointerMove = (event) => {
+      if (!dragging || !isResizableViewport(state.viewport)) return;
+      const vp = state.viewport;
+      if (axis === "x") {
+        const delta = event.clientX - startX;
+        const widthDelta = edge === "right" ? delta * 2 : -delta * 2;
+        applyDragSize(clampViewportWidth(vp, startWidth + widthDelta), null);
+      } else {
+        const delta = event.clientY - startY;
+        const heightDelta = edge === "bottom" ? delta * 2 : -delta * 2;
+        applyDragSize(null, clampViewportHeight(vp, startHeight + heightDelta));
+      }
+      event.preventDefault();
+    };
+
+    const stopDrag = () => {
+      if (!dragging) return;
+      dragging = false;
+      document.body.classList.remove("ms-lb-vp-resizing");
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", stopDrag);
+      window.removeEventListener("pointercancel", stopDrag);
+    };
+
+    const startDrag = (event, nextAxis, side) => {
+      if (!isResizableViewport(state.viewport) || state.mode === "code") return;
+      if (event.button != null && event.button !== 0) return;
+      const vp = state.viewport;
+      ensureViewportWidth(vp);
+      ensureViewportHeight(vp);
+      dragging = true;
+      axis = nextAxis;
+      edge = side;
+      startX = event.clientX;
+      startY = event.clientY;
+      startWidth = shell.getBoundingClientRect().width;
+      startHeight = shell.getBoundingClientRect().height;
+      document.body.classList.add("ms-lb-vp-resizing");
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+      window.addEventListener("pointermove", onPointerMove);
+      window.addEventListener("pointerup", stopDrag);
+      window.addEventListener("pointercancel", stopDrag);
+      event.preventDefault();
+    };
+
+    left.addEventListener("pointerdown", (event) => startDrag(event, "x", "left"));
+    right.addEventListener("pointerdown", (event) => startDrag(event, "x", "right"));
+    top.addEventListener("pointerdown", (event) => startDrag(event, "y", "top"));
+    bottom.addEventListener("pointerdown", (event) => startDrag(event, "y", "bottom"));
+
+    const nudgeWidth = (side, step) => {
+      if (!isResizableViewport(state.viewport) || state.mode === "code") return;
+      const vp = state.viewport;
+      ensureViewportWidth(vp);
+      const current = state.viewportWidths[vp] ?? shell.getBoundingClientRect().width;
+      applyDragSize(clampViewportWidth(vp, current + (side === "right" ? step : -step)), null);
+    };
+
+    const nudgeHeight = (side, step) => {
+      if (!isResizableViewport(state.viewport) || state.mode === "code") return;
+      const vp = state.viewport;
+      ensureViewportHeight(vp);
+      const current = state.viewportHeights[vp] ?? shell.getBoundingClientRect().height;
+      applyDragSize(null, clampViewportHeight(vp, current + (side === "bottom" ? step : -step)));
+    };
+
+    left.addEventListener("keydown", (event) => {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      const step = event.shiftKey ? 24 : 12;
+      nudgeWidth(event.key === "ArrowRight" ? "right" : "left", step);
+      event.preventDefault();
+    });
+    right.addEventListener("keydown", (event) => {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      const step = event.shiftKey ? 24 : 12;
+      nudgeWidth(event.key === "ArrowRight" ? "right" : "left", step);
+      event.preventDefault();
+    });
+    top.addEventListener("keydown", (event) => {
+      if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+      const step = event.shiftKey ? 24 : 12;
+      nudgeHeight(event.key === "ArrowDown" ? "top" : "bottom", step);
+      event.preventDefault();
+    });
+    bottom.addEventListener("keydown", (event) => {
+      if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+      const step = event.shiftKey ? 24 : 12;
+      nudgeHeight(event.key === "ArrowDown" ? "bottom" : "top", step);
+      event.preventDefault();
+    });
+
+    window.addEventListener("resize", () => {
+      if (!isResizableViewport(state.viewport)) return;
+      applyPreviewViewportSize();
+    });
+  }
+
+  function exitFullscreen() {
+    if (state.viewport !== "fullscreen") return;
+    const restore = state.viewportBeforeFullscreen || "desktop";
+    setViewport(restore);
+    if (state.mode === "edit") {
+      positionEditToolbar();
+      return;
+    }
+    if (state.mode !== "code") {
+      updatePreview();
+    }
   }
 
   function setModeUi() {
@@ -1230,19 +1938,1578 @@
       btn.classList.toggle("is-active", btn.dataset.vp === state.viewport);
     });
     const browser = document.getElementById("preview-browser");
-    if (browser) browser.classList.toggle("is-code", state.mode === "code");
+    if (browser) {
+      browser.classList.toggle("is-code", state.mode === "code");
+      browser.classList.toggle("is-edit", state.mode === "edit");
+    }
+  }
+
+  const EDIT_STYLE_ID = "ms-lb-edit-style";
+  const EDIT_HOVER_ATTR = "data-ms-edit-hover";
+  const EDIT_SELECT_ATTR = "data-ms-edit-selected";
+  const EDIT_DRAG_ATTR = "data-ms-edit-dragging";
+  const EDIT_DROP_ATTR = "data-ms-edit-drop";
+  const EDIT_AXIS_ATTR = "data-ms-edit-axis";
+  const EDIT_REORDERABLE_ATTR = "data-ms-edit-reorderable";
+  const EDIT_DROP_IMAGE_ATTR = "data-ms-edit-drop-image";
+  const EDIT_DRAG_THRESHOLD_PX = 6;
+  const PREVIEW_SANDBOX_PREVIEW = "allow-same-origin allow-scripts allow-forms";
+  const PREVIEW_SANDBOX_EDIT = "allow-same-origin";
+  const EDITABLE_TAGS = new Set([
+    "img",
+    "a",
+    "button",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "p",
+    "li",
+    "label",
+    "span",
+    "strong",
+    "em",
+    "small",
+    "figcaption",
+    "blockquote",
+    "td",
+    "th",
+    "section",
+    "header",
+    "footer",
+    "nav",
+    "main",
+    "article",
+    "aside",
+    "div",
+  ]);
+  const EDIT_SKIP_TAGS = new Set([
+    "script",
+    "style",
+    "link",
+    "meta",
+    "title",
+    "head",
+    "html",
+    "body",
+    "svg",
+    "path",
+    "noscript",
+    "iframe",
+    "br",
+    "hr",
+  ]);
+
+  const editState = {
+    selected: null,
+    hovered: null,
+    history: [],
+    historyIndex: -1,
+    saveTimer: null,
+    saveStatus: "idle",
+    saveGeneration: 0,
+    boundDoc: null,
+    listeners: null,
+    lastWrittenHtml: "",
+    lastSandboxMode: "",
+    skipRewrite: false,
+    toolbarTab: "style",
+    drag: null,
+    didDrag: false,
+    dropImageEl: null,
+  };
+
+  function rgbToHex(color) {
+    const raw = String(color || "").trim();
+    if (/^#[0-9a-f]{6}$/i.test(raw)) return raw.toLowerCase();
+    const m = raw.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+    if (!m) return "#000000";
+    return (
+      "#" +
+      [m[1], m[2], m[3]]
+        .map((n) => Number(n).toString(16).padStart(2, "0"))
+        .join("")
+    );
+  }
+
+  function setEditSaveStatus(status, message) {
+    editState.saveStatus = status;
+    const el = document.getElementById("lb-edit-save-status");
+    if (!el) return;
+    const labels = {
+      idle: "",
+      unsaved: "Unsaved changes",
+      saving: "Saving…",
+      saved: "Saved",
+      error: message || "Save failed - retrying",
+    };
+    const text = labels[status] || "";
+    el.hidden = !text;
+    el.textContent = text;
+    el.classList.remove("is-unsaved", "is-saving", "is-saved", "is-error", "is-hint");
+    if (status === "unsaved" || status === "saving" || status === "saved" || status === "error") {
+      el.classList.add("is-" + status);
+    }
+  }
+
+  function getPreviewFrame() {
+    return document.getElementById("preview-frame");
+  }
+
+  function getPreviewDoc() {
+    return getPreviewFrame()?.contentDocument || null;
+  }
+
+  function applyPreviewSandbox(mode) {
+    const frame = getPreviewFrame();
+    if (!frame) return;
+    frame.setAttribute("sandbox", mode === "edit" ? PREVIEW_SANDBOX_EDIT : PREVIEW_SANDBOX_PREVIEW);
+    editState.lastSandboxMode = mode;
+  }
+
+  function writePreviewDocument(html) {
+    const frame = getPreviewFrame();
+    if (!frame || !html) return null;
+    const doc = frame.contentDocument;
+    if (!doc) return null;
+    doc.open();
+    doc.write(html);
+    doc.close();
+    editState.lastWrittenHtml = html;
+    return doc;
+  }
+
+  function setEditHint(msg) {
+    const el = document.getElementById("lb-edit-save-status");
+    if (!el || editState.saveStatus !== "idle") return;
+    if (!msg) {
+      el.hidden = true;
+      el.textContent = "";
+      el.classList.remove("is-hint");
+      return;
+    }
+    el.hidden = false;
+    el.textContent = msg;
+    el.classList.add("is-hint");
+  }
+
+  function clearDragMarks(doc) {
+    if (!doc) return;
+    doc.querySelectorAll("[" + EDIT_DRAG_ATTR + "]").forEach((el) => {
+      el.removeAttribute(EDIT_DRAG_ATTR);
+    });
+    doc.querySelectorAll("[" + EDIT_DROP_ATTR + "]").forEach((el) => {
+      el.removeAttribute(EDIT_DROP_ATTR);
+      el.removeAttribute(EDIT_AXIS_ATTR);
+    });
+    doc.querySelectorAll("[" + EDIT_REORDERABLE_ATTR + "]").forEach((el) => {
+      el.removeAttribute(EDIT_REORDERABLE_ATTR);
+    });
+    doc.querySelectorAll("[" + EDIT_DROP_IMAGE_ATTR + "]").forEach((el) => {
+      el.removeAttribute(EDIT_DROP_IMAGE_ATTR);
+    });
+    editState.dropImageEl = null;
+  }
+
+  function clearEditMarks(doc) {
+    if (!doc) return;
+    clearDragMarks(doc);
+    doc.querySelectorAll("[" + EDIT_HOVER_ATTR + "]").forEach((el) => {
+      el.removeAttribute(EDIT_HOVER_ATTR);
+    });
+    doc.querySelectorAll("[" + EDIT_SELECT_ATTR + "]").forEach((el) => {
+      el.removeAttribute(EDIT_SELECT_ATTR);
+    });
+  }
+
+  function serializePreviewHtml() {
+    const doc = getPreviewDoc();
+    if (!doc || !doc.documentElement) return state.html || "";
+    clearEditMarks(doc);
+    doc.getElementById(EDIT_STYLE_ID)?.remove();
+    doc.querySelectorAll("[contenteditable]").forEach((el) => {
+      el.removeAttribute("contenteditable");
+      el.removeAttribute("spellcheck");
+    });
+    const html = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+    ensureEditStyles(doc);
+    if (editState.selected?.isConnected) {
+      editState.selected.setAttribute(EDIT_SELECT_ATTR, "1");
+      if (getReorderContext(editState.selected)) {
+        editState.selected.setAttribute(EDIT_REORDERABLE_ATTR, "1");
+      }
+    }
+    return html;
+  }
+
+  function ensureEditStyles(doc) {
+    if (!doc) return;
+    let style = doc.getElementById(EDIT_STYLE_ID);
+    if (!style) {
+      style = doc.createElement("style");
+      style.id = EDIT_STYLE_ID;
+      (doc.head || doc.documentElement).appendChild(style);
+    }
+    style.textContent =
+      "[" +
+      EDIT_HOVER_ATTR +
+      "]{outline:2px dashed rgba(37,99,235,.75)!important;outline-offset:3px!important;cursor:pointer!important}" +
+      "[" +
+      EDIT_SELECT_ATTR +
+      "]{outline:3px solid #2563eb!important;outline-offset:3px!important;box-shadow:0 0 0 4px rgba(37,99,235,.18)!important}" +
+      "[" +
+      EDIT_REORDERABLE_ATTR +
+      "]{cursor:grab!important}" +
+      "[" +
+      EDIT_DRAG_ATTR +
+      "]{opacity:.55!important;cursor:grabbing!important;outline:3px solid #2563eb!important;outline-offset:3px!important;user-select:none!important;-webkit-user-select:none!important}" +
+      "[" +
+      EDIT_DROP_ATTR +
+      '="before"][' +
+      EDIT_AXIS_ATTR +
+      '="y"]{box-shadow:0 -3px 0 0 #2563eb!important}' +
+      "[" +
+      EDIT_DROP_ATTR +
+      '="after"][' +
+      EDIT_AXIS_ATTR +
+      '="y"]{box-shadow:0 3px 0 0 #2563eb!important}' +
+      "[" +
+      EDIT_DROP_ATTR +
+      '="before"][' +
+      EDIT_AXIS_ATTR +
+      '="x"]{box-shadow:-3px 0 0 0 #2563eb!important}' +
+      "[" +
+      EDIT_DROP_ATTR +
+      '="after"][' +
+      EDIT_AXIS_ATTR +
+      '="x"]{box-shadow:3px 0 0 0 #2563eb!important}' +
+      "[" +
+      EDIT_DROP_IMAGE_ATTR +
+      "]{outline:3px dashed #059669!important;outline-offset:4px!important;box-shadow:0 0 0 4px rgba(5,150,105,.2)!important}" +
+      "[contenteditable=true]{outline:2px solid #60a5fa!important;outline-offset:3px!important;cursor:text!important}" +
+      "*{scroll-behavior:auto!important}";
+  }
+
+  function isSkippedEditElement(el) {
+    if (!el || el.nodeType !== 1) return true;
+    return EDIT_SKIP_TAGS.has(el.tagName.toLowerCase());
+  }
+
+  function resolveEditableTarget(node) {
+    let el = node;
+    if (el && el.nodeType === 3) el = el.parentElement;
+    while (el && el.nodeType === 1) {
+      if (el === el.ownerDocument?.body || el === el.ownerDocument?.documentElement) {
+        return null;
+      }
+      const tag = el.tagName.toLowerCase();
+      if (!isSkippedEditElement(el) && EDITABLE_TAGS.has(tag)) {
+        return el;
+      }
+      el = el.parentElement;
+    }
+    return null;
+  }
+
+  function targetFromFramePoint(clientX, clientY) {
+    const frame = getPreviewFrame();
+    const doc = frame?.contentDocument;
+    if (!frame || !doc) return null;
+    const rect = frame.getBoundingClientRect();
+    if (!rect.width || !rect.height) return null;
+    const x = ((clientX - rect.left) / rect.width) * frame.clientWidth;
+    const y = ((clientY - rect.top) / rect.height) * frame.clientHeight;
+    return resolveEditableTarget(doc.elementFromPoint(x, y));
+  }
+
+  const TEXT_TAGS = new Set([
+    "h1", "h2", "h3", "h4", "h5", "h6",
+    "p", "li", "label", "span", "strong", "em", "small",
+    "figcaption", "blockquote", "td", "th",
+  ]);
+  const SECTION_TAGS = new Set([
+    "section", "header", "footer", "nav", "main", "article", "aside",
+  ]);
+
+  function classifyEditable(el) {
+    if (!el) return "block";
+    const tag = el.tagName.toLowerCase();
+    if (tag === "img") return "image";
+    if (tag === "a" || tag === "button") return "link";
+    if (TEXT_TAGS.has(tag)) return "text";
+    if (SECTION_TAGS.has(tag)) return "section";
+    return "block";
+  }
+
+  function isPageSectionPeer(el) {
+    if (!el || el.nodeType !== 1 || isSkippedEditElement(el)) return false;
+    const tag = el.tagName.toLowerCase();
+    return SECTION_TAGS.has(tag) || tag === "div";
+  }
+
+  /** Repeated siblings in the same container, or top-level page sections. */
+  function getReorderContext(el) {
+    if (!el?.parentElement) return null;
+    const parent = el.parentElement;
+    const doc = parent.ownerDocument;
+    if (parent === doc?.documentElement) return null;
+    const tag = el.tagName;
+    const kind = classifyEditable(el);
+    let peers;
+    if (parent === doc?.body) {
+      if (!isPageSectionPeer(el)) return null;
+      peers = Array.from(parent.children).filter(isPageSectionPeer);
+    } else if (kind === "section") {
+      peers = Array.from(parent.children).filter(isPageSectionPeer);
+    } else {
+      peers = Array.from(parent.children).filter(
+        (child) => child.nodeType === 1 && child.tagName === tag
+      );
+    }
+    if (peers.length < 2 || !peers.includes(el)) return null;
+    const index = peers.indexOf(el);
+    return {
+      canPrev: index > 0,
+      canNext: index < peers.length - 1,
+      index,
+      total: peers.length,
+      parent,
+      peers,
+    };
+  }
+
+  function moveElementAmongPeers(el, direction) {
+    const ctx = getReorderContext(el);
+    if (!ctx) return;
+    const peers = ctx.peers || [];
+    const index = peers.indexOf(el);
+    if (index < 0) return;
+    if (direction === "prev" && ctx.canPrev) {
+      ctx.parent.insertBefore(el, peers[index - 1]);
+    } else if (direction === "next" && ctx.canNext) {
+      const after = peers[index + 1];
+      ctx.parent.insertBefore(el, after.nextElementSibling);
+    }
+  }
+
+  function isHorizontalReorderParent(parent) {
+    if (!parent) return false;
+    const win = parent.ownerDocument?.defaultView;
+    const cs = win?.getComputedStyle(parent);
+    if (!cs) return false;
+    const display = cs.display || "";
+    if (display.includes("grid")) {
+      const cols = cs.gridTemplateColumns || "";
+      if (cols && cols !== "none" && cols.split(" ").filter(Boolean).length > 1) return true;
+    }
+    if (display.includes("flex")) {
+      const dir = cs.flexDirection || "row";
+      return dir === "row" || dir === "row-reverse";
+    }
+    return false;
+  }
+
+  function getReorderPeers(el) {
+    const ctx = getReorderContext(el);
+    if (!ctx) return null;
+    return { parent: ctx.parent, peers: ctx.peers || [], horizontal: isHorizontalReorderParent(ctx.parent) };
+  }
+
+  function clearDropIndicators(doc) {
+    if (!doc) return;
+    doc.querySelectorAll("[" + EDIT_DROP_ATTR + "]").forEach((node) => {
+      node.removeAttribute(EDIT_DROP_ATTR);
+      node.removeAttribute(EDIT_AXIS_ATTR);
+    });
+  }
+
+  function resolveDropSlot(dragEl, clientX, clientY) {
+    const info = getReorderPeers(dragEl);
+    if (!info) return null;
+    const { peers, horizontal } = info;
+    let insertBefore = null;
+    for (let i = 0; i < peers.length; i++) {
+      const peer = peers[i];
+      if (peer === dragEl) continue;
+      const r = peer.getBoundingClientRect();
+      const before = horizontal
+        ? clientX < r.left + r.width / 2
+        : clientY < r.top + r.height / 2;
+      if (before) {
+        insertBefore = peer;
+        break;
+      }
+    }
+    return { insertBefore, horizontal, peers, parent: info.parent };
+  }
+
+  function paintDropIndicator(dragEl, slot) {
+    const doc = dragEl?.ownerDocument;
+    if (!doc) return;
+    clearDropIndicators(doc);
+    if (!slot) return;
+    const axis = slot.horizontal ? "x" : "y";
+    const { insertBefore, peers } = slot;
+    let markEl = null;
+    let side = "before";
+    if (insertBefore) {
+      markEl = insertBefore;
+      side = "before";
+    } else {
+      const last = peers.filter((p) => p !== dragEl).pop() || peers[peers.length - 1];
+      markEl = last;
+      side = "after";
+    }
+    if (!markEl || markEl === dragEl) return;
+    markEl.setAttribute(EDIT_DROP_ATTR, side);
+    markEl.setAttribute(EDIT_AXIS_ATTR, axis);
+  }
+
+  function applyReorderDrop(dragEl, slot) {
+    if (!dragEl || !slot || !dragEl.parentNode) return false;
+    const { insertBefore, parent } = slot;
+    if (insertBefore === dragEl) return false;
+    if (insertBefore) {
+      if (dragEl.nextElementSibling === insertBefore) return false;
+      if (insertBefore.parentNode !== parent) return false;
+      parent.insertBefore(dragEl, insertBefore);
+      return true;
+    }
+    if (parent.lastElementChild === dragEl) return false;
+    parent.appendChild(dragEl);
+    return true;
+  }
+
+  function endPointerDrag(commit) {
+    const drag = editState.drag;
+    const doc = editState.boundDoc;
+    editState.drag = null;
+
+    if (doc) {
+      clearDropIndicators(doc);
+      doc.querySelectorAll("[" + EDIT_DRAG_ATTR + "]").forEach((node) => {
+        node.removeAttribute(EDIT_DRAG_ATTR);
+      });
+    }
+
+    if (drag?.active && drag.el?.isConnected) {
+      editState.didDrag = true;
+      const el = drag.el;
+      if (commit && drag.slot) {
+        editState.selected = el;
+        el.setAttribute(EDIT_SELECT_ATTR, "1");
+        commitEditChange((node) => {
+          applyReorderDrop(node, drag.slot);
+        });
+      } else {
+        selectEditable(el, { keepTab: true });
+      }
+    }
+
+    window.setTimeout(() => {
+      editState.didDrag = false;
+    }, 0);
+  }
+
+  function pushEditHistory() {
+    const snap = serializePreviewHtml();
+    if (!snap) return;
+    if (editState.historyIndex >= 0 && editState.history[editState.historyIndex] === snap) {
+      return;
+    }
+    editState.history = editState.history.slice(0, editState.historyIndex + 1);
+    editState.history.push(snap);
+    if (editState.history.length > 40) editState.history.shift();
+    editState.historyIndex = editState.history.length - 1;
+  }
+
+  function restoreEditSnapshot(html) {
+    state.html = html;
+    editState.lastWrittenHtml = "";
+    editState.selected = null;
+    editState.hovered = null;
+    hideEditToolbar();
+    editState.skipRewrite = false;
+    const frame = document.getElementById("preview-frame");
+    const doc = frame?.contentDocument;
+    if (doc) {
+      doc.open();
+      doc.write(html);
+      doc.close();
+      editState.lastWrittenHtml = html;
+      attachEditMode(doc);
+    }
+    scheduleEditAutosave();
+  }
+
+  function undoEdit() {
+    if (editState.historyIndex <= 0) return;
+    editState.historyIndex -= 1;
+    restoreEditSnapshot(editState.history[editState.historyIndex]);
+  }
+
+  function redoEdit() {
+    if (editState.historyIndex >= editState.history.length - 1) return;
+    editState.historyIndex += 1;
+    restoreEditSnapshot(editState.history[editState.historyIndex]);
+  }
+
+  function hideEditToolbar() {
+    const toolbar = document.getElementById("lb-edit-toolbar");
+    if (toolbar) toolbar.hidden = true;
+  }
+
+  function positionEditToolbar() {
+    const toolbar = document.getElementById("lb-edit-toolbar");
+    const wrap = document.getElementById("preview-wrap");
+    const frame = document.getElementById("preview-frame");
+    const el = editState.selected;
+    if (!toolbar || !wrap || !frame || !el || !el.isConnected) {
+      hideEditToolbar();
+      return;
+    }
+    toolbar.hidden = false;
+
+    const place = () => {
+      if (!el.isConnected) return;
+      const wrapRect = wrap.getBoundingClientRect();
+      const frameRect = frame.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      const gap = 14;
+      const pad = 10;
+      const tbW = Math.min(toolbar.offsetWidth || 300, wrap.clientWidth - pad * 2);
+      const tbH = toolbar.offsetHeight || 140;
+
+      const elTop = frameRect.top - wrapRect.top + elRect.top;
+      const elBottom = frameRect.top - wrapRect.top + elRect.bottom;
+      const elMidX = frameRect.left - wrapRect.left + elRect.left + elRect.width / 2;
+
+      const spaceAbove = elTop - pad;
+      const spaceBelow = wrap.clientHeight - elBottom - pad;
+      const need = tbH + gap;
+
+      let top;
+      let placeSide = "above";
+      if (spaceAbove >= need || (spaceAbove >= spaceBelow && spaceAbove >= tbH * 0.55)) {
+        top = elTop - tbH - gap;
+        placeSide = "above";
+        if (top < pad) {
+          top = elBottom + gap;
+          placeSide = "below";
+        }
+      } else {
+        top = elBottom + gap;
+        placeSide = "below";
+      }
+
+      if (placeSide === "below" && top + tbH > wrap.clientHeight - pad && spaceAbove > spaceBelow) {
+        top = Math.max(pad, elTop - tbH - gap);
+        placeSide = "above";
+      }
+
+      top = Math.max(pad, Math.min(top, wrap.clientHeight - tbH - pad));
+
+      // Keep clear of the selection when possible (avoid covering mid-element).
+      if (placeSide === "above" && top + tbH + 4 > elTop) {
+        const below = elBottom + gap;
+        if (below + tbH <= wrap.clientHeight - pad) {
+          top = below;
+          placeSide = "below";
+        }
+      }
+      if (placeSide === "below" && top < elBottom - 4) {
+        const above = elTop - tbH - gap;
+        if (above >= pad) {
+          top = above;
+          placeSide = "above";
+        }
+      }
+
+      let left = elMidX - tbW / 2;
+      left = Math.max(pad, Math.min(left, wrap.clientWidth - tbW - pad));
+
+      toolbar.style.top = top + "px";
+      toolbar.style.left = left + "px";
+      toolbar.dataset.place = placeSide;
+    };
+
+    place();
+    requestAnimationFrame(place);
+  }
+
+  function editBtn(action, label, opts) {
+    opts = opts || {};
+    return (
+      '<button type="button" class="ms-lb-edit-btn' +
+      (opts.danger ? " is-danger" : "") +
+      (opts.primary ? " is-primary" : "") +
+      (opts.icon ? " is-icon" : "") +
+      '" data-edit-action="' +
+      action +
+      '"' +
+      (opts.title ? ' title="' + String(opts.title).replace(/"/g, "&quot;") + '"' : "") +
+      (opts.disabled ? " disabled" : "") +
+      ">" +
+      label +
+      "</button>"
+    );
+  }
+
+  function editGroup(inner) {
+    return '<div class="ms-lb-edit-group">' + inner + "</div>";
+  }
+
+  function editSection(label, inner) {
+    return (
+      '<div class="ms-lb-edit-section">' +
+      '<span class="ms-lb-edit-section-label">' +
+      label +
+      "</span>" +
+      '<div class="ms-lb-edit-section-body">' +
+      inner +
+      "</div></div>"
+    );
+  }
+
+  const SITE_IMAGES_BUCKET = "site-images";
+  const SITE_IMAGE_MAX_BYTES = 5 * 1024 * 1024;
+  const SITE_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+
+  function siteImageExt(type) {
+    if (type === "image/png") return "png";
+    if (type === "image/webp") return "webp";
+    if (type === "image/gif") return "gif";
+    return "jpg";
+  }
+
+  function sanitizeSiteImageName(name) {
+    return String(name || "image")
+      .replace(/\.[^.]+$/, "")
+      .replace(/[^a-zA-Z0-9_-]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 48) || "image";
+  }
+
+  function siteImageScopeId() {
+    return (
+      String(state.leadId || state.project?.lead_id || "").trim() ||
+      String(state.projectId || "").trim() ||
+      "draft"
+    );
+  }
+
+  function setEditUploadStatus(msg, kind) {
+    const el = document.getElementById("lb-edit-upload-status");
+    if (!el) return;
+    el.textContent = msg || "";
+    el.classList.remove("is-error", "is-ok");
+    if (kind === "error") el.classList.add("is-error");
+    if (kind === "ok") el.classList.add("is-ok");
+  }
+
+  async function uploadSiteImage(file) {
+    if (!file) throw new Error("Choose an image first.");
+    if (!SITE_IMAGE_TYPES.has(file.type)) throw new Error("Use JPG, PNG, WebP, or GIF.");
+    if (file.size > SITE_IMAGE_MAX_BYTES) throw new Error("Image must be 5 MB or smaller.");
+    if (!state.projectId) throw new Error("Save or generate a site before uploading images.");
+
+    const user = await window.StudioAuth.getUser();
+    if (!user?.id) throw new Error("Sign in required to upload images.");
+
+    const client = window.SiteSupabase?.getClient?.();
+    if (!client) throw new Error("Storage is not configured.");
+
+    const scope = siteImageScopeId().replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 80) || "draft";
+    const path =
+      user.id +
+      "/" +
+      scope +
+      "/" +
+      Date.now() +
+      "-" +
+      sanitizeSiteImageName(file.name) +
+      "." +
+      siteImageExt(file.type);
+
+    const { error } = await client.storage.from(SITE_IMAGES_BUCKET).upload(path, file, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: file.type,
+    });
+    if (error) throw error;
+
+    const { data } = client.storage.from(SITE_IMAGES_BUCKET).getPublicUrl(path);
+    const url = String(data?.publicUrl || "").trim();
+    if (!url) throw new Error("Upload succeeded but URL is missing.");
+    return url + (url.includes("?") ? "&" : "?") + "t=" + Date.now();
+  }
+
+  async function handleSiteImageUpload(file, imageEl) {
+    const btn = document.getElementById("lb-edit-upload-btn");
+    const input = document.getElementById("lb-edit-file");
+    const target = imageEl || editState.selected;
+    if (!target || classifyEditable(target) !== "image") return;
+    if (editState.selected !== target) selectEditable(target);
+    try {
+      if (btn) btn.disabled = true;
+      setEditUploadStatus("Uploading…");
+      const url = await uploadSiteImage(file);
+      commitEditChange((node) => {
+        node.setAttribute("src", url);
+      });
+      const srcInput = document.getElementById("lb-edit-src");
+      if (srcInput) srcInput.value = url;
+      const thumb = document.getElementById("lb-edit-thumb");
+      if (thumb) {
+        thumb.src = url;
+        thumb.classList.remove("is-empty");
+        thumb.alt = "";
+      }
+      setEditUploadStatus("Uploaded", "ok");
+      window.StudioToast?.success?.("Image uploaded");
+    } catch (e) {
+      setEditUploadStatus(e.message || "Upload failed", "error");
+      window.StudioToast?.error?.(e.message || "Upload failed");
+    } finally {
+      if (btn) btn.disabled = false;
+      if (input) input.value = "";
+    }
+  }
+
+  function defaultEditToolbarTab(kind) {
+    if (kind === "image") return "media";
+    if (kind === "section") return "layout";
+    return "style";
+  }
+
+  function editToolbarTabsFor(kind, el) {
+    const tabs = [];
+    if (kind === "text" || kind === "link" || kind === "block" || kind === "section") {
+      tabs.push({ id: "style", label: "Style" });
+    }
+    tabs.push({ id: "layout", label: "Layout" });
+    if (kind === "image") tabs.push({ id: "media", label: "Media" });
+    if (kind === "link" || el?.tagName?.toLowerCase() === "a") {
+      tabs.push({ id: "content", label: "Link" });
+    }
+    return tabs;
+  }
+
+  function renderEditToolbar() {
+    const el = editState.selected;
+    const tabsEl = document.getElementById("lb-edit-tabs");
+    const main = document.getElementById("lb-edit-toolbar-main");
+    const foot = document.getElementById("lb-edit-toolbar-foot");
+    if (!tabsEl || !main || !foot || !el) {
+      hideEditToolbar();
+      return;
+    }
+    const kind = classifyEditable(el);
+    const doc = el.ownerDocument;
+    const computed = doc.defaultView?.getComputedStyle(el);
+    const textColor = rgbToHex(computed?.color || "#000000");
+    const bgColor = rgbToHex(computed?.backgroundColor || "#ffffff");
+    const tabs = editToolbarTabsFor(kind, el);
+    if (!tabs.some((t) => t.id === editState.toolbarTab)) {
+      editState.toolbarTab = tabs[0]?.id || "style";
+    }
+    const tab = editState.toolbarTab;
+
+    tabsEl.innerHTML = tabs
+      .map(
+        (t) =>
+          '<button type="button" class="ms-lb-edit-tab' +
+          (t.id === tab ? " is-active" : "") +
+          '" role="tab" aria-selected="' +
+          (t.id === tab ? "true" : "false") +
+          '" data-edit-tab="' +
+          t.id +
+          '">' +
+          t.label +
+          "</button>"
+      )
+      .join("");
+
+    let body = "";
+    if (tab === "style") {
+      const chunks = [];
+      if (kind === "text" || kind === "link" || kind === "block") {
+        chunks.push(
+          editSection(
+            "Text",
+            editGroup(editBtn("edit-text", "Edit text")) +
+              editGroup(
+                editBtn("align-left", "Left", { title: "Align left" }) +
+                  editBtn("align-center", "Center", { title: "Align center" }) +
+                  editBtn("align-right", "Right", { title: "Align right" })
+              )
+          )
+        );
+        chunks.push(
+          editSection(
+            "Size & color",
+            editGroup(
+              editBtn("size-down", "A−", { title: "Smaller" }) +
+                editBtn("size-up", "A+", { title: "Larger" })
+            ) +
+              '<label class="ms-lb-edit-swatch" title="Text color">' +
+              '<input class="ms-lb-edit-color" type="color" data-edit-action="text-color" value="' +
+              textColor +
+              '">' +
+              '<span class="ms-lb-edit-swatch-label">Text</span>' +
+              "</label>"
+          )
+        );
+      }
+      if (kind === "section" || kind === "block") {
+        chunks.push(
+          editSection(
+            "Background",
+            '<label class="ms-lb-edit-swatch" title="Background color">' +
+              '<input class="ms-lb-edit-color" type="color" data-edit-action="bg-color" value="' +
+              (bgColor === "#000000" ? "#ffffff" : bgColor) +
+              '">' +
+              '<span class="ms-lb-edit-swatch-label">Fill color</span>' +
+              "</label>"
+          )
+        );
+      }
+      if (!chunks.length) {
+        body = '<p class="ms-lb-edit-empty">No style options for this element.</p>';
+      } else {
+        body = '<div class="ms-lb-edit-panel">' + chunks.join("") + "</div>";
+      }
+    } else if (tab === "layout") {
+      const chunks = [];
+      if (kind === "section" || kind === "block") {
+        chunks.push(
+          editSection(
+            "Spacing",
+            editGroup(
+              editBtn("pad-less", "− Space", { title: "Less padding" }) +
+                editBtn("pad-more", "+ Space", { title: "More padding" })
+            )
+          )
+        );
+      }
+      const reorder = getReorderContext(el);
+      if (reorder) {
+        const horizontalReorder = isHorizontalReorderParent(reorder.parent);
+        const prevLabel = horizontalReorder ? "←" : "↑";
+        const nextLabel = horizontalReorder ? "→" : "↓";
+        const prevTitle = horizontalReorder ? "Move earlier" : "Move up";
+        const nextTitle = horizontalReorder ? "Move later" : "Move down";
+        chunks.push(
+          editSection(
+            "Order",
+            editGroup(
+              editBtn("move-prev", prevLabel, {
+                icon: true,
+                title: prevTitle,
+                disabled: !reorder.canPrev,
+              }) +
+                editBtn("move-next", nextLabel, {
+                  icon: true,
+                  title: nextTitle,
+                  disabled: !reorder.canNext,
+                })
+            ) +
+              '<span class="ms-lb-edit-count">' +
+              (reorder.index + 1) +
+              " of " +
+              reorder.total +
+              "</span>" +
+              '<span class="ms-lb-edit-hint">Or drag to reorder</span>'
+          )
+        );
+      }
+      chunks.push(
+        editSection(
+          "Element",
+          editGroup(editBtn("duplicate", "Duplicate") + editBtn("hide", "Hide"))
+        )
+      );
+      body = '<div class="ms-lb-edit-panel">' + chunks.join("") + "</div>";
+    } else if (tab === "media" && kind === "image") {
+      const src = String(el.getAttribute("src") || "").trim();
+      const alt = String(el.getAttribute("alt") || "");
+      body =
+        '<div class="ms-lb-edit-panel ms-lb-edit-panel-fields">' +
+        '<p class="ms-lb-edit-hint">Drop an image onto the preview, or upload here</p>' +
+        '<div class="ms-lb-edit-image-row">' +
+        (src
+          ? '<img class="ms-lb-edit-thumb" id="lb-edit-thumb" src="' +
+            src.replace(/"/g, "&quot;") +
+            '" alt="">'
+          : '<div class="ms-lb-edit-thumb is-empty" id="lb-edit-thumb" aria-hidden="true">No image</div>') +
+        '<div class="ms-lb-edit-upload">' +
+        '<button type="button" class="ms-lb-edit-upload-btn" id="lb-edit-upload-btn">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>' +
+        "Upload image</button>" +
+        '<input class="ms-lb-edit-file" id="lb-edit-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif">' +
+        '<p class="ms-lb-edit-upload-status" id="lb-edit-upload-status"></p>' +
+        "</div></div>" +
+        '<div class="ms-lb-edit-field">' +
+        '<span class="ms-lb-edit-label">Image URL</span>' +
+        '<input class="ms-lb-edit-input" id="lb-edit-src" type="url" value="' +
+        src.replace(/"/g, "&quot;") +
+        '" placeholder="https://…"></div>' +
+        '<div class="ms-lb-edit-field">' +
+        '<span class="ms-lb-edit-label">Alt text</span>' +
+        '<input class="ms-lb-edit-input" id="lb-edit-alt" type="text" value="' +
+        alt.replace(/"/g, "&quot;") +
+        '" placeholder="Describe the image"></div></div>';
+    } else if (tab === "content") {
+      body =
+        '<div class="ms-lb-edit-panel ms-lb-edit-panel-fields">' +
+        '<div class="ms-lb-edit-field">' +
+        '<span class="ms-lb-edit-label">Link URL</span>' +
+        '<input class="ms-lb-edit-input" id="lb-edit-href" type="url" value="' +
+        String(el.getAttribute("href") || "").replace(/"/g, "&quot;") +
+        '" placeholder="https://…"></div></div>';
+    } else {
+      body = '<p class="ms-lb-edit-empty">Nothing here for this element.</p>';
+    }
+
+    main.innerHTML = body;
+    foot.innerHTML =
+      editGroup(
+        editBtn("undo", "Undo", { disabled: editState.historyIndex <= 0, title: "Undo" }) +
+          editBtn("redo", "Redo", {
+            disabled: editState.historyIndex >= editState.history.length - 1,
+            title: "Redo",
+          })
+      ) + editGroup(editBtn("delete", "Delete", { danger: true }));
+
+    positionEditToolbar();
+  }
+
+  function selectEditable(el, opts) {
+    opts = opts || {};
+    const doc = getPreviewDoc();
+    if (!doc) return;
+    clearEditMarks(doc);
+    editState.hovered = null;
+    editState.selected = el;
+    if (el) {
+      el.setAttribute(EDIT_SELECT_ATTR, "1");
+      if (getReorderContext(el)) el.setAttribute(EDIT_REORDERABLE_ATTR, "1");
+      if (!opts.keepTab) {
+        editState.toolbarTab = defaultEditToolbarTab(classifyEditable(el));
+      }
+    }
+    renderEditToolbar();
+  }
+
+  function commitEditChange(mutator, opts) {
+    opts = opts || {};
+    if (!editState.selected) return;
+    pushEditHistory();
+    mutator(editState.selected);
+    state.html = serializePreviewHtml();
+    editState.lastWrittenHtml = state.html;
+    if (opts.silentToolbar) positionEditToolbar();
+    else renderEditToolbar();
+    scheduleEditAutosave();
+  }
+
+  function startInlineTextEdit(el) {
+    if (!el) return;
+    pushEditHistory();
+    el.setAttribute("contenteditable", "true");
+    el.setAttribute("spellcheck", "false");
+    el.focus();
+    const finish = () => {
+      el.removeAttribute("contenteditable");
+      el.removeAttribute("spellcheck");
+      el.removeEventListener("blur", finish);
+      el.removeEventListener("keydown", onKey);
+      state.html = serializePreviewHtml();
+      editState.lastWrittenHtml = state.html;
+      scheduleEditAutosave();
+      renderEditToolbar();
+    };
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        el.blur();
+      }
+      if (e.key === "Enter" && !e.shiftKey && el.tagName.toLowerCase() !== "p") {
+        e.preventDefault();
+        el.blur();
+      }
+    };
+    el.addEventListener("blur", finish);
+    el.addEventListener("keydown", onKey);
+  }
+
+  function handleEditToolbarAction(action, target) {
+    const el = editState.selected;
+    if (!el && action !== "undo" && action !== "redo") return;
+    if (action === "undo") return undoEdit();
+    if (action === "redo") return redoEdit();
+    if (action === "close") {
+      selectEditable(null);
+      hideEditToolbar();
+      return;
+    }
+    if (action === "edit-text") return startInlineTextEdit(el);
+    if (action === "align-left") {
+      return commitEditChange((node) => {
+        node.style.textAlign = "left";
+      });
+    }
+    if (action === "align-center") {
+      return commitEditChange((node) => {
+        node.style.textAlign = "center";
+      });
+    }
+    if (action === "align-right") {
+      return commitEditChange((node) => {
+        node.style.textAlign = "right";
+      });
+    }
+    if (action === "size-up" || action === "size-down") {
+      return commitEditChange((node) => {
+        const doc = node.ownerDocument;
+        const current = parseFloat(doc.defaultView.getComputedStyle(node).fontSize) || 16;
+        node.style.fontSize = Math.max(10, current + (action === "size-up" ? 2 : -2)) + "px";
+      });
+    }
+    if (action === "text-color") {
+      return commitEditChange((node) => {
+        node.style.color = target.value;
+      });
+    }
+    if (action === "bg-color") {
+      return commitEditChange((node) => {
+        node.style.backgroundColor = target.value;
+      });
+    }
+    if (action === "pad-more" || action === "pad-less") {
+      return commitEditChange((node) => {
+        const doc = node.ownerDocument;
+        const current = parseFloat(doc.defaultView.getComputedStyle(node).paddingTop) || 0;
+        const next = Math.max(0, current + (action === "pad-more" ? 8 : -8));
+        node.style.padding = next + "px";
+      });
+    }
+    if (action === "hide") {
+      return commitEditChange((node) => {
+        node.style.display = "none";
+        selectEditable(null);
+        hideEditToolbar();
+      });
+    }
+    if (action === "move-prev" || action === "move-next") {
+      return commitEditChange((node) => {
+        moveElementAmongPeers(node, action === "move-prev" ? "prev" : "next");
+        selectEditable(node);
+      });
+    }
+    if (action === "duplicate") {
+      return commitEditChange((node) => {
+        const clone = node.cloneNode(true);
+        clone.removeAttribute(EDIT_SELECT_ATTR);
+        clone.removeAttribute(EDIT_HOVER_ATTR);
+        node.parentNode?.insertBefore(clone, node.nextSibling);
+        selectEditable(clone);
+      });
+    }
+    if (action === "delete") {
+      return commitEditChange((node) => {
+        const parent = node.parentNode;
+        node.remove();
+        selectEditable(null);
+        hideEditToolbar();
+        if (parent && parent !== parent.ownerDocument?.body) {
+          /* keep empty parents for layout */
+        }
+      });
+    }
+  }
+
+  function bindEditToolbarUi() {
+    const toolbar = document.getElementById("lb-edit-toolbar");
+    if (!toolbar || toolbar.dataset.bound === "1") return;
+    toolbar.dataset.bound = "1";
+    toolbar.addEventListener("click", (e) => {
+      const tabBtn = e.target.closest("[data-edit-tab]");
+      if (tabBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const next = tabBtn.getAttribute("data-edit-tab");
+        if (next && next !== editState.toolbarTab) {
+          editState.toolbarTab = next;
+          renderEditToolbar();
+        }
+        return;
+      }
+      const uploadBtn = e.target.closest("#lb-edit-upload-btn");
+      if (uploadBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        document.getElementById("lb-edit-file")?.click();
+        return;
+      }
+      const btn = e.target.closest("[data-edit-action]");
+      if (!btn || btn.tagName === "INPUT") return;
+      e.preventDefault();
+      e.stopPropagation();
+      handleEditToolbarAction(btn.getAttribute("data-edit-action"), btn);
+    });
+    toolbar.addEventListener("change", (e) => {
+      const el = e.target;
+      if (!(el instanceof HTMLInputElement)) return;
+      if (el.id === "lb-edit-file" && el.files?.[0]) {
+        void handleSiteImageUpload(el.files[0]);
+      }
+    });
+    toolbar.addEventListener("input", (e) => {
+      const el = e.target;
+      if (!(el instanceof HTMLInputElement)) return;
+      if (el.dataset.editAction === "text-color" || el.dataset.editAction === "bg-color") {
+        commitEditChange((node) => {
+          if (el.dataset.editAction === "text-color") node.style.color = el.value;
+          else node.style.backgroundColor = el.value;
+        }, { silentToolbar: true });
+        return;
+      }
+      if (el.id === "lb-edit-href") {
+        commitEditChange((node) => node.setAttribute("href", el.value.trim()), {
+          silentToolbar: true,
+        });
+      } else if (el.id === "lb-edit-src") {
+        commitEditChange(
+          (node) => {
+            node.setAttribute("src", el.value.trim());
+            const thumb = document.getElementById("lb-edit-thumb");
+            if (thumb && thumb.tagName === "IMG") thumb.src = el.value.trim();
+          },
+          { silentToolbar: true }
+        );
+      } else if (el.id === "lb-edit-alt") {
+        commitEditChange((node) => node.setAttribute("alt", el.value), { silentToolbar: true });
+      }
+    });
+  }
+
+  function dataTransferHasImage(dt) {
+    if (!dt) return false;
+    const files = dt.files;
+    if (files && files.length) {
+      for (let i = 0; i < files.length; i++) {
+        if (SITE_IMAGE_TYPES.has(files[i].type)) return true;
+      }
+    }
+    const items = dt.items;
+    if (items && items.length) {
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].kind === "file" && SITE_IMAGE_TYPES.has(items[i].type)) return true;
+      }
+    }
+    const types = dt.types ? Array.from(dt.types) : [];
+    return types.includes("Files");
+  }
+
+  function pickImageFileFromDataTransfer(dt) {
+    if (!dt?.files?.length) return null;
+    for (let i = 0; i < dt.files.length; i++) {
+      const file = dt.files[i];
+      if (SITE_IMAGE_TYPES.has(file.type)) return file;
+    }
+    return null;
+  }
+
+  function setImageDropHighlight(el) {
+    const doc = editState.boundDoc;
+    if (editState.dropImageEl && editState.dropImageEl !== el) {
+      editState.dropImageEl.removeAttribute(EDIT_DROP_IMAGE_ATTR);
+    }
+    editState.dropImageEl = el && classifyEditable(el) === "image" ? el : null;
+    if (editState.dropImageEl) {
+      editState.dropImageEl.setAttribute(EDIT_DROP_IMAGE_ATTR, "1");
+    } else if (doc) {
+      doc.querySelectorAll("[" + EDIT_DROP_IMAGE_ATTR + "]").forEach((node) => {
+        node.removeAttribute(EDIT_DROP_IMAGE_ATTR);
+      });
+    }
+  }
+
+  function detachEditMode() {
+    const doc = editState.boundDoc;
+    if (doc && editState.listeners) {
+      const L = editState.listeners;
+      doc.removeEventListener("pointermove", L.onPointerMove, true);
+      doc.removeEventListener("pointerdown", L.onPointerDown, true);
+      doc.removeEventListener("pointerup", L.onPointerUp, true);
+      doc.removeEventListener("pointercancel", L.onPointerCancel, true);
+      doc.removeEventListener("click", L.onClick, true);
+      doc.removeEventListener("dblclick", L.onDblClick, true);
+      doc.removeEventListener("submit", L.onSubmit, true);
+      doc.removeEventListener("keydown", L.onKey, true);
+      doc.removeEventListener("dragenter", L.onDragEnter, true);
+      doc.removeEventListener("dragover", L.onDragOver, true);
+      doc.removeEventListener("dragleave", L.onDragLeave, true);
+      doc.removeEventListener("drop", L.onDrop, true);
+    }
+    if (doc) {
+      clearEditMarks(doc);
+      doc.getElementById(EDIT_STYLE_ID)?.remove();
+      doc.querySelectorAll("[contenteditable]").forEach((el) => {
+        el.removeAttribute("contenteditable");
+      });
+    }
+    editState.boundDoc = null;
+    editState.listeners = null;
+    editState.selected = null;
+    editState.hovered = null;
+    editState.drag = null;
+    editState.dropImageEl = null;
+    hideEditToolbar();
+  }
+
+  function attachEditMode(doc) {
+    detachEditMode();
+    if (!doc) return;
+    ensureEditStyles(doc);
+    bindEditToolbarUi();
+
+    const onPointerMove = (e) => {
+      if (editState.drag?.el) {
+        const drag = editState.drag;
+        if (drag.pointerId != null && e.pointerId !== drag.pointerId) return;
+        const dx = e.clientX - drag.startX;
+        const dy = e.clientY - drag.startY;
+        if (!drag.active && Math.hypot(dx, dy) >= EDIT_DRAG_THRESHOLD_PX) {
+          if (!getReorderContext(drag.el)) {
+            editState.drag = null;
+          } else {
+            drag.active = true;
+            editState.didDrag = true;
+            if (editState.hovered) {
+              editState.hovered.removeAttribute(EDIT_HOVER_ATTR);
+              editState.hovered = null;
+            }
+            drag.el.setAttribute(EDIT_DRAG_ATTR, "1");
+            drag.el.setAttribute(EDIT_REORDERABLE_ATTR, "1");
+            try {
+              drag.el.setPointerCapture?.(e.pointerId);
+            } catch (_) {
+              /* ignore */
+            }
+          }
+        }
+        if (editState.drag?.active) {
+          e.preventDefault();
+          const slot = resolveDropSlot(editState.drag.el, e.clientX, e.clientY);
+          editState.drag.slot = slot;
+          paintDropIndicator(editState.drag.el, slot);
+          return;
+        }
+      }
+
+      if (editState.drag?.active) return;
+      const target = resolveEditableTarget(e.target);
+      if (editState.hovered && editState.hovered !== editState.selected) {
+        editState.hovered.removeAttribute(EDIT_HOVER_ATTR);
+        editState.hovered.removeAttribute(EDIT_REORDERABLE_ATTR);
+      }
+      editState.hovered = target && target !== editState.selected ? target : null;
+      if (editState.hovered) {
+        editState.hovered.setAttribute(EDIT_HOVER_ATTR, "1");
+        if (getReorderContext(editState.hovered)) {
+          editState.hovered.setAttribute(EDIT_REORDERABLE_ATTR, "1");
+        }
+      }
+    };
+
+    const onPointerDown = (e) => {
+      if (e.button !== 0) return;
+      if (e.target?.closest?.("[contenteditable=true]")) return;
+      const target = resolveEditableTarget(e.target);
+      if (!target) return;
+      if (getReorderContext(target) || target.tagName.toLowerCase() === "img") {
+        e.preventDefault();
+      }
+      editState.drag = {
+        el: target,
+        startX: e.clientX,
+        startY: e.clientY,
+        pointerId: e.pointerId,
+        active: false,
+        slot: null,
+      };
+    };
+
+    const onPointerUp = (e) => {
+      const drag = editState.drag;
+      if (!drag) return;
+      if (drag.pointerId != null && e.pointerId !== drag.pointerId) return;
+      if (drag.active) {
+        e.preventDefault();
+        e.stopPropagation();
+        endPointerDrag(true);
+        return;
+      }
+      editState.drag = null;
+    };
+
+    const onPointerCancel = () => {
+      if (editState.drag?.active) endPointerDrag(false);
+      else editState.drag = null;
+    };
+
+    const onClick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (editState.didDrag) return;
+      const target = resolveEditableTarget(e.target) || targetFromFramePoint(e.clientX, e.clientY);
+      if (!target) {
+        selectEditable(null);
+        hideEditToolbar();
+        return;
+      }
+      selectEditable(target);
+    };
+
+    const onDblClick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (editState.didDrag) return;
+      const target = resolveEditableTarget(e.target);
+      if (!target) return;
+      selectEditable(target);
+      const kind = classifyEditable(target);
+      if (kind === "text" || kind === "link" || kind === "block") {
+        startInlineTextEdit(target);
+      }
+    };
+
+    const onSubmit = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    const onKey = (e) => {
+      const meta = e.metaKey || e.ctrlKey;
+      if (meta && e.key.toLowerCase() === "z" && !e.shiftKey) {
+        e.preventDefault();
+        undoEdit();
+      } else if (meta && (e.key.toLowerCase() === "y" || (e.key.toLowerCase() === "z" && e.shiftKey))) {
+        e.preventDefault();
+        redoEdit();
+      } else if (e.key === "Escape") {
+        if (editState.drag?.active) {
+          endPointerDrag(false);
+          return;
+        }
+        selectEditable(null);
+        hideEditToolbar();
+      } else if (
+        editState.selected &&
+        editState.selected.getAttribute("contenteditable") !== "true" &&
+        e.altKey &&
+        (e.key === "ArrowLeft" || e.key === "ArrowRight")
+      ) {
+        const reorder = getReorderContext(editState.selected);
+        if (reorder) {
+          e.preventDefault();
+          handleEditToolbarAction(e.key === "ArrowLeft" ? "move-prev" : "move-next");
+        }
+      } else if (
+        (e.key === "Delete" || e.key === "Backspace") &&
+        editState.selected &&
+        editState.selected.getAttribute("contenteditable") !== "true"
+      ) {
+        e.preventDefault();
+        handleEditToolbarAction("delete");
+      }
+    };
+
+    const onDragEnter = (e) => {
+      if (!dataTransferHasImage(e.dataTransfer)) return;
+      const target = resolveEditableTarget(e.target);
+      if (target && classifyEditable(target) === "image") {
+        e.preventDefault();
+        setImageDropHighlight(target);
+      }
+    };
+
+    const onDragOver = (e) => {
+      if (!dataTransferHasImage(e.dataTransfer)) return;
+      const target = resolveEditableTarget(e.target);
+      if (target && classifyEditable(target) === "image") {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "copy";
+        setImageDropHighlight(target);
+      } else {
+        setImageDropHighlight(null);
+      }
+    };
+
+    const onDragLeave = (e) => {
+      const related = e.relatedTarget;
+      if (related && doc.contains(related)) return;
+      setImageDropHighlight(null);
+    };
+
+    const onDrop = (e) => {
+      const target = resolveEditableTarget(e.target);
+      setImageDropHighlight(null);
+      if (!target || classifyEditable(target) !== "image") return;
+      const file = pickImageFileFromDataTransfer(e.dataTransfer);
+      if (!file) return;
+      e.preventDefault();
+      e.stopPropagation();
+      void handleSiteImageUpload(file, target);
+    };
+
+    editState.listeners = {
+      onPointerMove,
+      onPointerDown,
+      onPointerUp,
+      onPointerCancel,
+      onClick,
+      onDblClick,
+      onSubmit,
+      onKey,
+      onDragEnter,
+      onDragOver,
+      onDragLeave,
+      onDrop,
+    };
+    editState.boundDoc = doc;
+    doc.addEventListener("pointermove", onPointerMove, true);
+    doc.addEventListener("pointerdown", onPointerDown, true);
+    doc.addEventListener("pointerup", onPointerUp, true);
+    doc.addEventListener("pointercancel", onPointerCancel, true);
+    doc.addEventListener("click", onClick, true);
+    doc.addEventListener("dblclick", onDblClick, true);
+    doc.addEventListener("submit", onSubmit, true);
+    doc.addEventListener("keydown", onKey, true);
+    doc.addEventListener("dragenter", onDragEnter, true);
+    doc.addEventListener("dragover", onDragOver, true);
+    doc.addEventListener("dragleave", onDragLeave, true);
+    doc.addEventListener("drop", onDrop, true);
+
+    if (!editState.history.length) {
+      editState.history = [serializePreviewHtml()];
+      editState.historyIndex = 0;
+    }
+  }
+
+  function flushEditHtmlToState() {
+    if (state.mode !== "edit") return state.html;
+    const next = serializePreviewHtml();
+    if (next) {
+      state.html = next;
+      editState.lastWrittenHtml = next;
+    }
+    return state.html;
+  }
+
+  async function persistHtmlQuiet(html) {
+    if (!state.projectId) return;
+    const user = await window.StudioAuth.getUser();
+    const { error } = await sb()
+      .from("projects")
+      .update({
+        html,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", state.projectId)
+      .eq("user_id", user.id);
+    if (error) throw error;
+    if (state.project) state.project.html = html;
+  }
+
+  function scheduleEditAutosave() {
+    if (!state.projectId) {
+      setEditSaveStatus("unsaved");
+      return;
+    }
+    setEditSaveStatus("unsaved");
+    clearTimeout(editState.saveTimer);
+    const gen = ++editState.saveGeneration;
+    editState.saveTimer = setTimeout(() => {
+      void runEditAutosave(gen);
+    }, 800);
+  }
+
+  async function runEditAutosave(gen) {
+    if (gen !== editState.saveGeneration) return;
+    const html = flushEditHtmlToState();
+    if (!state.projectId || !html) return;
+    setEditSaveStatus("saving");
+    try {
+      await persistHtmlQuiet(html);
+      if (gen !== editState.saveGeneration) return;
+      setEditSaveStatus("saved");
+      setTimeout(() => {
+        if (editState.saveStatus === "saved") setEditSaveStatus("idle");
+      }, 1800);
+    } catch (e) {
+      if (gen !== editState.saveGeneration) return;
+      setEditSaveStatus("error", e.message || "Save failed");
+      clearTimeout(editState.saveTimer);
+      editState.saveTimer = setTimeout(() => {
+        void runEditAutosave(++editState.saveGeneration);
+      }, 2000);
+    }
+  }
+
+  async function flushEditAutosaveNow() {
+    clearTimeout(editState.saveTimer);
+    flushEditHtmlToState();
+    if (!state.projectId || !state.html) return;
+    if (editState.saveStatus === "idle" || editState.saveStatus === "saved") return;
+    const gen = ++editState.saveGeneration;
+    await runEditAutosave(gen);
+  }
+
+  function enterEditMode() {
+    if (!state.html || !state.html.trim()) {
+      setError("Generate a site first, then use Edit.");
+      state.mode = "preview";
+      return;
+    }
+    bindEditToolbarUi();
+    // Re-render the site with scripts disabled so the generated page can't
+    // intercept clicks or navigate while the user is editing.
+    applyPreviewSandbox("edit");
+    const doc = writePreviewDocument(state.html) || getPreviewDoc();
+    if (doc) attachEditMode(doc);
+    setEditSaveStatus(editState.saveStatus === "saved" ? "idle" : editState.saveStatus);
+    setEditHint("Click any text, image, or section to edit it.");
+  }
+
+  function exitEditMode({ serialize } = { serialize: true }) {
+    if (serialize && editState.boundDoc) {
+      flushEditHtmlToState();
+    }
+    detachEditMode();
+    setEditHint("");
   }
 
   function updatePreview() {
+    // Hard gate: never render the code editor without MVP+.
+    if (state.mode === "code" && !hasMvpPlus()) {
+      state.mode = "preview";
+    }
     const frame = document.getElementById("preview-frame");
     const editor = document.getElementById("code-editor");
     const wrap = document.getElementById("preview-wrap");
     setModeUi();
+    syncPreviewChromeUrl();
 
     if (state.mode === "code") {
+      exitEditMode({ serialize: true });
       if (wrap) wrap.hidden = true;
       if (editor) {
-      editor.hidden = false;
+        editor.hidden = false;
         editor.value = state.html || "";
         editor.removeAttribute("hidden");
         editor.focus({ preventScroll: true });
@@ -1253,20 +3520,40 @@
 
     if (wrap) wrap.hidden = false;
     if (editor) {
-    editor.hidden = true;
+      editor.hidden = true;
       editor.setAttribute("hidden", "");
     }
     if (frame) frame.className = "ms-preview-frame is-" + state.viewport;
+    syncFullscreenUi();
     syncEmptyState();
+    applyPreviewViewportSize();
 
-    if (state.html && frame) {
-      const doc = frame.contentDocument;
-      if (doc) {
-        doc.open();
-        doc.write(state.html);
-        doc.close();
-      }
+    if (state.mode === "edit") {
+      // enterEditMode re-renders with a script-free sandbox and binds editing.
+      enterEditMode();
+      editState.skipRewrite = false;
+      refreshWatermark();
+      return;
     }
+
+    // Preview mode: make sure scripts are enabled again, then render if needed.
+    const restoringFromEdit = editState.lastSandboxMode === "edit";
+    if (restoringFromEdit) {
+      exitEditMode({ serialize: false });
+      applyPreviewSandbox("preview");
+    }
+
+    const needsWrite =
+      !!(state.html && frame) &&
+      !editState.skipRewrite &&
+      (restoringFromEdit || editState.lastWrittenHtml !== state.html || !frame.contentDocument?.body);
+
+    if (needsWrite) {
+      writePreviewDocument(state.html);
+    }
+
+    setEditSaveStatus("idle");
+    editState.skipRewrite = false;
     refreshWatermark();
   }
 
@@ -1274,12 +3561,121 @@
     const ready = !!(state.projectId && state.html);
     const btn = document.getElementById("btn-publish-top");
     if (btn) btn.disabled = !ready;
+    syncPublishLiveUi();
   }
 
-  const PRICE_CHAPTERS = [300, 500, 700, 1000, 1500];
+  const PUBLISH_BTN_ICON =
+    '<path d="M4 14v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/><polyline points="12 3 12 15"/><path d="m7 8 5-5 5 5"/>';
+  const LIVE_BTN_ICON =
+    '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>';
+
+  function liveBannerDismissKey() {
+    return state.projectId ? "ms_live_banner_dismissed_" + state.projectId : "";
+  }
+
+  function isLiveBannerDismissed() {
+    const key = liveBannerDismissKey();
+    if (!key) return false;
+    try {
+      return localStorage.getItem(key) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function dismissLiveBanner({ persist = true } = {}) {
+    const banner = document.getElementById("lb-live-banner");
+    if (banner) banner.hidden = true;
+    if (persist && state.projectId) {
+      try {
+        localStorage.setItem(liveBannerDismissKey(), "1");
+      } catch (_) {
+        /* ignore */
+      }
+    }
+  }
+
+  function dismissOfflineBanner() {
+    const banner = document.getElementById("lb-offline-banner");
+    if (banner) banner.hidden = true;
+  }
+
+  function showOfflineBanner(url) {
+    const banner = document.getElementById("lb-offline-banner");
+    const urlEl = document.getElementById("lb-offline-banner-url");
+    const raw = String(url || "").trim();
+    if (!banner || !raw) return;
+    dismissLiveBanner({ persist: false });
+    if (urlEl) {
+      urlEl.textContent = raw.replace(/^https?:\/\//i, "");
+    }
+    banner.hidden = true;
+    void banner.offsetWidth;
+    banner.hidden = false;
+  }
+
+  function syncPublishLiveUi({ showBanner = false } = {}) {
+    const url = liveSiteUrl();
+    const isLive = !!url;
+    syncPreviewChromeUrl();
+    const publishBtn = document.getElementById("btn-publish-top");
+    const unpublishBtn = document.getElementById("btn-unpublish-top");
+    const settingsUnpublishBtn = document.getElementById("lb-set-unpublish");
+    const label = publishBtn?.querySelector(".ms-lb-publish-label");
+    const icon = publishBtn?.querySelector(".ms-lb-publish-icon");
+
+    if (publishBtn) {
+      publishBtn.classList.toggle("is-live", isLive);
+      publishBtn.setAttribute("aria-label", isLive ? "Site is live - click to re-publish" : "Publish site");
+    }
+    if (label) label.textContent = isLive ? "Live" : "Publish";
+    if (icon) icon.innerHTML = isLive ? LIVE_BTN_ICON : PUBLISH_BTN_ICON;
+    if (unpublishBtn) unpublishBtn.hidden = !isLive;
+    if (settingsUnpublishBtn) settingsUnpublishBtn.hidden = !isLive;
+
+    const offlineBanner = document.getElementById("lb-offline-banner");
+    if (isLive && offlineBanner) offlineBanner.hidden = true;
+
+    const banner = document.getElementById("lb-live-banner");
+    const link = document.getElementById("lb-live-banner-link");
+    if (link) {
+      link.href = url || "#";
+      link.textContent = url || "";
+    }
+    if (!banner) return;
+
+    if (!isLive) {
+      banner.hidden = true;
+      return;
+    }
+    if (showBanner) {
+      try {
+        localStorage.removeItem(liveBannerDismissKey());
+      } catch (_) {
+        /* ignore */
+      }
+      dismissOfflineBanner();
+      banner.hidden = true;
+      void banner.offsetWidth;
+      banner.hidden = false;
+      return;
+    }
+    banner.hidden = isLiveBannerDismissed();
+  }
+
+  const PRICE_CHAPTERS = [1, 300, 500, 700, 1000, 1500];
 
   function formatPriceLabel(dollars) {
-    return "$" + Number(dollars).toLocaleString("en-US");
+    const n = Number(dollars);
+    if (!Number.isFinite(n)) return "$0";
+    const hasCents = Math.round(n * 100) % 100 !== 0;
+    return (
+      "$" +
+      n.toLocaleString("en-US", {
+        minimumFractionDigits: hasCents ? 2 : 0,
+        maximumFractionDigits: 2,
+      })
+    );
   }
 
   function priceIndexFromCents(cents) {
@@ -1310,6 +3706,7 @@
     if (commissionEl) commissionEl.textContent = formatPriceLabel(dollars * 0.4);
     if (fillEl) fillEl.style.width = pct + "%";
     if (rangeEl) {
+      rangeEl.max = String(PRICE_CHAPTERS.length - 1);
       rangeEl.value = String(idx);
       rangeEl.setAttribute("aria-valuetext", formatPriceLabel(dollars));
     }
@@ -1348,16 +3745,20 @@
 
   function refreshWatermark() {
     const host = document.getElementById("watermark-host");
-    const enabled = !!(state.project?.watermark_enabled && state.html);
-    const logo =
-      (window.SITE_CONFIG && window.SITE_CONFIG.brandLogoUrl) || "doc/MoonriseLogo.png";
-    window.StudioWatermark.mount(host, {
-      enabled,
+    const enabled = !!(state.project?.watermark_enabled && state.html) && state.mode !== "edit";
+    if (!enabled) {
+      window.MoonriseWatermarkEmbed?.unmount?.();
+      if (host) host.innerHTML = "";
+      setPublishEnabled();
+      return;
+    }
+    const base = workerUrl();
+    if (!base || !window.MoonriseWatermarkEmbed?.mount) return;
+    window.MoonriseWatermarkEmbed.mount({
+      host,
       projectId: state.projectId,
-      handle: state.profile?.handle || "moonrise",
-      avatarUrl: logo,
-      priceCents: state.priceCents,
-      urgencyEndsAt: state.project?.urgency_ends_at,
+      workerUrl: base,
+      urgencyEndsAt: state.project?.urgency_ends_at || "",
     });
     setPublishEnabled();
   }
@@ -1384,7 +3785,7 @@
     state.projectId = data.id;
     state.project = data;
     state.html = data.html || "";
-    const allowedPrices = [30000, 50000, 70000, 100000, 150000];
+    const allowedPrices = [100, 30000, 50000, 70000, 100000, 150000];
     const dbPrice = Number(data.price_cents);
     const savedPrice = Number(localStorage.getItem("ms_project_price_" + data.id));
     if (allowedPrices.includes(dbPrice)) {
@@ -1421,7 +3822,7 @@
 
     // Dock generate is blocked until the first site exists — unless this is setup Generate
     // or a Business Finder auto-generate handoff.
-    if (!fromOnboard && !fromFinderFlow && !state.onboardDone) {
+    if (!fromOnboard && !fromFinderFlow && !state.onboardDone && !state.builderOnboarded) {
       ensureOnboardSurvey();
       setError("Add a Google link or fill business details, then generate.");
       return;
@@ -1457,17 +3858,22 @@
       return;
     }
 
+    if (!(await ensureCreditsForGeneration(fromOnboard))) return;
+
     setStatus("");
-    setPromptBusy(true, "Generating…");
     const onboardBtn = document.getElementById("onboard-generate");
     if (onboardBtn) onboardBtn.disabled = true;
+    generateAbort = new AbortController();
+    const signal = generateAbort.signal;
+    setPromptBusy(true, "Generating…");
     try {
       const base = workerUrl();
       if (!base) throw new Error("Worker URL is not configured.");
       try {
-        const health = await fetch(base + "/health", { method: "GET" });
+        const health = await fetch(base + "/health", { method: "GET", signal });
         if (!health.ok) throw new Error("Worker health check failed");
-      } catch (_) {
+      } catch (e) {
+        if (e?.name === "AbortError") throw e;
         throw new Error(
           "Can't reach the Moonrise worker at " +
             base +
@@ -1475,20 +3881,48 @@
         );
       }
       const headers = await authHeaders();
+      const requestId =
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : "gen-" + Date.now() + "-" + Math.random().toString(36).slice(2);
       const res = await fetch(base + "/generate", {
         method: "POST",
-        headers,
+        headers: {
+          ...headers,
+          "X-Request-Id": requestId,
+        },
         body: JSON.stringify({
           projectId: state.projectId,
+          requestId,
           ...intake,
         }),
+        signal,
       });
       const data = await res.json().catch(() => ({}));
+      if (res.status === 402 || data.code === "INSUFFICIENT_CREDITS") {
+        const need = data.required || state.generationCost || 5;
+        const have = data.balance ?? state.totalCredits ?? 0;
+        window.StudioToast?.error?.(
+          "Not enough credits (" + have + " available, " + need + " required). Top up on Pricing."
+        );
+        releaseFinderLeadHold();
+        location.href = data.pricingUrl || "pricing.html";
+        return;
+      }
       if (!res.ok) throw new Error(data.error || "Generation failed");
+      if (data.credits) {
+        state.totalCredits = Number(data.credits.totalCredits) || 0;
+        document.dispatchEvent(new CustomEvent("ms:credits-changed", { detail: data.credits }));
+      }
       state.projectId = data.projectId;
       state.html = data.html || "";
       state.onboardDone = true;
       state.autoGeneratePending = false;
+      editState.history = [];
+      editState.historyIndex = -1;
+      editState.lastWrittenHtml = "";
+      setEditSaveStatus("idle");
+      await markBuilderOnboarded();
       setBuilderPhase("workspace");
       await loadProject(state.projectId);
       const notesEl = document.getElementById("biz-notes");
@@ -1503,6 +3937,12 @@
       updatePreview();
       syncPromptActionUi();
     } catch (e) {
+      if (e?.name === "AbortError") {
+        setStatus("");
+        setError("");
+        if (fromOnboard) setOnboardError("");
+        return;
+      }
       let msg = e.message || "Generation failed";
       if (/failed to fetch|networkerror|load failed|network request failed/i.test(msg)) {
         msg =
@@ -1525,7 +3965,7 @@
 
   async function runPromptAction() {
     setError("");
-    if (!state.onboardDone) {
+    if (!state.onboardDone && !state.builderOnboarded) {
       ensureOnboardSurvey();
       setError("Generate a site first from setup.");
       return;
@@ -1540,6 +3980,13 @@
       return;
     }
     if (!state.projectId) return;
+    if (state.mode === "edit") {
+      flushEditHtmlToState();
+      await flushEditAutosaveNow();
+    } else if (state.mode === "code") {
+      state.html = document.getElementById("code-editor")?.value || state.html;
+      await persistHtmlQuiet(state.html).catch(() => {});
+    }
     // Publishing is allowed while the watermark is on. The seller isn't the
     // payer — the live site carries the "Complete your order" widget and the
     // business owner pays there to remove the watermark (which auto-redeploys
@@ -1558,17 +4005,156 @@
       if (!res.ok) throw new Error(data.error || "Publish failed");
       await loadProject(state.projectId);
       const url = data.url || liveSiteUrl() || "done";
+      syncPublishLiveUi({ showBanner: true });
+      syncSiteSettingsUi();
       setStatus(
         state.project?.watermark_enabled
           ? "Published with watermark: " +
               url +
-              " — your client can pay on the live site to remove it."
+              " - your client can pay on the live site to remove it."
           : "Published: " + url
       );
     } catch (e) {
       setError(e.message || "Publish failed");
       setStatus("");
     }
+  }
+
+  async function workerPost(path, body) {
+    const base = workerUrl();
+    if (!base) throw new Error("Worker URL is not configured.");
+    const headers = await authHeaders();
+    let res;
+    try {
+      res = await fetch(base + path, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body),
+      });
+    } catch (e) {
+      if (e?.name === "TypeError" && /fetch/i.test(String(e.message || ""))) {
+        const err = new Error("Could not reach the server. Try again in a moment.");
+        err.code = "NETWORK";
+        throw err;
+      }
+      throw e;
+    }
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 404) {
+      const err = new Error(data.error || "Not found");
+      err.code = "NOT_FOUND";
+      err.status = 404;
+      throw err;
+    }
+    if (!res.ok) throw new Error(data.error || "Request failed");
+    return data;
+  }
+
+  async function unpublish() {
+    if (!state.projectId) {
+      setError("Open a project before unpublishing.");
+      return;
+    }
+    if (!liveSiteUrl()) {
+      setError("This site is not published.");
+      syncPublishLiveUi();
+      return;
+    }
+    const previousUrl = liveSiteUrl();
+    const confirmed = await confirmUnpublish();
+    if (!confirmed) return;
+    setError("");
+    setStatus("Taking site offline…");
+    try {
+      let data;
+      try {
+        // /publish?action=unpublish is deployed on production; /unpublish rewrite may not be yet.
+        data = await workerPost("/publish", {
+          projectId: state.projectId,
+          action: "unpublish",
+        });
+      } catch (firstErr) {
+        const retry =
+          firstErr?.code === "NOT_FOUND" ||
+          firstErr?.code === "NETWORK" ||
+          /not found|404|reach the server/i.test(String(firstErr.message || ""));
+        if (!retry) throw firstErr;
+        data = await workerPost("/unpublish", { projectId: state.projectId });
+      }
+      void data;
+      await loadProject(state.projectId);
+      dismissLiveBanner({ persist: false });
+      syncPublishLiveUi();
+      syncSiteSettingsUi();
+      showOfflineBanner(previousUrl);
+      setStatus("Site unpublished - it is no longer live.");
+    } catch (e) {
+      setError(e.message || "Unpublish failed");
+      setStatus("");
+    }
+  }
+
+  let unpublishConfirmResolver = null;
+
+  function closeUnpublishConfirm(result) {
+    const dialog = document.getElementById("lb-unpublish-dialog");
+    const submit = document.getElementById("lb-unpublish-submit");
+    if (submit) {
+      submit.disabled = false;
+      submit.textContent = "Unpublish";
+    }
+    dialog?.close();
+    if (!unpublishConfirmResolver) return;
+    const resolve = unpublishConfirmResolver;
+    unpublishConfirmResolver = null;
+    resolve(!!result);
+  }
+
+  function confirmUnpublish() {
+    return new Promise((resolve) => {
+      const dialog = document.getElementById("lb-unpublish-dialog");
+      const urlEl = document.getElementById("lb-unpublish-url");
+      if (!dialog) {
+        resolve(false);
+        return;
+      }
+      if (urlEl) {
+        const live = liveSiteUrl();
+        urlEl.textContent = live
+          ? live.replace(/^https?:\/\//i, "")
+          : previewChromeUrlLabel();
+      }
+      unpublishConfirmResolver = resolve;
+      if (typeof dialog.showModal === "function") dialog.showModal();
+      else dialog.setAttribute("open", "open");
+      window.requestAnimationFrame(() => {
+        document.getElementById("lb-unpublish-cancel")?.focus();
+      });
+    });
+  }
+
+  function bindUnpublishConfirm() {
+    const dialog = document.getElementById("lb-unpublish-dialog");
+    if (!dialog) return;
+
+    document.getElementById("lb-unpublish-cancel")?.addEventListener("click", () => {
+      closeUnpublishConfirm(false);
+    });
+    document.getElementById("lb-unpublish-submit")?.addEventListener("click", () => {
+      const submit = document.getElementById("lb-unpublish-submit");
+      if (submit) {
+        submit.disabled = true;
+        submit.textContent = "Unpublishing…";
+      }
+      closeUnpublishConfirm(true);
+    });
+    dialog.addEventListener("cancel", (event) => {
+      event.preventDefault();
+      closeUnpublishConfirm(false);
+    });
+    dialog.addEventListener("click", (event) => {
+      if (event.target === dialog) closeUnpublishConfirm(false);
+    });
   }
 
   async function deleteProject() {
@@ -1583,17 +4169,19 @@
   }
 
   function downloadHtml() {
-    if (!requireMvpPlus()) return;
+    if (!requireMvpPlus("download")) return;
     if (ensureOnboardSurvey()) {
       setError("Add a Google link or fill business details, then generate.");
       return;
     }
     if (!state.html || !state.html.trim()) {
-      setError("Nothing to download yet — generate a site first.");
+      setError("Nothing to download yet - generate a site first.");
       return;
     }
     if (state.mode === "code") {
       state.html = document.getElementById("code-editor")?.value || state.html;
+    } else if (state.mode === "edit") {
+      flushEditHtmlToState();
     }
     const blob = new Blob([state.html || ""], { type: "text/html" });
     const a = document.createElement("a");
@@ -1646,6 +4234,143 @@
     return String(state.project?.vercel_url || "").trim();
   }
 
+  const VERCEL_SLUG_STOP_WORDS = new Set([
+    "a",
+    "an",
+    "the",
+    "and",
+    "or",
+    "of",
+    "at",
+    "in",
+    "on",
+    "for",
+    "to",
+    "by",
+    "llc",
+    "llp",
+    "inc",
+    "corp",
+    "co",
+    "company",
+    "ltd",
+    "pllc",
+    "service",
+    "services",
+    "repair",
+    "repairs",
+    "solutions",
+    "group",
+    "team",
+    "handyman",
+    "handymen",
+    "professional",
+    "professionals",
+    "pros",
+    "local",
+    "best",
+    "top",
+    "quality",
+    "premium",
+    "trusted",
+    "certified",
+    "home",
+    "homes",
+    "business",
+  ]);
+
+  function slugifyVercelSegment(value) {
+    return String(value || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  }
+
+  function buildPredictedVercelSlug() {
+    const ctx = state.project?.business_context || {};
+    const saved = slugifyVercelSegment(ctx.vercelSlug);
+    if (saved && saved.length >= 3) return saved.slice(0, 48);
+
+    const businessName =
+      businessValue("businessName") || state.project?.business_name || "your-site";
+
+    const tokens = String(businessName)
+      .toLowerCase()
+      .replace(/['’]/g, "")
+      .split(/[^a-z0-9]+/)
+      .filter(Boolean);
+
+    const meaningful = tokens.filter((word) => !VERCEL_SLUG_STOP_WORDS.has(word));
+    const words = (meaningful.length ? meaningful : tokens).slice(0, 4);
+    let slug = slugifyVercelSegment(words.join("-")).slice(0, 48);
+    if (slug.length < 3) slug = "your-site";
+    return slug;
+  }
+
+  function previewSiteUrl() {
+    const live = liveSiteUrl();
+    if (live) {
+      return /^https?:\/\//i.test(live) ? live : "https://" + live.replace(/^\/\//, "");
+    }
+    return "https://" + buildPredictedVercelSlug() + ".vercel.app";
+  }
+
+  function previewChromeUrlLabel() {
+    const live = liveSiteUrl();
+    if (live) {
+      try {
+        return new URL(live).hostname;
+      } catch (_) {
+        return live.replace(/^https?:\/\//i, "").replace(/\/$/, "");
+      }
+    }
+    return buildPredictedVercelSlug() + ".vercel.app";
+  }
+
+  function syncPreviewChromeUrl() {
+    const el = document.getElementById("lb-preview-chrome-url");
+    const copyBtn = document.getElementById("lb-preview-chrome-copy");
+    const shareBtn = document.getElementById("lb-preview-chrome-share");
+    const url = previewSiteUrl();
+    if (el) {
+      el.textContent = previewChromeUrlLabel();
+      el.title = url;
+    }
+    const ready = !!(state.html || liveSiteUrl());
+    if (copyBtn) copyBtn.disabled = !ready;
+    if (shareBtn) shareBtn.disabled = !ready;
+  }
+
+  function bindPreviewChromeActions() {
+    document.getElementById("lb-preview-chrome-copy")?.addEventListener("click", async () => {
+      try {
+        await copyText(previewSiteUrl());
+        setStatus("Link copied.");
+      } catch (e) {
+        setError(e.message || "Could not copy link");
+      }
+    });
+
+    document.getElementById("lb-preview-chrome-share")?.addEventListener("click", async () => {
+      const url = previewSiteUrl();
+      const title =
+        businessValue("businessName") ||
+        state.project?.business_name ||
+        "Website preview";
+      try {
+        if (navigator.share) {
+          await navigator.share({ title, url });
+          return;
+        }
+        await copyText(url);
+        setStatus("Link copied.");
+      } catch (e) {
+        if (e?.name === "AbortError") return;
+        setError(e.message || "Could not share link");
+      }
+    });
+  }
+
   function syncSiteSettingsUi() {
     const name =
       businessValue("businessName") ||
@@ -1677,12 +4402,18 @@
     const domainRow = document.getElementById("lb-set-domain-row");
     const domainNote = document.getElementById("lb-set-domain-note");
     const domainInput = document.getElementById("lb-set-domain");
+    const domainWidgetInput = document.getElementById("lb-custom-domain");
+    const domainWidgetHint = document.getElementById("lb-custom-domain-hint");
+    const domainWidgetSummary = document.getElementById("lb-custom-domain-summary");
+    const domainWidgetSave = document.getElementById("lb-custom-domain-save");
     const shareUrl = document.getElementById("lb-set-share-url");
     const shareHint = document.getElementById("lb-set-share-hint");
     const openBtn = document.getElementById("lb-set-open-link");
     const publishBtn = document.getElementById("lb-set-publish");
 
-    if (domainInput) domainInput.value = String(ctx.customDomain || "");
+    const customDomain = String(ctx.customDomain || "");
+    if (domainInput) domainInput.value = customDomain;
+    if (domainWidgetInput) domainWidgetInput.value = customDomain;
 
     if (url) {
       if (liveUrlEl) {
@@ -1716,6 +4447,207 @@
     }
 
     if (publishBtn) publishBtn.disabled = !state.projectId || !state.html;
+    syncContactFormWidgetUi();
+    syncCustomDomainWidgetUi();
+  }
+
+  function readCustomDomainConfig() {
+    const ctx = state.project?.business_context || {};
+    const domain = String(ctx.customDomain || "").trim();
+    const enabled =
+      ctx.customDomainEnabled === true ||
+      (ctx.customDomainEnabled !== false && !!domain);
+    return { enabled, domain };
+  }
+
+  function setLbWidgetExpanded(widget, body, checkbox, expanded, { animate = true, onChange } = {}) {
+    if (checkbox) checkbox.checked = !!expanded;
+    if (widget) {
+      if (!animate) widget.classList.add("is-instant");
+      widget.classList.toggle("is-expanded", !!expanded);
+      if (!animate) {
+        window.requestAnimationFrame(() => widget.classList.remove("is-instant"));
+      }
+    }
+    if (body) body.setAttribute("aria-hidden", expanded ? "false" : "true");
+    if (onChange) onChange(!!expanded);
+  }
+
+  function syncCustomDomainWidgetUi() {
+    const cfg = readCustomDomainConfig();
+    const domainWidgetInput = document.getElementById("lb-custom-domain");
+    const domainWidgetHint = document.getElementById("lb-custom-domain-hint");
+    const domainWidgetSummary = document.getElementById("lb-custom-domain-summary");
+    const isLive = !!liveSiteUrl();
+
+    setCustomDomainExpanded(cfg.enabled, { animate: false });
+
+    if (domainWidgetInput) domainWidgetInput.value = cfg.domain;
+    if (domainWidgetSummary) {
+      domainWidgetSummary.textContent = cfg.domain || "Connect your own domain";
+    }
+    if (domainWidgetHint) {
+      domainWidgetHint.textContent = !isLive
+        ? "Publish your site first, then connect your domain."
+        : cfg.domain
+          ? "Saved. Point your DNS records to the published Vercel site."
+          : "Enter the domain you want to connect.";
+    }
+  }
+
+  function setCustomDomainExpanded(expanded, { animate = true } = {}) {
+    setLbWidgetExpanded(
+      document.getElementById("lb-custom-domain-widget"),
+      document.getElementById("lb-custom-domain-body"),
+      document.getElementById("lb-custom-domain-enabled"),
+      expanded,
+      {
+        animate,
+        onChange: (on) => {
+          const domainWidgetSave = document.getElementById("lb-custom-domain-save");
+          const isLive = !!liveSiteUrl();
+          if (domainWidgetSave) domainWidgetSave.disabled = !isLive || !on;
+        },
+      }
+    );
+  }
+
+  function readContactFormConfig() {
+    const ctx = state.project?.business_context || {};
+    const raw = ctx.contactForm && typeof ctx.contactForm === "object" ? ctx.contactForm : {};
+    return {
+      enabled: !!raw.enabled,
+      mode: raw.mode === "custom" ? "custom" : "auto",
+      notificationEmail: String(raw.notificationEmail || "").trim(),
+      endpointUrl: String(raw.endpointUrl || "").trim(),
+    };
+  }
+
+  function syncContactFormWidgetUi() {
+    const cfg = readContactFormConfig();
+    const emailEl = document.getElementById("lb-contact-form-email");
+    const endpointEl = document.getElementById("lb-contact-form-endpoint");
+    const autoFields = document.getElementById("lb-contact-form-auto-fields");
+    const customFields = document.getElementById("lb-contact-form-custom-fields");
+
+    setContactFormExpanded(cfg.enabled, { animate: false });
+
+    if (emailEl) {
+      emailEl.value = cfg.notificationEmail || String(state.profile?.email || "").trim();
+    }
+    if (endpointEl) endpointEl.value = cfg.endpointUrl;
+
+    document.querySelectorAll("[data-form-mode]").forEach((btn) => {
+      const on = btn.getAttribute("data-form-mode") === cfg.mode;
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+    if (autoFields) autoFields.hidden = cfg.mode !== "auto";
+    if (customFields) customFields.hidden = cfg.mode !== "custom";
+  }
+
+  function setContactFormExpanded(expanded, { animate = true } = {}) {
+    setLbWidgetExpanded(
+      document.getElementById("lb-contact-form-widget"),
+      document.getElementById("lb-contact-form-body"),
+      document.getElementById("lb-contact-form-enabled"),
+      expanded,
+      { animate }
+    );
+  }
+
+  function setContactFormMode(mode) {
+    const next = mode === "custom" ? "custom" : "auto";
+    document.querySelectorAll("[data-form-mode]").forEach((btn) => {
+      const on = btn.getAttribute("data-form-mode") === next;
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+    const autoFields = document.getElementById("lb-contact-form-auto-fields");
+    const customFields = document.getElementById("lb-contact-form-custom-fields");
+    if (autoFields) autoFields.hidden = next !== "auto";
+    if (customFields) customFields.hidden = next !== "custom";
+  }
+
+  async function saveContactFormFromSettings() {
+    setSiteSettingsError("");
+    setSiteSettingsStatus("");
+    const enabled = !!document.getElementById("lb-contact-form-enabled")?.checked;
+    const modeBtn = document.querySelector("[data-form-mode].is-active");
+    const mode = modeBtn?.getAttribute("data-form-mode") === "custom" ? "custom" : "auto";
+    const notificationEmail = sanitizeClientText(
+      document.getElementById("lb-contact-form-email")?.value || "",
+      120
+    );
+    const endpointUrl = sanitizeClientText(
+      document.getElementById("lb-contact-form-endpoint")?.value || "",
+      500
+    );
+
+    if (enabled && mode === "auto") {
+      if (!notificationEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(notificationEmail)) {
+        setSiteSettingsError("Enter a valid notification email.");
+        return;
+      }
+    }
+    if (enabled && mode === "custom") {
+      if (!endpointUrl || !/^https?:\/\//i.test(endpointUrl)) {
+        setSiteSettingsError("Enter a valid form endpoint URL starting with http:// or https://.");
+        return;
+      }
+    }
+
+    const ctx = {
+      ...(state.project?.business_context || {}),
+      contactForm: {
+        enabled,
+        mode,
+        notificationEmail: mode === "auto" ? notificationEmail : "",
+        endpointUrl: mode === "custom" ? endpointUrl : "",
+      },
+    };
+
+    if (!state.projectId) {
+      state.project = { ...(state.project || {}), business_context: ctx };
+      syncContactFormWidgetUi();
+      setSiteSettingsStatus("Contact form settings saved locally.");
+      return;
+    }
+
+    try {
+      await persistProjectPatch({ business_context: ctx });
+      syncSiteSettingsUi();
+      setSiteSettingsStatus("Contact form settings saved.");
+    } catch (e) {
+      setSiteSettingsError(e.message || "Could not save contact form settings");
+    }
+  }
+
+  function bindContactFormWidget() {
+    document.getElementById("lb-contact-form-enabled")?.addEventListener("change", (e) => {
+      setContactFormExpanded(!!e.target.checked);
+    });
+    document.querySelectorAll("[data-form-mode]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        setContactFormMode(btn.getAttribute("data-form-mode"));
+      });
+    });
+    document.getElementById("lb-contact-form-save")?.addEventListener("click", () => {
+      void saveContactFormFromSettings();
+    });
+  }
+
+  function bindCustomDomainWidget() {
+    document.getElementById("lb-custom-domain-enabled")?.addEventListener("change", (e) => {
+      const on = !!e.target.checked;
+      setCustomDomainExpanded(on);
+      if (!on && readCustomDomainConfig().enabled) {
+        void saveDomainFromSettings("lb-custom-domain");
+      }
+    });
+    document.getElementById("lb-custom-domain-save")?.addEventListener("click", () => {
+      void saveDomainFromSettings("lb-custom-domain");
+    });
   }
 
   function setSiteSettingsOpen(open) {
@@ -1865,14 +4797,42 @@
     }
   }
 
-  async function saveDomainFromSettings() {
+  async function saveDomainFromSettings(inputId = "lb-set-domain") {
     setSiteSettingsError("");
     setSiteSettingsStatus("");
+    const fromWidget = inputId === "lb-custom-domain";
+    const enabled = fromWidget
+      ? !!document.getElementById("lb-custom-domain-enabled")?.checked
+      : true;
+
+    if (fromWidget && !enabled) {
+      const ctx = {
+        ...(state.project?.business_context || {}),
+        customDomain: "",
+        customDomainEnabled: false,
+      };
+      if (!state.projectId) {
+        state.project = { ...(state.project || {}), business_context: ctx };
+        syncCustomDomainWidgetUi();
+        syncSiteSettingsUi();
+        setSiteSettingsStatus("Custom domain disabled.");
+        return;
+      }
+      try {
+        await persistProjectPatch({ business_context: ctx });
+        syncSiteSettingsUi();
+        setSiteSettingsStatus("Custom domain disabled.");
+      } catch (e) {
+        setSiteSettingsError(e.message || "Could not save domain");
+      }
+      return;
+    }
+
     if (!liveSiteUrl()) {
       setSiteSettingsError("Publish your site first to connect a domain.");
       return;
     }
-    const domain = sanitizeClientText(document.getElementById("lb-set-domain")?.value || "", 120)
+    const domain = sanitizeClientText(document.getElementById(inputId)?.value || "", 120)
       .replace(/^https?:\/\//i, "")
       .replace(/\/.*$/, "")
       .toLowerCase();
@@ -1883,11 +4843,13 @@
     const ctx = {
       ...(state.project?.business_context || {}),
       customDomain: domain,
+      customDomainEnabled: true,
     };
     try {
       await persistProjectPatch({ business_context: ctx });
       syncSiteSettingsUi();
       setSiteSettingsStatus("Domain saved. Point DNS to your Vercel deployment next.");
+      setStatus("Custom domain saved.");
     } catch (e) {
       setSiteSettingsError(e.message || "Could not save domain");
     }
@@ -1933,8 +4895,14 @@
       syncSiteSettingsUi();
       if (liveSiteUrl()) setSiteSettingsStatus("Published.");
     });
+    document.getElementById("lb-set-unpublish")?.addEventListener("click", async () => {
+      setSiteSettingsError("");
+      await unpublish();
+      syncSiteSettingsUi();
+      if (!liveSiteUrl()) setSiteSettingsStatus("Site unpublished.");
+    });
     document.getElementById("lb-set-domain-save")?.addEventListener("click", () => {
-      void saveDomainFromSettings();
+      void saveDomainFromSettings("lb-set-domain");
     });
     document.getElementById("lb-set-branding-save")?.addEventListener("click", () => {
       void saveBrandingFromSettings();
@@ -1942,6 +4910,8 @@
     document.getElementById("lb-set-contact-save")?.addEventListener("click", () => {
       void saveContactFromSettings();
     });
+    bindContactFormWidget();
+    bindCustomDomainWidget();
     document.getElementById("lb-set-accent")?.addEventListener("input", (e) => {
       const hex = document.getElementById("lb-set-accent-hex");
       if (hex) hex.value = e.target.value;
@@ -1970,8 +4940,8 @@
         "your business";
       const url = liveSiteUrl();
       const pitch = url
-        ? "Hey — I put together a site for " + name + ". Take a look: " + url
-        : "Hey — I can build a polished site for " + name + ". Want a quick preview?";
+        ? "Hey - I put together a site for " + name + ". Take a look: " + url
+        : "Hey - I can build a polished site for " + name + ". Want a quick preview?";
       try {
         await copyText(pitch);
         setSiteSettingsStatus("Pitch copied.");
@@ -2057,30 +5027,174 @@
     });
 
     ["onb-name", "onb-category", "onb-phone", "onb-address"].forEach((id) => {
-      document.getElementById(id)?.addEventListener("input", () => {
+      const el = document.getElementById(id);
+      el?.addEventListener("input", () => {
+        syncManualFieldsExpanded();
         updateOnboardContinue();
+        if (id === "onb-name") syncPreviewChromeUrl();
+      });
+      el?.addEventListener("focus", () => {
+        syncManualFieldsExpanded();
+      });
+      el?.addEventListener("blur", () => {
+        window.requestAnimationFrame(() => syncManualFieldsExpanded());
       });
     });
 
+    syncManualFieldsExpanded();
     updateOnboardContinue();
+  }
+
+  function bindNavSwitch() {
+    document.getElementById("lb-back-menu")?.addEventListener("click", (event) => {
+      event.stopPropagation();
+      leaveBuilder();
+    });
+  }
+
+  function bindFullscreenControls() {
+    document.getElementById("lb-exit-fullscreen")?.addEventListener("click", () => {
+      exitFullscreen();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape" || state.viewport !== "fullscreen") return;
+      event.preventDefault();
+      exitFullscreen();
+    });
+  }
+
+  function bindPaneResizer() {
+    const body = document.querySelector(".ms-lb-body");
+    const side = document.querySelector(".ms-lb-side");
+    const resizer = document.getElementById("lb-pane-resizer");
+    if (!body || !side || !resizer) return;
+
+    const saved = Number(localStorage.getItem(BUILDER_SIDE_WIDTH_KEY));
+    if (Number.isFinite(saved) && saved > 0) {
+      applyBuilderSideWidth(saved);
+    } else {
+      applyBuilderSideWidth(side.getBoundingClientRect().width || BUILDER_SIDE_DEFAULT);
+    }
+
+    let dragging = false;
+    let startX = 0;
+    let startWidth = 0;
+
+    const onPointerMove = (event) => {
+      if (!dragging) return;
+      const delta = event.clientX - startX;
+      const next = clampBuilderSideWidth(startWidth + delta, body.getBoundingClientRect().width);
+      body.style.setProperty("--ms-lb-side-w", next + "px");
+      event.preventDefault();
+    };
+
+    const stopDrag = () => {
+      if (!dragging) return;
+      dragging = false;
+      document.body.classList.remove("ms-lb-pane-resizing");
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", stopDrag);
+      window.removeEventListener("pointercancel", stopDrag);
+      const width = side.getBoundingClientRect().width;
+      if (Number.isFinite(width) && width > 0) {
+        localStorage.setItem(BUILDER_SIDE_WIDTH_KEY, String(Math.round(width)));
+      }
+    };
+
+    resizer.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0) return;
+      dragging = true;
+      startX = event.clientX;
+      startWidth = side.getBoundingClientRect().width;
+      document.body.classList.add("ms-lb-pane-resizing");
+      resizer.setPointerCapture?.(event.pointerId);
+      window.addEventListener("pointermove", onPointerMove);
+      window.addEventListener("pointerup", stopDrag);
+      window.addEventListener("pointercancel", stopDrag);
+      event.preventDefault();
+    });
+
+    resizer.addEventListener("keydown", (event) => {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      const step = event.shiftKey ? 24 : 12;
+      const dir = event.key === "ArrowLeft" ? -1 : 1;
+      const current = side.getBoundingClientRect().width || BUILDER_SIDE_MIN;
+      const next = clampBuilderSideWidth(current + dir * step, body.getBoundingClientRect().width);
+      body.style.setProperty("--ms-lb-side-w", next + "px");
+      localStorage.setItem(BUILDER_SIDE_WIDTH_KEY, String(next));
+      event.preventDefault();
+    });
   }
 
   function bindToolbar() {
     syncMvpAccessUi();
+    // Capture-phase: block Code / Download before any other handler runs.
+    document.addEventListener(
+      "click",
+      (e) => {
+        const codeBtn = e.target.closest?.('.is-mode[data-mode="code"]');
+        if (codeBtn) {
+          if (!hasMvpPlus()) {
+            e.preventDefault();
+            e.stopPropagation();
+            requireMvpPlus("code");
+          }
+          return;
+        }
+        const downloadBtn = e.target.closest?.("#btn-download-html");
+        if (downloadBtn) {
+          if (!hasMvpPlus()) {
+            e.preventDefault();
+            e.stopPropagation();
+            requireMvpPlus("download");
+          }
+        }
+      },
+      true
+    );
     document.querySelectorAll(".is-mode").forEach((btn) => {
       btn.addEventListener("click", () => {
-        if (btn.dataset.mode === "code" && !requireMvpPlus()) return;
+        if (btn.dataset.mode === "code" && !hasMvpPlus()) return;
         if (state.mode === "code") {
           state.html = document.getElementById("code-editor")?.value || state.html;
+        } else if (state.mode === "edit") {
+          flushEditHtmlToState();
+          void flushEditAutosaveNow();
         }
-        state.mode = btn.dataset.mode;
+        const next = btn.dataset.mode === "code" && !hasMvpPlus() ? "preview" : btn.dataset.mode;
+        if (next === "edit" && !(state.html && state.html.trim())) {
+          setError("Generate a site first, then use Edit.");
+          return;
+        }
+        state.mode = next;
         updatePreview();
       });
     });
     document.querySelectorAll(".is-vp").forEach((btn) => {
       btn.addEventListener("click", () => {
-        state.viewport = btn.dataset.vp;
-        if (state.mode === "code") state.mode = "preview";
+        const vp = btn.dataset.vp;
+        if (vp === "fullscreen" && state.viewport === "fullscreen") {
+          exitFullscreen();
+          return;
+        }
+        if (vp !== "fullscreen" && vp === state.viewport) {
+          resetViewportSize(vp);
+          return;
+        }
+        if (state.mode === "code") {
+          state.mode = "preview";
+          setViewport(vp);
+          updatePreview();
+          return;
+        }
+        if (state.mode === "edit") {
+          flushEditHtmlToState();
+          editState.skipRewrite = true;
+          setViewport(vp);
+          positionEditToolbar();
+          return;
+        }
+        setViewport(vp);
         updatePreview();
       });
     });
@@ -2102,20 +5216,46 @@
     });
     syncPriceUi();
     document.getElementById("code-editor")?.addEventListener("input", () => {
+      if (!hasMvpPlus()) return;
       state.html = document.getElementById("code-editor").value;
     });
     document.getElementById("btn-download-html")?.addEventListener("click", downloadHtml);
     document.getElementById("btn-publish-top")?.addEventListener("click", publish);
+    document.getElementById("btn-unpublish-top")?.addEventListener("click", unpublish);
+    document.getElementById("lb-live-banner-close")?.addEventListener("click", () => dismissLiveBanner());
+    document.getElementById("lb-offline-banner-close")?.addEventListener("click", () => dismissOfflineBanner());
   }
 
   async function boot() {
+    bindNavSwitch();
+    bindFullscreenControls();
+    bindPreviewChromeActions();
+    bindPreviewViewportResizer();
+    bindPaneResizer();
     bindToolbar();
+    bindUnpublishConfirm();
     bindSiteSettings();
     bindOnboard();
+    const bootUser = await window.StudioAuth.getUser();
+    state.userId = bootUser?.id || "";
+    state.profile = await window.StudioAuth.getProfile();
+    syncBuilderOnboardedFromProfile(state.profile);
+    await inferBuilderOnboardedFromProjects();
+    syncMvpFromProfile(state.profile);
     // Clear the builder whenever the user leaves, and again if the browser
     // restores this page from the back/forward cache, so it's always empty and
     // ready for new business info on the next visit.
-    window.addEventListener("pagehide", clearBuilderForNextVisit);
+    window.addEventListener("pagehide", () => {
+      if (state.mode === "edit" && state.projectId) {
+        flushEditHtmlToState();
+      }
+      clearBuilderForNextVisit();
+    });
+    window.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden" && state.mode === "edit") {
+        void flushEditAutosaveNow();
+      }
+    });
     window.addEventListener("pageshow", (e) => {
       if (e.persisted && !params().get("project_id") && !hasFreshLeadIntake()) {
         clearBuilderForNextVisit();
@@ -2129,6 +5269,26 @@
     // Fresh setup visits start blank unless a lead was handed in via the URL.
     if (!projectId) clearBuilderForNextVisit();
     const fromFinder = intakeFromQuery();
+    // Finder → Builder: claim this lead so it stays hidden in Business Finder.
+    if (state.fromFinder && state.leadId) {
+      try {
+        const key = "ms_lf_claimed_v1";
+        const raw = JSON.parse(localStorage.getItem(key) || "{}");
+        const map = raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
+        const id = String(state.leadId).trim();
+        if (id && !map[id]) {
+          map[id] = {
+            id,
+            name: businessValue("businessName") || "",
+            at: new Date().toISOString(),
+            from: "builder",
+          };
+          localStorage.setItem(key, JSON.stringify(map));
+        }
+      } catch (_) {
+        /* ignore */
+      }
+    }
     // Beat browser autofill that may refill fields after paint.
     if (!projectId && !fromFinder && !hasFreshLeadIntake()) {
       requestAnimationFrame(() => {
@@ -2145,10 +5305,8 @@
     const skipSetup = !projectId && state.fromFinder && !!businessValue("businessName");
 
     setBuilderPhase(projectId || skipSetup ? "workspace" : "setup");
-    state.profile = await window.StudioAuth.getProfile();
-    syncMvpFromProfile(state.profile);
     if (params().get("paid") === "1" && projectId) {
-      setStatus("Payment received — watermark should be off. Refreshing…");
+      setStatus("Payment received - watermark should be off. Refreshing…");
     }
     if (projectId) {
       try {
@@ -2174,9 +5332,9 @@
     } else if (skipSetup) {
       state.onboardDone = false;
       setBuilderPhase("workspace");
-      updateEmptyCopy(true);
+      updateEmptyCopy(!!state.fromFinder);
       updatePreview();
-      setStatus("Generating site from Business Finder details…");
+      if (state.fromFinder) setStatus("Generating site from Business Finder details…");
       if (state.autoGeneratePending) {
         state.autoGeneratePending = false;
         void generate({ fromFinder: true });
