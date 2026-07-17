@@ -1088,6 +1088,16 @@
     });
     document.body.dataset.msAuthFired = "1";
     document.dispatchEvent(new Event("ms:auth-ready"));
+    ensureInstallHintScript();
+  }
+
+  function ensureInstallHintScript() {
+    if (window.__msInstallHintBooted) return;
+    if (document.querySelector('script[src*="install-hint.js"]')) return;
+    const s = document.createElement("script");
+    s.src = "js/install-hint.js";
+    s.defer = true;
+    document.head.appendChild(s);
   }
 
   window.StudioCredits = {

@@ -1,24 +1,53 @@
 /**
- * Install / Add to Home Screen hint — Dashboard only.
- * Ported from moonrise-website (ios-install-banner).
+ * Install / Add to Home Screen hint.
+ * Shows after login on the first authenticated page, and on Dashboard visits
+ * when the user has not dismissed it yet.
  */
 (function () {
-  if (document.body?.getAttribute("data-page") !== "dashboard") return;
+  if (window.__msInstallHintBooted) return;
+  window.__msInstallHintBooted = true;
 
+  const PUBLIC_PAGES = new Set(["index", "login", "apply", "orders", "home", ""]);
   const PWA_BASE_URL = new URL("../", document.currentScript?.src || window.location.href);
   const PWA_MANIFEST_URL = new URL("manifest.json", PWA_BASE_URL).href;
   const PWA_SW_URL = new URL("sw.js", PWA_BASE_URL).href;
   const PWA_THEME_COLOR = "#0f172a";
-  const PWA_BRAND_ICON = "doc/MoonriseLogo.png";
+  const PWA_BRAND_ICON =
+    "https://github.com/trymoonrise/dashboard/raw/main/doc/MoonriseLogo.png";
   const INSTALL_HINT_KEY = "ms_ios_install_hint_dismissed_v1";
+  const PROMPT_AFTER_LOGIN_KEY = "ms_prompt_install_after_login";
   const PWA_APP_TITLE = "Moonrise";
+
+  function pageId() {
+    return String(document.body?.getAttribute("data-page") || "").trim().toLowerCase();
+  }
+
+  function isPublicPage() {
+    return PUBLIC_PAGES.has(pageId());
+  }
+
+  function shouldPromptAfterLogin() {
+    try {
+      return sessionStorage.getItem(PROMPT_AFTER_LOGIN_KEY) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function clearPromptAfterLogin() {
+    try {
+      sessionStorage.removeItem(PROMPT_AFTER_LOGIN_KEY);
+    } catch (_) {
+      /* ignore */
+    }
+  }
 
   function pwaIconUrl() {
     const raw = String(window.SITE_CONFIG?.brandLogoUrl || PWA_BRAND_ICON).trim();
     try {
       return new URL(raw, PWA_BASE_URL).href;
     } catch (_) {
-      return new URL(PWA_BRAND_ICON, PWA_BASE_URL).href;
+      return PWA_BRAND_ICON;
     }
   }
 
@@ -129,6 +158,7 @@
   window.addEventListener("appinstalled", () => {
     deferredInstallPrompt = null;
     markInstallHintDismissed();
+    clearPromptAfterLogin();
     const banner = document.getElementById("ios-install-banner");
     if (banner) dismissInstallHint(banner);
   });
@@ -161,6 +191,7 @@
     banner.classList.remove("is-visible");
     banner.classList.add("is-leaving");
     markInstallHintDismissed();
+    clearPromptAfterLogin();
     const finish = () => {
       banner.removeEventListener("transitionend", onEnd);
       banner.remove();
@@ -175,11 +206,18 @@
   }
 
   function maybeShowInstallHint() {
-    if (document.body?.getAttribute("data-page") !== "dashboard") return;
+    if (isPublicPage()) return;
     if (isStandaloneDisplay()) return;
-    if (isInstallHintDismissed()) return;
     if (!document.body) return;
     if (document.getElementById("ios-install-banner")) return;
+
+    const afterLogin = shouldPromptAfterLogin();
+    // After login: always prompt once on the next authenticated page.
+    // Otherwise: keep the quieter dashboard-only reminder.
+    if (!afterLogin) {
+      if (pageId() !== "dashboard") return;
+      if (isInstallHintDismissed()) return;
+    }
 
     const banner = document.createElement("div");
     banner.id = "ios-install-banner";
@@ -199,6 +237,8 @@
       '<button type="button" class="ios-install-banner-close" aria-label="Dismiss">&times;</button>';
 
     document.body.appendChild(banner);
+    clearPromptAfterLogin();
+
     if (deferredInstallPrompt && isDesktopDevice()) {
       banner.classList.add("ios-install-banner--installable");
       banner.title = "Click to install Moonrise";
@@ -253,12 +293,27 @@
       });
   }
 
-  ensurePwaMetadata();
-  if (document.readyState === "loading") {
-    window.addEventListener("load", registerPwaServiceWorker, { once: true });
-    document.addEventListener("DOMContentLoaded", maybeShowInstallHint, { once: true });
-  } else {
-    registerPwaServiceWorker();
+  function bootInstallHint() {
+    ensurePwaMetadata();
     maybeShowInstallHint();
   }
+
+  function start() {
+    if (document.readyState === "loading") {
+      window.addEventListener("load", registerPwaServiceWorker, { once: true });
+    } else {
+      registerPwaServiceWorker();
+    }
+
+    // Wait for shell auth when available so the banner shows after login landing.
+    if (document.body?.dataset?.msAuthFired === "1") {
+      bootInstallHint();
+      return;
+    }
+    document.addEventListener("ms:auth-ready", bootInstallHint, { once: true });
+    // Fallback if auth never fires (dashboard-only script tag, etc.).
+    window.setTimeout(bootInstallHint, 1200);
+  }
+
+  start();
 })();
