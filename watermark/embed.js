@@ -37,7 +37,8 @@
 .mr-wm-copy a{color:inherit;text-decoration:none;pointer-events:none}
 @keyframes mr-widget-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 @media (max-width:520px){.mr-wm-chip{padding:.95rem 1.25rem .95rem .95rem;gap:.9rem;border-radius:16px}.mr-wm-avatar{width:48px;height:48px;border-radius:12px}.mr-wm-copy strong{font-size:1.1rem}.mr-wm-copy span{font-size:.86rem}}
-#mr-wm-overlay-root{position:fixed;inset:0;z-index:2147483646;pointer-events:none}
+#mr-wm-overlay-root{position:fixed;inset:0;z-index:2147483646;pointer-events:none;display:none!important}
+#mr-wm-overlay-root[data-open="1"]{display:block!important;pointer-events:auto}
 .mr-wm-overlay{position:fixed;inset:0;z-index:2147483646;display:grid;place-items:center;padding:1rem;background:rgba(15,23,42,.55);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .22s ease,visibility .22s ease;font-family:var(--mr-font)}
 .mr-wm-overlay.is-open{opacity:1;visibility:visible;pointer-events:auto}
 .mr-wm-panel{width:min(420px,100%);max-height:min(90vh,640px);display:flex;flex-direction:column;overflow:auto;background:#fff;border:1px solid var(--mr-line,#e8edf3);border-radius:16px;box-shadow:0 20px 48px rgba(15,23,42,.22);transform:translateY(12px) scale(.985);opacity:.96;transition:transform .28s cubic-bezier(.22,1,.36,1),opacity .22s ease}
@@ -289,6 +290,7 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
     function openPanel() {
       chip?.classList.add("is-hidden");
       document.body.classList.add("mr-wm-open");
+      overlayRoot.setAttribute("data-open", "1");
       overlay.classList.add("is-open");
       overlay.setAttribute("aria-hidden", "false");
       document.body.style.overflow = "hidden";
@@ -298,6 +300,7 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
     function closePanel() {
       chip?.classList.remove("is-hidden");
       document.body.classList.remove("mr-wm-open");
+      overlayRoot.removeAttribute("data-open");
       overlay.classList.remove("is-open");
       overlay.setAttribute("aria-hidden", "true");
       document.body.style.overflow = "";
@@ -380,6 +383,50 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
     return { open: openPanel, close: closePanel, unmount };
   }
 
+  function cleanPaidQueryFromUrl() {
+    try {
+      const url = new URL(location.href);
+      if (!url.searchParams.has("paid") && !url.searchParams.has("session_id")) return;
+      url.searchParams.delete("paid");
+      url.searchParams.delete("session_id");
+      history.replaceState({}, "", url.pathname + url.search + url.hash);
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  /**
+   * After Stripe redirects back with ?paid=1&session_id=, verify + unlock
+   * even if the webhook is delayed or misconfigured, then hard-reload so
+   * the published HTML (without embed.js) replaces this watermarked page.
+   */
+  async function fulfillPaidReturn(projectId, workerUrl) {
+    const params = new URLSearchParams(location.search);
+    if (params.get("paid") !== "1") return false;
+    const sessionId = String(params.get("session_id") || "").trim();
+    const base = String(workerUrl || "").replace(/\/$/, "");
+    if (!base || !sessionId.startsWith("cs_") || !projectId) {
+      cleanPaidQueryFromUrl();
+      return false;
+    }
+    try {
+      const res = await fetch(base + "/fulfill-go-live", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId, sessionId }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Unlock failed");
+      const next = data.url || location.href.split("?")[0];
+      location.replace(next);
+      return true;
+    } catch (e) {
+      console.warn("[Moonrise] fulfill-go-live failed:", e?.message || e);
+      cleanPaidQueryFromUrl();
+      return false;
+    }
+  }
+
   function autoMountFromScript() {
     // Capture at parse time — document.currentScript is null inside deferred
     // callbacks / DOMContentLoaded, which is how live sites load this file.
@@ -390,11 +437,15 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
     if (!script) return;
     const projectId = script.getAttribute("data-project-id") || "";
     if (!projectId) return;
-    mount({
-      projectId,
-      workerUrl: script.getAttribute("data-worker") || "",
-      paymentLink: script.getAttribute("data-payment-link") || "",
-      urgencyEndsAt: script.getAttribute("data-urgency-ends-at") || "",
+    const workerUrl = script.getAttribute("data-worker") || "";
+    void fulfillPaidReturn(projectId, workerUrl).then((handled) => {
+      if (handled) return;
+      mount({
+        projectId,
+        workerUrl,
+        paymentLink: script.getAttribute("data-payment-link") || "",
+        urgencyEndsAt: script.getAttribute("data-urgency-ends-at") || "",
+      });
     });
   }
 

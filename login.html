@@ -41,7 +41,19 @@
       </div>
       <div class="ms-field" id="password-field">
         <label class="ms-label" for="password">Password</label>
-        <input class="ms-input" id="password" name="password" type="password" required minlength="8" autocomplete="current-password" aria-describedby="pw-strength-label pw-hint">
+        <div class="ms-auth-pw-shell">
+          <input class="ms-input" id="password" name="password" type="password" required minlength="8" autocomplete="current-password" aria-describedby="pw-strength-label pw-hint">
+          <button
+            type="button"
+            class="ms-auth-pw-reveal"
+            id="password-reveal"
+            aria-label="Hold to view password"
+            title="Hold to view password"
+          >
+            <svg class="ms-auth-pw-reveal-icon is-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="ms-auth-pw-reveal-icon is-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
+        </div>
         <div class="ms-pw-meter" id="pw-meter" hidden>
           <div class="ms-pw-track" aria-hidden="true">
             <div class="ms-pw-fill" id="pw-fill"></div>
@@ -61,7 +73,29 @@
       </div>
       <div class="ms-field" id="password-confirm-field" hidden>
         <label class="ms-label" for="password-confirm">Confirm password</label>
-        <input class="ms-input" id="password-confirm" name="password_confirm" type="password" minlength="8" autocomplete="new-password">
+        <div class="ms-auth-pw-shell">
+          <input class="ms-input" id="password-confirm" name="password_confirm" type="password" minlength="8" autocomplete="new-password">
+          <button
+            type="button"
+            class="ms-auth-pw-reveal"
+            id="password-confirm-reveal"
+            aria-label="Hold to view password"
+            title="Hold to view password"
+          >
+            <svg class="ms-auth-pw-reveal-icon is-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="ms-auth-pw-reveal-icon is-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="ms-auth-autosave" id="autosave-wrap">
+        <div class="ms-auth-autosave-copy">
+          <span class="ms-auth-autosave-title">Auto save</span>
+          <span class="ms-auth-autosave-hint">Remember your email on this device</span>
+        </div>
+        <label class="ms-switch" title="Auto save email">
+          <input type="checkbox" id="auth-autosave" role="switch" aria-checked="false" aria-label="Auto save email on this device">
+          <span class="ms-switch-track" aria-hidden="true"></span>
+        </label>
       </div>
       <p class="ms-auth-forgot-wrap" id="forgot-wrap">
         <button type="button" class="ms-auth-forgot" id="forgot-link">Forgot password?</button>
@@ -138,10 +172,141 @@
       const authTabs = document.getElementById("auth-tabs");
       const forgotWrap = document.getElementById("forgot-wrap");
       const backWrap = document.getElementById("back-wrap");
+      const autosaveWrap = document.getElementById("autosave-wrap");
+      const autosaveToggle = document.getElementById("auth-autosave");
+      const handleInput = document.getElementById("handle");
+      const AUTOSAVE_ENABLED_KEY = "ms_auth_autosave_enabled";
+      const AUTOSAVE_EMAIL_KEY = "ms_auth_autosave_email";
+      const AUTOSAVE_HANDLE_KEY = "ms_auth_autosave_handle";
+      let autosaveTimer = null;
       const COMMON = new Set([
         "password", "password1", "12345678", "qwerty123", "moonrise", "admin123",
         "letmein1", "welcome1", "iloveyou", "abc12345", "passw0rd",
       ]);
+
+      function isAutosaveEnabled() {
+        return !!autosaveToggle?.checked;
+      }
+
+      function readAutosaveEnabled() {
+        try {
+          return localStorage.getItem(AUTOSAVE_ENABLED_KEY) === "1";
+        } catch (_) {
+          return false;
+        }
+      }
+
+      function writeAutosaveEnabled(on) {
+        try {
+          localStorage.setItem(AUTOSAVE_ENABLED_KEY, on ? "1" : "0");
+        } catch (_) {
+          /* ignore */
+        }
+      }
+
+      function clearAutosavedFields() {
+        try {
+          localStorage.removeItem(AUTOSAVE_EMAIL_KEY);
+          localStorage.removeItem(AUTOSAVE_HANDLE_KEY);
+        } catch (_) {
+          /* ignore */
+        }
+      }
+
+      function persistAutosavedFields() {
+        if (!isAutosaveEnabled()) return;
+        try {
+          const email = String(emailInput?.value || "").trim();
+          const handle = String(handleInput?.value || "").trim();
+          if (email) localStorage.setItem(AUTOSAVE_EMAIL_KEY, email);
+          else localStorage.removeItem(AUTOSAVE_EMAIL_KEY);
+          if (handle) localStorage.setItem(AUTOSAVE_HANDLE_KEY, handle);
+          else localStorage.removeItem(AUTOSAVE_HANDLE_KEY);
+        } catch (_) {
+          /* ignore */
+        }
+      }
+
+      function scheduleAutosave() {
+        clearTimeout(autosaveTimer);
+        autosaveTimer = setTimeout(() => persistAutosavedFields(), 250);
+      }
+
+      function restoreAutosavedFields() {
+        if (!readAutosaveEnabled()) return;
+        try {
+          const email = localStorage.getItem(AUTOSAVE_EMAIL_KEY) || "";
+          const handle = localStorage.getItem(AUTOSAVE_HANDLE_KEY) || "";
+          if (email && emailInput && !emailInput.value) emailInput.value = email;
+          if (handle && handleInput && !handleInput.value) handleInput.value = handle;
+        } catch (_) {
+          /* ignore */
+        }
+      }
+
+      function syncAutosaveToggleUi() {
+        if (!autosaveToggle) return;
+        const on = readAutosaveEnabled();
+        autosaveToggle.checked = on;
+        autosaveToggle.setAttribute("aria-checked", on ? "true" : "false");
+      }
+
+      syncAutosaveToggleUi();
+      restoreAutosavedFields();
+      autosaveToggle?.addEventListener("change", () => {
+        const on = !!autosaveToggle.checked;
+        autosaveToggle.setAttribute("aria-checked", on ? "true" : "false");
+        writeAutosaveEnabled(on);
+        if (on) persistAutosavedFields();
+        else clearAutosavedFields();
+      });
+      emailInput?.addEventListener("input", scheduleAutosave);
+      handleInput?.addEventListener("input", scheduleAutosave);
+
+      function bindHoldToRevealPassword(input, button) {
+        if (!input || !button) return;
+        const eye = button.querySelector(".is-eye");
+        const eyeOff = button.querySelector(".is-eye-off");
+
+        function setVisible(visible) {
+          input.type = visible ? "text" : "password";
+          button.classList.toggle("is-holding", visible);
+          button.setAttribute("aria-pressed", visible ? "true" : "false");
+          if (eye) eye.hidden = !!visible;
+          if (eyeOff) eyeOff.hidden = !visible;
+        }
+
+        function show(event) {
+          event.preventDefault();
+          setVisible(true);
+        }
+
+        function hide() {
+          setVisible(false);
+        }
+
+        button.addEventListener("pointerdown", (event) => {
+          if (event.button != null && event.button !== 0) return;
+          try {
+            button.setPointerCapture(event.pointerId);
+          } catch (_) {
+            /* ignore */
+          }
+          show(event);
+        });
+        button.addEventListener("pointerup", hide);
+        button.addEventListener("pointercancel", hide);
+        button.addEventListener("lostpointercapture", hide);
+        // Prevent click from toggling / focusing oddly after a hold.
+        button.addEventListener("click", (event) => {
+          event.preventDefault();
+        });
+        window.addEventListener("blur", hide);
+        setVisible(false);
+      }
+
+      bindHoldToRevealPassword(passwordInput, document.getElementById("password-reveal"));
+      bindHoldToRevealPassword(passwordConfirm, document.getElementById("password-confirm-reveal"));
 
       const sb = StudioAuth.getClient?.();
       if (sb?.auth?.onAuthStateChange) {
@@ -236,6 +401,9 @@
         authTabs.hidden = !showTabs;
         forgotWrap.hidden = mode !== "signin";
         backWrap.hidden = !(showForgot || showRecover);
+        if (autosaveWrap) {
+          autosaveWrap.hidden = !(mode === "signin" || mode === "signup");
+        }
 
         setOpen(handleField, showSignup, instant);
         setOpen(passwordField, showPassword, instant);
@@ -344,6 +512,7 @@
               form.password.value,
               form.handle.value
             );
+            persistAutosavedFields();
             if (data?.session || data?.access_token) {
               await continueAfterAuth();
               return;
@@ -352,6 +521,7 @@
             setMode("signin");
           } else {
             await StudioAuth.signIn(form.email.value, form.password.value);
+            persistAutosavedFields();
             await continueAfterAuth();
           }
         } catch (ex) {

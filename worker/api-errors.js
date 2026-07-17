@@ -23,6 +23,9 @@ const STRIPE_NOT_CONFIGURED_MSG =
 const OPENROUTER_NOT_CONFIGURED_MSG =
   "Website generation is not configured. Add OPENROUTER_API_KEY in your deployment environment, redeploy the worker, then try again.";
 
+const SUPABASE_NOT_CONFIGURED_MSG =
+  "Supabase is not configured on the worker. Add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY to worker/.env (local) or Vercel → Settings → Environment Variables, restart/redeploy, then retry.";
+
 const VERCEL_NOT_CONFIGURED_MSG =
   "Publishing is not configured. Add VERCEL_TOKEN in your deployment environment, redeploy the worker, then try publishing again.";
 
@@ -76,6 +79,10 @@ function formatApiError(err, fallback) {
 
   if (/openrouter is not configured|minimax website generation is not configured/i.test(raw)) {
     return { message: OPENROUTER_NOT_CONFIGURED_MSG, status: 503, code: "OPENROUTER_NOT_CONFIGURED" };
+  }
+
+  if (/supabase is not configured|supabase_url and supabase_service_role_key are required/i.test(lower)) {
+    return { message: SUPABASE_NOT_CONFIGURED_MSG, status: 503, code: "SUPABASE_NOT_CONFIGURED" };
   }
 
   if (/vercel.*not configured|vercel_token is required/i.test(lower)) {

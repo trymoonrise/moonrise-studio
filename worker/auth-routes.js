@@ -4,10 +4,15 @@
 const { createClient } = require("@supabase/supabase-js");
 
 function createAuthClient() {
-  const url = process.env.SUPABASE_URL || "";
-  const anon = process.env.SUPABASE_ANON_KEY || "";
+  const url = String(process.env.SUPABASE_URL || "").trim();
+  const anon = String(process.env.SUPABASE_ANON_KEY || "").trim();
   if (!url || !anon) {
-    throw new Error("SUPABASE_URL and SUPABASE_ANON_KEY are required for auth routes");
+    const err = new Error(
+      "Supabase auth is not configured. Add SUPABASE_URL and SUPABASE_ANON_KEY to worker/.env (local) or Vercel env vars, then restart the worker."
+    );
+    err.status = 503;
+    err.code = "SUPABASE_NOT_CONFIGURED";
+    throw err;
   }
   return createClient(url, anon, {
     auth: { persistSession: false, autoRefreshToken: false },

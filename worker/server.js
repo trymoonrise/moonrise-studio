@@ -7,10 +7,27 @@
  * - POST /publish    Vercel deployment
  * - POST /unpublish  Take site offline on Vercel
  */
-require("dotenv").config();
-
-const fs = require("fs");
 const path = require("path");
+const fs = require("fs");
+
+/** Load worker/.env, filling blank values that would otherwise block Supabase. */
+function loadWorkerEnv() {
+  const dotenv = require("dotenv");
+  const envPath = path.join(__dirname, ".env");
+  dotenv.config({ path: envPath });
+
+  // If a parent shell exported empty SUPABASE_* values, dotenv won't override them.
+  // Re-read the file and fill only blank keys.
+  if (!fs.existsSync(envPath)) return;
+  const parsed = dotenv.parse(fs.readFileSync(envPath));
+  for (const [key, value] of Object.entries(parsed)) {
+    if (process.env[key] == null || String(process.env[key]).trim() === "") {
+      process.env[key] = value;
+    }
+  }
+}
+loadWorkerEnv();
+
 const express = require("express");
 const cors = require("cors");
 const Stripe = require("stripe");
@@ -160,10 +177,15 @@ const CATALOG_PER_BUCKET = 8;
 let _supabaseAdmin = null;
 function db() {
   if (_supabaseAdmin) return _supabaseAdmin;
-  const url = process.env.SUPABASE_URL || "";
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+  const url = String(process.env.SUPABASE_URL || "").trim();
+  const key = String(process.env.SUPABASE_SERVICE_ROLE_KEY || "").trim();
   if (!url || !key) {
-    throw new Error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required");
+    const err = new Error(
+      "Supabase is not configured. Add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY to worker/.env (local) or Vercel env vars, then restart the worker."
+    );
+    err.status = 503;
+    err.code = "SUPABASE_NOT_CONFIGURED";
+    throw err;
   }
   _supabaseAdmin = createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
@@ -248,6 +270,94 @@ function createGoLiveCheckoutSession(stripe, opts) {
   });
 }
 
+/**
+ * After a go-live Stripe payment: flip watermark off, record payment, redeploy clean HTML.
+ * Shared by the Stripe webhook and the /fulfill-go-live return path.
+ */
+async function unlockGoLiveAfterPayment(supabase, { projectId, session, userId }) {
+  if (!projectId) throw new Error("projectId required");
+
+  const { data: existingProject, error: loadErr } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("id", projectId)
+    .maybeSingle();
+  if (loadErr) throw loadErr;
+  if (!existingProject) throw new Error("Project not found");
+
+  const ownerId = userId || existingProject.user_id || null;
+  const subId =
+    typeof session?.subscription === "string"
+      ? session.subscription
+      : session?.subscription?.id || null;
+  const priorCtx =
+    existingProject.business_context &&
+    typeof existingProject.business_context === "object" &&
+    !Array.isArray(existingProject.business_context)
+      ? existingProject.business_context
+      : {};
+
+  const { error: unlockErr } = await supabase
+    .from("projects")
+    .update({
+      watermark_enabled: false,
+      status: "paid",
+      stripe_checkout_session_id: session?.id || existingProject.stripe_checkout_session_id || null,
+      business_context: {
+        ...priorCtx,
+        hostingSubscriptionId: subId || priorCtx.hostingSubscriptionId || null,
+        hostingMonthlyCents: HOSTING_MONTHLY_CENTS,
+        paidAt: new Date().toISOString(),
+      },
+    })
+    .eq("id", projectId);
+  if (unlockErr) throw unlockErr;
+
+  if (session?.id && ownerId) {
+    await supabase.from("payments").upsert(
+      {
+        user_id: ownerId,
+        project_id: projectId,
+        stripe_session_id: session.id,
+        stripe_payment_intent:
+          typeof session.payment_intent === "string"
+            ? session.payment_intent
+            : session.payment_intent?.id || null,
+        amount_cents: session.amount_total,
+        currency: session.currency || "usd",
+        status: "paid",
+      },
+      { onConflict: "stripe_session_id" }
+    );
+  }
+
+  const { data: fresh, error: freshErr } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("id", projectId)
+    .maybeSingle();
+  if (freshErr) throw freshErr;
+  if (!fresh) throw new Error("Project missing after unlock");
+
+  let redeploy = null;
+  if (fresh.vercel_url || fresh.business_context?.vercelSlug) {
+    try {
+      redeploy = await deployProjectToVercel(supabase, fresh);
+    } catch (redeployErr) {
+      console.error("Auto-redeploy after payment failed:", redeployErr.message);
+      redeploy = { error: redeployErr.message || "Redeploy failed" };
+    }
+  }
+
+  return {
+    projectId,
+    watermarkEnabled: false,
+    url: redeploy?.url || fresh.vercel_url || null,
+    redeployed: !!(redeploy && !redeploy.error),
+    redeployError: redeploy?.error || null,
+  };
+}
+
 const app = express();
 app.disable("x-powered-by");
 app.set("trust proxy", 1);
@@ -260,6 +370,7 @@ app.use(applySecurityHeaders);
  */
 const PUBLIC_PATHS = new Set([
   "/public-checkout",
+  "/fulfill-go-live",
   "/embed.js",
   "/contact-form.js",
   "/contact-submit",
@@ -457,66 +568,14 @@ app.post("/webhooks/stripe", express.raw({ type: "application/json" }), async (r
             { onConflict: "stripe_session_id" }
           );
         }
-      } else if (projectId && userId) {
-        const subId =
-          typeof session.subscription === "string"
-            ? session.subscription
-            : session.subscription?.id || null;
-        const { data: existingProject } = await supabase
-          .from("projects")
-          .select("business_context")
-          .eq("id", projectId)
-          .maybeSingle();
-        const priorCtx =
-          existingProject?.business_context &&
-          typeof existingProject.business_context === "object" &&
-          !Array.isArray(existingProject.business_context)
-            ? existingProject.business_context
-            : {};
-        await supabase
-          .from("projects")
-          .update({
-            watermark_enabled: false,
-            status: "paid",
-            stripe_checkout_session_id: session.id,
-            business_context: {
-              ...priorCtx,
-              hostingSubscriptionId: subId,
-              hostingMonthlyCents: HOSTING_MONTHLY_CENTS,
-            },
-          })
-          .eq("id", projectId);
-
-        await supabase.from("payments").upsert(
-          {
-            user_id: userId,
-            project_id: projectId,
-            stripe_session_id: session.id,
-            stripe_payment_intent:
-              typeof session.payment_intent === "string"
-                ? session.payment_intent
-                : session.payment_intent?.id || null,
-            amount_cents: session.amount_total,
-            currency: session.currency || "usd",
-            status: "paid",
-          },
-          { onConflict: "stripe_session_id" }
-        );
-
-        // Auto-redeploy the clean site (watermark_enabled is now false, so the
-        // widget is no longer injected) so the live site updates itself.
-        try {
-          const { data: fresh } = await supabase
-            .from("projects")
-            .select("*")
-            .eq("id", projectId)
-            .maybeSingle();
-          if (fresh && fresh.vercel_url) {
-            await deployProjectToVercel(supabase, fresh);
-          }
-        } catch (redeployErr) {
-          console.error("Auto-redeploy after payment failed:", redeployErr.message);
-        }
+      } else if (projectId) {
+        // Business-owner go-live payment (type=go_live or legacy sessions):
+        // remove watermark + redeploy clean HTML without embed.js.
+        await unlockGoLiveAfterPayment(supabase, {
+          projectId,
+          session,
+          userId: userId || session.metadata?.userId || null,
+        });
       }
     }
 
@@ -688,7 +747,16 @@ function ensureMobileFriendlyHtml(html) {
   }
 
   // AI sometimes emits `div { overflow: hidden }` which traps scroll on wrappers.
-  out = out.replace(/\bdiv\s*\{\s*overflow\s*:\s*hidden\s*;?\s*\}/gi, "/* moonrise: removed div{overflow:hidden} */");
+  out = out.replace(/\bdiv\s*\{([^{}]*)\}/gi, (full, body) => {
+    if (!/overflow\s*:\s*hidden/i.test(body)) return full;
+    if (/^\s*overflow\s*:\s*hidden\s*;?\s*$/i.test(body)) {
+      return "/* moonrise: stripped-universal-div-overflow */";
+    }
+    const next = body
+      .replace(/overflow\s*:\s*hidden\s*!important\s*;?/gi, "")
+      .replace(/overflow\s*:\s*hidden\s*;?/gi, "");
+    return "div{" + next + "}";
+  });
   out = out.replace(
     /\b(html|body)\s*\{([^}]*?)overflow\s*:\s*hidden(\s*!important)?([^}]*)\}/gi,
     (full, sel, before, _imp, after) =>
@@ -696,13 +764,13 @@ function ensureMobileFriendlyHtml(html) {
   );
 
   const css = `
-/* Moonrise mobile-fit */
-html,body{max-width:100%!important;overflow-x:hidden!important;overflow-y:auto!important;height:auto!important;max-height:none!important;min-height:100%;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch}
-body{position:relative!important}
+/* Moonrise mobile-fit — one scroll root (html), body must not trap scroll */
+html{max-width:100%!important;overflow-x:hidden!important;overflow-y:scroll!important;height:auto!important;max-height:none!important;-webkit-overflow-scrolling:touch}
+body{max-width:100%!important;overflow-x:hidden!important;overflow-y:visible!important;height:auto!important;max-height:none!important;min-height:100%;position:relative!important}
 img,video,canvas,svg{max-width:100%;height:auto}
 iframe{max-width:100%}
 .nav,.dock,nav[class],header .dock,header nav{max-width:100%}
-body > div, main, .page, .wrapper, .site, .layout, .site-wrap{overflow-x:hidden!important;overflow-y:visible!important;max-height:none!important;height:auto!important}
+body > div, main, .page, .wrapper, .site, .layout, .site-wrap, .app, #app, #root, #__next{overflow-x:hidden!important;overflow-y:visible!important;max-height:none!important;height:auto!important}
 @media (max-width:767px){
   .nav{padding:.65rem!important;left:0;right:0}
   .dock,header .dock,nav.dock{max-width:calc(100vw - 1.25rem);width:max-content;margin-left:auto;margin-right:auto;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-wrap:nowrap}
@@ -1622,7 +1690,7 @@ app.post("/checkout", requireUser, checkoutLimiter, async (req, res) => {
       projectId,
       userId: req.user.id,
       amountCents,
-      successUrl: `${PUBLIC_APP_URL}/builder.html?project_id=${projectId}&paid=1`,
+      successUrl: `${PUBLIC_APP_URL}/builder.html?project_id=${projectId}&paid=1&session_id={CHECKOUT_SESSION_ID}`,
       cancelUrl: `${PUBLIC_APP_URL}/builder.html?project_id=${projectId}&canceled=1`,
       customerEmail: req.user.email || undefined,
       lineItems,
@@ -1777,6 +1845,29 @@ app.post("/credits/plan-checkout", requireUser, checkoutLimiter, async (req, res
   } catch (e) {
     console.error(e);
     respondApiError(res, e, "Plan checkout failed");
+  }
+});
+
+app.post("/credits/claim-developer", requireUser, checkoutLimiter, async (req, res) => {
+  try {
+    const DEVELOPER_CREDIT_GRANT = 50;
+    const supabase = db();
+    const userId = req.user.id;
+    const result = await grantTopup(supabase, {
+      userId,
+      credits: DEVELOPER_CREDIT_GRANT,
+      idempotencyKey: `developer-credits:v1:${userId}`,
+    });
+    const balance = await getBalance(supabase, userId);
+    const alreadyClaimed = !!(result && result.duplicate);
+    res.json({
+      ...balance,
+      alreadyClaimed,
+      granted: alreadyClaimed ? 0 : DEVELOPER_CREDIT_GRANT,
+    });
+  } catch (e) {
+    console.error(e);
+    respondApiError(res, e, "Could not claim developer credits");
   }
 });
 
@@ -2138,8 +2229,8 @@ app.get("/public-orders", async (req, res) => {
 /**
  * Public, unauthenticated checkout used by the watermark widget on a LIVE site.
  * The business owner just pays — no Studio login. Keyed by project_id, charges
- * the seller-chosen price (projects.price_cents). Payment confirmation and the
- * clean redeploy happen in the Stripe webhook.
+ * the seller-chosen price (projects.price_cents). Unlock + clean redeploy run
+ * from the Stripe webhook and/or POST /fulfill-go-live on return (?paid=1).
  */
 app.post("/public-checkout", publicCheckoutLimiter, async (req, res) => {
   try {
@@ -2172,7 +2263,7 @@ app.post("/public-checkout", publicCheckoutLimiter, async (req, res) => {
       projectId,
       userId: project.user_id,
       amountCents: amount,
-      successUrl: `${liveUrl}${liveUrl.includes("?") ? "&" : "?"}paid=1`,
+      successUrl: `${liveUrl}${liveUrl.includes("?") ? "&" : "?"}paid=1&session_id={CHECKOUT_SESSION_ID}`,
       cancelUrl: liveUrl,
     });
 
@@ -2200,6 +2291,61 @@ app.post("/public-checkout", publicCheckoutLimiter, async (req, res) => {
   }
 });
 
+/**
+ * Backup fulfill path when the buyer returns from Stripe with ?paid=1&session_id=.
+ * Verifies the Checkout Session against Stripe, then unlocks + redeploys.
+ * Safe to call alongside the webhook (idempotent watermark flip + payment upsert).
+ */
+app.post("/fulfill-go-live", publicCheckoutLimiter, async (req, res) => {
+  try {
+    const stripe = stripeClient();
+    if (!stripe) return sendStripeMissing(res);
+
+    const sessionId = String(req.body.sessionId || req.body.session_id || "").trim();
+    if (!sessionId.startsWith("cs_")) {
+      return res.status(400).json({ error: "Valid checkout session required" });
+    }
+
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    if (session.status !== "complete" || session.payment_status === "unpaid") {
+      return res.status(409).json({ error: "Payment is not complete yet" });
+    }
+
+    const kind = String(session.metadata?.type || "").toLowerCase();
+    if (kind && kind !== "go_live" && kind !== "site_hosting") {
+      return res.status(400).json({ error: "Not a go-live checkout" });
+    }
+
+    const projectId = String(
+      session.metadata?.projectId || req.body.projectId || req.body.project_id || ""
+    ).trim();
+    if (!projectId) {
+      return res.status(400).json({ error: "projectId missing on checkout session" });
+    }
+
+    const bodyProjectId = String(req.body.projectId || req.body.project_id || "").trim();
+    if (bodyProjectId && bodyProjectId !== projectId) {
+      return res.status(403).json({ error: "Checkout session does not match this project" });
+    }
+
+    const result = await unlockGoLiveAfterPayment(db(), {
+      projectId,
+      session,
+      userId: session.metadata?.userId || null,
+    });
+
+    res.json({
+      ok: true,
+      watermarkEnabled: false,
+      url: result.url,
+      redeployed: result.redeployed,
+      redeployError: result.redeployError,
+    });
+  } catch (e) {
+    console.error("fulfill-go-live", e);
+    respondApiError(res, e, "Could not unlock site after payment");
+  }
+});
 
 app.post("/edit", requireUser, editLimiter, async (req, res) => {
   try {

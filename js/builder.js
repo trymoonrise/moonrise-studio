@@ -2109,7 +2109,7 @@
 
   /**
    * Keep preview (and eventually saved HTML) scrollable on phones:
-   * unlock body height locks and tame wide fixed nav docks.
+   * unlock body height locks, strip catastrophic div{overflow:hidden}, tame wide fixed nav docks.
    */
   function ensureMobileFriendlyHtml(html) {
     let out = String(html || "");
@@ -2127,25 +2127,49 @@
       );
     }
 
-    if (out.includes("data-ms-mobile-fit")) return out;
+    // AI sometimes emits `div { overflow: hidden }` which traps scroll on wrappers.
+    out = out.replace(/\bdiv\s*\{([^{}]*)\}/gi, function (full, body) {
+      if (!/overflow\s*:\s*hidden/i.test(body)) return full;
+      if (/^\s*overflow\s*:\s*hidden\s*;?\s*$/i.test(body)) {
+        return "/* moonrise: stripped-universal-div-overflow */";
+      }
+      const next = body
+        .replace(/overflow\s*:\s*hidden\s*!important\s*;?/gi, "")
+        .replace(/overflow\s*:\s*hidden\s*;?/gi, "");
+      return "div{" + next + "}";
+    });
+    out = out.replace(
+      /\b(html|body)\s*\{([^}]*?)overflow\s*:\s*hidden(\s*!important)?([^}]*)\}/gi,
+      function (_full, sel, before, _imp, after) {
+        return sel + "{" + before + "overflow: visible" + after + "}";
+      }
+    );
 
     const css = [
-      "html,body{max-width:100%;overflow-x:clip!important;overflow-y:auto!important;height:auto!important;min-height:100%;overscroll-behavior-y:contain}",
-      "body{position:relative!important}",
+      "/* Moonrise mobile-fit — one scroll root (html), body must not trap scroll */",
+      "html{max-width:100%!important;overflow-x:hidden!important;overflow-y:scroll!important;height:auto!important;max-height:none!important;-webkit-overflow-scrolling:touch}",
+      "body{max-width:100%!important;overflow-x:hidden!important;overflow-y:visible!important;height:auto!important;max-height:none!important;min-height:100%;position:relative!important}",
       "img,video,canvas,svg{max-width:100%;height:auto}",
       "iframe{max-width:100%}",
       ".nav,.dock,nav[class],header .dock,header nav{max-width:100%}",
+      "body > div, main, .page, .wrapper, .site, .layout, .site-wrap, .app, #app, #root, #__next{overflow-x:hidden!important;overflow-y:visible!important;max-height:none!important;height:auto!important}",
       "@media (max-width:767px){",
       ".nav{padding:.65rem!important;left:0;right:0}",
       ".dock,header .dock,nav.dock{max-width:calc(100vw - 1.25rem);width:max-content;margin-left:auto;margin-right:auto;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-wrap:nowrap}",
       ".dock::-webkit-scrollbar,header .dock::-webkit-scrollbar{display:none}",
       ".dock a,header .dock a{white-space:nowrap;flex:0 0 auto}",
       ".hero,.hero-content,section,.container{max-width:100vw;box-sizing:border-box}",
-      ".hero{min-height:min(100svh,100vh);overflow-x:clip}",
+      ".hero,.hero-stage{min-height:min(100svh,100vh);max-height:none;overflow-x:hidden;overflow-y:visible}",
+      ".about-badge{right:.75rem!important;bottom:.75rem!important}",
+      ".cred-strip,.hero-btns,.cta-btns{gap:.75rem}",
       "}",
     ].join("");
 
     const styleTag = '<style data-ms-mobile-fit="1">' + css + "</style>";
+    // Always refresh so older broken mobile-fit CSS gets replaced.
+    if (/<style[^>]*data-ms-mobile-fit=["']1["'][^>]*>[\s\S]*?<\/style>/i.test(out)) {
+      return out.replace(/<style[^>]*data-ms-mobile-fit=["']1["'][^>]*>[\s\S]*?<\/style>/i, styleTag);
+    }
     if (/<\/head>/i.test(out)) return out.replace(/<\/head>/i, styleTag + "\n</head>");
     if (/<body[^>]*>/i.test(out)) return out.replace(/<body([^>]*)>/i, "<body$1>\n" + styleTag);
     return styleTag + out;
@@ -2161,58 +2185,44 @@
     doc.write(safeHtml);
     doc.close();
     editState.lastWrittenHtml = html;
-    bindPreviewTapToFullscreen(doc);
+    bindPreviewScrollBridge();
     return doc;
   }
 
-  function bindPreviewTapToFullscreen(doc) {
-    if (!doc || !doc.documentElement) return;
-    if (doc.documentElement.dataset.msFsTapBound === "1") return;
-    doc.documentElement.dataset.msFsTapBound = "1";
+  /** Forward wheel/trackpad scroll into the preview iframe when chrome/overlays steal the event. */
+  function bindPreviewScrollBridge() {
+    const wrap = document.getElementById("preview-wrap");
+    const frame = getPreviewFrame();
+    if (!wrap || !frame || wrap.dataset.msScrollBridge === "1") return;
+    wrap.dataset.msScrollBridge = "1";
 
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let moved = false;
-
-    doc.addEventListener(
-      "touchstart",
+    wrap.addEventListener(
+      "wheel",
       (event) => {
-        const t = event.changedTouches?.[0];
-        if (!t) return;
-        touchStartX = t.clientX;
-        touchStartY = t.clientY;
-        moved = false;
-      },
-      { passive: true }
-    );
+        if (state.mode === "code") return;
+        if (state.viewport === "fullscreen") return;
+        const doc = frame.contentDocument;
+        const win = frame.contentWindow;
+        if (!doc || !win) return;
 
-    doc.addEventListener(
-      "touchmove",
-      (event) => {
-        const t = event.changedTouches?.[0];
-        if (!t) return;
-        if (Math.abs(t.clientX - touchStartX) > 10 || Math.abs(t.clientY - touchStartY) > 10) {
-          moved = true;
-        }
-      },
-      { passive: true }
-    );
+        // Let the iframe handle its own wheel when the pointer is over it.
+        const path = typeof event.composedPath === "function" ? event.composedPath() : [];
+        if (path.includes(frame)) return;
 
-    doc.addEventListener("click", (event) => {
-      if (state.viewport === "fullscreen") return;
-      if (state.mode === "edit" || state.mode === "code") return;
-      if (!state.html || !String(state.html).trim()) return;
-      if (moved) return;
-      const target = event.target;
-      if (
-        target &&
-        typeof target.closest === "function" &&
-        target.closest("a,button,input,textarea,select,label,form,[role='button'],[contenteditable='true']")
-      ) {
-        return;
-      }
-      setViewport("fullscreen");
-    });
+        const scrollingEl =
+          doc.scrollingElement || doc.documentElement || doc.body;
+        if (!scrollingEl) return;
+
+        const maxScroll = Math.max(0, scrollingEl.scrollHeight - win.innerHeight);
+        if (maxScroll <= 0) return;
+
+        const next = Math.min(maxScroll, Math.max(0, scrollingEl.scrollTop + event.deltaY));
+        if (next === scrollingEl.scrollTop) return;
+        event.preventDefault();
+        scrollingEl.scrollTop = next;
+      },
+      { passive: false }
+    );
   }
 
   function setEditHint(msg) {
@@ -3681,8 +3691,6 @@
       const existing = getPreviewDoc();
       if (existing && state.html && !existing.querySelector("[data-ms-mobile-fit]")) {
         writePreviewDocument(state.html);
-      } else if (existing) {
-        bindPreviewTapToFullscreen(existing);
       }
     }
 
@@ -3881,28 +3889,12 @@
   }
 
   function refreshWatermark() {
+    // Builder preview stays clean — do not mount the "Complete your order"
+    // widget here. Publish still injects embed.js on the live site when
+    // watermark_enabled is true (see worker injectWatermarkEmbed).
     const host = document.getElementById("watermark-host");
-    const project = state.project;
-    const show =
-      !!state.projectId &&
-      !!state.html &&
-      !!project &&
-      project.watermark_enabled !== false &&
-      state.onboardDone;
-
     window.MoonriseWatermarkEmbed?.unmount?.();
     if (host) host.innerHTML = "";
-
-    if (show && window.MoonriseWatermarkEmbed?.mount) {
-      // Same widget that ships on the live site — sellers see it in Builder too.
-      // After Stripe pay, watermark_enabled flips false and this unmounts for good.
-      window.MoonriseWatermarkEmbed.mount({
-        projectId: state.projectId,
-        workerUrl: workerUrl() || window.SITE_CONFIG?.workerUrl || "",
-        host: host || undefined,
-        urgencyEndsAt: project.urgency_ends_at || undefined,
-      });
-    }
     setPublishEnabled();
   }
 
@@ -4149,16 +4141,71 @@
       setError("A generation is already running.");
       return;
     }
-    const cost = Number(state.generationCost) || 5;
-    const ok = confirm(
-      "Redesign this website for " +
-        cost +
-        " credit" +
-        (cost === 1 ? "" : "s") +
-        "?\n\nThis replaces the current design with a completely new one."
-    );
-    if (!ok) return;
+    const confirmed = await confirmRedesign();
+    if (!confirmed) return;
     await generate({ redesign: true });
+  }
+
+  let redesignConfirmResolver = null;
+
+  function closeRedesignConfirm(result) {
+    const dialog = document.getElementById("lb-redesign-dialog");
+    const submit = document.getElementById("lb-redesign-submit");
+    if (submit) {
+      submit.disabled = false;
+      submit.textContent = "Redesign";
+    }
+    dialog?.close();
+    if (!redesignConfirmResolver) return;
+    const resolve = redesignConfirmResolver;
+    redesignConfirmResolver = null;
+    resolve(!!result);
+  }
+
+  function confirmRedesign() {
+    return new Promise((resolve) => {
+      const dialog = document.getElementById("lb-redesign-dialog");
+      const costEl = document.getElementById("lb-redesign-cost");
+      if (!dialog) {
+        resolve(false);
+        return;
+      }
+      const cost = Number(state.generationCost) || 5;
+      if (costEl) {
+        costEl.textContent =
+          "Uses " + cost + " credit" + (cost === 1 ? "" : "s");
+      }
+      redesignConfirmResolver = resolve;
+      if (typeof dialog.showModal === "function") dialog.showModal();
+      else dialog.setAttribute("open", "open");
+      window.requestAnimationFrame(() => {
+        document.getElementById("lb-redesign-cancel")?.focus();
+      });
+    });
+  }
+
+  function bindRedesignConfirm() {
+    const dialog = document.getElementById("lb-redesign-dialog");
+    if (!dialog) return;
+
+    document.getElementById("lb-redesign-cancel")?.addEventListener("click", () => {
+      closeRedesignConfirm(false);
+    });
+    document.getElementById("lb-redesign-submit")?.addEventListener("click", () => {
+      const submit = document.getElementById("lb-redesign-submit");
+      if (submit) {
+        submit.disabled = true;
+        submit.textContent = "Starting…";
+      }
+      closeRedesignConfirm(true);
+    });
+    dialog.addEventListener("cancel", (event) => {
+      event.preventDefault();
+      closeRedesignConfirm(false);
+    });
+    dialog.addEventListener("click", (event) => {
+      if (event.target === dialog) closeRedesignConfirm(false);
+    });
   }
 
   async function editWithAi() {
@@ -5523,6 +5570,7 @@
     bindPaneResizer();
     bindToolbar();
     bindUnpublishConfirm();
+    bindRedesignConfirm();
     bindSiteSettings();
     bindOnboard();
     const bootUser = await window.StudioAuth.getUser();
@@ -5595,7 +5643,34 @@
 
     setBuilderPhase(projectId || skipSetup ? "workspace" : "setup");
     if (params().get("paid") === "1" && projectId) {
-      setStatus("Payment received - watermark should be off. Refreshing…");
+      setStatus("Payment received — removing watermark…");
+      const sessionId = String(params().get("session_id") || "").trim();
+      if (sessionId.startsWith("cs_") && workerUrl()) {
+        try {
+          const res = await fetch(workerUrl() + "/fulfill-go-live", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ projectId, sessionId }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || "Unlock failed");
+          window.StudioToast?.success?.(
+            data.redeployed
+              ? "Payment confirmed — watermark removed and live site updated."
+              : "Payment confirmed — watermark removed."
+          );
+        } catch (e) {
+          window.StudioToast?.error?.(e.message || "Could not unlock after payment");
+        }
+      }
+      try {
+        const url = new URL(location.href);
+        url.searchParams.delete("paid");
+        url.searchParams.delete("session_id");
+        history.replaceState({}, "", url.pathname + url.search + url.hash);
+      } catch (_) {
+        /* ignore */
+      }
     }
     if (projectId) {
       try {

@@ -920,7 +920,9 @@
         return "You're offline. Connect to Wi‑Fi or mobile data, then try again.";
       case "network":
       case "server":
-        return "Can't reach Moonrise right now. Check your internet connection and try again.";
+        return window.isLocalDevHost?.()
+          ? "Can't reach the local Moonrise worker. Start it with: cd moonrise-studio/worker && npm run dev"
+          : "Can't reach Moonrise right now. Check your internet connection and try again.";
       case "auth":
         return "Sign in to generate a website.";
       case "unavailable":

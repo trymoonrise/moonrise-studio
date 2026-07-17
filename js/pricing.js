@@ -358,6 +358,41 @@
     }
   }
 
+  async function claimDeveloperCredits(btn) {
+    btn.disabled = true;
+    const prev = btn.textContent;
+    btn.textContent = "Claiming…";
+    try {
+      await window.StudioAuth.requireAuth();
+      const base = workerUrl();
+      const headers = await authHeaders();
+      const res = await fetch(base + "/credits/claim-developer", {
+        method: "POST",
+        headers,
+        body: "{}",
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Could not claim credits");
+      document.dispatchEvent(new CustomEvent("ms:credits-changed", { detail: data }));
+      await loadCatalogAndBalance();
+      window.StudioToast?.success?.(
+        data.alreadyClaimed
+          ? "Developer credits already claimed."
+          : "50 developer credits added."
+      );
+      if (data.alreadyClaimed) {
+        btn.textContent = "Claimed";
+        return;
+      }
+      btn.textContent = prev;
+      btn.disabled = false;
+    } catch (e) {
+      window.StudioToast?.error?.(e.message || "Could not claim credits");
+      btn.disabled = false;
+      btn.textContent = prev;
+    }
+  }
+
   function bindEvents() {
     document.getElementById("pricing-plans")?.addEventListener("click", (e) => {
       const btn = e.target.closest("[data-plan-checkout]");
@@ -372,6 +407,9 @@
     });
     document.getElementById("btn-topup-purchase")?.addEventListener("click", (e) => {
       void startCustomTopupCheckout(e.currentTarget);
+    });
+    document.getElementById("btn-dev-credits")?.addEventListener("click", (e) => {
+      void claimDeveloperCredits(e.currentTarget);
     });
     document.getElementById("btn-billing-portal")?.addEventListener("click", () => {
       void openBillingPortal();
