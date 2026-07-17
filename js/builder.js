@@ -3768,6 +3768,7 @@
     if (unpublishBtn) unpublishBtn.hidden = !isLive;
     if (settingsUnpublishBtn) settingsUnpublishBtn.hidden = !isLive;
     if (deleteBtn) deleteBtn.hidden = !state.projectId;
+    syncRedesignButtonUi();
 
     const offlineBanner = document.getElementById("lb-offline-banner");
     if (isLive && offlineBanner) offlineBanner.hidden = true;
@@ -3959,15 +3960,23 @@
   async function generate(opts) {
     const fromOnboard = !!(opts && opts.fromOnboard);
     const fromFinderFlow = !!(opts && opts.fromFinder) || !!state.fromFinder;
+    const isRedesign = !!(opts && opts.redesign);
     setError("");
     setOnboardError("");
 
     // Dock generate is blocked until the first site exists — unless this is setup Generate
     // or a Business Finder auto-generate handoff.
-    if (!fromOnboard && !fromFinderFlow && !state.onboardDone && !state.builderOnboarded) {
+    if (!fromOnboard && !fromFinderFlow && !isRedesign && !state.onboardDone) {
       ensureOnboardSurvey();
       setError("Add a Google link or fill business details, then generate.");
       return;
+    }
+
+    if (isRedesign) {
+      if (!state.projectId || !(state.html && String(state.html).trim())) {
+        setError("Generate a site first, then redesign.");
+        return;
+      }
     }
 
     if (fromOnboard) captureOnboardDetails();
@@ -3985,6 +3994,14 @@
     intake.templateId = intake.templateId || state.templateId || "local-service";
     intake.usePresets = true;
     intake.fromFinder = fromFinderFlow;
+    intake.redesign = isRedesign;
+    if (isRedesign) {
+      const redesignNote =
+        "REDESIGN: Create a completely different website — new layout, palette, typography, section order, and visual style. Do not reuse the previous design.";
+      intake.notes = intake.notes
+        ? String(intake.notes).trim() + "\n" + redesignNote
+        : redesignNote;
+    }
 
     if (!intake.notes) {
       intake.notes = buildFinderPrompt();
@@ -4006,7 +4023,7 @@
     generateAbort = new AbortController();
     const signal = generateAbort.signal;
     updateOnboardContinue();
-    setPromptBusy(true, "Generating…");
+    setPromptBusy(true, isRedesign ? "Redesigning…" : "Generating…");
     try {
       const base = workerUrl();
       if (!base) throw new Error("Worker URL is not configured.");
@@ -4035,6 +4052,7 @@
         body: JSON.stringify({
           projectId: state.projectId,
           requestId,
+          redesign: isRedesign,
           ...intake,
         }),
         signal,
@@ -4070,13 +4088,16 @@
       if (notesEl) notesEl.value = "";
       history.replaceState({}, "", "builder.html?project_id=" + encodeURIComponent(state.projectId));
       setStatus(
-        data.presetCount
-          ? "Generated with " + data.presetCount + " Website Presets. Watermark is on until payment."
-          : "Generated. Watermark is on until payment."
+        isRedesign
+          ? "Redesign complete (" + (state.generationCost || 5) + " credits used)."
+          : data.presetCount
+            ? "Generated with " + data.presetCount + " Website Presets. Watermark is on until payment."
+            : "Generated. Watermark is on until payment."
       );
       state.mode = "preview";
       updatePreview();
       syncPromptActionUi();
+      syncRedesignButtonUi();
     } catch (e) {
       if (e?.name === "AbortError") {
         setStatus("");
@@ -4098,6 +4119,46 @@
       setPromptBusy(false);
       updateOnboardContinue();
     }
+  }
+
+  function syncRedesignButtonUi() {
+    const btn = document.getElementById("btn-redesign-top");
+    const label = btn?.querySelector(".ms-lb-redesign-label");
+    const cost = Number(state.generationCost) || 5;
+    const canRedesign = !!(state.projectId && state.html && String(state.html).trim());
+    if (btn) {
+      btn.hidden = !canRedesign;
+      btn.disabled = !!generateAbort;
+      btn.setAttribute(
+        "aria-label",
+        "Redesign website for " + cost + " credit" + (cost === 1 ? "" : "s")
+      );
+    }
+    if (label) {
+      label.textContent = "Redesign · " + cost + " credit" + (cost === 1 ? "" : "s");
+    }
+  }
+
+  async function redesignSite() {
+    setError("");
+    if (!state.projectId || !(state.html && String(state.html).trim())) {
+      setError("Generate a site first, then redesign.");
+      return;
+    }
+    if (generateAbort) {
+      setError("A generation is already running.");
+      return;
+    }
+    const cost = Number(state.generationCost) || 5;
+    const ok = confirm(
+      "Redesign this website for " +
+        cost +
+        " credit" +
+        (cost === 1 ? "" : "s") +
+        "?\n\nThis replaces the current design with a completely new one."
+    );
+    if (!ok) return;
+    await generate({ redesign: true });
   }
 
   async function editWithAi() {
@@ -5443,6 +5504,9 @@
     });
     document.getElementById("btn-download-html")?.addEventListener("click", downloadHtml);
     document.getElementById("btn-publish-top")?.addEventListener("click", publish);
+    document.getElementById("btn-redesign-top")?.addEventListener("click", () => {
+      void redesignSite();
+    });
     document.getElementById("btn-unpublish-top")?.addEventListener("click", unpublish);
     document.getElementById("btn-delete-top")?.addEventListener("click", () => {
       void deleteProject();

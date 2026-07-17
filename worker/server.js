@@ -668,7 +668,8 @@ function stripDemoChrome(html) {
 
 /**
  * Inject mobile-fit CSS so generated sites scroll and don't overflow on phones.
- * Fixes common AI output issues: fixed pill navs too wide, body height locks, etc.
+ * Fixes common AI output issues: fixed pill navs too wide, body height locks,
+ * and catastrophic `div { overflow: hidden }` rules that trap page scroll.
  */
 function ensureMobileFriendlyHtml(html) {
   let out = String(html || "");
@@ -686,35 +687,46 @@ function ensureMobileFriendlyHtml(html) {
     );
   }
 
-  if (out.includes("data-ms-mobile-fit")) return out;
+  // AI sometimes emits `div { overflow: hidden }` which traps scroll on wrappers.
+  out = out.replace(/\bdiv\s*\{\s*overflow\s*:\s*hidden\s*;?\s*\}/gi, "/* moonrise: removed div{overflow:hidden} */");
+  out = out.replace(
+    /\b(html|body)\s*\{([^}]*?)overflow\s*:\s*hidden(\s*!important)?([^}]*)\}/gi,
+    (full, sel, before, _imp, after) =>
+      sel + "{" + before + "overflow: visible" + after + "}"
+  );
 
   const css = `
 /* Moonrise mobile-fit */
-html,body{max-width:100%;overflow-x:clip!important;overflow-y:auto!important;height:auto!important;min-height:100%;overscroll-behavior-y:contain}
+html,body{max-width:100%!important;overflow-x:hidden!important;overflow-y:auto!important;height:auto!important;max-height:none!important;min-height:100%;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch}
 body{position:relative!important}
 img,video,canvas,svg{max-width:100%;height:auto}
 iframe{max-width:100%}
 .nav,.dock,nav[class],header .dock,header nav{max-width:100%}
+body > div, main, .page, .wrapper, .site, .layout, .site-wrap{overflow-x:hidden!important;overflow-y:visible!important;max-height:none!important;height:auto!important}
 @media (max-width:767px){
   .nav{padding:.65rem!important;left:0;right:0}
   .dock,header .dock,nav.dock{max-width:calc(100vw - 1.25rem);width:max-content;margin-left:auto;margin-right:auto;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-wrap:nowrap}
   .dock::-webkit-scrollbar,header .dock::-webkit-scrollbar{display:none}
   .dock a,header .dock a{white-space:nowrap;flex:0 0 auto}
   .hero,.hero-content,section,.container{max-width:100vw;box-sizing:border-box}
-  .hero{min-height:min(100svh,100vh);overflow-x:clip}
+  .hero,.hero-stage{min-height:min(100svh,100vh);max-height:none;overflow-x:hidden;overflow-y:visible}
   .about-badge{right:.75rem!important;bottom:.75rem!important}
   .cred-strip,.hero-btns,.cta-btns{gap:.75rem}
 }
 `.trim();
 
   const styleTag = `<style data-ms-mobile-fit="1">${css}</style>`;
-  if (/<\/head>/i.test(out)) {
-    return out.replace(/<\/head>/i, `${styleTag}\n</head>`);
+  // Always refresh the mobile-fit block so older broken CSS gets replaced on republish.
+  if (/<style[^>]*data-ms-mobile-fit=["']1["'][^>]*>[\s\S]*?<\/style>/i.test(out)) {
+    out = out.replace(/<style[^>]*data-ms-mobile-fit=["']1["'][^>]*>[\s\S]*?<\/style>/i, styleTag);
+  } else if (/<\/head>/i.test(out)) {
+    out = out.replace(/<\/head>/i, `${styleTag}\n</head>`);
+  } else if (/<body[^>]*>/i.test(out)) {
+    out = out.replace(/<body([^>]*)>/i, `<body$1>\n${styleTag}`);
+  } else {
+    out = styleTag + out;
   }
-  if (/<body[^>]*>/i.test(out)) {
-    return out.replace(/<body([^>]*)>/i, `<body$1>\n${styleTag}`);
-  }
-  return styleTag + out;
+  return out;
 }
 
 function sanitizeUserText(raw, maxLen) {
@@ -1471,28 +1483,41 @@ app.post("/generate", requireUser, generateLimiter, async (req, res) => {
     const ends = new Date(Date.now() + urgencyHours() * 3600 * 1000).toISOString();
 
     let projectId = req.body.projectId || null;
+    const isRedesign =
+      req.body.redesign === true ||
+      req.body.redesign === "1" ||
+      /REDESIGN:/i.test(String(ctx.notes || ""));
     if (projectId) {
       const { data: existing } = await supabase
         .from("projects")
-        .select("id,user_id")
+        .select("id,user_id,watermark_enabled,status,business_context")
         .eq("id", projectId)
         .maybeSingle();
       if (!existing || existing.user_id !== req.user.id) {
         return res.status(403).json({ error: "Project not found" });
       }
-      const { error } = await supabase
-        .from("projects")
-        .update({
-          business_name: ctx.businessName,
-          lead_id: ctx.leadId,
-          template_id: ctx.templateId,
-          html,
-          status: "preview",
-          watermark_enabled: true,
-          urgency_ends_at: ends,
-          business_context: ctx,
-        })
-        .eq("id", projectId);
+      const nextContext = {
+        ...(existing.business_context && typeof existing.business_context === "object"
+          ? existing.business_context
+          : {}),
+        ...ctx,
+        redesignedAt: isRedesign ? new Date().toISOString() : undefined,
+      };
+      const patch = {
+        business_name: ctx.businessName,
+        lead_id: ctx.leadId,
+        template_id: ctx.templateId,
+        html,
+        urgency_ends_at: ends,
+        business_context: nextContext,
+      };
+      // Full redesign keeps payment / publish state; first generate on a project still
+      // starts watermarked in preview.
+      if (!isRedesign) {
+        patch.status = "preview";
+        patch.watermark_enabled = true;
+      }
+      const { error } = await supabase.from("projects").update(patch).eq("id", projectId);
       if (error) throw error;
     } else {
       const { data, error } = await supabase
