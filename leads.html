@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/studio.css">
+  <link rel="stylesheet" href="css/ms-lf-slide.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body data-page="leads">
@@ -26,6 +27,9 @@
           <div class="ms-lf-input">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
             <input id="lf-type" name="type" type="text" placeholder="e.g. Barbershop, Dentist, Gym…" autocomplete="off" aria-autocomplete="list" aria-controls="lf-type-suggest">
+            <button type="button" class="ms-lf-clear" id="lf-type-clear" hidden aria-label="Clear business type">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
           </div>
           <ul id="lf-type-suggest" class="ms-lf-suggest" role="listbox" hidden></ul>
         </div>
@@ -36,6 +40,9 @@
           <div class="ms-lf-input">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
             <input id="lf-location" name="location" type="text" placeholder="City, state, or ZIP" autocomplete="off" aria-autocomplete="list" aria-controls="lf-location-suggest">
+            <button type="button" class="ms-lf-clear" id="lf-location-clear" hidden aria-label="Clear location">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
           </div>
           <ul id="lf-location-suggest" class="ms-lf-suggest" role="listbox" hidden></ul>
         </div>
@@ -81,6 +88,7 @@
   <script src="js/lead-display.js"></script>
   <script src="js/lead-website-enrich.js"></script>
   <script src="js/leads-loader.js"></script>
+  <script src="js/leads-prospect-rank.js"></script>
   <script src="js/segment-switch.js"></script>
   <script src="js/ui-motion.js"></script>
   <script src="js/toast.js"></script>

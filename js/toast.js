@@ -6,6 +6,8 @@
 (function (global) {
   const HOST_ID = "ms-toast-host";
   const SHOW_MS = 4200;
+  const SHOW_MS_LONG = 10000;
+  const LONG_MSG_CHARS = 90;
   const EXIT_MS = 320;
   let hideTimer = 0;
   let exitTimer = 0;
@@ -94,7 +96,7 @@
     void toast.offsetWidth;
     toast.classList.add("is-in");
 
-    hideTimer = global.setTimeout(clear, SHOW_MS);
+    hideTimer = global.setTimeout(clear, text.length > LONG_MSG_CHARS ? SHOW_MS_LONG : SHOW_MS);
   }
 
   function adoptInlineError(el) {

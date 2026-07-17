@@ -22,7 +22,7 @@
     </div>
 
     <p class="ms-muted" id="auth-locate-lead" hidden style="margin:0 0 0.85rem;font-size:0.9rem;line-height:1.4">
-      Sign in or create an account to locate your order.
+      Looking for a published website? Browse the public order list — no account needed.
     </p>
 
     <div class="ms-auth-tabs" role="tablist" id="auth-tabs">
@@ -90,19 +90,18 @@
       const params = new URLSearchParams(location.search);
       const nextUrl = params.get("next") || "dashboard.html";
       const isLocate = params.get("intent") === "locate";
+      if (isLocate) {
+        location.replace("orders.html");
+        return;
+      }
       async function continueAfterAuth() {
         if (isLocate) {
-          location.replace(nextUrl);
+          location.replace("orders.html");
           return;
         }
         window.StudioAuth.setFinanceOnboardingSoftSkip?.(false);
         const destination = await StudioAuth.financeOnboardingRedirect(nextUrl);
         location.replace(destination);
-      }
-      if (isLocate) {
-        const locateLead = document.getElementById("auth-locate-lead");
-        if (locateLead) locateLead.hidden = false;
-        document.title = "Locate My Order · Moonrise Studio";
       }
       let mode = params.get("mode") === "signup" ? "signup"
         : params.get("mode") === "forgot" ? "forgot"
@@ -195,7 +194,7 @@
         const labels = {
           empty: "Enter a password",
           weak: "Too weak",
-          fair: "Fair — add more variety",
+          fair: "Fair - add more variety",
           good: "Good",
           strong: "Strong",
         };
@@ -327,7 +326,7 @@
               form.password.value,
               form.handle.value
             );
-            if (data?.session) {
+            if (data?.session || data?.access_token) {
               await continueAfterAuth();
               return;
             }

@@ -6577,9 +6577,12 @@ html[data-ui-color] .lf-card-sub {
 
 .leads-page .lf-slide {
   --lf-slide-x: 0px;
+  --lf-slide-fill: 48px;
+  --lf-slide-pad: 4px;
   width: 100%;
   user-select: none;
   touch-action: none;
+  -webkit-user-select: none;
 }
 
 .leads-page .lf-slide.is-disabled {
@@ -6589,28 +6592,33 @@ html[data-ui-color] .lf-card-sub {
 
 .leads-page .lf-slide-track {
   position: relative;
-  display: flex;
-  align-items: center;
+  display: block;
   min-height: 48px;
-  padding: 4px;
+  padding: var(--lf-slide-pad);
   border-radius: 12px;
   overflow: hidden;
+  cursor: pointer;
   background: linear-gradient(135deg, #60a5fa, #2563eb);
   box-shadow: 0 8px 18px rgba(37, 99, 235, 0.24);
+  box-sizing: border-box;
 }
 
 .leads-page .lf-slide-fill {
   position: absolute;
   inset: 0 auto 0 0;
-  width: 40px;
+  width: var(--lf-slide-fill);
   border-radius: inherit;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.08));
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.08));
   pointer-events: none;
-  transition: width 0.16s ease;
+  will-change: width;
 }
 
-.leads-page .lf-slide.is-dragging .lf-slide-fill,
-.leads-page .lf-slide.is-done .lf-slide-fill {
+.leads-page .lf-slide.is-returning .lf-slide-fill,
+.leads-page .lf-slide.is-completing .lf-slide-fill {
+  transition: width 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.leads-page .lf-slide.is-dragging .lf-slide-fill {
   transition: none;
 }
 
@@ -6619,45 +6627,59 @@ html[data-ui-color] .lf-card-sub {
   inset: 0;
   display: grid;
   place-items: center;
-  padding-left: 2.2rem;
+  padding-left: 2.6rem;
+  padding-right: 0.75rem;
   color: rgba(255, 255, 255, 0.92);
   font-size: 0.9rem;
   font-weight: 700;
   pointer-events: none;
-  transition: opacity 0.18s ease;
+  transition: opacity 0.2s ease;
 }
 
 .leads-page .lf-slide.is-dragging .lf-slide-label,
+.leads-page .lf-slide.is-completing .lf-slide-label,
 .leads-page .lf-slide.is-done .lf-slide-label {
-  opacity: 0.35;
+  opacity: 0.28;
 }
 
 .leads-page .lf-slide-thumb {
-  position: relative;
+  position: absolute;
+  left: var(--lf-slide-pad);
+  top: 50%;
   z-index: 2;
   width: 40px;
   height: 40px;
   margin: 0;
   border: 0;
-  border-radius: 10px;
+  border-radius: 12px;
   display: grid;
   place-items: center;
+  flex: none;
   background: #fff;
   color: #2563eb;
   cursor: grab;
+  transform: translate3d(var(--lf-slide-x), -50%, 0);
+  will-change: transform;
   box-shadow: 0 6px 14px rgba(15, 23, 42, 0.16);
-  transition: transform 0.16s ease;
+  touch-action: none;
+}
+
+.leads-page .lf-slide.is-returning .lf-slide-thumb,
+.leads-page .lf-slide.is-completing .lf-slide-thumb {
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .leads-page .lf-slide.is-dragging .lf-slide-thumb {
   cursor: grabbing;
   transition: none;
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.22);
 }
 
 .leads-page .lf-slide-thumb .lf-action-ico,
 .leads-page .lf-slide-thumb svg {
   width: 16px;
   height: 16px;
+  pointer-events: none;
 }
 
 .leads-page .lf-pro-foot .lf-action-builder--full {

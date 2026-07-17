@@ -28,3 +28,4 @@ worker/node_modules/
 dist/
 .cache/
 supabase/.temp/
+.vercel

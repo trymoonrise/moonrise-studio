@@ -195,6 +195,7 @@ begin
     display
   )
   on conflict (id) do nothing;
+  perform public.ensure_credit_account(new.id);
   return new;
 end;
 $$;
@@ -327,6 +328,35 @@ values
   ('demo-3', true, 'Bluebird Cafe', 'Cafe', '(555) 441-9090', '9 River Rd, New Braunfels, TX', 'https://example.com')
 on conflict (id) do nothing;
 
+-- Auth lockouts (worker / service_role only — no public policies)
+create table if not exists public.auth_lockouts (
+  id uuid primary key default gen_random_uuid(),
+  subject_type text not null check (subject_type in ('email', 'ip')),
+  subject_hash text not null,
+  failed_count integer not null default 0 check (failed_count >= 0),
+  locked_until timestamptz,
+  last_attempt_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (subject_type, subject_hash)
+);
+create index if not exists auth_lockouts_locked_until_idx
+  on public.auth_lockouts (locked_until)
+  where locked_until is not null;
+alter table public.auth_lockouts enable row level security;
+revoke all on table public.auth_lockouts from anon, authenticated;
+grant all on table public.auth_lockouts to service_role;
+
 -- Storage: public profile avatars (path = {user_id}/avatar.*)
 -- Bucket: studio-avatars (public, 2MB, image/jpeg|png|webp|gif)
 -- Policies: public read; authenticated insert/update/delete own folder only.
+
+-- Storage: site images for builder edit uploads
+-- Bucket: site-images (public, 5MB, image/jpeg|png|webp|gif)
+-- Path: {user_id}/{lead_id|project_id}/{timestamp}-{name}.{ext}
+-- Policies: public read; authenticated insert/update/delete own folder only.
+-- See supabase/migrations/20260720_site_images_storage.sql
+
+-- Credit billing (see supabase/migrations/20260718_credit_billing.sql for full DDL + RPCs)
+-- Tables: credit_accounts, credit_transactions
+-- RPCs (service_role only): ensure_credit_account, credits_grant_subscription,
+--   credits_grant_topup, credits_deduct, credits_refund, credits_deactivate_plan

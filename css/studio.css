@@ -7553,18 +7553,7 @@ body.ms-redirect-open {
   transition: opacity 0.28s ease;
 }
 
-.ms-lb-tpl-preview-img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  background: #0f172a;
-}
-
-.ms-lb-tpl-frame.is-ready .ms-lb-tpl-preview,
-.ms-lb-tpl-frame.is-ready .ms-lb-tpl-preview-img {
+.ms-lb-tpl-frame.is-ready .ms-lb-tpl-preview {
   opacity: 1;
 }
 

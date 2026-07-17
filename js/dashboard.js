@@ -1,5 +1,5 @@
 /**
- * Dashboard — overview cards + sales list + recent projects.
+ * Dashboard — overview metrics + recent projects.
  */
 (async function () {
   const DEFAULT_GOAL = 1000;
@@ -14,7 +14,11 @@
   let commissionEarned = 0;
   let allProjects = [];
   let deleteProjectId = null;
+  let projectSearchQuery = "";
+  let projectSuggestIndex = -1;
+  let projectPaintToken = 0;
   const PREVIEW_LIMIT = 3;
+  const SEARCH_RESULT_LIMIT = 24;
 
   function escapeHtml(s) {
     return String(s || "")
@@ -78,7 +82,8 @@
   }
 
   function isSale(p) {
-    return p.status === "paid" || p.status === "published";
+    // Only count when the business owner paid to remove the watermark.
+    return p.watermark_enabled === false;
   }
 
   function renderSalesProgress() {
@@ -239,41 +244,250 @@
     });
   }
 
-  function saleRow(p) {
-    return (
-      '<a class="ms-dash-row" href="builder.html?project_id=' +
-      encodeURIComponent(p.id) +
-      '">' +
-      '<div class="ms-dash-row-main">' +
-      '<span class="ms-dash-row-name">' +
-      escapeHtml(p.business_name || "Untitled") +
-      "</span>" +
-      '<span class="ms-dash-row-date">' +
-      escapeHtml(formatDate(p.updated_at)) +
-      "</span>" +
-      "</div>" +
-      '<span class="ms-dash-pill ms-dash-pill--' +
-      statusTone(p) +
-      '">' +
-      escapeHtml(statusLabel(p)) +
-      "</span>" +
-      "</a>"
-    );
+  function projectContext(p) {
+    const ctx = p?.business_context;
+    return ctx && typeof ctx === "object" ? ctx : {};
   }
 
-  function renderSales(list) {
-    const host = document.getElementById("dash-sales-list");
+  function projectSearchFields(p) {
+    const ctx = projectContext(p);
+    const address = String(ctx.address || ctx.city_state_zip || ctx.location || "").trim();
+    const category = String(ctx.category || "").trim();
+    const phone = String(ctx.phone || ctx.businessPhone || "").trim();
+    const domain = String(ctx.customDomain || "").trim();
+    const maps = String(ctx.mapsUrl || ctx.maps_url || "").trim();
+    const site = String(p.vercel_url || "").trim();
+    const ip = String(ctx.ip || ctx.ipAddress || ctx.clientIp || "").trim();
+    const name = String(p.business_name || ctx.businessName || "").trim();
+    const status = String(p.status || "").trim();
+    const id = String(p.id || "").trim();
+    const leadId = String(p.lead_id || "").trim();
+    return {
+      name,
+      address,
+      category,
+      phone,
+      domain,
+      maps,
+      site,
+      ip,
+      status,
+      id,
+      leadId,
+    };
+  }
+
+  function projectHaystack(p) {
+    const f = projectSearchFields(p);
+    return [
+      f.name,
+      f.address,
+      f.category,
+      f.phone,
+      f.domain,
+      f.maps,
+      f.site,
+      f.ip,
+      f.status,
+      f.id,
+      f.leadId,
+      statusLabel(p),
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+  }
+
+  function filteredProjects(list, query) {
+    const q = String(query || "").trim().toLowerCase();
+    const projects = list || [];
+    if (!q) return projects.slice(0, PREVIEW_LIMIT);
+    const matched = projects.filter((p) => projectHaystack(p).includes(q));
+    return matched.slice(0, SEARCH_RESULT_LIMIT);
+  }
+
+  function buildProjectSuggestions(list, query) {
+    const q = String(query || "").trim().toLowerCase();
+    if (!q || q.length < 1) return [];
+    const seen = new Set();
+    const out = [];
+
+    function push(value, kind) {
+      const text = String(value || "").trim();
+      if (!text) return;
+      const key = kind + ":" + text.toLowerCase();
+      if (seen.has(key)) return;
+      if (!text.toLowerCase().includes(q)) return;
+      seen.add(key);
+      out.push({ value: text, kind });
+    }
+
+    (list || []).forEach((p) => {
+      const f = projectSearchFields(p);
+      push(f.name, "Name");
+      push(f.category, "Category");
+      push(f.address, "Location");
+      push(f.phone, "Phone");
+      push(f.domain, "Domain");
+      push(f.ip, "IP");
+      if (f.site) {
+        try {
+          push(new URL(f.site).hostname, "Site");
+        } catch (_) {
+          push(f.site.replace(/^https?:\/\//i, "").split("/")[0], "Site");
+        }
+      }
+      // City-ish token from address for location suggestions
+      const parts = f.address.split(",").map((s) => s.trim()).filter(Boolean);
+      parts.forEach((part) => push(part, "Location"));
+    });
+
+    out.sort((a, b) => {
+      const aStarts = a.value.toLowerCase().startsWith(q) ? 0 : 1;
+      const bStarts = b.value.toLowerCase().startsWith(q) ? 0 : 1;
+      if (aStarts !== bStarts) return aStarts - bStarts;
+      return a.value.localeCompare(b.value);
+    });
+    return out.slice(0, 8);
+  }
+
+  function renderProjectSuggestions() {
+    const listEl = document.getElementById("dash-projects-suggest");
+    const input = document.getElementById("dash-projects-search");
+    if (!listEl || !input) return;
+    const items = buildProjectSuggestions(allProjects, projectSearchQuery);
+    projectSuggestIndex = -1;
+    if (!items.length || !projectSearchQuery.trim()) {
+      listEl.hidden = true;
+      listEl.innerHTML = "";
+      input.setAttribute("aria-expanded", "false");
+      return;
+    }
+    listEl.innerHTML = items
+      .map(
+        (item, i) =>
+          '<li class="ms-dash-projects-suggest-item" role="option" id="dash-projects-suggest-' +
+          i +
+          '" data-suggest="' +
+          escapeAttr(item.value) +
+          '" aria-selected="false">' +
+          '<span class="ms-dash-projects-suggest-kind">' +
+          escapeHtml(item.kind) +
+          "</span>" +
+          '<span class="ms-dash-projects-suggest-value">' +
+          escapeHtml(item.value) +
+          "</span></li>"
+      )
+      .join("");
+    listEl.hidden = false;
+    input.setAttribute("aria-expanded", "true");
+  }
+
+  function hideProjectSuggestions() {
+    const listEl = document.getElementById("dash-projects-suggest");
+    const input = document.getElementById("dash-projects-search");
+    if (listEl) {
+      listEl.hidden = true;
+      listEl.innerHTML = "";
+    }
+    if (input) input.setAttribute("aria-expanded", "false");
+    projectSuggestIndex = -1;
+  }
+
+  function highlightProjectSuggestion(index) {
+    const listEl = document.getElementById("dash-projects-suggest");
+    if (!listEl || listEl.hidden) return;
+    const items = [...listEl.querySelectorAll(".ms-dash-projects-suggest-item")];
+    items.forEach((el, i) => {
+      const on = i === index;
+      el.classList.toggle("is-active", on);
+      el.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    projectSuggestIndex = index;
+    if (index >= 0 && items[index]) {
+      items[index].scrollIntoView({ block: "nearest" });
+    }
+  }
+
+  function applyProjectSearch(query, { fromSuggest = false } = {}) {
+    projectSearchQuery = String(query || "");
+    const input = document.getElementById("dash-projects-search");
+    const clearBtn = document.getElementById("dash-projects-search-clear");
+    if (input && input.value !== projectSearchQuery) input.value = projectSearchQuery;
+    if (clearBtn) clearBtn.hidden = !projectSearchQuery.trim();
+    if (fromSuggest) hideProjectSuggestions();
+    else renderProjectSuggestions();
+    void paintProjects();
+  }
+
+  async function paintProjects() {
+    const token = ++projectPaintToken;
+    const host = document.getElementById("dash-projects-list");
+    const countEl = document.getElementById("dash-projects-count");
+    const hint = document.getElementById("dash-projects-search-hint");
+    const searchWrap = document.getElementById("dash-projects-search-wrap");
+    const card = document.querySelector(".ms-dash-projects-card");
+    const btn = document.getElementById("dash-projects-toggle");
+    const panel = document.getElementById("dash-projects-panel");
+    const projects = allProjects.slice();
+
+    if (countEl) {
+      countEl.textContent =
+        projects.length + " " + plural(projects.length, "project", "projects");
+    }
+    if (searchWrap) searchWrap.hidden = !projects.length;
+
     if (!host) return;
 
-    const sales = (list || []).filter(isSale);
-
-    if (!sales.length) {
-      host.innerHTML =
-        '<div class="ms-dash-empty ms-dash-empty--dotted"><p>No sales yet</p></div>';
+    if (!projects.length) {
+      host.innerHTML = "";
+      if (hint) {
+        hint.hidden = true;
+        hint.textContent = "";
+      }
+      card?.classList.add("is-empty");
+      card?.classList.remove("is-open");
+      if (btn) {
+        btn.setAttribute("aria-expanded", "false");
+        btn.disabled = true;
+      }
+      if (panel) panel.hidden = true;
+      hideProjectSuggestions();
       return;
     }
 
-    host.innerHTML = sales.slice(0, 6).map(saleRow).join("");
+    card?.classList.remove("is-empty");
+    if (btn) btn.disabled = false;
+
+    const shown = filteredProjects(projects, projectSearchQuery);
+    const q = projectSearchQuery.trim();
+    if (hint) {
+      if (q) {
+        const totalMatches = projects.filter((p) => projectHaystack(p).includes(q.toLowerCase())).length;
+        hint.hidden = false;
+        hint.textContent =
+          totalMatches === 0
+            ? "No projects match that search."
+            : totalMatches > SEARCH_RESULT_LIMIT
+              ? "Showing " + SEARCH_RESULT_LIMIT + " of " + totalMatches + " matches."
+              : totalMatches + " " + plural(totalMatches, "match", "matches") + ".";
+      } else {
+        hint.hidden = true;
+        hint.textContent = "";
+      }
+    }
+
+    if (!shown.length) {
+      if (token !== projectPaintToken) return;
+      host.innerHTML =
+        '<div class="ms-dash-empty ms-dash-empty--dotted"><p>No projects match that search.</p></div>';
+      return;
+    }
+
+    const withHtml = await fetchPreviewHtml(shown);
+    if (token !== projectPaintToken) return;
+    host.innerHTML = withHtml.map(projectPreview).join("");
+    mountPreviewFrames(withHtml);
   }
 
   function projectPreview(p) {
@@ -303,11 +517,6 @@
       '<span class="ms-dash-preview-name">' +
       escapeHtml(name) +
       "</span>" +
-      '<span class="ms-dash-pill ms-dash-pill--' +
-      statusTone(p) +
-      '">' +
-      escapeHtml(statusLabel(p)) +
-      "</span>" +
       "</a>" +
       '<a class="ms-dash-preview-hit" href="builder.html?project_id=' +
       encodeURIComponent(p.id) +
@@ -328,7 +537,7 @@
   }
 
   async function fetchPreviewHtml(projects) {
-    const slice = (projects || []).slice(0, PREVIEW_LIMIT);
+    const slice = projects || [];
     if (!slice.length) return [];
     const client = window.SiteSupabase?.getClient?.();
     if (!client) return slice;
@@ -363,37 +572,8 @@
   }
 
   async function renderProjects(list) {
-    const host = document.getElementById("dash-projects-list");
-    const countEl = document.getElementById("dash-projects-count");
-    const card = document.querySelector(".ms-dash-projects-card");
-    const btn = document.getElementById("dash-projects-toggle");
-    const panel = document.getElementById("dash-projects-panel");
-    const projects = list || [];
-    allProjects = projects.slice();
-    if (countEl) {
-      countEl.textContent =
-        projects.length + " " + plural(projects.length, "project", "projects");
-    }
-    if (!host) return;
-
-    if (!projects.length) {
-      host.innerHTML = "";
-      card?.classList.add("is-empty");
-      card?.classList.remove("is-open");
-      if (btn) {
-        btn.setAttribute("aria-expanded", "false");
-        btn.disabled = true;
-      }
-      if (panel) panel.hidden = true;
-      return;
-    }
-
-    card?.classList.remove("is-empty");
-    if (btn) btn.disabled = false;
-    host.innerHTML = "";
-    const withHtml = await fetchPreviewHtml(projects);
-    host.innerHTML = withHtml.map(projectPreview).join("");
-    mountPreviewFrames(withHtml);
+    allProjects = (list || []).slice();
+    await paintProjects();
   }
 
   function bindProjectsToggle() {
@@ -456,9 +636,7 @@
       );
       if (dbError) throw dbError;
       allProjects = allProjects.filter((p) => p.id !== deleteProjectId);
-      const sales = allProjects.filter(isSale);
-      setStats(sales);
-      renderSales(allProjects);
+      setStats(allProjects.filter(isSale));
       await renderProjects(allProjects);
       closeDeleteDialog();
     } catch (e) {
@@ -469,6 +647,71 @@
     } finally {
       if (submit) submit.disabled = false;
     }
+  }
+
+  function bindProjectSearch() {
+    const input = document.getElementById("dash-projects-search");
+    const clearBtn = document.getElementById("dash-projects-search-clear");
+    const listEl = document.getElementById("dash-projects-suggest");
+    if (!input) return;
+
+    let timer = 0;
+    input.addEventListener("input", () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        applyProjectSearch(input.value);
+      }, 120);
+    });
+
+    input.addEventListener("keydown", (e) => {
+      const items = listEl ? [...listEl.querySelectorAll(".ms-dash-projects-suggest-item")] : [];
+      if (e.key === "ArrowDown" && items.length) {
+        e.preventDefault();
+        const next = projectSuggestIndex < items.length - 1 ? projectSuggestIndex + 1 : 0;
+        highlightProjectSuggestion(next);
+        return;
+      }
+      if (e.key === "ArrowUp" && items.length) {
+        e.preventDefault();
+        const next = projectSuggestIndex > 0 ? projectSuggestIndex - 1 : items.length - 1;
+        highlightProjectSuggestion(next);
+        return;
+      }
+      if (e.key === "Enter" && projectSuggestIndex >= 0 && items[projectSuggestIndex]) {
+        e.preventDefault();
+        applyProjectSearch(items[projectSuggestIndex].getAttribute("data-suggest") || "", {
+          fromSuggest: true,
+        });
+        return;
+      }
+      if (e.key === "Escape") {
+        if (!listEl?.hidden) {
+          e.preventDefault();
+          hideProjectSuggestions();
+          return;
+        }
+        if (input.value) {
+          e.preventDefault();
+          applyProjectSearch("", { fromSuggest: true });
+        }
+      }
+    });
+
+    input.addEventListener("blur", () => {
+      window.setTimeout(() => hideProjectSuggestions(), 140);
+    });
+
+    clearBtn?.addEventListener("click", () => {
+      applyProjectSearch("", { fromSuggest: true });
+      input.focus();
+    });
+
+    listEl?.addEventListener("mousedown", (e) => {
+      const item = e.target.closest("[data-suggest]");
+      if (!item) return;
+      e.preventDefault();
+      applyProjectSearch(item.getAttribute("data-suggest") || "", { fromSuggest: true });
+    });
   }
 
   function bindProjectActions() {
@@ -510,7 +753,6 @@
       salesCount = 0;
       commissionEarned = 0;
       setStats([]);
-      renderSales([]);
       await renderProjects([]);
       return;
     }
@@ -522,7 +764,7 @@
     try {
       const query = client
         .from("projects")
-        .select("id,business_name,status,watermark_enabled,updated_at,vercel_url,price_cents")
+        .select("id,business_name,status,watermark_enabled,updated_at,vercel_url,price_cents,lead_id,business_context")
         .eq("user_id", user.id)
         .order("updated_at", { ascending: false })
         .limit(100);
@@ -537,22 +779,13 @@
       console.warn(e);
       commissionEarned = 0;
       salesCount = 0;
+      setStats([]);
       renderGoal();
-      const host = document.getElementById("dash-sales-list");
-      if (host) {
-        host.innerHTML =
-          '<div class="ms-dash-empty"><p>Could not load sales.</p>' +
-          '<div class="ms-dash-empty-actions">' +
-          '<a class="ms-btn ms-dash-btn" href="builder.html">Start a build</a>' +
-          "</div></div>";
-      }
       await renderProjects([]);
       return;
     }
 
-    const sales = list.filter(isSale);
-    setStats(sales);
-    renderSales(list);
+    setStats(list.filter(isSale));
     await renderProjects(list);
   }
 
@@ -563,6 +796,7 @@
     started = true;
     bindGoalEditor();
     bindProjectsToggle();
+    bindProjectSearch();
     bindProjectActions();
     load().catch((e) => console.warn(e));
   }

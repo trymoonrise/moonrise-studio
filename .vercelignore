@@ -1,0 +1,26 @@
+# Local deps / secrets
+.env
+.env.*
+!.env.example
+worker/.env
+worker/.env.*
+!worker/.env.example
+
+# Never ship the full presets gallery in the serverless bundle
+Website Presets/**
+
+# Heavy media
+**/*.mp4
+**/*.webm
+**/*.mov
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# deps
+node_modules/
+worker/node_modules/
+.vercel

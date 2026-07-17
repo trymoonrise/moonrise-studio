@@ -73,7 +73,7 @@
       btn.title = hat.label;
       btn.innerHTML =
         '<span class="ms-mvp-hat-glyph" aria-hidden="true">' +
-        (hat.glyph || "—") +
+        (hat.glyph || "-") +
         '</span><span class="ms-mvp-hat-label">' +
         hat.label +
         "</span>";

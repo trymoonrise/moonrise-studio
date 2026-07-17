@@ -42,7 +42,7 @@
     return !t ? "" : /^https?:\/\//i.test(t) ? t : "https://" + t.replace(/^\/+/, "");
   };
 
-  const emptyCell = () => '<span class="ms-clients-muted">—</span>';
+  const emptyCell = () => '<span class="ms-clients-muted">-</span>';
 
   function formatMoney(cents) {
     const n = Number(cents);
@@ -58,13 +58,16 @@
   }
 
   function statusLabel(row) {
-    if (row.status === "published" || row.vercel_url) return "Live";
-    if (row.status === "paid" || !row.watermark_enabled) return "Paid";
-    return String(row.status || "Paid");
+    if (!row.has_paid) return "Unpaid";
+    if (row.watermark_enabled === false) {
+      return row.vercel_url ? "Live" : "Paid";
+    }
+    return row.vercel_url ? "Processing" : "Paid";
   }
 
   function statusTone(row) {
-    if (row.status === "published" || row.vercel_url) return "ok";
+    if (!row.has_paid) return "warn";
+    if (row.watermark_enabled === false) return "ok";
     return "warn";
   }
 
@@ -94,36 +97,27 @@
     el.textContent = msg;
   }
 
-  function isPaidClient(project) {
-    if (!project) return false;
-    if (project.watermark_enabled === false) return true;
-    const status = String(project.status || "").toLowerCase();
-    return status === "paid" || status === "published";
+  function mapProject(project, payment) {
+    if (!project || !payment) return null;
+    const amountCents = Number(payment.amount_cents);
+    return {
+      id: project.id,
+      business_name: project.business_name || "Untitled business",
+      phone: phoneFromProject(project),
+      website: project.vercel_url || "",
+      price_cents: Number.isFinite(amountCents) && amountCents >= 0 ? amountCents : null,
+      paid_at: payment.created_at || project.updated_at || project.created_at,
+      status: project.status,
+      watermark_enabled: project.watermark_enabled,
+      vercel_url: project.vercel_url || "",
+      has_paid: true,
+    };
   }
 
   function phoneFromProject(project) {
     const ctx = project?.business_context;
     if (!ctx || typeof ctx !== "object") return "";
     return String(ctx.phone || ctx.businessPhone || "").trim();
-  }
-
-  function mapProject(project, paymentByProject) {
-    const pay = paymentByProject.get(String(project.id)) || null;
-    const amountCents =
-      pay?.amount_cents != null
-        ? Number(pay.amount_cents)
-        : Number(project.price_cents);
-    return {
-      id: project.id,
-      business_name: project.business_name || "Untitled business",
-      phone: phoneFromProject(project),
-      website: project.vercel_url || "",
-      price_cents: amountCents,
-      paid_at: pay?.created_at || project.updated_at || project.created_at,
-      status: project.status,
-      watermark_enabled: project.watermark_enabled,
-      vercel_url: project.vercel_url || "",
-    };
   }
 
   function filteredRows() {
@@ -190,7 +184,7 @@
           '<tr data-client-id="' +
           id +
           '"><th scope="row" class="ms-clients-business">' +
-          esc(row.business_name || "—") +
+          esc(row.business_name || "-") +
           "</th><td>" +
           phoneCell +
           '</td><td class="ms-clients-website-cell">' +
@@ -224,44 +218,48 @@
       const user = await window.StudioAuth?.getUser?.();
       if (!user?.id) throw new Error("Sign in to see your clients.");
 
+      const { data: payments, error: payError } = await withTimeout(
+        sb
+          .from("payments")
+          .select("project_id, amount_cents, status, created_at")
+          .eq("user_id", user.id)
+          .eq("status", "paid")
+          .not("project_id", "is", null)
+          .order("created_at", { ascending: false }),
+        QUERY_MS,
+        "Loading payments"
+      );
+      if (payError) throw payError;
+
+      const paymentByProject = new Map();
+      (Array.isArray(payments) ? payments : []).forEach((pay) => {
+        const key = String(pay.project_id || "");
+        if (!key || paymentByProject.has(key)) return;
+        paymentByProject.set(key, pay);
+      });
+
+      const projectIds = [...paymentByProject.keys()];
+      if (!projectIds.length) {
+        clients = [];
+        renderClients();
+        return;
+      }
+
       const { data: projects, error: projectError } = await withTimeout(
         sb
           .from("projects")
           .select(PROJECT_SELECT)
           .eq("user_id", user.id)
+          .in("id", projectIds)
           .order("updated_at", { ascending: false }),
         QUERY_MS,
         "Loading clients"
       );
       if (projectError) throw projectError;
 
-      const paidProjects = (Array.isArray(projects) ? projects : []).filter(isPaidClient);
-      const paymentByProject = new Map();
-
-      if (paidProjects.length) {
-        const ids = paidProjects.map((p) => p.id);
-        const { data: payments, error: payError } = await withTimeout(
-          sb
-            .from("payments")
-            .select("project_id, amount_cents, status, created_at")
-            .eq("user_id", user.id)
-            .eq("status", "paid")
-            .in("project_id", ids)
-            .order("created_at", { ascending: false }),
-          QUERY_MS,
-          "Loading payments"
-        );
-        if (!payError && Array.isArray(payments)) {
-          payments.forEach((pay) => {
-            const key = String(pay.project_id || "");
-            if (!key || paymentByProject.has(key)) return;
-            paymentByProject.set(key, pay);
-          });
-        }
-      }
-
-      clients = paidProjects
-        .map((p) => mapProject(p, paymentByProject))
+      clients = (Array.isArray(projects) ? projects : [])
+        .map((project) => mapProject(project, paymentByProject.get(String(project.id))))
+        .filter(Boolean)
         .sort((a, b) => String(b.paid_at || "").localeCompare(String(a.paid_at || "")));
       renderClients();
     } catch (e) {

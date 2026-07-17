@@ -23,7 +23,10 @@
   const mvpCosmetics = () => window.MoonriseMvpCosmetics;
 
   function defaultAvatar() {
-    return (window.SITE_CONFIG && window.SITE_CONFIG.defaultAvatarUrl) || "doc/pfp.png";
+    return (
+      (window.SITE_CONFIG && window.SITE_CONFIG.defaultAvatarUrl) ||
+      "https://github.com/trymoonrise/dashboard/raw/main/doc/pfp.png"
+    );
   }
 
   function setError(msg) {
@@ -141,9 +144,7 @@
 
   function syncMvpSection() {
     const active = document.getElementById("set-mvp-active");
-    const upsell = document.getElementById("set-mvp-upsell");
     if (active) active.hidden = !mvpPlus;
-    if (upsell) upsell.hidden = mvpPlus;
     if (!mvpPlus) return;
 
     const branding = mvpCosmetics()?.normalizeBranding(brandingDefaults) || {
@@ -679,6 +680,23 @@
     refreshPreview();
     renderPayoutList();
     syncFinanceSetupLink();
+    try {
+      const base =
+        typeof window.resolveWorkerUrl === "function"
+          ? window.resolveWorkerUrl()
+          : String(window.SITE_CONFIG?.workerUrl || "").replace(/\/$/, "");
+      const session = await window.StudioAuth.getSession();
+      if (base && session?.access_token) {
+        const res = await fetch(base + "/credits/balance", {
+          headers: { Authorization: "Bearer " + session.access_token },
+        });
+        const bal = await res.json().catch(() => ({}));
+        // Source of truth: Pricing subscription on = MVP+, otherwise off.
+        if (res.ok) mvpPlus = !!(bal.paidPlan || bal.mvpPlus);
+      }
+    } catch (_) {
+      /* profile flag only */
+    }
     syncMvpSection();
   }
 
@@ -785,14 +803,14 @@
         .eq("id", user.id);
       if (error) throw error;
       brandingDefaults = nextBranding;
-      setMvpOk("MVP+ style saved.");
+      setMvpOk("Profile style saved.");
       document.dispatchEvent(
         new CustomEvent("ms:profile-cosmetics-changed", {
           detail: { branding: brandingDefaults, mvpPlus: true },
         })
       );
     } catch (e) {
-      setError(e.message || "Could not save MVP+ style");
+      setError(e.message || "Could not save profile style");
     } finally {
       if (btn) btn.disabled = false;
     }

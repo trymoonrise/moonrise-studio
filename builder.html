@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/studio.css">
+  <link rel="stylesheet" href="css/mvp-gate.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body data-page="builder">
@@ -31,7 +32,7 @@
                 </span>
                 <div class="ms-bs-path-copy">
                   <h3 id="bs-path-google-title">Google link</h3>
-                  <p>Paste a Maps or g.page URL — we’ll pull the details.</p>
+                  <p>Paste a Maps or g.page URL - we’ll pull the details.</p>
                 </div>
               </header>
               <div class="ms-lb-onboard-maps">
@@ -58,22 +59,24 @@
                   <p>Fill every field below if you don’t have a link.</p>
                 </div>
               </header>
-              <div class="ms-lb-onboard-fields">
+              <div class="ms-lb-onboard-fields ms-lb-onboard-fields--manual">
                 <div class="ms-lb-onboard-field">
                   <label class="ms-lb-onboard-label" for="onb-name">Business name</label>
                   <input class="ms-lb-onboard-input" id="onb-name" placeholder="Acme Plumbing" autocomplete="off" data-1p-ignore data-lpignore="true">
                 </div>
                 <div class="ms-lb-onboard-field">
-                  <label class="ms-lb-onboard-label" for="onb-category">Category</label>
-                  <input class="ms-lb-onboard-input" id="onb-category" placeholder="Plumbing" autocomplete="off" data-1p-ignore data-lpignore="true">
-                </div>
-                <div class="ms-lb-onboard-field">
                   <label class="ms-lb-onboard-label" for="onb-phone">Phone</label>
                   <input class="ms-lb-onboard-input" id="onb-phone" placeholder="(555) 123-4567" autocomplete="off" data-1p-ignore data-lpignore="true">
                 </div>
-                <div class="ms-lb-onboard-field ms-lb-onboard-field--full">
-                  <label class="ms-lb-onboard-label" for="onb-address">Address</label>
-                  <input class="ms-lb-onboard-input" id="onb-address" placeholder="123 Main St, City" autocomplete="off" data-1p-ignore data-lpignore="true">
+                <div class="ms-lb-onboard-fields-extra" id="onb-manual-extra">
+                  <div class="ms-lb-onboard-field">
+                    <label class="ms-lb-onboard-label" for="onb-category">Category</label>
+                    <input class="ms-lb-onboard-input" id="onb-category" placeholder="Plumbing" autocomplete="off" data-1p-ignore data-lpignore="true">
+                  </div>
+                  <div class="ms-lb-onboard-field">
+                    <label class="ms-lb-onboard-label" for="onb-address">Address</label>
+                    <input class="ms-lb-onboard-input" id="onb-address" placeholder="123 Main St, City" autocomplete="off" data-1p-ignore data-lpignore="true">
+                  </div>
                 </div>
               </div>
             </section>
@@ -91,26 +94,35 @@
 
   <div id="builder-workspace" class="ms-builder-page" hidden>
     <div class="ms-lb-stage">
-      <header class="ms-lb-topbar">
-        <a class="ms-lb-back" href="dashboard.html" aria-label="Back to dashboard">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
-          <span>Landing Page Builder</span>
-        </a>
-      </header>
-
       <div class="ms-lb-body">
         <aside class="ms-lb-side">
           <div class="ms-lb-side-controls">
-            <div class="ms-lb-mode" role="group" aria-label="View mode">
-              <button type="button" class="ms-lb-mode-btn is-mode is-active" data-mode="preview">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
-                Preview
+            <div class="ms-lb-mode-row">
+              <button
+                type="button"
+                class="ms-lb-back-menu"
+                id="lb-back-menu"
+                aria-label="Back"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+                <span>Back</span>
               </button>
-              <button type="button" class="ms-lb-mode-btn is-mode" data-mode="code">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-                Code
-              </button>
+              <div class="ms-lb-mode" role="group" aria-label="View mode">
+                <button type="button" class="ms-lb-mode-btn is-mode is-active" data-mode="preview">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
+                  Preview
+                </button>
+                <button type="button" class="ms-lb-mode-btn is-mode" data-mode="edit">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                  Edit
+                </button>
+                <button type="button" class="ms-lb-mode-btn is-mode" data-mode="code">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                  Code
+                </button>
+              </div>
             </div>
+            <p class="ms-lb-edit-save" id="lb-edit-save-status" hidden aria-live="polite"></p>
 
             <div class="ms-lb-viewports" role="group" aria-label="Builder tools">
           <button type="button" class="ms-lb-icon-btn" id="btn-download-html" title="Download HTML" aria-label="Download HTML">
@@ -127,30 +139,106 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M12 18h.01"/></svg>
           </button>
           <span class="ms-lb-viewports-sep" aria-hidden="true"></span>
-          <button type="button" class="ms-lb-icon-btn" id="btn-builder-settings" title="Site settings" aria-label="Site settings" aria-controls="builder-site-settings" aria-expanded="false">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          </button>
           <button type="button" class="ms-lb-icon-btn is-vp" data-vp="fullscreen" title="Fullscreen" aria-label="Fullscreen">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
           </button>
             </div>
 
+            <div class="ms-lb-widget" id="lb-contact-form-widget">
+              <div class="ms-lb-widget-head">
+                <div class="ms-lb-widget-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                </div>
+                <div class="ms-lb-widget-copy">
+                  <h3>Contact Form</h3>
+                  <p class="ms-muted">Form submissions</p>
+                </div>
+                <label class="ms-lb-widget-toggle" title="Enable contact form">
+                  <input type="checkbox" id="lb-contact-form-enabled" aria-label="Enable contact form">
+                  <span class="ms-lb-widget-toggle-track" aria-hidden="true"></span>
+                </label>
+              </div>
+              <div class="ms-lb-widget-body" id="lb-contact-form-body" aria-hidden="true">
+                <div class="ms-lb-widget-body-inner">
+                <div class="ms-lb-widget-mode" role="group" aria-label="Contact form delivery mode">
+                  <button type="button" class="ms-lb-widget-mode-btn is-active" data-form-mode="auto" aria-pressed="true">Auto</button>
+                  <button type="button" class="ms-lb-widget-mode-btn" data-form-mode="custom" aria-pressed="false">Custom</button>
+                </div>
+                <div class="ms-field ms-lb-widget-field" id="lb-contact-form-auto-fields">
+                  <label class="ms-label" for="lb-contact-form-email">Notification email</label>
+                  <input class="ms-input" id="lb-contact-form-email" type="email" placeholder="you@email.com" autocomplete="email">
+                  <p class="ms-muted ms-lb-widget-hint">Delivered straight to your inbox via Moonrise - no setup, no API keys.</p>
+                </div>
+                <div class="ms-field ms-lb-widget-field" id="lb-contact-form-custom-fields" hidden>
+                  <label class="ms-label" for="lb-contact-form-endpoint">Form endpoint URL</label>
+                  <input class="ms-input" id="lb-contact-form-endpoint" type="url" placeholder="https://your-endpoint.com/submit" autocomplete="off">
+                  <p class="ms-muted ms-lb-widget-hint">POST submissions to your own handler (Formspree, Zapier, etc.).</p>
+                </div>
+                <button type="button" class="ms-btn ms-lb-widget-save" id="lb-contact-form-save">Save Settings</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="ms-lb-widget" id="lb-custom-domain-widget">
+              <div class="ms-lb-widget-head">
+                <div class="ms-lb-widget-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
+                </div>
+                <div class="ms-lb-widget-copy">
+                  <h3>Custom Domain</h3>
+                  <p class="ms-muted" id="lb-custom-domain-summary">Connect your own domain</p>
+                </div>
+                <label class="ms-lb-widget-toggle" title="Enable custom domain">
+                  <input type="checkbox" id="lb-custom-domain-enabled" aria-label="Enable custom domain">
+                  <span class="ms-lb-widget-toggle-track" aria-hidden="true"></span>
+                </label>
+              </div>
+              <div class="ms-lb-widget-body" id="lb-custom-domain-body" aria-hidden="true">
+                <div class="ms-lb-widget-body-inner">
+                <div class="ms-field ms-lb-widget-field">
+                  <label class="ms-label" for="lb-custom-domain">Domain</label>
+                  <input class="ms-input" id="lb-custom-domain" type="text" placeholder="www.yourbusiness.com" autocomplete="off" inputmode="url">
+                  <p class="ms-muted ms-lb-widget-hint" id="lb-custom-domain-hint">Publish your site first, then connect your domain.</p>
+                </div>
+                <button type="button" class="ms-btn ms-lb-widget-save" id="lb-custom-domain-save">Save Domain</button>
+                </div>
+              </div>
+            </div>
+
             <div class="ms-lb-price">
-              <div class="ms-lb-price-head">
+              <div class="ms-lb-price-title">
                 <div>
-                  <span class="ms-lb-price-eyebrow">Website price</span>
+                  <strong>Website pricing</strong>
+                  <span>Choose a package</span>
+                </div>
+                <span class="ms-lb-price-rate">40% commission</span>
+              </div>
+              <div class="ms-lb-price-head">
+                <div class="ms-lb-price-stat">
+                  <div class="ms-lb-price-stat-top">
+                    <span class="ms-lb-price-eyebrow">Client pays</span>
+                    <span class="ms-lb-price-stat-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+                    </span>
+                  </div>
                   <strong class="ms-lb-price-value" id="lb-price-value">$300</strong>
                 </div>
                 <div class="ms-lb-commission">
-                  <span>40% commission</span>
-                  <strong id="lb-commission-value">$120</strong>
+                  <div class="ms-lb-price-stat-top">
+                    <span class="ms-lb-commission-label">You earn</span>
+                    <span class="ms-lb-commission-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    </span>
+                  </div>
+                  <strong class="ms-lb-commission-value" id="lb-commission-value">$120</strong>
                 </div>
               </div>
               <div class="ms-lb-price-bar" id="lb-price-bar">
+              <div class="ms-lb-price-slider">
                 <div class="ms-lb-price-track" aria-hidden="true">
                   <div class="ms-lb-price-fill" id="lb-price-fill"></div>
                   <div class="ms-lb-price-marks">
-                    <i></i><i></i><i></i><i></i><i></i>
+                    <i></i><i></i><i></i><i></i><i></i><i></i>
                   </div>
                 </div>
                 <input
@@ -158,26 +246,34 @@
                   class="ms-lb-price-range"
                   id="lb-price-range"
                   min="0"
-                  max="4"
+                  max="5"
                   step="1"
-                  value="0"
+                  value="1"
                   aria-label="Website price"
                   aria-valuetext="$300"
                 >
-                <div class="ms-lb-price-chapters" role="group" aria-label="Price chapters">
-                  <button type="button" data-price="300" data-price-index="0">$300</button>
-                  <button type="button" data-price="500" data-price-index="1">$500</button>
-                  <button type="button" data-price="700" data-price-index="2">$700</button>
-                  <button type="button" data-price="1000" data-price-index="3">$1,000</button>
-                  <button type="button" data-price="1500" data-price-index="4">$1,500</button>
+              </div>
+              <div class="ms-lb-price-chapters" role="group" aria-label="Price packages">
+                  <button type="button" data-price="1" data-price-index="0">$1</button>
+                  <button type="button" data-price="300" data-price-index="1">$300</button>
+                  <button type="button" data-price="500" data-price-index="2">$500</button>
+                  <button type="button" data-price="700" data-price-index="3">$700</button>
+                  <button type="button" data-price="1000" data-price-index="4">$1k</button>
+                  <button type="button" data-price="1500" data-price-index="5">$1.5k</button>
                 </div>
               </div>
             </div>
 
-            <button type="button" class="ms-lb-publish-btn" id="btn-publish-top" disabled>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/><polyline points="12 3 12 15"/><path d="m7 8 5-5 5 5"/></svg>
-              Publish
-            </button>
+            <div class="ms-lb-publish-actions">
+              <button type="button" class="ms-lb-publish-btn" id="btn-publish-top" disabled>
+                <svg class="ms-lb-publish-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/><polyline points="12 3 12 15"/><path d="m7 8 5-5 5 5"/></svg>
+                <span class="ms-lb-publish-label">Publish</span>
+              </button>
+              <button type="button" class="ms-lb-unpublish-btn" id="btn-unpublish-top" hidden>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+                Unpublish
+              </button>
+            </div>
           </div>
 
           <div class="ms-lb-dock" hidden>
@@ -186,11 +282,57 @@
           </div>
         </aside>
 
+        <div
+          class="ms-lb-pane-resizer"
+          id="lb-pane-resizer"
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize builder panels"
+          tabindex="0"
+        ></div>
+
         <main class="ms-lb-main">
+          <div class="ms-lb-live-banner" id="lb-live-banner" hidden role="status" aria-live="polite">
+            <div class="ms-lb-live-banner-inner">
+              <span class="ms-lb-live-banner-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </span>
+              <div class="ms-lb-live-banner-copy">
+                <strong>Your site is live!</strong>
+                <a class="ms-lb-live-banner-link" id="lb-live-banner-link" href="#" target="_blank" rel="noopener noreferrer"></a>
+              </div>
+              <button type="button" class="ms-lb-live-banner-close" id="lb-live-banner-close" aria-label="Dismiss">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="ms-lb-offline-banner" id="lb-offline-banner" hidden role="status" aria-live="polite">
+            <div class="ms-lb-live-banner-inner">
+              <span class="ms-lb-offline-banner-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M4.93 4.93l14.14 14.14"/></svg>
+              </span>
+              <div class="ms-lb-live-banner-copy">
+                <strong>Your site is offline!</strong>
+                <span class="ms-lb-offline-banner-url" id="lb-offline-banner-url"></span>
+              </div>
+              <button type="button" class="ms-lb-offline-banner-close" id="lb-offline-banner-close" aria-label="Dismiss">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+          </div>
           <div class="ms-lb-browser" id="preview-browser">
-            <div class="ms-lb-chrome" aria-hidden="true">
-              <span class="ms-lb-chrome-dots"><i></i><i></i><i></i></span>
-              <div class="ms-lb-chrome-url">preview.moonrise.studio</div>
+            <div class="ms-lb-chrome">
+              <span class="ms-lb-chrome-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+              <div class="ms-lb-chrome-url-wrap">
+                <div class="ms-lb-chrome-url" id="lb-preview-chrome-url" title="">your-site.vercel.app</div>
+                <button type="button" class="ms-lb-chrome-copy" id="lb-preview-chrome-copy" aria-label="Copy site link" title="Copy link">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+              </div>
+              <button type="button" class="ms-lb-chrome-share" id="lb-preview-chrome-share" aria-label="Share site link" title="Share link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                <span>Share</span>
+              </button>
             </div>
             <div class="ms-preview-frame-wrap" id="preview-wrap">
               <div class="ms-lb-empty" id="preview-empty">
@@ -202,8 +344,55 @@
                   <div class="ms-lb-dots-loader" aria-hidden="true"><span></span><span></span><span></span></div>
                 </div>
               </div>
-              <iframe class="ms-preview-frame" id="preview-frame" title="Site preview" sandbox="allow-same-origin allow-scripts allow-forms" hidden></iframe>
-              <div id="watermark-host"></div>
+              <div class="ms-preview-frame-shell" id="preview-frame-shell">
+                <div
+                  class="ms-preview-vp-resizer is-left"
+                  id="preview-vp-resizer-left"
+                  role="separator"
+                  aria-orientation="vertical"
+                  aria-label="Resize preview width"
+                  tabindex="0"
+                ></div>
+                <div
+                  class="ms-preview-vp-resizer is-top"
+                  id="preview-vp-resizer-top"
+                  role="separator"
+                  aria-orientation="horizontal"
+                  aria-label="Resize preview height"
+                  tabindex="0"
+                ></div>
+                <iframe class="ms-preview-frame" id="preview-frame" title="Site preview" sandbox="allow-same-origin allow-scripts allow-forms" hidden></iframe>
+                <div id="watermark-host"></div>
+                <div
+                  class="ms-preview-vp-resizer is-bottom"
+                  id="preview-vp-resizer-bottom"
+                  role="separator"
+                  aria-orientation="horizontal"
+                  aria-label="Resize preview height"
+                  tabindex="0"
+                ></div>
+                <div
+                  class="ms-preview-vp-resizer is-right"
+                  id="preview-vp-resizer-right"
+                  role="separator"
+                  aria-orientation="vertical"
+                  aria-label="Resize preview width"
+                  tabindex="0"
+                ></div>
+                <span class="ms-preview-vp-size" id="preview-vp-size" hidden aria-live="polite"></span>
+              </div>
+              <button type="button" class="ms-lb-fs-exit" id="lb-exit-fullscreen" hidden aria-label="Minimize" title="Minimize (Esc)">
+                <span class="ms-lb-fs-exit-label">Minimize</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18"/></svg>
+              </button>
+              <div class="ms-lb-edit-toolbar" id="lb-edit-toolbar" hidden>
+                <div class="ms-lb-edit-toolbar-head">
+                  <div class="ms-lb-edit-tabs" id="lb-edit-tabs" role="tablist" aria-label="Edit sections"></div>
+                  <button type="button" class="ms-lb-edit-btn is-primary ms-lb-edit-done" data-edit-action="close">Done</button>
+                </div>
+                <div class="ms-lb-edit-toolbar-body" id="lb-edit-toolbar-main"></div>
+                <div class="ms-lb-edit-toolbar-foot" id="lb-edit-toolbar-foot"></div>
+              </div>
             </div>
             <textarea class="ms-lb-code" id="code-editor" hidden spellcheck="false"></textarea>
           </div>
@@ -257,7 +446,10 @@
               <h3>Preview Link</h3>
               <p class="ms-muted">Make your site live on Vercel</p>
               <p class="ms-lb-settings-link" id="lb-set-live-url" hidden></p>
-              <button type="button" class="ms-btn ms-lb-settings-publish" id="lb-set-publish">Publish Site</button>
+              <div class="ms-lb-settings-publish-row">
+                <button type="button" class="ms-btn ms-lb-settings-publish" id="lb-set-publish">Publish Site</button>
+                <button type="button" class="ms-btn ms-lb-settings-unpublish" id="lb-set-unpublish" hidden>Unpublish</button>
+              </div>
             </div>
           </div>
           <div class="ms-lb-settings-block">
@@ -293,14 +485,16 @@
         </section>
 
         <section class="ms-lb-settings-panel" data-settings-panel="contact" role="tabpanel" hidden>
+          <p class="ms-lb-settings-section-label">Business details</p>
+
           <div class="ms-lb-detail-grid">
-            <div class="ms-field">
-              <label class="ms-label" for="lb-set-phone">Phone</label>
-              <input class="ms-input" id="lb-set-phone" placeholder="Phone" autocomplete="tel">
-            </div>
             <div class="ms-field">
               <label class="ms-label" for="lb-set-category">Category</label>
               <input class="ms-input" id="lb-set-category" placeholder="Niche">
+            </div>
+            <div class="ms-field">
+              <label class="ms-label" for="lb-set-phone">Phone</label>
+              <input class="ms-input" id="lb-set-phone" placeholder="Phone" autocomplete="tel">
             </div>
           </div>
           <div class="ms-field">
@@ -347,46 +541,22 @@
     </div>
   </div>
 
-  <div class="ms-paywall" id="paywall" aria-hidden="true">
-    <div class="ms-paywall-card" role="dialog" aria-labelledby="paywall-title">
-      <header class="ms-paywall-head">
-        <img class="ms-paywall-brand" src="doc/MoonriseLogo.png" alt="" width="40" height="40">
-        <div>
-          <h2 id="paywall-title">Complete your order</h2>
-          <p class="ms-muted">Pay once to remove the watermark and unlock this website.</p>
-        </div>
-        <button type="button" class="ms-paywall-x" id="btn-paywall-close" aria-label="Close">×</button>
+  <dialog class="ms-clients-dialog" id="lb-unpublish-dialog" aria-labelledby="lb-unpublish-title">
+    <div class="ms-clients-dialog-panel ms-clients-dialog-panel--compact ms-lb-unpublish-dialog-panel">
+      <div class="ms-lb-unpublish-dialog-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <header class="ms-clients-dialog-head">
+        <h2 class="ms-clients-dialog-title" id="lb-unpublish-title">Take site offline?</h2>
       </header>
-
-      <div class="ms-paywall-body">
-        <div class="ms-paywall-offer">
-          <p class="ms-timer" id="paywall-timer"></p>
-          <button type="button" class="ms-btn ms-paywall-pay" id="btn-checkout">Pay with Stripe</button>
-          <p class="ms-error" id="paywall-error" hidden></p>
-          <p class="ms-paywall-note">Secure checkout · watermark leaves after payment</p>
-        </div>
-
-        <div class="ms-faq-acc" id="paywall-faq">
-          <details>
-            <summary>Do I have to sign up?</summary>
-            <p>You can sign in or create an account when you locate your order.</p>
-          </details>
-          <details>
-            <summary>What do I get?</summary>
-            <p>Stripe confirms instantly. The watermark is removed and publishing unlocks for this site.</p>
-          </details>
-          <details>
-            <summary>Do I get to own the website?</summary>
-            <p>The website stays managed by <a href="mailto:trymoonrise@gmail.com">@trymoonrise</a> instead of being handed off as code. We handle the technical work and include ongoing updates and unlimited redesigns, so your site can keep evolving with your business.</p>
-          </details>
-          <details>
-            <summary>Need help or changes?</summary>
-            <p>Message the <a href="mailto:trymoonrise@gmail.com">Moonrise</a> to make any changes such as uploading photos, changing hours, services, colors, infinite redesigns and so much more!</p>
-          </details>
-        </div>
+      <p class="ms-clients-dialog-lead">The public link will stop working until you publish again.</p>
+      <p class="ms-lb-unpublish-url" id="lb-unpublish-url" aria-live="polite"></p>
+      <div class="ms-clients-dialog-actions">
+        <button type="button" class="ms-clients-dialog-back" id="lb-unpublish-cancel">Keep live</button>
+        <button type="button" class="ms-btn ms-btn-danger ms-clients-dialog-next" id="lb-unpublish-submit">Unpublish</button>
       </div>
     </div>
-  </div>
+  </dialog>
 
   <script src="js/config.js"></script>
   <script src="js/supabase-client.js"></script>
@@ -396,7 +566,7 @@
   <script src="js/toast.js"></script>
   <script src="js/mvp-cosmetics.js"></script>
   <script src="js/app.js"></script>
-  <script src="js/watermark.js"></script>
+  <script src="watermark/embed.js"></script>
   <script src="js/builder.js"></script>
 </body>
 </html>

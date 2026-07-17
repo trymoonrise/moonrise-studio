@@ -1,0 +1,36 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    { "source": "/health", "destination": "/api" },
+    { "source": "/generate", "destination": "/api" },
+    { "source": "/edit", "destination": "/api" },
+    { "source": "/checkout", "destination": "/api" },
+    { "source": "/public-checkout", "destination": "/api" },
+    { "source": "/public-orders", "destination": "/api" },
+    { "source": "/publish", "destination": "/api" },
+    { "source": "/unpublish", "destination": "/api" },
+    { "source": "/resolve-maps", "destination": "/api" },
+    { "source": "/embed.js", "destination": "/api" },
+    { "source": "/webhooks/stripe", "destination": "/api" },
+    { "source": "/credits/catalog", "destination": "/api" },
+    { "source": "/credits/balance", "destination": "/api" },
+    { "source": "/credits/plan-checkout", "destination": "/api" },
+    { "source": "/credits/topup-checkout", "destination": "/api" },
+    { "source": "/credits/billing-portal", "destination": "/api" },
+    { "source": "/credits/fulfill-checkout", "destination": "/api" },
+    { "source": "/mvp-checkout", "destination": "/api" },
+    { "source": "/mvp-status", "destination": "/api" },
+    { "source": "/auth/status", "destination": "/api" },
+    { "source": "/auth/signin", "destination": "/api" },
+    { "source": "/auth/signup", "destination": "/api" },
+    { "source": "/auth/forgot", "destination": "/api" },
+    { "source": "/auth/verify-password", "destination": "/api" }
+  ],
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 300,
+      "memory": 1024,
+      "includeFiles": "{worker,watermark,templates}/**"
+    }
+  }
+}

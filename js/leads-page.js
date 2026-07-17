@@ -938,7 +938,7 @@
           ' title="' +
           escapeHtml(
             empty
-              ? cat + " — none in current filters"
+              ? cat + " - none in current filters"
               : active
                 ? "Show all lead categories"
                 : "Show " + cat + " leads (" + count + ")"
@@ -1190,6 +1190,19 @@
     const id = normalizeLeadId(leadId);
     const lead = findLeadById(id);
     if (!id || !lead || !canEditLeadStatus(lead)) return;
+
+    const afford = window.StudioCredits?.canAffordGeneration
+      ? await window.StudioCredits.canAffordGeneration()
+      : {
+          ok: false,
+          message: "Can't verify credits right now. Refresh the page and try again.",
+        };
+    if (!afford.ok) {
+      window.StudioToast?.error?.(
+        afford.message || "Sorry, you need credits to generate a website. Visit our pricing page!"
+      );
+      return;
+    }
 
     // Immediate local On hold so Active list hides this card before navigation.
     patchStatusMapLocal(id, "building", lead?.name);
@@ -1692,16 +1705,19 @@
   }
 
   function renderReviewLine(lead) {
-    const { rating, hasData } = formatRatingParts(lead);
+    const { line, hasData } = formatRatingParts(lead);
+    if (line) return { text: line, empty: !hasData && line === "No reviews" };
     if (!hasData) return { text: "No reviews", empty: true };
     const parts = [];
+    const d = display();
+    const rating = d.formatRating ? d.formatRating(lead) : "";
     if (rating) parts.push(rating);
     const n = Number(lead?.reviewCount);
     if (Number.isFinite(n) && n > 0) {
       parts.push("(" + Math.round(n) + ")");
     }
     if (!parts.length) return { text: "No reviews", empty: true };
-    return { text: parts.join(" · "), empty: false };
+    return { text: parts.join(" • "), empty: false };
   }
 
   function formatTooltipBlocks(text) {
@@ -2847,7 +2863,7 @@
             : "";
       const dbHint =
         hasMoreRemoteLeads() && !searchQuery
-          ? '<p class="muted">More leads are still in the database — scroll or wait while they load.</p>'
+          ? '<p class="muted">More leads are still in the database - scroll or wait while they load.</p>'
           : "";
       grid.innerHTML =
         '<div class="leads-empty card">' +
@@ -3076,88 +3092,142 @@
     if (!grid || grid.dataset.markActionsBound === "1") return;
     grid.dataset.markActionsBound = "1";
 
-    function resetLfSlide(slide) {
-      if (!slide) return;
+    function lfSlidePad(track) {
+      if (!track) return 4;
+      const style = window.getComputedStyle(track);
+      return Number.parseFloat(style.paddingLeft) || 4;
+    }
+
+    function lfSlideMax(slide) {
+      const track = slide.querySelector(".lf-slide-track");
       const thumb = slide.querySelector(".lf-slide-thumb");
-      const fill = slide.querySelector(".lf-slide-fill");
-      slide.classList.remove("is-dragging", "is-done");
-      slide.style.removeProperty("--lf-slide-x");
-      if (thumb) thumb.style.transform = "";
-      if (fill) fill.style.width = "";
+      if (!track || !thumb) return 0;
+      const pad = lfSlidePad(track);
+      return Math.max(0, track.clientWidth - pad * 2 - thumb.offsetWidth);
     }
 
     function setLfSlideX(slide, x, max) {
-      const clamped = Math.max(0, Math.min(max, x));
-      const pct = max > 0 ? (clamped / max) * 100 : 0;
+      const track = slide.querySelector(".lf-slide-track");
       const thumb = slide.querySelector(".lf-slide-thumb");
-      const fill = slide.querySelector(".lf-slide-fill");
+      const clamped = Math.max(0, Math.min(max, x));
+      const pad = lfSlidePad(track);
+      const thumbW = thumb?.offsetWidth || 40;
       slide.style.setProperty("--lf-slide-x", clamped + "px");
-      if (thumb) thumb.style.transform = "translateX(" + clamped + "px)";
-      if (fill) fill.style.width = "calc(" + pct + "% + 22px)";
+      slide.style.setProperty("--lf-slide-fill", pad + clamped + thumbW + "px");
       return clamped;
     }
 
+    function resetLfSlide(slide, animated) {
+      if (!slide) return;
+      const max = lfSlideMax(slide);
+      slide.classList.remove("is-dragging", "is-done", "is-completing");
+      if (animated) {
+        slide.classList.add("is-returning");
+        setLfSlideX(slide, 0, max);
+        window.setTimeout(() => {
+          slide.classList.remove("is-returning");
+          slide.style.removeProperty("--lf-slide-x");
+          slide.style.removeProperty("--lf-slide-fill");
+        }, 280);
+        return;
+      }
+      slide.classList.remove("is-returning");
+      slide.style.removeProperty("--lf-slide-x");
+      slide.style.removeProperty("--lf-slide-fill");
+    }
+
     function completeLfSlide(slide) {
-      if (!slide || slide.classList.contains("is-done")) return;
+      if (!slide || slide.classList.contains("is-done") || slide.classList.contains("is-completing")) {
+        return;
+      }
       const id =
         slide.getAttribute("data-lead-slide") ||
         slide.querySelector("[data-lead-builder]")?.getAttribute("data-lead-builder") ||
         "";
-      const track = slide.querySelector(".lf-slide-track");
-      const thumb = slide.querySelector(".lf-slide-thumb");
-      const max = Math.max(0, (track?.clientWidth || 0) - (thumb?.offsetWidth || 0));
+      const max = lfSlideMax(slide);
+      if (!id || max <= 0) {
+        resetLfSlide(slide, true);
+        return;
+      }
+      slide.classList.remove("is-dragging", "is-returning");
+      slide.classList.add("is-completing");
       setLfSlideX(slide, max, max);
-      slide.classList.add("is-done");
-      slide.classList.remove("is-dragging");
-      if (!id) return;
-      window.setTimeout(() => void handleBuildLeadClick(id), 140);
+      window.setTimeout(() => {
+        slide.classList.add("is-done");
+        slide.classList.remove("is-completing");
+        void handleBuildLeadClick(id);
+      }, 220);
     }
 
     grid.addEventListener("pointerdown", (e) => {
+      if (e.button != null && e.button !== 0) return;
       const thumb = e.target.closest(".lf-slide-thumb");
       if (!thumb) return;
       const slide = thumb.closest(".lf-slide");
-      if (
-        !slide ||
-        slide.classList.contains("is-disabled") ||
-        slide.classList.contains("is-done") ||
-        thumb.disabled ||
-        thumb.getAttribute("aria-disabled") === "true"
-      ) {
+      if (!slide || slide.classList.contains("is-disabled") || slide.classList.contains("is-done")) {
         return;
       }
-      e.preventDefault();
-      e.stopPropagation();
+      if (slide.classList.contains("is-completing") || slide.classList.contains("is-returning")) {
+        return;
+      }
       const track = slide.querySelector(".lf-slide-track");
       if (!track) return;
-      const max = Math.max(0, track.clientWidth - thumb.offsetWidth);
+      if (thumb.disabled || thumb.getAttribute("aria-disabled") === "true") return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const max = lfSlideMax(slide);
+      if (max <= 0) return;
+
+      let startLeft = Number.parseFloat(slide.style.getPropertyValue("--lf-slide-x")) || 0;
       const startX = e.clientX;
-      const startLeft = Number.parseFloat(slide.style.getPropertyValue("--lf-slide-x")) || 0;
       let current = startLeft;
       let finished = false;
+      let raf = 0;
+      let pendingX = startLeft;
+
+      slide.classList.remove("is-returning", "is-completing");
       slide.classList.add("is-dragging");
-      thumb.setPointerCapture?.(e.pointerId);
+      try {
+        thumb.setPointerCapture(e.pointerId);
+      } catch (_) {
+        /* ignore */
+      }
+
+      const flush = () => {
+        raf = 0;
+        if (finished) return;
+        current = setLfSlideX(slide, pendingX, max);
+      };
+
       const onMove = (ev) => {
         if (finished) return;
-        current = setLfSlideX(slide, startLeft + (ev.clientX - startX), max);
+        pendingX = startLeft + (ev.clientX - startX);
+        if (!raf) raf = window.requestAnimationFrame(flush);
       };
-      const onUp = () => {
+
+      const onUp = (ev) => {
         if (finished) return;
         finished = true;
-        window.removeEventListener("pointermove", onMove);
-        window.removeEventListener("pointerup", onUp);
-        window.removeEventListener("pointercancel", onUp);
+        if (raf) window.cancelAnimationFrame(raf);
+        thumb.removeEventListener("pointermove", onMove);
+        thumb.removeEventListener("pointerup", onUp);
+        thumb.removeEventListener("pointercancel", onUp);
         try {
-          thumb.releasePointerCapture?.(e.pointerId);
+          thumb.releasePointerCapture(ev.pointerId);
         } catch (_) {
           /* ignore */
         }
-        if (current >= max * 0.86) completeLfSlide(slide);
-        else resetLfSlide(slide);
+        slide.classList.remove("is-dragging");
+        current = setLfSlideX(slide, pendingX, max);
+        if (current >= max * 0.78) completeLfSlide(slide);
+        else resetLfSlide(slide, true);
       };
-      window.addEventListener("pointermove", onMove);
-      window.addEventListener("pointerup", onUp);
-      window.addEventListener("pointercancel", onUp);
+
+      thumb.addEventListener("pointermove", onMove);
+      thumb.addEventListener("pointerup", onUp);
+      thumb.addEventListener("pointercancel", onUp);
     });
 
     grid.addEventListener("click", (e) => {

@@ -8,240 +8,86 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/studio.css">
+  <link rel="stylesheet" href="css/mvp-gate.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body data-page="store">
   <div id="shell"></div>
-  <div id="page-body" class="ms-store-page">
-    <header class="ms-page-head">
+  <div id="page-body" class="ms-settings-page ms-store-page">
+    <header class="ms-page-head ms-store-head">
       <div class="ms-page-head-copy">
         <h1>Store</h1>
+        <p class="lead">Tools and resources to find clients and close more deals.</p>
       </div>
     </header>
 
-    <section class="ms-store-grid" aria-label="Programs">
-      <article class="ms-store-product is-mvp" id="mvp-plus">
-        <div class="ms-store-product-visual" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.4 5 5.6.8-4 3.9.9 5.5L12 15.6 7.1 18.2l.9-5.5-4-3.9 5.6-.8L12 3z"/><path d="M5 21h14"/></svg>
-        </div>
-        <div class="ms-store-product-copy">
-          <p class="ms-store-kicker">Subscription</p>
-          <h2>MVP+</h2>
-          <p class="ms-store-desc">Upgrade your Studio with builder exports, code access, lead tools, and profile cosmetics.</p>
-          <ul class="ms-store-feature-list" aria-label="MVP+ includes">
-            <li>Download HTML</li>
-            <li>View Code</li>
-            <li>Downloadable Lead Scraper</li>
-            <li>Custom Name Color</li>
-            <li>Profile Hat</li>
-          </ul>
-        </div>
-        <div class="ms-store-foot">
-          <p class="ms-store-price"><span class="ms-store-amount">$5</span><span class="ms-store-period">/mo</span></p>
-          <button type="button" class="ms-store-buy" data-product="MVP+ subscription">Subscribe</button>
-        </div>
-      </article>
+    <div class="ms-store-content">
+      <section class="ms-store-grid" aria-label="Programs">
+        <article class="ms-store-product" id="lead-scraper">
+          <div class="ms-store-product-head">
+            <div class="ms-store-product-visual" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            </div>
+            <div class="ms-store-product-copy">
+              <h2>Lead Scraper</h2>
+              <p class="ms-store-desc">Bulk Maps leads by niche and city.</p>
+            </div>
+          </div>
+          <div class="ms-store-foot">
+            <p class="ms-store-price"><span class="ms-store-amount">$19</span></p>
+            <button type="button" class="ms-store-buy" data-product="Lead Scraper">Purchase</button>
+          </div>
+        </article>
 
-      <article class="ms-store-product is-feature" id="lead-scraper">
-        <div class="ms-store-product-visual" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        </div>
-        <h2>Lead Scraper</h2>
-        <p class="ms-store-desc">Bulk Maps leads by niche and city.</p>
-        <div class="ms-store-foot">
-          <p class="ms-store-price"><span class="ms-store-amount">$97</span></p>
-          <button type="button" class="ms-store-buy" data-product="Lead Scraper">Purchase</button>
-        </div>
-      </article>
+        <article class="ms-store-product" id="cold-call">
+          <div class="ms-store-product-head">
+            <div class="ms-store-product-visual" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.81.36 1.6.7 2.34a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.74.34 1.53.57 2.34.7A2 2 0 0 1 22 16.92z"/></svg>
+            </div>
+            <div class="ms-store-product-copy">
+              <h2>Cold Call Scripts</h2>
+              <p class="ms-store-desc">Door-opener phone lines.</p>
+            </div>
+          </div>
+          <div class="ms-store-foot">
+            <p class="ms-store-price"><span class="ms-store-amount">$5</span></p>
+            <button type="button" class="ms-store-buy" data-product="Cold Call Scripts">Purchase</button>
+          </div>
+        </article>
 
-      <article class="ms-store-product is-compact" id="proposal-pack">
-        <div class="ms-store-product-visual" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h6"/></svg>
-        </div>
-        <h2>Proposal Pack</h2>
-        <p class="ms-store-desc">Ready-to-send client quotes.</p>
-        <div class="ms-store-foot">
-          <p class="ms-store-price"><span class="ms-store-amount">$29</span></p>
-          <button type="button" class="ms-store-buy" data-product="Proposal Pack">Purchase</button>
-        </div>
-      </article>
+        <article class="ms-store-product" id="serverly">
+          <div class="ms-store-product-head">
+            <div class="ms-store-product-visual" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div class="ms-store-product-copy">
+              <h2>Serverly</h2>
+              <p class="ms-store-desc">Build your own Discord server.</p>
+            </div>
+          </div>
+          <div class="ms-store-foot">
+            <p class="ms-store-price"><span class="ms-store-amount is-link">serverly.store</span></p>
+            <a class="ms-store-buy is-ghost" href="https://serverly.store" target="_blank" rel="noopener noreferrer">Visit</a>
+          </div>
+        </article>
 
-      <article class="ms-store-product is-tall" id="outreach-kit">
-        <div class="ms-store-product-visual" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22 11 13 2 9l20-7z"/></svg>
-        </div>
-        <h2>Outreach Kit</h2>
-        <p class="ms-store-desc">Scripts for first contact.</p>
-        <div class="ms-store-foot">
-          <p class="ms-store-price"><span class="ms-store-amount">$39</span></p>
-          <button type="button" class="ms-store-buy" data-product="Outreach Kit">Purchase</button>
-        </div>
-      </article>
-
-      <article class="ms-store-product is-wide" id="site-audit">
-        <div class="ms-store-product-visual" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 3 5-6"/></svg>
-        </div>
-        <div class="ms-store-product-copy">
-          <h2>Site Audit</h2>
-          <p class="ms-store-desc">Score a prospect’s website fast.</p>
-        </div>
-        <div class="ms-store-foot">
-          <p class="ms-store-price"><span class="ms-store-amount">$49</span></p>
-          <button type="button" class="ms-store-buy" data-product="Site Audit">Purchase</button>
-        </div>
-      </article>
-
-      <article class="ms-store-product is-compact" id="local-seo">
-        <div class="ms-store-product-visual" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        </div>
-        <h2>Local SEO Pack</h2>
-        <p class="ms-store-desc">GBP + citation checklist.</p>
-        <div class="ms-store-foot">
-          <p class="ms-store-price"><span class="ms-store-amount">$35</span></p>
-          <button type="button" class="ms-store-buy" data-product="Local SEO Pack">Purchase</button>
-        </div>
-      </article>
-
-      <article class="ms-store-product is-medium" id="follow-up">
-        <div class="ms-store-product-visual" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8"/><path d="M8 13h5"/></svg>
-        </div>
-        <h2>Follow-up Sequences</h2>
-        <p class="ms-store-desc">Day 1–14 message tracks.</p>
-        <div class="ms-store-foot">
-          <p class="ms-store-price"><span class="ms-store-amount">$24</span></p>
-          <button type="button" class="ms-store-buy" data-product="Follow-up Sequences">Purchase</button>
-        </div>
-      </article>
-
-      <article class="ms-store-product is-compact" id="cold-call">
-        <div class="ms-store-product-visual" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.81.36 1.6.7 2.34a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.74.34 1.53.57 2.34.7A2 2 0 0 1 22 16.92z"/></svg>
-        </div>
-        <h2>Cold Call Scripts</h2>
-        <p class="ms-store-desc">Door-opener phone lines.</p>
-        <div class="ms-store-foot">
-          <p class="ms-store-price"><span class="ms-store-amount">$27</span></p>
-          <button type="button" class="ms-store-buy" data-product="Cold Call Scripts">Purchase</button>
-        </div>
-      </article>
-
-      <article class="ms-store-product is-tall" id="contracts">
-        <div class="ms-store-product-visual" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-        </div>
-        <h2>Contract Templates</h2>
-        <p class="ms-store-desc">Simple web project agreements.</p>
-        <div class="ms-store-foot">
-          <p class="ms-store-price"><span class="ms-store-amount">$45</span></p>
-          <button type="button" class="ms-store-buy" data-product="Contract Templates">Purchase</button>
-        </div>
-      </article>
-
-      <article class="ms-store-product is-compact" id="review-booster">
-        <div class="ms-store-product-visual" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.1 6.3L22 9.3l-5 4.9 1.2 7-6.2-3.3L5.8 21 7 14.1 2 9.3l6.9-1L12 2z"/></svg>
-        </div>
-        <h2>Review Booster</h2>
-        <p class="ms-store-desc">Ask-for-reviews toolkit.</p>
-        <div class="ms-store-foot">
-          <p class="ms-store-price"><span class="ms-store-amount">$19</span></p>
-          <button type="button" class="ms-store-buy" data-product="Review Booster">Purchase</button>
-        </div>
-      </article>
-
-      <article class="ms-store-product is-wide" id="niche-playbooks">
-        <div class="ms-store-product-visual" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-        </div>
-        <div class="ms-store-product-copy">
-          <h2>Niche Playbooks</h2>
-          <p class="ms-store-desc">Plumbing, dental, HVAC, salon.</p>
-        </div>
-        <div class="ms-store-foot">
-          <p class="ms-store-price"><span class="ms-store-amount">$59</span></p>
-          <button type="button" class="ms-store-buy" data-product="Niche Playbooks">Purchase</button>
-        </div>
-      </article>
-
-      <article class="ms-store-product is-compact" id="pricing-calc">
-        <div class="ms-store-product-visual" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8"/><path d="M8 10h8"/><path d="M8 14h3"/><path d="M13 14h3"/><path d="M8 18h3"/><path d="M13 18h3"/></svg>
-        </div>
-        <h2>Pricing Calculator</h2>
-        <p class="ms-store-desc">Quote sites with confidence.</p>
-        <div class="ms-store-foot">
-          <p class="ms-store-price"><span class="ms-store-amount">$22</span></p>
-          <button type="button" class="ms-store-buy" data-product="Pricing Calculator">Purchase</button>
-        </div>
-      </article>
-
-      <article class="ms-store-product is-medium" id="onboarding">
-        <div class="ms-store-product-visual" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12h6"/><path d="M9 16h6"/></svg>
-        </div>
-        <h2>Client Onboarding</h2>
-        <p class="ms-store-desc">Kickoff forms and checklists.</p>
-        <div class="ms-store-foot">
-          <p class="ms-store-price"><span class="ms-store-amount">$32</span></p>
-          <button type="button" class="ms-store-buy" data-product="Client Onboarding">Purchase</button>
-        </div>
-      </article>
-
-      <article class="ms-store-product is-compact" id="ad-creatives">
-        <div class="ms-store-product-visual" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
-        </div>
-        <h2>Ad Creative Pack</h2>
-        <p class="ms-store-desc">Local promo image templates.</p>
-        <div class="ms-store-foot">
-          <p class="ms-store-price"><span class="ms-store-amount">$41</span></p>
-          <button type="button" class="ms-store-buy" data-product="Ad Creative Pack">Purchase</button>
-        </div>
-      </article>
-
-      <article class="ms-store-product is-compact" id="invoice-kit">
-        <div class="ms-store-product-visual" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-        </div>
-        <h2>Invoice Kit</h2>
-        <p class="ms-store-desc">Deposit + final bill templates.</p>
-        <div class="ms-store-foot">
-          <p class="ms-store-price"><span class="ms-store-amount">$18</span></p>
-          <button type="button" class="ms-store-buy" data-product="Invoice Kit">Purchase</button>
-        </div>
-      </article>
-
-      <article class="ms-store-product is-wide" id="serverly">
-        <div class="ms-store-product-visual" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        </div>
-        <div class="ms-store-product-copy">
-          <h2>Serverly</h2>
-          <p class="ms-store-desc">Build your own Discord server.</p>
-        </div>
-        <div class="ms-store-foot">
-          <p class="ms-store-price"><span class="ms-store-amount is-link">serverly.store</span></p>
-          <a class="ms-store-buy" href="https://serverly.store" target="_blank" rel="noopener noreferrer">Visit</a>
-        </div>
-      </article>
-
-      <article class="ms-store-product is-medium" id="free-university-tools">
-        <div class="ms-store-product-visual" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-        </div>
-        <div class="ms-store-product-copy">
-          <h2>Free University Tools</h2>
-          <p class="ms-store-desc">Find many free overpowered tools.</p>
-        </div>
-        <div class="ms-store-foot">
-          <p class="ms-store-price"><span class="ms-store-amount is-link">freeuniversitytools.com</span></p>
-          <a class="ms-store-buy" href="https://freeuniversitytools.com" target="_blank" rel="noopener noreferrer">Visit</a>
-        </div>
-      </article>
-    </section>
+        <article class="ms-store-product" id="free-university-tools">
+          <div class="ms-store-product-head">
+            <div class="ms-store-product-visual" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+            </div>
+            <div class="ms-store-product-copy">
+              <h2>Free University Tools</h2>
+              <p class="ms-store-desc">Find many free overpowered tools.</p>
+            </div>
+          </div>
+          <div class="ms-store-foot">
+            <p class="ms-store-price"><span class="ms-store-amount is-link">freeuniversitytools.com</span></p>
+            <a class="ms-store-buy is-ghost" href="https://freeuniversitytools.com" target="_blank" rel="noopener noreferrer">Visit</a>
+          </div>
+        </article>
+      </section>
+    </div>
   </div>
 
   <script src="js/config.js"></script>

@@ -7,7 +7,8 @@
     { id: "leads", href: "leads.html", label: "Business Finder", icon: "search" },
     { id: "builder", href: "builder.html", label: "Builder", icon: "hammer" },
     { id: "clients", href: "clients.html", label: "My clients", icon: "users" },
-    { id: "store", href: "store.html", label: "Store", icon: "bag", soon: true },
+    { id: "pricing", href: "pricing.html", label: "Pricing", icon: "dollar" },
+    { id: "store", href: "store.html", label: "Store", icon: "bag" },
   ];
 
   const ACCOUNT = [
@@ -165,7 +166,16 @@
 
   function defaultAvatarUrl() {
     const c = window.SITE_CONFIG || {};
-    return c.defaultAvatarUrl || "doc/pfp.png";
+    return (
+      c.defaultAvatarUrl ||
+      "https://github.com/trymoonrise/dashboard/raw/main/doc/pfp.png"
+    );
+  }
+
+  function isCustomAvatarUrl(url) {
+    const raw = String(url || "").trim();
+    if (!raw) return false;
+    return raw !== defaultAvatarUrl();
   }
 
   function resolveAvatarUrl(url) {
@@ -208,6 +218,12 @@
         ICONS.external +
         "</span>"
       : "";
+    const cancelMark =
+      item.id === "builder"
+        ? '<button type="button" class="ms-nav-cancel" data-nav-cancel="builder" hidden aria-label="Cancel website generation" title="Cancel generation">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>' +
+          "</button>"
+        : "";
     return (
       '<a class="ms-nav-link' +
       (item.external ? " is-external" : "") +
@@ -226,9 +242,64 @@
       item.label +
       "</span>" +
       externalMark +
+      cancelMark +
+      '<span class="ms-nav-progress" aria-hidden="true"></span>' +
       "</a>"
     );
   }
+
+  /** Live-only flag — never restore from storage (stale markers looked like "still generating"). */
+  let channelGeneratingId = null;
+
+  function applyChannelGenerating() {
+    const id = channelGeneratingId;
+    document.querySelectorAll(".ms-nav-link[data-nav]").forEach((el) => {
+      const on = !!id && el.getAttribute("data-nav") === id;
+      el.classList.toggle("is-generating", on);
+      const cancelBtn = el.querySelector("[data-nav-cancel]");
+      if (cancelBtn) cancelBtn.hidden = !(on && el.getAttribute("data-nav") === "builder");
+      if (on) {
+        el.setAttribute("aria-busy", "true");
+        el.setAttribute("title", "Generating website…");
+      } else {
+        el.removeAttribute("aria-busy");
+        if (el.getAttribute("title") === "Generating website…") el.removeAttribute("title");
+      }
+    });
+  }
+
+  function setChannelGenerating(navId, busy) {
+    channelGeneratingId = busy && navId ? String(navId) : null;
+    // Clear any legacy session marker from older builds
+    try {
+      sessionStorage.removeItem("ms_channel_generating");
+    } catch {
+      /* ignore */
+    }
+    applyChannelGenerating();
+  }
+
+  function cancelChannelGenerating() {
+    setChannelGenerating(null, false);
+    document.dispatchEvent(new CustomEvent("ms:cancel-generation", { detail: { nav: "builder" } }));
+  }
+
+  function bindNavCancel() {
+    document.getElementById("ms-sidebar")?.addEventListener("click", (event) => {
+      const btn = event.target.closest("[data-nav-cancel]");
+      if (!btn) return;
+      event.preventDefault();
+      event.stopPropagation();
+      cancelChannelGenerating();
+      window.StudioToast?.success?.("Generation canceled.");
+    });
+  }
+
+  window.StudioShell = Object.assign(window.StudioShell || {}, {
+    setChannelGenerating,
+    applyChannelGenerating,
+    cancelChannelGenerating,
+  });
 
   function navSection(label, icon) {
     return (
@@ -287,7 +358,7 @@
 
   function buildShell(opts) {
     const page = document.body?.dataset?.page || "";
-    if (page === "index" || page === "home" || page === "login" || page === "apply") return;
+    if (page === "index" || page === "home" || page === "login" || page === "apply" || page === "orders") return;
 
     const shell = document.getElementById("shell");
     if (!shell) return;
@@ -313,6 +384,10 @@
       navGroup("Workspace", "layers", menuHtml, "Main") +
       navGroup("Account", "user", accountHtml, "Account") +
       "</div>" +
+      '<a class="ms-credits-tag" id="ms-user-credits" href="pricing.html" title="View plans and top up">' +
+      '<span class="ms-credits-tag-label">Credits</span>' +
+      '<strong class="ms-credits-tag-value" id="ms-user-credits-value">-</strong>' +
+      "</a>" +
       sidebarLegal(page) +
       '<div class="ms-sidebar-foot">' +
       '<div class="ms-user-row">' +
@@ -689,8 +764,11 @@
   function rememberAvatarUrl(url) {
     try {
       const v = String(url || "").trim();
-      if (v) sessionStorage.setItem(AVATAR_CACHE_KEY, v);
-      else sessionStorage.removeItem(AVATAR_CACHE_KEY);
+      if (!isCustomAvatarUrl(v)) {
+        sessionStorage.removeItem(AVATAR_CACHE_KEY);
+        return;
+      }
+      sessionStorage.setItem(AVATAR_CACHE_KEY, v);
     } catch (_) {
       /* ignore */
     }
@@ -781,6 +859,130 @@
     }
   }
 
+  async function fetchCreditBalanceDetailed() {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      return { error: "offline" };
+    }
+    try {
+      const session = await window.StudioAuth?.getSession?.();
+      if (!session?.access_token) {
+        return { error: "auth" };
+      }
+      const base =
+        typeof window.resolveWorkerUrl === "function"
+          ? window.resolveWorkerUrl()
+          : String(window.SITE_CONFIG?.workerUrl || "").replace(/\/$/, "");
+      if (!base) {
+        return { error: "unavailable" };
+      }
+      let res;
+      try {
+        res = await fetch(base + "/credits/balance", {
+          headers: { Authorization: "Bearer " + session.access_token },
+        });
+      } catch (_) {
+        if (typeof navigator !== "undefined" && navigator.onLine === false) {
+          return { error: "offline" };
+        }
+        return { error: "network" };
+      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        if (res.status >= 500) return { error: "server" };
+        return { error: "network" };
+      }
+      return { data };
+    } catch (_) {
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        return { error: "offline" };
+      }
+      return { error: "network" };
+    }
+  }
+
+  function generationBlockMessage(reason) {
+    switch (reason) {
+      case "offline":
+        return "You're offline. Connect to Wi‑Fi or mobile data, then try again.";
+      case "network":
+      case "server":
+        return "Can't reach Moonrise right now. Check your internet connection and try again.";
+      case "auth":
+        return "Sign in to generate a website.";
+      case "unavailable":
+        return "Moonrise services aren't available right now. Try again in a moment.";
+      case "no_credits":
+        return "Sorry, you need credits to generate a website. Visit our pricing page!";
+      default:
+        return "Can't generate right now. Check your connection or credits and try again.";
+    }
+  }
+
+  async function fetchCreditBalance() {
+    const result = await fetchCreditBalanceDetailed();
+    return result.data || null;
+  }
+
+  async function canAffordGeneration() {
+    const result = await fetchCreditBalanceDetailed();
+    const cost = Number(result?.data?.generationCost) || 5;
+
+    if (result.error) {
+      return {
+        ok: false,
+        reason: result.error,
+        message: generationBlockMessage(result.error),
+        cost,
+      };
+    }
+
+    const totalCredits = Number(result.data.totalCredits) || 0;
+    if (totalCredits < cost) {
+      return {
+        ok: false,
+        reason: "no_credits",
+        message: generationBlockMessage("no_credits"),
+        totalCredits,
+        cost,
+        data: result.data,
+      };
+    }
+
+    return { ok: true, totalCredits, cost, data: result.data };
+  }
+
+  async function hydrateCredits() {
+    const valueEl = document.getElementById("ms-user-credits-value");
+    if (!valueEl) return null;
+    try {
+      const data = await fetchCreditBalance();
+      if (!data) {
+        valueEl.textContent = "-";
+        return null;
+      }
+      const total = data.totalCredits ?? 0;
+      valueEl.textContent = String(total);
+      setSidebarCredits(total, data);
+      return data;
+    } catch (_) {
+      valueEl.textContent = "-";
+      return null;
+    }
+  }
+
+  function setSidebarCredits(total, detail) {
+    const valueEl = document.getElementById("ms-user-credits-value");
+    const tag = document.getElementById("ms-user-credits");
+    if (valueEl && total != null) valueEl.textContent = String(total);
+    if (tag) {
+      const n = Number(total) || 0;
+      tag.title =
+        n > 0
+          ? "You have " + n + " credits - view plans and top up"
+          : "0 credits - new accounts start here. Choose a plan to generate websites.";
+    }
+  }
+
   async function hydrateUser() {
     const nameEl = document.getElementById("ms-user-name");
     if (!nameEl) return { handle: "", avatarUrl: "" };
@@ -810,12 +1012,23 @@
           if (data?.handle) handle = data.handle;
           else if (data?.display_name) handle = data.display_name;
           avatarUrl = String(data?.avatar_url || "").trim();
-          if (data?.mvp_plus && global.MoonriseMvpCosmetics) {
-            global.MoonriseMvpCosmetics.applyProfileCosmetics(data.branding_defaults);
+
+          const credits = await hydrateCredits();
+          // MVP+ only while a Pricing subscription (Starter/Pro/Business) is active.
+          const hasMvp = !!(credits?.paidPlan || credits?.mvpPlus);
+          if (global.MoonriseMvpCosmetics) {
+            if (hasMvp) {
+              global.MoonriseMvpCosmetics.applyProfileCosmetics(data?.branding_defaults);
+            } else {
+              global.MoonriseMvpCosmetics.applyProfileCosmetics({});
+            }
           }
+        } else {
+          void hydrateCredits();
         }
       } catch (e) {
         /* keep metadata fallback */
+        void hydrateCredits();
       }
 
       const clean = String(handle).replace(/^@/, "").trim() || "moonrise";
@@ -831,6 +1044,14 @@
 
   async function boot() {
     buildShell();
+    bindNavCancel();
+    // Never restore a stale "generating" UI — only live /generate sets it
+    try {
+      sessionStorage.removeItem("ms_channel_generating");
+    } catch {
+      /* ignore */
+    }
+    setChannelGenerating(null, false);
     document.body.classList.add("ms-ready");
     document.dispatchEvent(new Event("ms:shell-ready"));
 
@@ -854,6 +1075,10 @@
       if (nameEl && e.detail?.handle) nameEl.textContent = e.detail.handle;
       setSidebarAvatar(e.detail?.url || "", handle);
     });
+    document.addEventListener("ms:credits-changed", (e) => {
+      if (e.detail?.totalCredits != null) setSidebarCredits(e.detail.totalCredits, e.detail);
+      else void hydrateCredits();
+    });
     document.addEventListener("ms:profile-cosmetics-changed", (e) => {
       if (!e.detail?.mvpPlus || !global.MoonriseMvpCosmetics) return;
       global.MoonriseMvpCosmetics.applyProfileCosmetics(e.detail.branding);
@@ -861,6 +1086,11 @@
     document.body.dataset.msAuthFired = "1";
     document.dispatchEvent(new Event("ms:auth-ready"));
   }
+
+  window.StudioCredits = {
+    fetchBalance: fetchCreditBalance,
+    canAffordGeneration,
+  };
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);

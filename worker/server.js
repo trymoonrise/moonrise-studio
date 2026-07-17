@@ -43,6 +43,7 @@ const WEBSITE_EDIT_MAX_INPUT_CHARS = Math.max(
   40000,
   Number(process.env.WEBSITE_EDIT_MAX_INPUT_CHARS || 120000)
 );
+const TEMPLATES_DIR = path.join(__dirname, "..", "templates");
 /**
  * Website Presets gallery used as the only visual reference for generation.
  * Default: moonrise-studio/Website Presets
@@ -95,6 +96,7 @@ const {
   GENERATION_CREDIT_COST,
   planById,
   getBalance,
+  syncProfileMvpPlus,
   grantSubscription,
   grantTopup,
   deductCredits,
@@ -146,7 +148,7 @@ function stripeClient() {
 /** Monthly hosting & maintenance billed with every go-live checkout. */
 const HOSTING_MONTHLY_CENTS = Math.max(
   0,
-  Number(process.env.STRIPE_HOSTING_MONTHLY_CENTS || 2000)
+  Number(process.env.STRIPE_HOSTING_MONTHLY_CENTS || 400)
 );
 
 function hostingMaintenanceLineItem() {
@@ -669,6 +671,27 @@ function assertSafeEditIntent(prompt) {
       throw err;
     }
   }
+}
+
+function fillTemplate(html, ctx) {
+  const phoneTel = String(ctx.phone || "").replace(/\D/g, "");
+  return html
+    .replaceAll("{{BUSINESS_NAME}}", ctx.businessName || "Business")
+    .replaceAll("{{CATEGORY}}", ctx.category || "Local business")
+    .replaceAll("{{PHONE}}", ctx.phone || "")
+    .replaceAll("{{PHONE_TEL}}", phoneTel || "")
+    .replaceAll("{{ADDRESS}}", ctx.address || "")
+    .replaceAll("{{MAPS_URL}}", ctx.mapsUrl || "")
+    .replaceAll("{{NOTES}}", ctx.notes || "");
+}
+
+function loadTemplate(templateId) {
+  const safe = String(templateId || "local-service").replace(/[^a-z0-9-]/gi, "");
+  const file = path.join(TEMPLATES_DIR, `${safe}.html`);
+  if (!fs.existsSync(file)) {
+    return fs.readFileSync(path.join(TEMPLATES_DIR, "local-service.html"), "utf8");
+  }
+  return fs.readFileSync(file, "utf8");
 }
 
 function hashPick(seed, modulo) {
@@ -1518,6 +1541,12 @@ app.get("/credits/balance", requireUser, async (req, res) => {
           console.error("Subscription sync failed", syncErr.message);
         }
       }
+    }
+    // MVP+ mirrors Pricing subscription: on with Starter/Pro/Business, off otherwise.
+    try {
+      await syncProfileMvpPlus(supabase, req.user.id, balance.paidPlan);
+    } catch (syncMvpErr) {
+      console.error("MVP+ profile sync failed", syncMvpErr.message);
     }
     res.json(balance);
   } catch (e) {

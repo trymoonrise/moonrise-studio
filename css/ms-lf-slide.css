@@ -1,0 +1,48 @@
+/* Slide-to-generate — keep the thumb on the left; move only via --ms-lf-slide-x */
+.ms-lf-slide {
+  --ms-lf-slide-x: 0px;
+  --ms-lf-slide-fill: 52px;
+  --ms-lf-slide-pad: 0.28rem;
+}
+
+.ms-lf-slide-track {
+  position: relative !important;
+  display: block !important;
+  align-items: unset !important;
+  justify-content: unset !important;
+  box-sizing: border-box;
+  padding: var(--ms-lf-slide-pad);
+  cursor: default;
+}
+
+.ms-lf-slide-fill {
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: var(--ms-lf-slide-fill);
+  pointer-events: none;
+}
+
+.ms-lf-slide-label {
+  position: absolute !important;
+  inset: 0 !important;
+  padding-left: 2.8rem;
+  padding-right: 0.75rem;
+  pointer-events: none;
+}
+
+.ms-lf-slide-thumb {
+  position: absolute !important;
+  left: var(--ms-lf-slide-pad) !important;
+  right: auto !important;
+  top: 50% !important;
+  bottom: auto !important;
+  z-index: 2;
+  width: 44px;
+  height: 44px;
+  margin: 0 !important;
+  margin-inline: 0 !important;
+  flex: none !important;
+  transform: translate3d(var(--ms-lf-slide-x), -50%, 0) !important;
+}

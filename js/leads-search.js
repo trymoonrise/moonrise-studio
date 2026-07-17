@@ -11,7 +11,9 @@
   const listCountEl = document.getElementById("lf-list-count");
   const findBtn = document.getElementById("lf-find");
   const SAVED_KEY = "ms_lf_quick_save_v1";
+  const CLAIMED_KEY = "ms_lf_claimed_v1";
   const DISPLAY_PAGE = 80;
+  const LOADING_CARD_COUNT = 6;
   let listView = "default";
   let allLeads = [];
   let leadsReady = false;
@@ -21,8 +23,32 @@
   let lastQuery = "";
   let lastUsedDemo = false;
   let savedMap = loadSavedMap();
+  let claimedMap = loadClaimedMap();
   const revealedLeadIds = new Set();
   let leadRevealObserver = null;
+
+  /** High-fit niches surfaced first in Popular tags. */
+  const POPULAR_TOP_CATEGORIES = window.LeadProspectRank?.TOP_SEARCH_CATEGORIES || [
+    "Plumbers",
+    "HVAC",
+    "Roofing",
+    "Electricians",
+    "Landscaping",
+    "Tree Service",
+    "Pest Control",
+    "Garage Door Repair",
+    "Cleaning Services",
+    "Handyman",
+    "Moving Companies",
+    "Locksmiths",
+  ];
+
+  function rankLeadList(leads) {
+    if (window.LeadProspectRank?.prepareList) {
+      return window.LeadProspectRank.prepareList(leads);
+    }
+    return Array.isArray(leads) ? leads.slice() : [];
+  }
 
   /** Business-type catalog for suggestions + Popular tags. */
   const TYPE_CATALOG = [
@@ -182,6 +208,131 @@
     }
   }
 
+  function loadClaimedMap() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(CLAIMED_KEY) || "{}");
+      return raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function persistClaimedMap() {
+    try {
+      localStorage.setItem(CLAIMED_KEY, JSON.stringify(claimedMap));
+    } catch (e) {
+      /* ignore quota */
+    }
+  }
+
+  function isClaimed(leadOrId) {
+    const id =
+      typeof leadOrId === "string" || typeof leadOrId === "number"
+        ? String(leadOrId || "").trim()
+        : leadId(leadOrId);
+    return !!(id && claimedMap[id]);
+  }
+
+  /**
+   * Slide to generate → hide this business from Available + Quick Save.
+   * Local first (instant), then optionally mirrored via projects.lead_id.
+   */
+  function markLeadClaimed(lead) {
+    const id = leadId(lead);
+    if (!id) return false;
+    if (claimedMap[id]) return true;
+    claimedMap[id] = {
+      id,
+      name: String(lead?.name || lead?.businessName || "").trim(),
+      mapsUrl: String(lead?.mapsUrl || lead?.maps_url || "").trim(),
+      at: new Date().toISOString(),
+    };
+    persistClaimedMap();
+    if (savedMap[id]) {
+      delete savedMap[id];
+      persistSavedMap();
+    }
+    return true;
+  }
+
+  function releaseLeadClaim(leadOrId) {
+    const id =
+      typeof leadOrId === "string" || typeof leadOrId === "number"
+        ? String(leadOrId || "").trim()
+        : leadId(leadOrId);
+    if (!id || !claimedMap[id] || claimedMap[id].from === "project") return false;
+    delete claimedMap[id];
+    persistClaimedMap();
+    if (lastLeads.length) refreshVisibleLeads();
+    return true;
+  }
+
+  const NO_CREDITS_MSG =
+    "Sorry, you need credits to generate a website. Visit our pricing page!";
+
+  function showGenerateBlocked(msg) {
+    const text = String(msg || "").trim();
+    if (!text) return;
+    window.StudioToast?.error?.(text);
+    if (errorEl) {
+      errorEl.hidden = false;
+      errorEl.textContent = text;
+    }
+    if (statusEl) {
+      statusEl.hidden = true;
+      statusEl.textContent = "";
+    }
+  }
+
+  async function canAffordGeneration() {
+    if (!window.StudioCredits?.canAffordGeneration) {
+      return {
+        ok: false,
+        reason: "unavailable",
+        message: "Can't verify credits right now. Refresh the page and try again.",
+      };
+    }
+    return window.StudioCredits.canAffordGeneration();
+  }
+
+  function mergeClaimedIds(ids) {
+    let changed = false;
+    (ids || []).forEach((raw) => {
+      const id = String(raw || "").trim();
+      if (!id || claimedMap[id]) return;
+      claimedMap[id] = { id, at: new Date().toISOString(), from: "project" };
+      changed = true;
+    });
+    if (changed) persistClaimedMap();
+    return changed;
+  }
+
+  function filterClaimed(leads) {
+    return (leads || []).filter((lead) => !isClaimed(lead));
+  }
+
+  async function hydrateClaimedFromProjects() {
+    try {
+      const sb = window.StudioAuth?.getClient?.() || window.SiteSupabase?.getClient?.();
+      const user = await window.StudioAuth?.getUser?.();
+      if (!sb || !user?.id) return false;
+      const { data, error } = await sb
+        .from("projects")
+        .select("lead_id")
+        .eq("user_id", user.id)
+        .not("lead_id", "is", null)
+        .limit(2000);
+      if (error) throw error;
+      const ids = (data || [])
+        .map((row) => String(row.lead_id || "").trim())
+        .filter(Boolean);
+      return mergeClaimedIds(ids);
+    } catch (e) {
+      console.warn("hydrateClaimedFromProjects", e);
+      return false;
+    }
+  }
+
   function leadId(lead) {
     return String(lead?.id || lead?.mapsUrl || lead?.name || "").trim();
   }
@@ -229,11 +380,11 @@
 
   function applyListFilter(leads) {
     if (listView !== "saved") return leads || [];
-    return (leads || []).filter(isSaved);
+    return filterClaimed((leads || []).filter(isSaved));
   }
 
   function savedLeadsList() {
-    return Object.keys(savedMap).map((id) => savedMap[id]);
+    return filterClaimed(Object.keys(savedMap).map((id) => savedMap[id]));
   }
 
   /** Demo businesses for empty DB / offline preview. */
@@ -627,8 +778,10 @@
 
   function setError(msg) {
     if (errorEl) {
-      errorEl.hidden = true;
-      errorEl.textContent = "";
+      if (!msg) {
+        errorEl.hidden = true;
+        errorEl.textContent = "";
+      }
     }
     if (!msg) {
       window.StudioToast?.clear?.();
@@ -751,6 +904,64 @@
     resultsEl.classList.add("is-visible");
   }
 
+  function renderLoadingSkeletonRow() {
+    return (
+      '<div class="ms-lf-skel-row">' +
+      '<span class="ms-lf-skel-icon" aria-hidden="true"></span>' +
+      '<span class="ms-lf-skel-line"></span>' +
+      "</div>"
+    );
+  }
+
+  function renderLoadingCard(index) {
+    const mainRows = Array.from({ length: 3 }, () => renderLoadingSkeletonRow()).join("");
+    const sideRows = Array.from({ length: 2 }, () => renderLoadingSkeletonRow()).join("");
+    return (
+      '<article class="ms-card ms-lead-card ms-lf-pro ms-lf-skeleton" aria-hidden="true" style="--ms-lf-skel-delay:' +
+      index * 90 +
+      'ms">' +
+      '<header class="ms-lf-pro-head">' +
+      '<div class="ms-lf-pro-identity">' +
+      '<div class="ms-lf-skel-avatar" aria-hidden="true"></div>' +
+      '<div class="ms-lf-pro-titles">' +
+      '<div class="ms-lf-skel-line ms-lf-skel-line--title"></div>' +
+      '<div class="ms-lf-skel-line ms-lf-skel-line--sub"></div>' +
+      "</div></div>" +
+      '<div class="ms-lf-skel-circle" aria-hidden="true"></div>' +
+      "</header>" +
+      '<div class="ms-lf-pro-details">' +
+      '<div class="ms-lf-pro-details-main">' +
+      mainRows +
+      "</div>" +
+      '<div class="ms-lf-pro-details-side">' +
+      sideRows +
+      "</div></div>" +
+      '<footer class="ms-lf-pro-foot">' +
+      '<div class="ms-lf-skel-slide" aria-hidden="true"></div>' +
+      '<div class="ms-lf-skel-loader" aria-hidden="true">' +
+      '<div class="ms-lb-dots-loader"><span></span><span></span><span></span></div>' +
+      "</div></footer></article>"
+    );
+  }
+
+  function showLoadingCards() {
+    if (!resultsEl) return;
+    resetLeadReveals();
+    resultsEl.innerHTML = Array.from({ length: LOADING_CARD_COUNT }, (_, i) =>
+      renderLoadingCard(i)
+    ).join("");
+    resultsEl.classList.add("is-loading");
+    resultsEl.setAttribute("aria-busy", "true");
+    revealResults();
+    if (listCountEl) listCountEl.hidden = true;
+  }
+
+  function clearLoadingCards() {
+    if (!resultsEl) return;
+    resultsEl.classList.remove("is-loading");
+    resultsEl.removeAttribute("aria-busy");
+  }
+
   const LD = window.LeadDisplay || null;
 
   function displayName(lead) {
@@ -763,7 +974,7 @@
 
   function cleanCategoryText(value) {
     return String(value || "")
-      .replace(/^[\s\d.,\-−–—+·•]+/, "")
+      .replace(/^[\s\d.,\-−–\u2014+·•]+/, "")
       .replace(/\b(temporarily closed|permanently closed|temporarily|permanently|closed|open now|open)\b.*$/i, "")
       .replace(/([a-z])([A-Z])/g, "$1 $2")
       .replace(/\s+/g, " ")
@@ -904,6 +1115,75 @@
     );
   }
 
+  function renderProRowCell(valueHtml, opts) {
+    opts = opts || {};
+    const empty = !!opts.empty;
+    const slot = opts.slot === "aside" ? "aside" : "main";
+    const tag = opts.href && !empty ? "a" : "span";
+    const cls =
+      "ms-lf-pro-row-" +
+      slot +
+      (empty ? " is-empty" : "") +
+      (opts.href && !empty ? " is-link" : "") +
+      (opts.status === "open" ? " is-open" : "") +
+      (opts.status === "closed" ? " is-closed" : "");
+    const attrs = ['class="' + cls + '"'];
+    if (opts.href && !empty) {
+      attrs.push('href="' + escapeHtml(opts.href) + '"');
+      if (opts.external) attrs.push('target="_blank" rel="noopener noreferrer"');
+    }
+    return "<" + tag + " " + attrs.join(" ") + ">" + valueHtml + "</" + tag + ">";
+  }
+
+  function renderProRowPair(iconHtml, label, leftHtml, rightHtml, opts) {
+    opts = opts || {};
+    const rowClass = opts.rowClass ? " " + opts.rowClass : "";
+    return (
+      '<div class="ms-lf-pro-row ms-lf-pro-row--pair' +
+      rowClass +
+      '" aria-label="' +
+      escapeHtml(label) +
+      '">' +
+      '<span class="ms-lf-pro-row-icon" aria-hidden="true">' +
+      iconHtml +
+      "</span>" +
+      '<div class="ms-lf-pro-row-pair-body">' +
+      renderProRowCell(leftHtml, {
+        slot: "main",
+        empty: !!opts.leftEmpty,
+        href: opts.leftHref,
+        external: opts.leftExternal,
+      }) +
+      renderProRowCell(rightHtml, {
+        slot: "aside",
+        empty: !!opts.rightEmpty,
+        href: opts.rightHref,
+        external: opts.rightExternal,
+        status: opts.rightStatus,
+      }) +
+      "</div></div>"
+    );
+  }
+
+  function formatRatingCompact(lead) {
+    const n = Number(lead?.rating);
+    const c = Number(lead?.reviewCount);
+    const rating =
+      Number.isFinite(n) && n > 0
+        ? n % 1 === 0
+          ? n.toFixed(1)
+          : String(Math.round(n * 10) / 10)
+        : "";
+    let count = "";
+    if (!(lead?.hasNoReviews || lead?.reviewLabel === "No reviews")) {
+      if (Number.isFinite(c) && c > 0) count = "(" + String(Math.round(c)) + ")";
+    }
+    if (rating && count) return rating + " • " + count;
+    if (rating) return rating;
+    if (count) return count;
+    return "";
+  }
+
   function builderPickFromLead(lead) {
     if (LD?.buildLeadBuilderPick) {
       const pick = LD.buildLeadBuilderPick(lead);
@@ -970,46 +1250,100 @@
     return { href: "builder.html?" + params.toString(), pick };
   }
 
-  function launchBuilderForLead(lead) {
-    if (!lead) return;
+  async function launchBuilderForLead(lead, opts) {
+    if (!lead) return false;
+    if (!opts?.skipCreditCheck) {
+      const check = await canAffordGeneration();
+      if (!check.ok) {
+        showGenerateBlocked(check.message || NO_CREDITS_MSG);
+        return false;
+      }
+    }
+    markLeadClaimed(lead);
     const handoff = builderHrefForLead(lead);
     storeBuilderPick(handoff.pick);
     location.href = handoff.href;
+    return true;
   }
 
-  function resetSlide(slide) {
-    if (!slide) return;
+  function slidePad(track) {
+    if (!track) return 4;
+    const style = window.getComputedStyle(track);
+    return Number.parseFloat(style.paddingLeft) || 4;
+  }
+
+  function slideMax(slide) {
+    const track = slide.querySelector(".ms-lf-slide-track");
     const thumb = slide.querySelector(".ms-lf-slide-thumb");
-    const fill = slide.querySelector(".ms-lf-slide-fill");
-    slide.classList.remove("is-dragging", "is-done");
-    slide.style.removeProperty("--ms-lf-slide-x");
-    if (thumb) thumb.style.transform = "";
-    if (fill) fill.style.width = "";
+    if (!track || !thumb) return 0;
+    const pad = slidePad(track);
+    return Math.max(0, track.clientWidth - pad * 2 - thumb.offsetWidth);
   }
 
   function setSlideX(slide, x, max) {
-    const clamped = Math.max(0, Math.min(max, x));
-    const pct = max > 0 ? (clamped / max) * 100 : 0;
+    const track = slide.querySelector(".ms-lf-slide-track");
     const thumb = slide.querySelector(".ms-lf-slide-thumb");
-    const fill = slide.querySelector(".ms-lf-slide-fill");
+    const clamped = Math.max(0, Math.min(max, x));
+    const pad = slidePad(track);
+    const thumbW = thumb?.offsetWidth || 44;
     slide.style.setProperty("--ms-lf-slide-x", clamped + "px");
-    if (thumb) thumb.style.transform = "translateX(" + clamped + "px)";
-    if (fill) fill.style.width = "calc(" + pct + "% + 22px)";
+    slide.style.setProperty("--ms-lf-slide-fill", pad + clamped + thumbW + "px");
     return clamped;
   }
 
+  function resetSlide(slide, animated) {
+    if (!slide) return;
+    const max = slideMax(slide);
+    slide.classList.remove("is-dragging", "is-done", "is-completing");
+    if (animated) {
+      slide.classList.add("is-returning");
+      setSlideX(slide, 0, max);
+      window.setTimeout(() => {
+        slide.classList.remove("is-returning");
+        slide.style.removeProperty("--ms-lf-slide-x");
+        slide.style.removeProperty("--ms-lf-slide-fill");
+      }, 280);
+      return;
+    }
+    slide.classList.remove("is-returning");
+    slide.style.removeProperty("--ms-lf-slide-x");
+    slide.style.removeProperty("--ms-lf-slide-fill");
+  }
+
   function completeSlide(slide) {
-    if (!slide || slide.classList.contains("is-done")) return;
+    if (!slide || slide.classList.contains("is-done") || slide.classList.contains("is-completing")) {
+      return;
+    }
     const id = slide.getAttribute("data-lead-slide") || "";
-    const track = slide.querySelector(".ms-lf-slide-track");
-    const thumb = slide.querySelector(".ms-lf-slide-thumb");
-    const max = Math.max(0, (track?.clientWidth || 0) - (thumb?.offsetWidth || 0));
-    setSlideX(slide, max, max);
-    slide.classList.add("is-done");
-    slide.classList.remove("is-dragging");
+    const max = slideMax(slide);
     const lead =
       lastLeads.find((item) => leadId(item) === id) || savedMap[id] || null;
-    window.setTimeout(() => launchBuilderForLead(lead), 140);
+    if (!lead) {
+      resetSlide(slide, true);
+      showGenerateBlocked("Could not open that lead. Try again.");
+      return;
+    }
+    void (async () => {
+      const check = await canAffordGeneration();
+      if (!check.ok) {
+        resetSlide(slide, true);
+        showGenerateBlocked(check.message || NO_CREDITS_MSG);
+        return;
+      }
+      slide.classList.remove("is-dragging", "is-returning");
+      slide.classList.add("is-completing");
+      setSlideX(slide, max, max);
+      window.setTimeout(() => {
+        slide.classList.remove("is-completing");
+        void launchBuilderForLead(lead, { skipCreditCheck: true }).then((ok) => {
+          if (!ok) {
+            resetSlide(slide, true);
+            return;
+          }
+          slide.classList.add("is-done");
+        });
+      }, 220);
+    })();
   }
 
   function bindGenerateSlides() {
@@ -1017,74 +1351,96 @@
     resultsEl.dataset.slideBound = "1";
 
     resultsEl.addEventListener("pointerdown", (e) => {
+      if (e.button != null && e.button !== 0) return;
       const thumb = e.target.closest(".ms-lf-slide-thumb");
       if (!thumb) return;
       const slide = thumb.closest(".ms-lf-slide");
       if (!slide || slide.classList.contains("is-disabled") || slide.classList.contains("is-done")) {
         return;
       }
+      if (slide.classList.contains("is-completing") || slide.classList.contains("is-returning")) {
+        return;
+      }
+      const track = slide.querySelector(".ms-lf-slide-track");
+      if (!track) return;
+
       e.preventDefault();
       e.stopPropagation();
 
-      const track = slide.querySelector(".ms-lf-slide-track");
-      if (!track) return;
-      const max = Math.max(0, track.clientWidth - thumb.offsetWidth);
+      const max = slideMax(slide);
+      if (max <= 0) return;
+
+      let startLeft = Number.parseFloat(slide.style.getPropertyValue("--ms-lf-slide-x")) || 0;
       const startX = e.clientX;
-      const startLeft = Number.parseFloat(slide.style.getPropertyValue("--ms-lf-slide-x")) || 0;
       let current = startLeft;
       let finished = false;
+      let raf = 0;
+      let pendingX = startLeft;
 
+      slide.classList.remove("is-returning", "is-completing");
       slide.classList.add("is-dragging");
-      thumb.setPointerCapture?.(e.pointerId);
+      try {
+        thumb.setPointerCapture(e.pointerId);
+      } catch (_) {
+        /* ignore */
+      }
+
+      const flush = () => {
+        raf = 0;
+        if (finished) return;
+        current = setSlideX(slide, pendingX, max);
+      };
 
       const onMove = (ev) => {
         if (finished) return;
-        current = setSlideX(slide, startLeft + (ev.clientX - startX), max);
+        pendingX = startLeft + (ev.clientX - startX);
+        if (!raf) raf = window.requestAnimationFrame(flush);
       };
 
-      const onUp = () => {
+      const onUp = (ev) => {
         if (finished) return;
         finished = true;
-        window.removeEventListener("pointermove", onMove);
-        window.removeEventListener("pointerup", onUp);
-        window.removeEventListener("pointercancel", onUp);
+        if (raf) window.cancelAnimationFrame(raf);
+        thumb.removeEventListener("pointermove", onMove);
+        thumb.removeEventListener("pointerup", onUp);
+        thumb.removeEventListener("pointercancel", onUp);
         try {
-          thumb.releasePointerCapture?.(e.pointerId);
+          thumb.releasePointerCapture(ev.pointerId);
         } catch (_) {
           /* ignore */
         }
-        if (current >= max * 0.86) {
-          completeSlide(slide);
-        } else {
-          resetSlide(slide);
-        }
+        slide.classList.remove("is-dragging");
+        current = setSlideX(slide, pendingX, max);
+        if (current >= max * 0.78) completeSlide(slide);
+        else resetSlide(slide, true);
       };
 
-      window.addEventListener("pointermove", onMove);
-      window.addEventListener("pointerup", onUp);
-      window.addEventListener("pointercancel", onUp);
+      thumb.addEventListener("pointermove", onMove);
+      thumb.addEventListener("pointerup", onUp);
+      thumb.addEventListener("pointercancel", onUp);
     });
 
     resultsEl.addEventListener("keydown", (e) => {
       const thumb = e.target.closest(".ms-lf-slide-thumb");
       if (!thumb) return;
       const slide = thumb.closest(".ms-lf-slide");
-      if (!slide || slide.classList.contains("is-done")) return;
-      const track = slide.querySelector(".ms-lf-slide-track");
-      if (!track) return;
-      const max = Math.max(0, track.clientWidth - thumb.offsetWidth);
+      if (!slide || slide.classList.contains("is-done") || slide.classList.contains("is-completing")) {
+        return;
+      }
+      const max = slideMax(slide);
       const cur = Number.parseFloat(slide.style.getPropertyValue("--ms-lf-slide-x")) || 0;
 
       if (e.key === "ArrowRight" || e.key === "End") {
         e.preventDefault();
-        if (e.key === "End" || cur >= max * 0.86) {
-          completeSlide(slide);
-        } else {
-          setSlideX(slide, cur + Math.max(24, max * 0.2), max);
+        if (e.key === "End" || cur >= max * 0.78) completeSlide(slide);
+        else {
+          slide.classList.add("is-returning");
+          setSlideX(slide, Math.min(max, cur + Math.max(28, max * 0.22)), max);
+          window.setTimeout(() => slide.classList.remove("is-returning"), 220);
         }
       } else if (e.key === "ArrowLeft" || e.key === "Home" || e.key === "Escape") {
         e.preventDefault();
-        resetSlide(slide);
+        resetSlide(slide, true);
       }
     });
   }
@@ -1101,55 +1457,55 @@
     const website = leadWebsite(lead);
     const hasSite = leadHasWebsite(lead);
     const mapsUrl = String(lead.mapsUrl || lead.maps_url || "").trim();
-    const ratingLine = LD?.formatRatingLine ? LD.formatRatingLine(lead) : "";
+    const ratingLine = formatRatingCompact(lead);
     const saved = isSaved(lead);
     const tel = telHref(phone || lead.phone);
+    const prospectScore = window.LeadProspectRank?.getWebsiteProspectScore?.(lead) ?? 0;
+    const isTopPick = prospectScore >= (window.LeadProspectRank?.TOP_MIN ?? 60);
 
     const addressEmpty = !address;
     const phoneEmpty = !phone;
     const hoursEmpty = !openStatus.text;
-    const ratingEmpty = !ratingLine || ratingLine === "No reviews";
+    const ratingEmpty = !ratingLine;
 
-    const mainRows = [
-      renderProRow(ICO.pin, "Address", escapeHtml(address || "Address not listed"), {
-        empty: addressEmpty,
-      }),
-      phoneEmpty
-        ? renderProRow(ICO.phone, "Phone", "Phone not listed", { empty: true })
-        : renderProRow(ICO.phone, "Phone " + phone, escapeHtml(phone), {
-            href: tel || undefined,
-          }),
-      hasSite && website
-        ? renderProRow(ICO.globe, "Website", escapeHtml(formatWebsiteLabel(website)), {
-            href: website,
-            external: true,
-          })
-        : renderProRow(ICO.globe, "Website", '<span class="ms-lf-pro-no-site">No website</span>', {
-            empty: true,
-          }),
-      mapsUrl
-        ? renderProRow(ICO.pin, "Google Maps", "Open in Google Maps", {
-            href: mapsUrl,
-            external: true,
-          })
-        : renderProRow(ICO.pin, "Google Maps", "Maps link unavailable", { empty: true }),
-    ];
-
-    const sideRows = [
-      renderProRow(
-        ICO.clock,
-        "Hours",
+    const detailRows = [
+      renderProRowPair(
+        ICO.pin,
+        "Address and hours",
+        escapeHtml(address || "Address not listed"),
         escapeHtml(hoursEmpty ? "Hours not listed" : openStatus.text),
         {
-          empty: hoursEmpty,
-          status: openStatus.kind || "",
+          leftEmpty: addressEmpty,
+          rightEmpty: hoursEmpty,
+          rightStatus: openStatus.kind || "",
         }
       ),
-      renderProRow(
-        ICO.star,
-        "Rating",
+      renderProRowPair(
+        ICO.phone,
+        "Phone and rating",
+        phoneEmpty ? "Phone not listed" : escapeHtml(phone),
         escapeHtml(ratingEmpty ? "No reviews" : ratingLine),
-        { empty: ratingEmpty }
+        {
+          leftEmpty: phoneEmpty,
+          leftHref: phoneEmpty ? undefined : tel || undefined,
+          rightEmpty: ratingEmpty,
+        }
+      ),
+      renderProRowPair(
+        ICO.globe,
+        "Website and Google Maps",
+        hasSite && website
+          ? escapeHtml(formatWebsiteLabel(website))
+          : '<span class="ms-lf-pro-no-site">No website</span>',
+        mapsUrl ? "Google Maps" : "Maps link unavailable",
+        {
+          rowClass: "ms-lf-pro-row--website",
+          leftHref: hasSite && website ? website : undefined,
+          leftExternal: !!(hasSite && website),
+          rightEmpty: !mapsUrl,
+          rightHref: mapsUrl || undefined,
+          rightExternal: !!mapsUrl,
+        }
       ),
     ];
 
@@ -1192,12 +1548,8 @@
       '" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>' +
       "</button></div></header>" +
       '<div class="ms-lf-pro-details" aria-label="Business details">' +
-      '<div class="ms-lf-pro-details-main">' +
-      mainRows.join("") +
-          "</div>" +
-      '<div class="ms-lf-pro-details-side">' +
-      sideRows.join("") +
-      "</div></div>" +
+      detailRows.join("") +
+      "</div>" +
       '<footer class="ms-lf-pro-foot">' +
       '<div class="ms-lf-slide" data-lead-slide="' +
       escapeHtml(id) +
@@ -1218,15 +1570,18 @@
 
   function renderLeads(leads, query, isDemo) {
     if (!resultsEl) return;
+    clearLoadingCards();
     lastLeads = Array.isArray(leads) ? leads.slice() : [];
     lastQuery = query || "";
     lastUsedDemo = !!isDemo;
 
     const websiteFilter = getWebsiteFilter();
-    let visible = applyWebsiteFilter(lastLeads, websiteFilter);
+    let visible = filterClaimed(applyWebsiteFilter(lastLeads, websiteFilter));
     if (listView === "saved") {
       const fromSearch = applyListFilter(visible);
-      visible = fromSearch.length ? fromSearch : applyWebsiteFilter(savedLeadsList(), websiteFilter);
+      visible = fromSearch.length
+        ? fromSearch
+        : filterClaimed(applyWebsiteFilter(savedLeadsList(), websiteFilter));
     }
 
     revealResults();
@@ -1285,22 +1640,29 @@
     leadsLoading = true;
     setError("");
     setStatus("");
+    showLoadingCards();
     try {
       const data = await loader.load({ force: true, forceFull: true, watch: true });
-      allLeads = Array.isArray(data?.leads) ? data.leads.slice() : [];
+      allLeads = rankLeadList(Array.isArray(data?.leads) ? data.leads : []);
       leadsReady = allLeads.length > 0;
       displayLimit = DISPLAY_PAGE;
       if (!allLeads.length) {
+        clearLoadingCards();
         setStatus("No leads in the database yet.");
         setListCount(0);
+        resultsEl.innerHTML =
+          '<div class="ms-dash-empty">No leads in the database yet.</div>';
         return;
       }
       setStatus("");
       renderLeads(allLeads, "All leads", false);
     } catch (e) {
       console.error(e);
+      clearLoadingCards();
       setError(e?.message || "Could not load leads from Supabase.");
       setStatus("");
+      resultsEl.innerHTML =
+        '<div class="ms-dash-empty">Could not load leads. Check your connection and refresh.</div>';
     } finally {
       leadsLoading = false;
     }
@@ -1318,7 +1680,7 @@
     resetLeadReveals();
 
     setFindBusy(true);
-    if (resultsEl) resultsEl.hidden = true;
+    showLoadingCards();
 
     let leads = [];
     let usedDemo = false;
@@ -1340,7 +1702,7 @@
             const key = leadId(lead) || lead.mapsUrl || lead.name;
             if (key) byKey.set(key, lead);
           });
-          allLeads = Array.from(byKey.values());
+          allLeads = rankLeadList(Array.from(byKey.values()));
           leadsReady = allLeads.length > 0;
         } else if (!scraped.skipped) {
           remoteError = scraped.error || "Live scrape returned no leads";
@@ -1384,11 +1746,11 @@
 
       setStatus("");
       if (usedDemo && remoteError) {
-        setError("Could not search live leads — showing demo results.");
-      } else if (remoteError && !leads.length) {
+        setError("Could not search live leads - showing demo results.");
+      } else       if (remoteError && !leads.length) {
         setError(remoteError);
       }
-      renderLeads(leads, query, usedDemo);
+      renderLeads(rankLeadList(leads), query, usedDemo);
     } finally {
       setFindBusy(false);
     }
@@ -1535,6 +1897,7 @@
     const input = kind === "type" ? typeInput : locationInput;
     if (!input || !value) return;
     input.value = value;
+    syncFieldClear(kind);
     hideSuggest(kind);
     input.focus();
     if (kind === "type") {
@@ -1544,9 +1907,31 @@
     }
   }
 
+  function syncFieldClear(kind) {
+    const input = kind === "type" ? typeInput : locationInput;
+    const clearBtn = document.getElementById(kind === "type" ? "lf-type-clear" : "lf-location-clear");
+    if (!clearBtn) return;
+    const hasValue = !!(input && String(input.value || "").trim());
+    clearBtn.hidden = !hasValue;
+  }
+
+  function clearField(kind) {
+    const input = kind === "type" ? typeInput : locationInput;
+    if (!input) return;
+    input.value = "";
+    hideSuggest(kind);
+    syncFieldClear(kind);
+    if (kind === "type") {
+      document.querySelectorAll("#lf-tags button").forEach((b) => b.classList.remove("is-active"));
+    }
+    input.focus();
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+
   function bindSuggestField(kind) {
     const input = kind === "type" ? typeInput : locationInput;
     const list = document.getElementById(kind === "type" ? "lf-type-suggest" : "lf-location-suggest");
+    const clearBtn = document.getElementById(kind === "type" ? "lf-type-clear" : "lf-location-clear");
     if (!input || !list) return;
 
     const schedule = () => {
@@ -1561,7 +1946,10 @@
       hideSuggest(kind === "type" ? "location" : "type");
       renderSuggest(kind);
     });
-    input.addEventListener("input", schedule);
+    input.addEventListener("input", () => {
+      syncFieldClear(kind);
+      schedule();
+    });
     input.addEventListener("keydown", (e) => {
       if (!suggestState[kind].open && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
         renderSuggest(kind);
@@ -1588,12 +1976,20 @@
       }
     });
 
+    clearBtn?.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      clearField(kind);
+    });
+
     list.addEventListener("mousedown", (e) => {
       const item = e.target.closest(".ms-lf-suggest-item");
       if (!item) return;
       e.preventDefault();
       applySuggest(kind, item.getAttribute("data-value") || "");
     });
+
+    syncFieldClear(kind);
   }
 
   function renderPopularTags() {
@@ -1695,6 +2091,7 @@
     const btn = e.target.closest("button[data-type]");
     if (!btn || !typeInput) return;
     typeInput.value = btn.getAttribute("data-type") || "";
+    syncFieldClear("type");
     typeInput.focus();
     hideAllSuggests();
     document.querySelectorAll("#lf-tags button").forEach((b) => {
@@ -1719,6 +2116,9 @@
       bindSuggestField("type");
       bindSuggestField("location");
       syncListViewToggle();
+      void hydrateClaimedFromProjects().then((changed) => {
+        if (changed && lastLeads.length) refreshVisibleLeads();
+      });
       void preloadAllLeads();
     };
     document.addEventListener("ms:auth-ready", run, { once: true });
@@ -1726,6 +2126,10 @@
       if (session) run();
     });
   }
+
+  window.LeadHandoff = {
+    release: releaseLeadClaim,
+  };
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", bootLeadsSearch);

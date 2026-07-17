@@ -2,37 +2,36 @@
  * Builder — business details → generate with Website Presets, then AI edit / publish.
  */
 (function () {
-  const DEFAULT_TEMPLATE_ID = "coral-navy";
+  const DEFAULT_TEMPLATE_ID = "local-service";
 
-  /** Style vibes for onboard chooser — visual preview via stock CDN images (no local HTML templates). */
   const TEMPLATES = [
-    { id: "coral-navy", name: "Coral", desc: "Warm bold local", previewImage: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=900&q=80" },
-    { id: "lime-charcoal", name: "Volt", desc: "High-energy contrast", previewImage: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=900&q=80" },
-    { id: "crimson-ink", name: "Ink", desc: "Editorial type", previewImage: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=900&q=80" },
-    { id: "teal-amber", name: "Tide", desc: "Ocean calm", previewImage: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=900&q=80" },
-    { id: "cobalt-gold", name: "Beacon", desc: "Pro trust", previewImage: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=900&q=80" },
-    { id: "magenta-mint", name: "Bloom", desc: "Beauty soft", previewImage: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=900&q=80" },
-    { id: "orange-slate", name: "Forge", desc: "Trades ready", previewImage: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=900&q=80" },
-    { id: "sapphire-sand", name: "Aura", desc: "Spa wellness", previewImage: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=900&q=80" },
-    { id: "emerald-mist", name: "Verdant", desc: "Garden green", previewImage: "https://images.unsplash.com/photo-1558904541-efa843a96f01?auto=format&fit=crop&w=900&q=80" },
-    { id: "rose-stone", name: "Bloomrose", desc: "Salon polish", previewImage: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=80" },
-    { id: "indigo-cream", name: "North", desc: "Clean modern", previewImage: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=900&q=80" },
-    { id: "copper-night", name: "Kiln", desc: "Craft warm", previewImage: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=900&q=80" },
-    { id: "sky-graphite", name: "Drift", desc: "Airy open", previewImage: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=80" },
-    { id: "olive-bone", name: "Grove", desc: "Natural calm", previewImage: "https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=900&q=80" },
-    { id: "wine-fog", name: "Vellum", desc: "Quiet luxury", previewImage: "https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=900&q=80" },
-    { id: "canary-ink", name: "Spark", desc: "Cafe bright", previewImage: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=900&q=80" },
-    { id: "glacier-slate", name: "Frost", desc: "Cool clinical", previewImage: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=900&q=80" },
-    { id: "clay-fog", name: "Terra", desc: "Earthy home", previewImage: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80" },
-    { id: "cyan-void", name: "Pulse", desc: "Tech sharp", previewImage: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=900&q=80" },
-    { id: "forest-cream", name: "Canopy", desc: "Outdoor green", previewImage: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=900&q=80" },
-    { id: "ruby-smoke", name: "Crimson", desc: "Bold dining", previewImage: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80" },
-    { id: "azure-paper", name: "Paper", desc: "Learn bright", previewImage: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=900&q=80" },
-    { id: "honey-espresso", name: "Amber", desc: "Warm bakery", previewImage: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=900&q=80" },
-    { id: "pearl-midnight", name: "Lumen", desc: "Night polish", previewImage: "https://images.unsplash.com/photo-1512917772120-2f13304f0931?auto=format&fit=crop&w=900&q=80" },
-    { id: "moss-porcelain", name: "Moss", desc: "Pet friendly", previewImage: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&w=900&q=80" },
-    { id: "flame-coal", name: "Ember", desc: "Auto grit", previewImage: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&w=900&q=80" },
-    { id: "arctic-navy", name: "Polar", desc: "Legal cool", previewImage: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=900&q=80" },
+    { id: "coral-navy", name: "Coral", desc: "Scroll zoom", preview: "testtemplates/01-coral-navy/index.html" },
+    { id: "lime-charcoal", name: "Volt", desc: "Split + video", preview: "testtemplates/02-lime-charcoal/index.html" },
+    { id: "crimson-ink", name: "Ink", desc: "Type wipe", preview: "testtemplates/03-crimson-ink/index.html" },
+    { id: "teal-amber", name: "Tide", desc: "Ocean film", preview: "testtemplates/04-teal-amber/index.html" },
+    { id: "cobalt-gold", name: "Beacon", desc: "Clip path", preview: "testtemplates/05-cobalt-gold/index.html" },
+    { id: "magenta-mint", name: "Bloom", desc: "Parallax", preview: "testtemplates/06-magenta-mint/index.html" },
+    { id: "orange-slate", name: "Forge", desc: "Grain + wipe", preview: "testtemplates/07-orange-slate/index.html" },
+    { id: "sapphire-sand", name: "Aura", desc: "Float zoom", preview: "testtemplates/08-sapphire-sand/index.html" },
+    { id: "emerald-mist", name: "Verdant", desc: "Curtain part", preview: "testtemplates/09-emerald-mist/index.html" },
+    { id: "rose-stone", name: "Bloomrose", desc: "Blur clarify", preview: "testtemplates/10-rose-stone/index.html" },
+    { id: "indigo-cream", name: "North", desc: "Word blur-in", preview: "testtemplates/11-indigo-cream/index.html" },
+    { id: "copper-night", name: "Kiln", desc: "Line + video", preview: "testtemplates/12-copper-night/index.html" },
+    { id: "sky-graphite", name: "Drift", desc: "Circle expand", preview: "testtemplates/13-sky-graphite/index.html" },
+    { id: "olive-bone", name: "Grove", desc: "Image stack", preview: "testtemplates/14-olive-bone/index.html" },
+    { id: "wine-fog", name: "Vellum", desc: "Fog veil", preview: "testtemplates/15-wine-fog/index.html" },
+    { id: "canary-ink", name: "Spark", desc: "Marquee pop", preview: "testtemplates/16-canary-ink/index.html" },
+    { id: "glacier-slate", name: "Frost", desc: "Sheet lift", preview: "testtemplates/17-glacier-slate/index.html" },
+    { id: "clay-fog", name: "Terra", desc: "Split slide", preview: "testtemplates/18-clay-fog/index.html" },
+    { id: "cyan-void", name: "Pulse", desc: "Scan grid", preview: "testtemplates/19-cyan-void/index.html" },
+    { id: "forest-cream", name: "Canopy", desc: "Triple sway", preview: "testtemplates/20-forest-cream/index.html" },
+    { id: "ruby-smoke", name: "Crimson", desc: "Reveal bar", preview: "testtemplates/21-ruby-smoke/index.html" },
+    { id: "azure-paper", name: "Paper", desc: "Underline draw", preview: "testtemplates/22-azure-paper/index.html" },
+    { id: "honey-espresso", name: "Amber", desc: "Breathe glow", preview: "testtemplates/23-honey-espresso/index.html" },
+    { id: "pearl-midnight", name: "Lumen", desc: "Split meet", preview: "testtemplates/24-pearl-midnight/index.html" },
+    { id: "moss-porcelain", name: "Moss", desc: "Unmask slide", preview: "testtemplates/25-moss-porcelain/index.html" },
+    { id: "flame-coal", name: "Ember", desc: "Rising embers", preview: "testtemplates/26-flame-coal/index.html" },
+    { id: "arctic-navy", name: "Polar", desc: "Aurora poly", preview: "testtemplates/27-arctic-navy/index.html" },
   ];
 
   const GALLERY_IDS = new Set(TEMPLATES.map((t) => t.id));
@@ -305,29 +304,11 @@
       const desc = document.getElementById("template-viewer-desc");
       if (title) title.textContent = template.name;
       if (desc) desc.textContent = template.desc;
-      // Stock image preview (legacy HTML template folders removed)
-      frame.removeAttribute("src");
-      frame.srcdoc = [
-        "<!DOCTYPE html><html><head><meta charset='utf-8'><style>",
-        "html,body{margin:0;height:100%;background:#0f172a}",
-        "img{width:100%;height:100%;object-fit:cover;display:block}",
-        ".cap{position:absolute;left:1rem;bottom:1rem;right:1rem;color:#fff;",
-        "font:600 1.1rem/1.3 system-ui,sans-serif;text-shadow:0 2px 12px rgba(0,0,0,.55)}",
-        "</style></head><body style='position:relative'>",
-        template.previewImage
-          ? "<img src='" + String(template.previewImage).replace(/'/g, "%27") + "' alt=''>"
-          : "",
-        "<div class='cap'>" +
-          String(template.name || "").replace(/</g, "&lt;") +
-          " · " +
-          String(template.desc || "").replace(/</g, "&lt;") +
-          "</div>",
-        "</body></html>",
-      ].join("");
+      // Full real page — never card mode
+      frame.src = template.preview || "";
       frame.removeAttribute("scrolling");
     } else {
       frame.removeAttribute("src");
-      frame.removeAttribute("srcdoc");
     }
 
     viewer.hidden = !open;
@@ -435,25 +416,34 @@
     grid.innerHTML = slice
       .map((t) => {
         const active = t.id === state.templateId ? " is-selected" : "";
-        const imgUrl = String(t.previewImage || "").replace(/"/g, "&quot;");
-        const preview = imgUrl
-          ? '<img class="ms-lb-tpl-preview-img" src="' +
-            imgUrl +
-            '" alt="" loading="lazy" decoding="async">'
+        const previewUrl = t.preview
+          ? t.preview + (t.preview.includes("?") ? "&" : "?") + "preview=card"
+          : "";
+        const preview = previewUrl
+          ? '<iframe class="ms-lb-tpl-preview" title="' +
+            t.name +
+            ' preview" loading="lazy" scrolling="no" tabindex="-1" sandbox="allow-scripts allow-same-origin"></iframe>'
           : '<div class="ms-lb-tpl-fallback">' + t.name + "</div>";
-        return (
+        const frameAttrs = previewUrl
+          ? ' class="ms-lb-tpl-frame is-loading" data-preview-src="' +
+            previewUrl.replace(/"/g, "&quot;") +
+            '"'
+          : ' class="ms-lb-tpl-frame is-ready"';
+      return (
           '<button type="button" class="ms-lb-tpl-card' +
           active +
           '" role="option" aria-selected="' +
           (t.id === state.templateId ? "true" : "false") +
           '" data-template-id="' +
-          t.id +
+        t.id +
           '">' +
-          '<div class="ms-lb-tpl-frame is-ready">' +
+          "<div" +
+          frameAttrs +
+        ">" +
           preview +
           "</div>" +
           '<div class="ms-lb-tpl-meta"><strong>' +
-          t.name +
+        t.name +
           "</strong></div>" +
           "</button>"
         );
@@ -474,6 +464,8 @@
     if (count) count.textContent = onboardTemplatePage + 1 + " / " + pages;
     if (prev) prev.disabled = onboardTemplatePage <= 0;
     if (next) next.disabled = onboardTemplatePage >= pages - 1;
+
+    hydrateOnboardPreviews(grid);
   }
 
   function renderOnboardTemplates() {
@@ -1267,7 +1259,8 @@
   }
 
   function hasPaidPlan() {
-    return !!(state.paidPlan || state.mvpPlus || state.pro);
+    // MVP+ / paid access = any active Pricing subscription (Starter, Pro, Business).
+    return !!(state.paidPlan || state.mvpPlus);
   }
 
   function hasMvpPlus() {
@@ -1384,7 +1377,7 @@
       const data = await res.json().catch(() => ({}));
       if (!res.ok) return;
       state.totalCredits = Number(data.totalCredits) || 0;
-      state.paidPlan = !!data.paidPlan;
+      state.paidPlan = !!(data.paidPlan || data.mvpPlus);
       state.mvpPlus = state.paidPlan;
       state.pro = state.paidPlan;
       state.generationCost = Number(data.generationCost) || 5;

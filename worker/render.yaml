@@ -23,9 +23,17 @@ services:
         sync: false
       - key: STRIPE_PRICE_ID
         sync: false
+      - key: STRIPE_AMOUNT_CENTS
+        value: "50000"
+      - key: STRIPE_MVP_PRICE_ID
+        sync: false
+      - key: STRIPE_MVP_AMOUNT_CENTS
+        value: "500"
       - key: VERCEL_TOKEN
         sync: false
       - key: PUBLIC_APP_URL
         sync: false
       - key: CORS_ORIGINS
+        sync: false
+      - key: WORKER_PUBLIC_URL
         sync: false

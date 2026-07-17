@@ -15,6 +15,12 @@
       tone: "surface",
     },
     {
+      track: ".ms-lb-nav-switch",
+      items: ":scope > .ms-lb-nav-btn",
+      activeClass: "is-active",
+      tone: "surface",
+    },
+    {
       track: ".ms-lb-mode",
       items: ":scope > .ms-lb-mode-btn",
       activeClass: "is-active",

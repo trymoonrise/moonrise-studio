@@ -1,12 +1,17 @@
 /**
  * Supabase Auth helpers + page gate for Studio.
+ * Sign-in / sign-up / reset go through the worker so lockouts + rate limits apply.
  */
 (function (global) {
-  const PUBLIC_PAGES = new Set(["index", "login", "apply"]);
-  const AUTH_TIMEOUT_MS = 8000;
+  const PUBLIC_PAGES = new Set(["index", "login", "apply", "orders", "home"]);
+  const AUTH_TIMEOUT_MS = 12000;
 
   function getClient() {
     return global.SiteSupabase?.getClient?.() || null;
+  }
+
+  function workerUrl() {
+    return String(global.SITE_CONFIG?.workerUrl || "").replace(/\/$/, "");
   }
 
   function withTimeout(promise, ms, label) {
@@ -16,6 +21,54 @@
         setTimeout(() => reject(new Error((label || "Request") + " timed out")), ms)
       ),
     ]);
+  }
+
+  function authError(payload, fallback) {
+    const err = new Error(
+      (payload && (payload.error || payload.message)) || fallback || "Authentication failed"
+    );
+    err.code = payload?.code || "";
+    err.retryAfterMs = Number(payload?.retryAfterMs) || 0;
+    err.remainingTries = payload?.remainingTries;
+    return err;
+  }
+
+  async function workerAuth(path, body, headers) {
+    const base = workerUrl();
+    if (!base) throw new Error("Worker URL is not configured");
+    const res = await withTimeout(
+      fetch(base + path, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(headers || {}),
+        },
+        body: JSON.stringify(body || {}),
+      }),
+      AUTH_TIMEOUT_MS,
+      "Auth"
+    );
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw authError(data, "Authentication failed");
+    return data;
+  }
+
+  async function applySessionTokens(payload) {
+    const sb = getClient();
+    if (!sb) throw new Error("Supabase is not configured");
+    if (!payload?.access_token || !payload?.refresh_token) {
+      return payload;
+    }
+    const { data, error } = await withTimeout(
+      sb.auth.setSession({
+        access_token: payload.access_token,
+        refresh_token: payload.refresh_token,
+      }),
+      AUTH_TIMEOUT_MS,
+      "Session"
+    );
+    if (error) throw error;
+    return data;
   }
 
   async function getSession() {
@@ -44,43 +97,36 @@
       throw new Error("Handle validation is unavailable");
     }
     const cleanHandle = handles.assertHandleAllowed(handle);
-    const { data, error } = await withTimeout(
-      sb.auth.signUp({
-        email: String(email || "").trim(),
-        password: String(password || ""),
-        options: {
-          data: {
-            handle: cleanHandle,
-          },
-        },
-      }),
-      AUTH_TIMEOUT_MS,
-      "Sign up"
-    );
-    if (error) throw error;
-    // Don't block navigation on profile write
-    if (data?.user?.id) {
-      Promise.resolve(ensureProfile(data.user, cleanHandle)).catch(() => {});
+    const payload = await workerAuth("/auth/signup", {
+      email: String(email || "").trim(),
+      password: String(password || ""),
+      handle: cleanHandle,
+    });
+    const sessionData = await applySessionTokens(payload);
+    const user = sessionData?.user || payload.user;
+    if (user?.id) {
+      Promise.resolve(ensureProfile(user, cleanHandle)).catch(() => {});
     }
-    return data;
+    return {
+      user: user || null,
+      session: sessionData?.session || null,
+      needsEmailConfirm: !!payload.needsEmailConfirm,
+    };
   }
 
   async function signIn(email, password) {
     const sb = getClient();
     if (!sb) throw new Error("Supabase is not configured");
-    const { data, error } = await withTimeout(
-      sb.auth.signInWithPassword({
-        email: String(email || "").trim(),
-        password: String(password || ""),
-      }),
-      AUTH_TIMEOUT_MS,
-      "Sign in"
-    );
-    if (error) throw error;
-    if (data?.user) {
-      Promise.resolve(ensureProfile(data.user)).catch(() => {});
+    const payload = await workerAuth("/auth/signin", {
+      email: String(email || "").trim(),
+      password: String(password || ""),
+    });
+    const sessionData = await applySessionTokens(payload);
+    const user = sessionData?.user || payload.user;
+    if (user) {
+      Promise.resolve(ensureProfile(user)).catch(() => {});
     }
-    return data;
+    return sessionData || payload;
   }
 
   async function signOut() {
@@ -235,18 +281,10 @@
   }
 
   async function requestPasswordReset(email) {
-    const sb = getClient();
-    if (!sb) throw new Error("Supabase is not configured");
     const address = String(email || "").trim();
     if (!address) throw new Error("Enter your email");
     const redirectTo = new URL("apply.html?mode=recover", location.href).href;
-    const { data, error } = await withTimeout(
-      sb.auth.resetPasswordForEmail(address, { redirectTo }),
-      AUTH_TIMEOUT_MS,
-      "Password reset"
-    );
-    if (error) throw error;
-    return data;
+    return workerAuth("/auth/forgot", { email: address, redirectTo });
   }
 
   async function setPassword(newPassword) {
@@ -273,18 +311,14 @@
     if (next.length < 8) throw new Error("New password must be at least 8 characters");
     if (current === next) throw new Error("New password must be different from the current one");
 
-    const user = await getUser();
-    if (!user?.email) throw new Error("Not signed in");
+    const session = await getSession();
+    if (!session?.access_token) throw new Error("Not signed in");
 
-    const { error: verifyError } = await withTimeout(
-      sb.auth.signInWithPassword({
-        email: user.email,
-        password: current,
-      }),
-      AUTH_TIMEOUT_MS,
-      "Verify password"
+    await workerAuth(
+      "/auth/verify-password",
+      { password: current },
+      { Authorization: "Bearer " + session.access_token }
     );
-    if (verifyError) throw new Error("Current password is incorrect");
 
     const { data, error } = await withTimeout(
       sb.auth.updateUser({ password: next }),

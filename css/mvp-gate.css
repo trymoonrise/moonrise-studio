@@ -1,0 +1,125 @@
+/* MVP+ gate — Code + Download HTML */
+.ms-lb-mode-btn.is-mvp-locked,
+.ms-lb-icon-btn.is-mvp-locked {
+  position: relative;
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+/* Remove legacy orange lock-dot */
+.ms-lb-mode-btn.is-mvp-locked::after,
+.ms-lb-icon-btn.is-mvp-locked::after {
+  content: none;
+  display: none;
+}
+
+.ms-mvp-star {
+  --mvp-star-a: #f59e0b;
+  --mvp-star-b: #f97316;
+  position: absolute;
+  top: 0.08rem;
+  right: 0.1rem;
+  z-index: 2;
+  width: 0.95rem;
+  height: 0.95rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  line-height: 0;
+  filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.18));
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), filter 0.22s ease;
+}
+
+.ms-mvp-star:hover {
+  transform: scale(1.12) rotate(-8deg);
+}
+
+.ms-mvp-star:active {
+  transform: scale(0.92);
+}
+
+.ms-mvp-star-glyph {
+  display: block;
+  width: 0.72rem;
+  height: 0.72rem;
+  background: linear-gradient(135deg, var(--mvp-star-a), var(--mvp-star-b));
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M12 2.6l2.7 5.47 6.04.88-4.37 4.26 1.03 6.02L12 16.4l-5.4 2.83 1.03-6.02L3.26 8.95l6.04-.88L12 2.6z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M12 2.6l2.7 5.47 6.04.88-4.37 4.26 1.03 6.02L12 16.4l-5.4 2.83 1.03-6.02L3.26 8.95l6.04-.88L12 2.6z'/%3E%3C/svg%3E") center / contain no-repeat;
+  animation: ms-mvp-star-shimmer 2.8s ease-in-out infinite;
+  transition: background 0.35s ease, filter 0.35s ease;
+}
+
+.ms-mvp-star.is-flash .ms-mvp-star-glyph {
+  animation: ms-mvp-star-pop 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Oil-slick color tones */
+.ms-mvp-star[data-tone="0"] {
+  --mvp-star-a: #f59e0b;
+  --mvp-star-b: #fb923c;
+}
+.ms-mvp-star[data-tone="1"] {
+  --mvp-star-a: #22d3ee;
+  --mvp-star-b: #6366f1;
+}
+.ms-mvp-star[data-tone="2"] {
+  --mvp-star-a: #e879f9;
+  --mvp-star-b: #f43f5e;
+}
+.ms-mvp-star[data-tone="3"] {
+  --mvp-star-a: #34d399;
+  --mvp-star-b: #06b6d4;
+}
+.ms-mvp-star[data-tone="4"] {
+  --mvp-star-a: #a78bfa;
+  --mvp-star-b: #f472b6;
+}
+.ms-mvp-star[data-tone="5"] {
+  --mvp-star-a: #fbbf24;
+  --mvp-star-b: #ef4444;
+}
+
+@keyframes ms-mvp-star-shimmer {
+  0%,
+  100% {
+    filter: brightness(1) saturate(1);
+  }
+  50% {
+    filter: brightness(1.18) saturate(1.25);
+  }
+}
+
+@keyframes ms-mvp-star-pop {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  40% {
+    transform: scale(1.35) rotate(-18deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.ms-lb-mode-btn.is-mvp-locked[aria-disabled="true"]:active,
+.ms-lb-icon-btn.is-mvp-locked[aria-disabled="true"]:active {
+  transform: none;
+}
+
+/* Store — MVP+ subscribed state */
+.ms-store-product.is-subscribed .ms-store-buy {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+  cursor: default;
+  opacity: 1;
+}
+
+.ms-store-product.is-spotlight {
+  outline: 2px solid rgba(37, 99, 235, 0.45);
+  outline-offset: 4px;
+}

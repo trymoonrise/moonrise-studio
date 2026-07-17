@@ -667,15 +667,13 @@
       const c = Number(lead?.reviewCount);
       const rating =
         Number.isFinite(n) && n > 0 ? (n % 1 === 0 ? n.toFixed(1) : String(Math.round(n * 10) / 10)) : "";
-      let reviews = "";
-      if (lead?.hasNoReviews || lead?.reviewLabel === "No reviews") {
-        reviews = "No reviews";
-      } else if (Number.isFinite(c) && c >= 0) {
-        reviews = c === 1 ? "1 review" : c === 0 ? "No reviews" : `${Math.round(c)} reviews`;
+      let count = "";
+      if (!(lead?.hasNoReviews || lead?.reviewLabel === "No reviews")) {
+        if (Number.isFinite(c) && c > 0) count = "(" + String(Math.round(c)) + ")";
       }
-      if (rating && reviews) return `${rating} · ${reviews}`;
+      if (rating && count) return rating + " • " + count;
       if (rating) return rating;
-      if (reviews) return reviews;
+      if (count) return count;
       return "";
     },
     initials: (lead) => {

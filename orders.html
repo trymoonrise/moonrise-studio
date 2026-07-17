@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Locate My Order · Moonrise Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/studio.css">
+</head>
+<body data-page="orders" class="ms-orders-page">
+  <div class="ms-orders-field" aria-hidden="true">
+    <div class="ms-orders-wash"></div>
+  </div>
+
+  <header class="ms-orders-nav">
+    <a class="ms-home-brand" href="index.html">
+      <img src="doc/MoonriseLogo.png" alt="" width="36" height="36">
+      <strong>Moonrise Studio</strong>
+    </a>
+    <a class="ms-orders-nav-link" href="index.html">Home</a>
+  </header>
+
+  <main class="ms-orders-main">
+    <header class="ms-orders-head">
+      <h1>Locate My Order</h1>
+      <p>Browse every publicly published Moonrise website. Open a preview, then complete checkout if it still has a watermark.</p>
+    </header>
+
+    <label class="ms-orders-search">
+      <span class="ms-orders-search-label">Search</span>
+      <input
+        type="search"
+        id="orders-search"
+        placeholder="Search by business name…"
+        autocomplete="off"
+        enterkeyhint="search"
+      >
+    </label>
+
+    <p class="ms-orders-status" id="orders-status" role="status">Loading published sites…</p>
+    <div class="ms-orders-grid" id="orders-grid" aria-live="polite"></div>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/orders.js"></script>
+</body>
+</html>

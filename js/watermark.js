@@ -5,31 +5,8 @@
   let timerId = null;
 
   function workerUrl() {
-    const configured = String(global.SITE_CONFIG?.workerUrl || "").replace(/\/$/, "");
-    if (!configured || typeof location === "undefined") return configured;
-    try {
-      const pageHost = location.hostname;
-      const worker = new URL(configured);
-      const pageIsLocal =
-        pageHost === "localhost" ||
-        pageHost === "127.0.0.1" ||
-        pageHost === "[::1]";
-      const workerIsLoopback =
-        worker.hostname === "localhost" ||
-        worker.hostname === "127.0.0.1" ||
-        worker.hostname === "[::1]";
-      if (!pageIsLocal && workerIsLoopback && location.protocol.startsWith("http")) {
-        worker.hostname = pageHost;
-        return worker.origin;
-      }
-      if (pageIsLocal && workerIsLoopback && pageHost !== worker.hostname) {
-        worker.hostname = pageHost;
-        return worker.origin;
-      }
-    } catch (_) {
-      /* keep configured */
-    }
-    return configured;
+    if (typeof global.resolveWorkerUrl === "function") return global.resolveWorkerUrl();
+    return String(global.SITE_CONFIG?.workerUrl || "").replace(/\/$/, "");
   }
 
   function formatRemaining(endsAt) {
@@ -150,13 +127,37 @@
   (function bindExclusiveFaq() {
     const root = document.getElementById("paywall-faq");
     if (!root) return;
-    const items = Array.from(root.querySelectorAll("details"));
-    items.forEach((details) => {
-      details.addEventListener("toggle", () => {
-        if (!details.open) return;
-        items.forEach((other) => {
-          if (other !== details) other.open = false;
+
+    function openItem(btn, body) {
+      body.removeAttribute("hidden");
+      requestAnimationFrame(() => body.classList.add("is-open"));
+      btn.setAttribute("aria-expanded", "true");
+    }
+
+    function closeItem(btn, body) {
+      body.classList.remove("is-open");
+      btn.setAttribute("aria-expanded", "false");
+      const onDone = () => {
+        if (!body.classList.contains("is-open")) body.setAttribute("hidden", "");
+        body.removeEventListener("transitionend", onDone);
+      };
+      body.addEventListener("transitionend", onDone);
+    }
+
+    const btns = Array.from(root.querySelectorAll(".ms-faq-q"));
+    btns.forEach((btn) => {
+      const body = btn.nextElementSibling;
+      if (!body) return;
+      btn.addEventListener("click", () => {
+        const isExpanded = btn.getAttribute("aria-expanded") === "true";
+        btns.forEach((other) => {
+          if (other !== btn) closeItem(other, other.nextElementSibling);
         });
+        if (isExpanded) {
+          closeItem(btn, body);
+        } else {
+          openItem(btn, body);
+        }
       });
     });
   })();

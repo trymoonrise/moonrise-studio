@@ -241,6 +241,16 @@
       gap: 1.25rem;
     }
     .mr-wm-offer { display: flex; flex-direction: column; gap: 0.75rem; }
+    .mr-wm-timer {
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      font-family: var(--mr-font);
+      font-size: 0.85rem;
+      font-weight: 650;
+      letter-spacing: -0.01em;
+      color: #2563eb;
+    }
     .mr-wm-price {
       display: flex;
       flex-direction: column;
@@ -346,11 +356,24 @@
       font-size: 0.95rem;
       font-weight: 600;
       line-height: 1;
+      transition: transform 0.25s ease, background-color 0.2s ease, color 0.2s ease;
     }
-    .mr-wm-faq details[open] summary::after {
+    .mr-wm-faq details.is-open summary::after {
       content: "–";
       background: #e8f1ff;
       color: #2563eb;
+    }
+    .mr-wm-faq-panel {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .mr-wm-faq details.is-open .mr-wm-faq-panel {
+      grid-template-rows: 1fr;
+    }
+    .mr-wm-faq-panel-inner {
+      overflow: hidden;
+      min-height: 0;
     }
     .mr-wm-faq details p {
       margin: 0;
@@ -358,6 +381,13 @@
       color: var(--mr-muted);
       font-size: 0.88rem;
       line-height: 1.5;
+      opacity: 0;
+      transform: translateY(-4px);
+      transition: opacity 0.24s ease, transform 0.24s ease;
+    }
+    .mr-wm-faq details.is-open p {
+      opacity: 1;
+      transform: none;
     }
     .mr-wm-faq details a {
       color: #2563eb;
@@ -369,7 +399,10 @@
     @media (prefers-reduced-motion: reduce) {
       .mr-wm-chip,
       .mr-wm-overlay,
-      .mr-wm-panel { animation: none; transition: none; }
+      .mr-wm-panel,
+      .mr-wm-faq-panel,
+      .mr-wm-faq details p,
+      .mr-wm-faq summary::after { animation: none; transition: none; }
     }
   </style>
 </head>
@@ -409,26 +442,35 @@
       </header>
       <div class="mr-wm-body">
         <div class="mr-wm-offer">
+          <p class="mr-wm-timer" id="mr-wm-timer" aria-live="polite"></p>
           <button type="button" class="mr-wm-pay" id="mr-wm-pay">Pay with Stripe</button>
           <p class="mr-wm-error" id="mr-wm-error" hidden></p>
-          <p class="mr-wm-note">Secure checkout · watermark leaves after payment</p>
+          <p class="mr-wm-note">Upfront site fee plus $4/mo hosting &amp; maintenance · secure Stripe checkout</p>
         </div>
         <div class="mr-wm-faq" id="mr-wm-faq">
           <details>
             <summary>Do I have to sign up?</summary>
-            <p>You can sign in or create an account when you locate your order.</p>
+            <div class="mr-wm-faq-panel"><div class="mr-wm-faq-panel-inner">
+              <p>You can sign in or create an account when you locate your order.</p>
+            </div></div>
           </details>
           <details>
             <summary>What do I get?</summary>
-            <p>Stripe confirms instantly. The watermark is removed and publishing unlocks for this site.</p>
+            <div class="mr-wm-faq-panel"><div class="mr-wm-faq-panel-inner">
+              <p>Stripe confirms instantly. The watermark is removed and publishing unlocks for this site.</p>
+            </div></div>
           </details>
           <details>
             <summary>Do I get to own the website?</summary>
-            <p>The website stays managed by <a href="mailto:trymoonrise@gmail.com">@trymoonrise</a> instead of being handed off as code. We handle the technical work and include ongoing updates and unlimited redesigns, so your site can keep evolving with your business.</p>
+            <div class="mr-wm-faq-panel"><div class="mr-wm-faq-panel-inner">
+              <p>The website stays managed by <a href="mailto:trymoonrise@gmail.com">@trymoonrise</a> instead of being handed off as code. We handle the technical work and include ongoing updates and unlimited redesigns, so your site can keep evolving with your business.</p>
+            </div></div>
           </details>
           <details>
             <summary>Need help or changes?</summary>
-            <p>Message the <a href="mailto:trymoonrise@gmail.com">Moonrise</a> to make any changes such as uploading photos, changing hours, services, colors, infinite redesigns and so much more!</p>
+            <div class="mr-wm-faq-panel"><div class="mr-wm-faq-panel-inner">
+              <p>Message the <a href="mailto:trymoonrise@gmail.com">Moonrise</a> to make any changes such as uploading photos, changing hours, services, colors, infinite redesigns and so much more!</p>
+            </div></div>
           </details>
         </div>
       </div>
@@ -451,17 +493,50 @@
       const closeBtn = document.getElementById("mr-wm-close");
       const payBtn = document.getElementById("mr-wm-pay");
       const errEl = document.getElementById("mr-wm-error");
+      const timerEl = document.getElementById("mr-wm-timer");
+      const chip = document.getElementById("mr-wm");
+      let timerId = null;
+      const urgencyEndsAt = new Date(Date.now() + 96 * 3600000).toISOString();
+
+      function formatRemaining(endsAt) {
+        const ms = new Date(endsAt).getTime() - Date.now();
+        if (!Number.isFinite(ms) || ms <= 0) return "Offer expired";
+        const h = Math.floor(ms / 3600000);
+        const m = Math.floor((ms % 3600000) / 60000);
+        const s = Math.floor((ms % 60000) / 1000);
+        return (
+          "Ends in " +
+          String(h).padStart(2, "0") +
+          ":" +
+          String(m).padStart(2, "0") +
+          ":" +
+          String(s).padStart(2, "0")
+        );
+      }
+
+      function tickTimer() {
+        if (timerEl) timerEl.textContent = formatRemaining(urgencyEndsAt);
+      }
 
       function openPanel() {
+        chip?.style.setProperty("visibility", "hidden");
         overlay.classList.add("is-open");
         overlay.setAttribute("aria-hidden", "false");
         document.body.style.overflow = "hidden";
+        tickTimer();
+        if (timerId) clearInterval(timerId);
+        timerId = setInterval(tickTimer, 1000);
       }
 
       function closePanel() {
+        chip?.style.removeProperty("visibility");
         overlay.classList.remove("is-open");
         overlay.setAttribute("aria-hidden", "true");
         document.body.style.overflow = "";
+        if (timerId) {
+          clearInterval(timerId);
+          timerId = null;
+        }
       }
 
       openBtn?.addEventListener("click", (e) => {
@@ -483,15 +558,38 @@
         const root = document.getElementById("mr-wm-faq");
         if (!root) return;
         const items = Array.from(root.querySelectorAll("details"));
+        function closeItem(details) {
+          if (!details.classList.contains("is-open")) {
+            details.open = false;
+            return;
+          }
+          details.classList.remove("is-open");
+          const panel = details.querySelector(".mr-wm-faq-panel");
+          const finish = () => {
+            details.open = false;
+            panel?.removeEventListener("transitionend", finish);
+          };
+          if (panel) panel.addEventListener("transitionend", finish);
+          else details.open = false;
+          setTimeout(finish, 360);
+        }
+        function openItem(details) {
+          items.forEach((other) => {
+            if (other !== details) closeItem(other);
+          });
+          details.open = true;
+          requestAnimationFrame(() => details.classList.add("is-open"));
+        }
         items.forEach((details) => {
-          details.addEventListener("toggle", () => {
-            if (!details.open) return;
-            items.forEach((other) => {
-              if (other !== details) other.open = false;
-            });
+          details.querySelector("summary")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            if (details.classList.contains("is-open")) closeItem(details);
+            else openItem(details);
           });
         });
       })();
+
+      tickTimer();
 
       function showError(msg) {
         if (!errEl) return;
