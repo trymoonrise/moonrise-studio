@@ -1821,19 +1821,24 @@ app.get("/embed.js", (_req, res) => {
 
 /**
  * Public catalog of published preview / live sites for Locate My Order.
+ * Every successful /publish writes vercel_url + status=published, so sites appear here automatically.
  * Safe fields only — no HTML, no owner identity.
  */
 app.get("/public-orders", async (req, res) => {
   try {
     const supabase = db();
     const q = String(req.query.q || "").trim();
+    const yearRaw = String(req.query.year || "").trim();
+    const year = /^\d{4}$/.test(yearRaw) ? Number(yearRaw) : null;
+
     let query = supabase
       .from("projects")
-      .select("id,business_name,status,watermark_enabled,price_cents,vercel_url,updated_at")
+      .select("id,business_name,status,watermark_enabled,price_cents,vercel_url,updated_at,created_at,business_context")
+      .eq("status", "published")
       .not("vercel_url", "is", null)
       .neq("vercel_url", "")
       .order("updated_at", { ascending: false })
-      .limit(200);
+      .limit(300);
 
     if (q) {
       query = query.ilike("business_name", "%" + q.replace(/[%_]/g, "") + "%");
@@ -1847,19 +1852,41 @@ app.get("/public-orders", async (req, res) => {
       .map((row) => {
         const priceCents = Number(row.price_cents);
         const unpaid = !!row.watermark_enabled;
+        const ctx =
+          row.business_context && typeof row.business_context === "object" ? row.business_context : {};
+        const publishedAt =
+          String(ctx.publishedAt || ctx.lastPublishedAt || row.updated_at || row.created_at || "").trim() ||
+          null;
+        const publishedYear = publishedAt ? new Date(publishedAt).getFullYear() : null;
         return {
           id: row.id,
           businessName: row.business_name || "Untitled business",
-          status: unpaid ? "preview" : row.status === "published" || row.status === "paid" ? "live" : String(row.status || "preview"),
+          status: unpaid
+            ? "preview"
+            : row.status === "published" || row.status === "paid"
+              ? "live"
+              : String(row.status || "preview"),
           watermarkEnabled: unpaid,
           priceCents: Number.isFinite(priceCents) && priceCents > 0 ? priceCents : 50000,
           url: String(row.vercel_url).trim(),
           updatedAt: row.updated_at || null,
+          publishedAt,
+          publishedYear: Number.isFinite(publishedYear) ? publishedYear : null,
         };
-      });
+      })
+      .filter((order) => (year ? order.publishedYear === year : true));
+
+    const years = [
+      ...new Set(
+        orders
+          .map((o) => o.publishedYear)
+          .filter((y) => Number.isFinite(y))
+          .sort((a, b) => b - a)
+      ),
+    ];
 
     res.setHeader("Cache-Control", "public, max-age=30");
-    res.json({ orders });
+    res.json({ orders, years, total: orders.length });
   } catch (e) {
     console.error("public-orders", e);
     respondApiError(res, e, "Failed to load orders");
@@ -2326,12 +2353,22 @@ async function deployProjectToVercel(supabase, project) {
   const token = process.env.VERCEL_TOKEN;
   if (!token) {
     const fakeUrl = `${PUBLIC_APP_URL}/preview/${project.id}`;
+    const publishedAt = new Date().toISOString();
+    const ctx = {
+      ...(project.business_context && typeof project.business_context === "object" ? project.business_context : {}),
+      publishedAt:
+        project.business_context && typeof project.business_context === "object" && project.business_context.publishedAt
+          ? project.business_context.publishedAt
+          : publishedAt,
+      lastPublishedAt: publishedAt,
+    };
     await supabase
       .from("projects")
       .update({
         status: "published",
         vercel_url: fakeUrl,
         vercel_deployment_id: "local-fallback",
+        business_context: ctx,
       })
       .eq("id", project.id);
     return { url: fakeUrl, fallback: true, watermarked: !!project.watermark_enabled };
@@ -2367,9 +2404,15 @@ async function deployProjectToVercel(supabase, project) {
 
   await disableVercelDeploymentProtection(headers, vercelProject.id);
   const url = await resolvePublicProductionUrl(headers, deployData, slug);
+  const publishedAt = new Date().toISOString();
   const ctx = {
     ...(project.business_context && typeof project.business_context === "object" ? project.business_context : {}),
     vercelSlug: slug,
+    publishedAt:
+      project.business_context && typeof project.business_context === "object" && project.business_context.publishedAt
+        ? project.business_context.publishedAt
+        : publishedAt,
+    lastPublishedAt: publishedAt,
   };
 
   await supabase

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Locate My Order · Moonrise Studio</title>
+  <meta name="description" content="Find your Moonrise website. Browse published sites, open a preview, and complete checkout if a watermark is still present.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -19,31 +20,67 @@
       <img src="doc/MoonriseLogo.png" alt="" width="36" height="36">
       <strong>Moonrise Studio</strong>
     </a>
-    <a class="ms-orders-nav-link" href="index.html">Home</a>
+    <nav class="ms-orders-nav-links" aria-label="Page">
+      <a class="ms-orders-nav-link" href="index.html">Home</a>
+      <a class="ms-orders-nav-link" href="mailto:trymoonrise@gmail.com">Support</a>
+    </nav>
   </header>
 
   <main class="ms-orders-main">
     <header class="ms-orders-head">
+      <p class="ms-orders-kicker">Public catalog</p>
       <h1>Locate My Order</h1>
-      <p>Browse every publicly published Moonrise website. Open a preview, then complete checkout if it still has a watermark.</p>
+      <p>
+        Find your published Moonrise website by business name. Open the preview,
+        then complete checkout if the watermark is still on.
+      </p>
+      <dl class="ms-orders-stats" aria-label="Catalog summary">
+        <div>
+          <dt>Published sites</dt>
+          <dd id="orders-count">—</dd>
+        </div>
+        <div>
+          <dt>Updated</dt>
+          <dd id="orders-refreshed">Live</dd>
+        </div>
+      </dl>
     </header>
 
-    <label class="ms-orders-search">
-      <span class="ms-orders-search-label">Search</span>
-      <input
-        type="search"
-        id="orders-search"
-        placeholder="Search by business name…"
-        autocomplete="off"
-        enterkeyhint="search"
-      >
-    </label>
+    <section class="ms-orders-toolbar" aria-label="Search and filters">
+      <label class="ms-orders-search">
+        <span class="ms-orders-search-label">Search</span>
+        <span class="ms-orders-search-field">
+          <input
+            type="search"
+            id="orders-search"
+            placeholder="Business name, e.g. Harbor Dental"
+            autocomplete="off"
+            enterkeyhint="search"
+            aria-describedby="orders-search-hint"
+          >
+        </span>
+        <span class="ms-orders-search-hint" id="orders-search-hint">Results update as you type.</span>
+      </label>
+
+      <div class="ms-orders-years" id="orders-years" role="group" aria-label="Filter by year" hidden></div>
+    </section>
 
     <p class="ms-orders-status" id="orders-status" role="status">Loading published sites…</p>
     <div class="ms-orders-grid" id="orders-grid" aria-live="polite"></div>
+
+    <footer class="ms-orders-foot">
+      <p>Every site published in Moonrise Studio is listed here automatically.</p>
+      <p>
+        Need help?
+        <a href="mailto:trymoonrise@gmail.com">trymoonrise@gmail.com</a>
+        ·
+        <a href="tel:+14013000957">(401) 300-0957</a>
+      </p>
+    </footer>
   </main>
 
   <script src="js/config.js"></script>
+  <script src="js/site-branding.js"></script>
   <script src="js/orders.js"></script>
 </body>
 </html>

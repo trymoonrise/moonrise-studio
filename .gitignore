@@ -29,3 +29,6 @@ dist/
 .cache/
 supabase/.temp/
 .vercel
+css/studio.css.restored
+experimental-landings/
+worker/scripts/lead-structure-analysis.json

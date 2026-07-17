@@ -4,7 +4,11 @@
  */
 window.SITE_CONFIG = {
   companyName: "Moonrise Studio",
-  brandLogoUrl: "doc/MoonriseLogo.png",
+  brandLogoUrl:
+    "https://github.com/trymoonrise/dashboard/raw/main/doc/MoonriseLogo.png",
+  /** Social / link preview image (Discord, iMessage, Twitter, etc.). */
+  embedImageUrl:
+    "https://github.com/trymoonrise/dashboard/raw/main/doc/embed.png",
   /** Default profile picture when a user has not uploaded one. */
   defaultAvatarUrl:
     "https://github.com/trymoonrise/dashboard/raw/main/doc/pfp.png",

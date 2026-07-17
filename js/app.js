@@ -161,7 +161,10 @@
 
   function brandLogo() {
     const c = window.SITE_CONFIG || {};
-    return c.brandLogoUrl || "doc/MoonriseLogo.png";
+    return (
+      c.brandLogoUrl ||
+      "https://github.com/trymoonrise/dashboard/raw/main/doc/MoonriseLogo.png"
+    );
   }
 
   function defaultAvatarUrl() {
