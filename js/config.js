@@ -4,14 +4,13 @@
  */
 window.SITE_CONFIG = {
   companyName: "Moonrise Studio",
-  brandLogoUrl:
-    "https://github.com/trymoonrise/dashboard/raw/main/doc/MoonriseLogo.png",
+  /** Absolute CDN base for brand assets (watermarks / OG tags on other origins). */
+  assetCdnUrl: "https://moonrise-studio.vercel.app/doc/",
+  brandLogoUrl: "https://moonrise-studio.vercel.app/doc/MoonriseLogo.png",
   /** Social / link preview image (Discord, iMessage, Twitter, etc.). */
-  embedImageUrl:
-    "https://github.com/trymoonrise/dashboard/raw/main/doc/embed.png",
+  embedImageUrl: "https://moonrise-studio.vercel.app/doc/embed.png",
   /** Default profile picture when a user has not uploaded one. */
-  defaultAvatarUrl:
-    "https://github.com/trymoonrise/dashboard/raw/main/doc/pfp.png",
+  defaultAvatarUrl: "https://moonrise-studio.vercel.app/doc/pfp.png",
   docBaseUrl: "doc/",
 
   /** Moonrise Studio Supabase project (public anon / publishable key only). */

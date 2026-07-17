@@ -13,7 +13,7 @@
   const PWA_SW_URL = new URL("sw.js", PWA_BASE_URL).href;
   const PWA_THEME_COLOR = "#0f172a";
   const PWA_BRAND_ICON =
-    "https://github.com/trymoonrise/dashboard/raw/main/doc/MoonriseLogo.png";
+    "https://moonrise-studio.vercel.app/doc/MoonriseLogo.png";
   const INSTALL_HINT_KEY = "ms_ios_install_hint_dismissed_v1";
   const PROMPT_AFTER_LOGIN_KEY = "ms_prompt_install_after_login";
   const PWA_APP_TITLE = "Moonrise";

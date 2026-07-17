@@ -163,7 +163,7 @@
     const c = window.SITE_CONFIG || {};
     return (
       c.brandLogoUrl ||
-      "https://github.com/trymoonrise/dashboard/raw/main/doc/MoonriseLogo.png"
+      "https://moonrise-studio.vercel.app/doc/MoonriseLogo.png"
     );
   }
 
@@ -171,7 +171,7 @@
     const c = window.SITE_CONFIG || {};
     return (
       c.defaultAvatarUrl ||
-      "https://github.com/trymoonrise/dashboard/raw/main/doc/pfp.png"
+      "https://moonrise-studio.vercel.app/doc/pfp.png"
     );
   }
 

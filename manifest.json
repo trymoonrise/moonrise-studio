@@ -13,13 +13,13 @@
   "theme_color": "#0f172a",
   "icons": [
     {
-      "src": "https://github.com/trymoonrise/dashboard/raw/main/doc/MoonriseLogo.png",
+      "src": "https://moonrise-studio.vercel.app/doc/MoonriseLogo.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://github.com/trymoonrise/dashboard/raw/main/doc/MoonriseLogo.png",
+      "src": "https://moonrise-studio.vercel.app/doc/MoonriseLogo.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

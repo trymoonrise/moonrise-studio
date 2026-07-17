@@ -6,10 +6,10 @@
   const cfg = window.SITE_CONFIG || {};
   const logo =
     String(cfg.brandLogoUrl || "").trim() ||
-    "https://github.com/trymoonrise/dashboard/raw/main/doc/MoonriseLogo.png";
+    "https://moonrise-studio.vercel.app/doc/MoonriseLogo.png";
   const embed =
     String(cfg.embedImageUrl || "").trim() ||
-    "https://github.com/trymoonrise/dashboard/raw/main/doc/embed.png";
+    "https://moonrise-studio.vercel.app/doc/embed.png";
   const siteName = String(cfg.companyName || "Moonrise Studio").trim();
   const pageTitle = String(document.title || siteName).trim();
   const pageDesc =

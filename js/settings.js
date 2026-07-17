@@ -25,7 +25,7 @@
   function defaultAvatar() {
     return (
       (window.SITE_CONFIG && window.SITE_CONFIG.defaultAvatarUrl) ||
-      "https://github.com/trymoonrise/dashboard/raw/main/doc/pfp.png"
+      "https://moonrise-studio.vercel.app/doc/pfp.png"
     );
   }
 

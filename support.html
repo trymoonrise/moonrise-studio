@@ -1,9 +1,9 @@
-ï»¿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Support Â· Moonrise Studio</title>
+  <title>Support · Moonrise Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -34,7 +34,7 @@
         </div>
 
         <div class="ms-help-vcard-avatar">
-          <img src="https://github.com/trymoonrise/dashboard/raw/main/doc/MoonriseLogo.png" alt="" width="88" height="88">
+          <img src="doc/MoonriseLogo.png" alt="" width="88" height="88">
         </div>
 
         <div class="ms-help-vcard-identity">
@@ -48,7 +48,7 @@
           <li>
             <a class="ms-help-vcard-link" href="tel:+14013000957">
               <span class="ms-help-vcard-icon ms-help-vcard-icon--phone" aria-hidden="true">
-                <img src="https://github.com/trymoonrise/dashboard/raw/main/doc/iMessages.jpg" alt="" width="46" height="46" loading="lazy" decoding="async">
+                <img src="doc/iMessages.jpg" alt="" width="46" height="46" loading="lazy" decoding="async">
               </span>
               <span class="ms-help-vcard-link-text">
                 <strong>Number</strong>
@@ -124,7 +124,7 @@
           "TEL;TYPE=CELL,VOICE:" + CONTACT.phone,
           "EMAIL;TYPE=INTERNET:" + CONTACT.email,
           "URL:" + CONTACT.url,
-          "NOTE:trymoonrise.com â€” Moonrise Studio",
+          "NOTE:trymoonrise.com — Moonrise Studio",
           "END:VCARD",
         ].join("\r\n");
       }
@@ -147,7 +147,7 @@
       shareBtn?.addEventListener("click", async () => {
         const shareData = {
           title: "Moonrise",
-          text: "Moonrise Â· trymoonrise.com\n" + CONTACT.phoneDisplay + "\n" + CONTACT.email,
+          text: "Moonrise · trymoonrise.com\n" + CONTACT.phoneDisplay + "\n" + CONTACT.email,
           url: location.href.split("#")[0],
         };
         try {

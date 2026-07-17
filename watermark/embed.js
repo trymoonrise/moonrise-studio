@@ -11,7 +11,7 @@
  */
 (function (global) {
   const AVATAR =
-    "https://github.com/trymoonrise/dashboard/blob/main/doc/MoonriseLogo.png?raw=true";
+    "https://moonrise-studio.vercel.app/doc/MoonriseLogo.png";
   const SITE_HOST = "trymoonrise.com";
   const SITE_URL = "https://trymoonrise.com";
   const STYLE_ID = "mr-wm-embed-style";
