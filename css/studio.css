@@ -5554,6 +5554,41 @@ body[data-page="builder"].ms-lb-workspace .ms-builder-page {
   cursor: not-allowed;
 }
 
+.ms-lb-delete-btn {
+  width: 100%;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border: 1px solid rgba(127, 29, 29, 0.22);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #991b1b;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.ms-lb-delete-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.ms-lb-delete-btn:hover:not(:disabled) {
+  background: rgba(254, 226, 226, 0.95);
+  border-color: rgba(185, 28, 28, 0.4);
+  color: #7f1d1d;
+  transform: translateY(-1px);
+}
+
+.ms-lb-delete-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .ms-lb-main {
   flex: 1;
   width: 100%;
@@ -5925,6 +5960,18 @@ body.ms-lb-pane-resizing .ms-lb-pane-resizer::before {
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.9) inset,
     0 16px 36px rgba(15, 23, 42, 0.06);
+  transition:
+    box-shadow 0.35s ease,
+    border-color 0.35s ease,
+    transform 0.35s ease;
+}
+
+.ms-lb-empty.is-generating .ms-lb-empty-card {
+  border-color: rgba(191, 219, 254, 0.95);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 18px 42px rgba(37, 99, 235, 0.1),
+    0 0 0 1px rgba(219, 234, 254, 0.65);
 }
 
 .ms-lb-empty p {
@@ -5936,6 +5983,7 @@ body.ms-lb-pane-resizing .ms-lb-pane-resizer::before {
 }
 
 .ms-lb-mark {
+  position: relative;
   width: 52px;
   height: 52px;
   border-radius: 14px;
@@ -5945,6 +5993,108 @@ body.ms-lb-pane-resizing .ms-lb-pane-resizer::before {
   border: 1px solid #dbeafe;
   color: #2563eb;
   box-shadow: none;
+  isolation: isolate;
+}
+
+.ms-lb-mark-spinner,
+.ms-lb-mark-pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.ms-lb-mark-spinner {
+  inset: -3px;
+  border-radius: 17px;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg 40deg,
+    #2563eb 40deg 120deg,
+    #60a5fa 120deg 200deg,
+    #93c5fd 200deg 280deg,
+    transparent 280deg 360deg
+  );
+  animation: ms-lb-mark-spin 1.15s linear infinite;
+}
+
+.ms-lb-mark-spinner::after {
+  content: "";
+  position: absolute;
+  inset: 2.5px;
+  border-radius: 14px;
+  background: #eff6ff;
+}
+
+.ms-lb-mark-pulse {
+  box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.28);
+  animation: ms-lb-mark-pulse 1.15s ease-in-out infinite;
+}
+
+.ms-lb-mark-icon {
+  position: relative;
+  z-index: 1;
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+.ms-lb-mark-chevron {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+body.ms-lb-generating .ms-lb-mark-spinner,
+body.ms-lb-generating .ms-lb-mark-pulse,
+.ms-lb-empty.is-generating .ms-lb-mark-spinner,
+.ms-lb-empty.is-generating .ms-lb-mark-pulse {
+  opacity: 1;
+}
+
+body.ms-lb-generating .ms-lb-mark-chevron--left,
+.ms-lb-empty.is-generating .ms-lb-mark-chevron--left {
+  animation: ms-lb-chevron-left 1.15s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+body.ms-lb-generating .ms-lb-mark-chevron--right,
+.ms-lb-empty.is-generating .ms-lb-mark-chevron--right {
+  animation: ms-lb-chevron-right 1.15s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+body.ms-lb-generating .ms-lb-mark,
+.ms-lb-empty.is-generating .ms-lb-mark {
+  animation: ms-lb-mark-float 2.3s ease-in-out infinite;
+}
+
+@keyframes ms-lb-mark-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes ms-lb-mark-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.22);
+    opacity: 0.55;
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(37, 99, 235, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes ms-lb-mark-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+@keyframes ms-lb-chevron-left {
+  0%, 100% { transform: translateX(0); opacity: 1; }
+  50% { transform: translateX(-2.5px); opacity: 0.72; }
+}
+
+@keyframes ms-lb-chevron-right {
+  0%, 100% { transform: translateX(0); opacity: 1; }
+  50% { transform: translateX(2.5px); opacity: 0.72; }
 }
 
 .ms-lb-mark svg {
@@ -5957,6 +6107,66 @@ body.ms-lb-pane-resizing .ms-lb-pane-resizer::before {
   height: 28px;
   object-fit: cover;
   border-radius: 8px;
+}
+
+.ms-lb-gen-track {
+  width: 7.5rem;
+  height: 3px;
+  margin-top: 0.2rem;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+  opacity: 0;
+  transform: scaleX(0.92);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.ms-lb-gen-beam {
+  display: block;
+  width: 42%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, #3b82f6 35%, #60a5fa 65%, transparent);
+  transform: translateX(-120%);
+}
+
+body.ms-lb-generating .ms-lb-gen-track,
+.ms-lb-empty.is-generating .ms-lb-gen-track {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+body.ms-lb-generating .ms-lb-gen-beam,
+.ms-lb-empty.is-generating .ms-lb-gen-beam {
+  animation: ms-lb-gen-beam 1.15s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+@keyframes ms-lb-gen-beam {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(320%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.ms-lb-generating .ms-lb-mark,
+  .ms-lb-empty.is-generating .ms-lb-mark,
+  body.ms-lb-generating .ms-lb-mark-spinner,
+  .ms-lb-empty.is-generating .ms-lb-mark-spinner,
+  body.ms-lb-generating .ms-lb-mark-pulse,
+  .ms-lb-empty.is-generating .ms-lb-mark-pulse,
+  body.ms-lb-generating .ms-lb-mark-chevron--left,
+  .ms-lb-empty.is-generating .ms-lb-mark-chevron--left,
+  body.ms-lb-generating .ms-lb-mark-chevron--right,
+  .ms-lb-empty.is-generating .ms-lb-mark-chevron--right,
+  body.ms-lb-generating .ms-lb-gen-beam,
+  .ms-lb-empty.is-generating .ms-lb-gen-beam {
+    animation: none !important;
+  }
+
+  body.ms-lb-generating .ms-lb-mark-pulse,
+  .ms-lb-empty.is-generating .ms-lb-mark-pulse {
+    opacity: 0.75;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14);
+  }
 }
 
 .ms-lb-dots-loader {
@@ -6246,30 +6456,41 @@ body.ms-lb-vp-resizing .ms-preview-frame-shell,
   z-index: 80;
   width: 100% !important;
   max-width: none !important;
-  height: 100vh !important;
-  min-height: 100vh;
+  height: 100% !important;
+  height: 100dvh !important;
+  min-height: 100%;
+  min-height: 100dvh;
   border-radius: 0;
   box-shadow: none;
+  touch-action: pan-y;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .ms-lb-fs-exit {
   position: fixed;
-  right: 1.25rem;
-  bottom: 1.25rem;
-  top: auto;
-  z-index: 90;
+  top: max(0.85rem, env(safe-area-inset-top, 0px));
+  right: max(0.85rem, env(safe-area-inset-right, 0px));
+  bottom: auto;
+  left: auto;
+  z-index: 120;
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  min-height: 42px;
-  padding: 0.55rem 0.95rem 0.55rem 1rem;
-  border: 1px solid rgba(226, 232, 240, 0.95);
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.65rem 1.05rem;
+  border: 1px solid rgba(15, 23, 42, 0.12);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.94);
+  background: rgba(255, 255, 255, 0.96);
   color: #0f172a;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.14);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.2);
   cursor: pointer;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  pointer-events: auto;
+  touch-action: manipulation;
   transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -6281,12 +6502,12 @@ body.ms-lb-vp-resizing .ms-preview-frame-shell,
   background: #fff;
   color: #2563eb;
   transform: translateY(-1px);
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.16);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.22);
 }
 
 .ms-lb-fs-exit-label {
-  font-size: 0.84rem;
-  font-weight: 650;
+  font-size: 0.9rem;
+  font-weight: 700;
   letter-spacing: 0.01em;
   line-height: 1;
 }
@@ -6297,9 +6518,38 @@ body.ms-lb-vp-resizing .ms-preview-frame-shell,
   flex-shrink: 0;
 }
 
+body.ms-lb-fullscreen {
+  overflow: hidden;
+}
+
+body.ms-lb-fullscreen .ms-preview-frame-wrap,
+body.ms-lb-fullscreen .ms-preview-frame-shell {
+  overflow: visible !important;
+}
+
 body.ms-lb-fullscreen .ms-lb-chrome {
   opacity: 0;
   pointer-events: none;
+}
+
+@media (max-width: 720px) {
+  .ms-lb-fs-exit {
+    top: max(0.75rem, env(safe-area-inset-top, 0px));
+    right: max(0.75rem, env(safe-area-inset-right, 0px));
+    min-height: 48px;
+    padding: 0.75rem 1.15rem;
+    font-size: 1rem;
+    box-shadow: 0 12px 36px rgba(15, 23, 42, 0.28);
+  }
+
+  .ms-lb-fs-exit-label {
+    font-size: 1rem;
+  }
+
+  .ms-lb-fs-exit svg {
+    width: 20px;
+    height: 20px;
+  }
 }
 
 body.ms-lb-fullscreen .ms-lb-side,
@@ -12405,18 +12655,18 @@ body.ms-fin-onboarding-mode #page-body.ms-finance-page {
   bottom: calc(18px + env(safe-area-inset-bottom, 0px));
   z-index: 99995;
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) 28px;
+  grid-template-columns: 48px minmax(0, 1fr) 32px;
   align-items: center;
-  column-gap: 12px;
+  column-gap: 14px;
   box-sizing: border-box;
-  width: min(360px, calc(100vw - 32px));
+  width: min(420px, calc(100vw - 32px));
   max-width: calc(100vw - 32px);
   margin: 0;
-  padding: 12px 10px 12px 12px;
+  padding: 14px 12px 14px 14px;
   background: #ffffff;
   color: #0f172a;
   border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: 16px;
+  border-radius: 18px;
   box-shadow:
     0 10px 28px -10px rgba(15, 23, 42, 0.24),
     0 2px 6px rgba(15, 23, 42, 0.05);
@@ -12441,9 +12691,9 @@ body.ms-fin-onboarding-mode #page-body.ms-finance-page {
   cursor: pointer;
 }
 .ios-install-banner-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
   object-fit: cover;
   object-position: center;
   background: #ffffff;
@@ -12457,12 +12707,12 @@ body.ms-fin-onboarding-mode #page-body.ms-finance-page {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 2px;
-  font-size: 12.5px;
-  line-height: 1.35;
+  gap: 3px;
+  font-size: 13.5px;
+  line-height: 1.4;
 }
 .ios-install-banner-text strong {
-  font-size: 14.5px;
+  font-size: 16px;
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.2;
@@ -12488,21 +12738,21 @@ body.ms-fin-onboarding-mode #page-body.ms-finance-page {
   vertical-align: -2px;
 }
 .ios-install-banner-share svg {
-  width: 13px;
-  height: 13px;
+  width: 14px;
+  height: 14px;
   color: #2563eb;
 }
 .ios-install-banner-close {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   align-self: start;
   margin-top: -2px;
-  font-size: 18px;
+  font-size: 20px;
   line-height: 1;
-  color: #94a3b8;
+  color: #f87171;
   background: transparent;
   border: 0;
   border-radius: 8px;
@@ -12510,34 +12760,67 @@ body.ms-fin-onboarding-mode #page-body.ms-finance-page {
   transition: background 0.15s ease-out, color 0.15s ease-out;
 }
 .ios-install-banner-close:hover {
-  background: rgba(15, 23, 42, 0.06);
-  color: #64748b;
+  background: rgba(248, 113, 113, 0.12);
+  color: #ef4444;
+}
+
+@media (min-width: 900px) {
+  .ios-install-banner {
+    width: min(520px, calc(100vw - 48px));
+    max-width: calc(100vw - 48px);
+    grid-template-columns: 56px minmax(0, 1fr) 36px;
+    column-gap: 16px;
+    padding: 18px 14px 18px 18px;
+    border-radius: 20px;
+    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  }
+  .ios-install-banner-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+  }
+  .ios-install-banner-text {
+    font-size: 14.5px;
+    gap: 4px;
+  }
+  .ios-install-banner-text strong {
+    font-size: 18px;
+  }
+  .ios-install-banner-share svg {
+    width: 15px;
+    height: 15px;
+  }
+  .ios-install-banner-close {
+    width: 36px;
+    height: 36px;
+    font-size: 22px;
+  }
 }
 
 @media (max-width: 420px) {
   .ios-install-banner {
     width: calc(100vw - 24px);
     max-width: calc(100vw - 24px);
-    column-gap: 10px;
-    padding: 11px 8px 11px 11px;
-    border-radius: 14px;
-    grid-template-columns: 36px minmax(0, 1fr) 26px;
+    column-gap: 12px;
+    padding: 13px 10px 13px 13px;
+    border-radius: 16px;
+    grid-template-columns: 44px minmax(0, 1fr) 30px;
   }
   .ios-install-banner-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 9px;
+    width: 44px;
+    height: 44px;
+    border-radius: 11px;
   }
   .ios-install-banner-text {
-    font-size: 12px;
+    font-size: 13px;
   }
   .ios-install-banner-text strong {
-    font-size: 13.5px;
+    font-size: 15px;
   }
   .ios-install-banner-close {
-    width: 26px;
-    height: 26px;
-    font-size: 17px;
+    width: 30px;
+    height: 30px;
+    font-size: 19px;
   }
 }
 
@@ -13604,18 +13887,9 @@ body.ms-fin-onboarding-mode #page-body.ms-finance-page {
   gap: 1rem;
 }
 
-.ms-orders-kicker {
-  margin: 0 0 0.45rem;
-  font-size: 0.72rem;
-  font-weight: 750;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #3b82f6;
-}
-
 .ms-orders-stats {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 8.5rem));
+  grid-template-columns: minmax(0, 8.5rem);
   gap: 0.75rem;
   margin: 1.25rem 0 0;
 }

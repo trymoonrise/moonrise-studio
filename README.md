@@ -1,4 +1,4 @@
-﻿<p align="center">
+<p align="center">
   <img src="doc/MoonriseLogo.png" alt="Moonrise Studio" width="88" height="88">
 </p>
 
@@ -115,12 +115,12 @@ You still own the relationship, the pitch, and the pricing. Moonrise provides th
 
 ## Quick links
 
-- ðŸŒ **Website:** [trymoonrise.com](https://trymoonrise.com)  
-- ðŸ“¬ **Support:** [trymoonrise@gmail.com](mailto:trymoonrise@gmail.com)  
-- ðŸ“„ **Privacy:** [privacy.html](privacy.html)  
-- ðŸ“œ **Terms:** [terms.html](terms.html)  
-- ðŸ” **Security:** [SECURITY.md](SECURITY.md)  
-- ðŸ¤ **Contributing:** [CONTRIBUTING.md](CONTRIBUTING.md)  
+- **Website:** [trymoonrise.com](https://trymoonrise.com)  
+- **Support:** [trymoonrise@gmail.com](mailto:trymoonrise@gmail.com)  
+- **Privacy:** [privacy.html](privacy.html)  
+- **Terms:** [terms.html](terms.html)  
+- **Security:** [SECURITY.md](SECURITY.md)  
+- **Contributing:** [CONTRIBUTING.md](CONTRIBUTING.md)  
 
 ---
 

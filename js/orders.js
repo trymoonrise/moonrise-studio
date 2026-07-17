@@ -5,9 +5,50 @@
   let activeYear = "";
   let availableYears = [];
 
-  function workerUrl() {
-    if (typeof window.resolveWorkerUrl === "function") return window.resolveWorkerUrl();
-    return String(window.SITE_CONFIG?.workerUrl || "").replace(/\/$/, "") || "https://moonrise-studio.vercel.app";
+  function cloudWorkerUrl() {
+    return String(window.SITE_CONFIG?.workerUrl || "https://moonrise-studio.vercel.app").replace(
+      /\/$/,
+      ""
+    );
+  }
+
+  function localWorkerUrl() {
+    if (typeof window.resolveWorkerUrl === "function") {
+      try {
+        const resolved = String(window.resolveWorkerUrl() || "").replace(/\/$/, "");
+        if (resolved) return resolved;
+      } catch (_) {
+        /* ignore */
+      }
+    }
+    return cloudWorkerUrl();
+  }
+
+  /** Candidate API bases — public catalog prefers cloud so a stopped local worker does not break it. */
+  function workerCandidates() {
+    const cloud = cloudWorkerUrl();
+    const local = localWorkerUrl();
+    const out = [];
+    const add = (url) => {
+      const base = String(url || "").replace(/\/$/, "");
+      if (!base || out.includes(base)) return;
+      out.push(base);
+    };
+
+    try {
+      if (typeof location !== "undefined" && /^https?:$/i.test(location.protocol)) {
+        // Same-origin when Studio is served from the Vercel host (rewrites /public-orders → API).
+        if (location.origin === cloud || location.hostname.endsWith("vercel.app")) {
+          add(location.origin);
+        }
+      }
+    } catch (_) {
+      /* ignore */
+    }
+
+    add(cloud);
+    if (window.isLocalDevHost?.() && local !== cloud) add(local);
+    return out;
   }
 
   function escapeHtml(s) {
@@ -92,18 +133,41 @@
     );
   }
 
-  async function fetchOrders(q, year) {
-    const url = new URL(workerUrl() + "/public-orders");
+  async function fetchOrdersFrom(base, q, year) {
+    const url = new URL(String(base).replace(/\/$/, "") + "/public-orders");
     if (q) url.searchParams.set("q", q);
     if (year) url.searchParams.set("year", String(year));
-    const res = await fetch(url.toString(), { headers: { Accept: "application/json" } });
+    const res = await fetch(url.toString(), {
+      headers: { Accept: "application/json" },
+      mode: "cors",
+      cache: "no-store",
+    });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || "Could not load published sites");
     return {
       orders: Array.isArray(data.orders) ? data.orders : [],
       years: Array.isArray(data.years) ? data.years : [],
-      total: Number(data.total) || 0,
+      total: Number(data.total) || (Array.isArray(data.orders) ? data.orders.length : 0),
     };
+  }
+
+  async function fetchOrders(q, year) {
+    const bases = workerCandidates();
+    let lastError = null;
+    for (const base of bases) {
+      try {
+        return await fetchOrdersFrom(base, q, year);
+      } catch (err) {
+        lastError = err;
+      }
+    }
+    const msg = lastError?.message || "Please try again shortly.";
+    if (/failed to fetch|networkerror|load failed|network request failed/i.test(msg)) {
+      throw new Error(
+        "Could not reach the Moonrise catalog API. Check your connection, or open Studio from https://moonrise-studio.vercel.app/orders.html"
+      );
+    }
+    throw lastError || new Error("Could not load published sites");
   }
 
   function renderYears(yearsEl) {
@@ -145,10 +209,10 @@
     if (!orders.length) {
       statusEl.hidden = false;
       statusEl.innerHTML = query
-        ? '<strong>No matches</strong><span>Try another business name' +
+        ? "<strong>No matches</strong><span>Try another business name" +
           (activeYear ? " or clear the year filter" : "") +
           ".</span>"
-        : '<strong>No published websites yet</strong><span>Sites appear here automatically after they are published in Moonrise Studio.</span>';
+        : "<strong>No published websites yet</strong><span>Sites appear here automatically after they are published in Moonrise Studio.</span>";
       gridEl.innerHTML = "";
       return;
     }
@@ -162,7 +226,6 @@
     const gridEl = document.getElementById("orders-grid");
     const searchEl = document.getElementById("orders-search");
     const yearsEl = document.getElementById("orders-years");
-    const refreshedEl = document.getElementById("orders-refreshed");
     if (!statusEl || !gridEl) return;
 
     let timer = null;
@@ -182,12 +245,6 @@
         }
         renderYears(yearsEl);
         render(result.orders, statusEl, gridEl, latestQuery);
-        if (refreshedEl) {
-          refreshedEl.textContent = new Date().toLocaleTimeString(undefined, {
-            hour: "numeric",
-            minute: "2-digit",
-          });
-        }
       } catch (e) {
         statusEl.hidden = false;
         statusEl.innerHTML =
@@ -195,6 +252,8 @@
           escapeHtml(e.message || "Please try again shortly.") +
           "</span>";
         gridEl.innerHTML = "";
+        const countEl = document.getElementById("orders-count");
+        if (countEl) countEl.textContent = "—";
       }
     }
 

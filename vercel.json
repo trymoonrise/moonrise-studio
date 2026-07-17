@@ -34,6 +34,8 @@
     { "source": "/unpublish", "destination": "/api" },
     { "source": "/resolve-maps", "destination": "/api" },
     { "source": "/embed.js", "destination": "/api" },
+    { "source": "/contact-form.js", "destination": "/api" },
+    { "source": "/contact-submit", "destination": "/api" },
     { "source": "/webhooks/stripe", "destination": "/api" },
     { "source": "/credits/catalog", "destination": "/api" },
     { "source": "/credits/balance", "destination": "/api" },

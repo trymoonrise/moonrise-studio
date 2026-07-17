@@ -98,6 +98,8 @@ Return ONLY one complete HTML document (doctype + html). No markdown fences. No 
 - Contact form REQUIRED: Name, Phone number, How can we help you? (textarea), submit CTA. Click-to-call when phone exists.
 - Footer REQUIRED with business name and contact details when available.
 - Mobile-first, semantic HTML, one cohesive composition.
+- Navigation must fit on phones: wrap, horizontally scroll, or use a compact mobile menu. Never let nav links overflow off-screen.
+- Do not set html/body to height:100% with overflow:hidden. The page must scroll vertically on mobile.
 - Single file: CSS in <style>, minimal JS only if needed.
 - No Moonrise watermark / paywall / studio branding.
 - Hero: brand, one headline, one support line, primary + secondary CTA.

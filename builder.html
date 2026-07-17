@@ -165,14 +165,14 @@
                   <button type="button" class="ms-lb-widget-mode-btn" data-form-mode="custom" aria-pressed="false">Custom</button>
                 </div>
                 <div class="ms-field ms-lb-widget-field" id="lb-contact-form-auto-fields">
-                  <label class="ms-label" for="lb-contact-form-email">Notification email</label>
-                  <input class="ms-input" id="lb-contact-form-email" type="email" placeholder="you@email.com" autocomplete="email">
-                  <p class="ms-muted ms-lb-widget-hint">Delivered straight to your inbox via Moonrise - no setup, no API keys.</p>
+                  <label class="ms-label" for="lb-contact-form-email">Client email</label>
+                  <input class="ms-input" id="lb-contact-form-email" type="email" placeholder="owner@business.com" autocomplete="email">
+                  <p class="ms-muted ms-lb-widget-hint">Paste the business owner's email. Every form lead goes to that inbox after you publish.</p>
                 </div>
                 <div class="ms-field ms-lb-widget-field" id="lb-contact-form-custom-fields" hidden>
-                  <label class="ms-label" for="lb-contact-form-endpoint">Form endpoint URL</label>
-                  <input class="ms-input" id="lb-contact-form-endpoint" type="url" placeholder="https://your-endpoint.com/submit" autocomplete="off">
-                  <p class="ms-muted ms-lb-widget-hint">POST submissions to your own handler (Formspree, Zapier, etc.).</p>
+                  <label class="ms-label" for="lb-contact-form-endpoint">Form endpoint</label>
+                  <input class="ms-input" id="lb-contact-form-endpoint" type="url" placeholder="https://formspree.io/f/..." autocomplete="off">
+                  <p class="ms-muted ms-lb-widget-hint">Formspree, Discord webhook, Telegram sendMessage link with <code>?chat_id=</code>, or any HTTPS webhook (Zapier, Make, etc.).</p>
                 </div>
                 <button type="button" class="ms-btn ms-lb-widget-save" id="lb-contact-form-save">Save Settings</button>
                 </div>
@@ -270,8 +270,12 @@
                 <span class="ms-lb-publish-label">Publish</span>
               </button>
               <button type="button" class="ms-lb-unpublish-btn" id="btn-unpublish-top" hidden>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg>
                 Unpublish
+              </button>
+              <button type="button" class="ms-lb-delete-btn" id="btn-delete-top" hidden>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                Delete project
               </button>
             </div>
           </div>
@@ -338,10 +342,15 @@
               <div class="ms-lb-empty" id="preview-empty">
                 <div class="ms-lb-empty-card">
                   <div class="ms-lb-mark" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                    <span class="ms-lb-mark-spinner" aria-hidden="true"></span>
+                    <span class="ms-lb-mark-pulse" aria-hidden="true"></span>
+                    <svg class="ms-lb-mark-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                      <g class="ms-lb-mark-chevron ms-lb-mark-chevron--left"><polyline points="8 6 2 12 8 18"/></g>
+                      <g class="ms-lb-mark-chevron ms-lb-mark-chevron--right"><polyline points="16 18 22 12 16 6"/></g>
+                    </svg>
                   </div>
                   <p>No code generated yet</p>
-                  <div class="ms-lb-dots-loader" aria-hidden="true"><span></span><span></span><span></span></div>
+                  <div class="ms-lb-gen-track" aria-hidden="true"><span class="ms-lb-gen-beam"></span></div>
                 </div>
               </div>
               <div class="ms-preview-frame-shell" id="preview-frame-shell">
@@ -381,9 +390,9 @@
                 ></div>
                 <span class="ms-preview-vp-size" id="preview-vp-size" hidden aria-live="polite"></span>
               </div>
-              <button type="button" class="ms-lb-fs-exit" id="lb-exit-fullscreen" hidden aria-label="Minimize" title="Minimize (Esc)">
-                <span class="ms-lb-fs-exit-label">Minimize</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18"/></svg>
+              <button type="button" class="ms-lb-fs-exit" id="lb-exit-fullscreen" hidden aria-label="Exit fullscreen" title="Exit fullscreen (Esc)">
+                <span class="ms-lb-fs-exit-label">Exit</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
               </button>
               <div class="ms-lb-edit-toolbar" id="lb-edit-toolbar" hidden>
                 <div class="ms-lb-edit-toolbar-head">

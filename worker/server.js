@@ -34,6 +34,7 @@ function resolveWorkerPublicUrl() {
 }
 const WORKER_PUBLIC_URL = resolveWorkerPublicUrl();
 const WATERMARK_EMBED_PATH = path.join(__dirname, "..", "watermark", "embed.js");
+const CONTACT_FORM_SCRIPT_PATH = path.join(__dirname, "..", "watermark", "contact-form.js");
 /** Website generation and editing — override with WEBSITE_GENERATION_MODEL. */
 const WEBSITE_GENERATION_MODEL = String(
   process.env.WEBSITE_GENERATION_MODEL || "minimax/minimax-m2.7"
@@ -134,7 +135,13 @@ const {
   TOPUP_MAX_DOLLARS,
   publicPlansCatalog,
 } = require("./credits");
-const { clientIp, createRateLimiter, applySecurityHeaders, isProductionRuntime } = security;
+const { sendContactLeadEmail } = require("./contact-mail");
+const {
+  detectContactEndpoint,
+  readContactFormConfig,
+  escapeHtmlAttr,
+} = require("./contact-endpoint");
+const { clientIp, createRateLimiter, applySecurityHeaders } = security;
 
 /** Roles the atmosphere planner should cover. */
 const PLAN_ROLE_CATEGORIES = {
@@ -251,7 +258,13 @@ app.use(applySecurityHeaders);
  * unauthenticated business owner pays to remove the watermark. These must be
  * open to all origins, so allow `*` before the stricter global CORS runs.
  */
-const PUBLIC_PATHS = new Set(["/public-checkout", "/embed.js", "/public-orders"]);
+const PUBLIC_PATHS = new Set([
+  "/public-checkout",
+  "/embed.js",
+  "/contact-form.js",
+  "/contact-submit",
+  "/public-orders",
+]);
 app.use((req, res, next) => {
   if (PUBLIC_PATHS.has(req.path)) {
     res.setHeader("Access-Control-Allow-Origin", "*");
@@ -263,16 +276,7 @@ app.use((req, res, next) => {
   next();
 });
 
-/** Production defaults to Moonrise hosts; local keeps LAN + * for convenience. */
-const DEFAULT_CORS_ORIGINS = isProductionRuntime()
-  ? [
-      "https://moonrise-studio.vercel.app",
-      "https://trymoonrise.com",
-      "https://www.trymoonrise.com",
-    ].join(",")
-  : "*";
-
-const corsOrigins = String(process.env.CORS_ORIGINS || DEFAULT_CORS_ORIGINS)
+const corsOrigins = String(process.env.CORS_ORIGINS || "*")
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
@@ -288,26 +292,13 @@ function isPrivateLanHost(hostname) {
   return false;
 }
 
-function isMoonriseHost(hostname) {
-  const host = String(hostname || "").toLowerCase();
-  return (
-    host === "trymoonrise.com" ||
-    host === "www.trymoonrise.com" ||
-    host === "moonrise-studio.vercel.app" ||
-    host.endsWith(".moonrise-studio.vercel.app") ||
-    /^moonrise-studio-[a-z0-9-]+-trymoonrise\.vercel\.app$/i.test(host)
-  );
-}
-
 function isAllowedOrigin(origin) {
   if (!origin) return true;
   if (corsOrigins.includes("*") || corsOrigins.includes(origin)) return true;
+  // Local Studio may run on any port / LAN IP (Live Server, phone testing, etc.)
   try {
     const url = new URL(origin);
     if ((url.protocol === "http:" || url.protocol === "https:") && isPrivateLanHost(url.hostname)) {
-      return true;
-    }
-    if (url.protocol === "https:" && isMoonriseHost(url.hostname)) {
       return true;
     }
   } catch (_) {
@@ -326,20 +317,6 @@ app.use(
 );
 
 app.get("/health", (_req, res) => {
-  const verbose =
-    String(process.env.SECURITY_HEALTH_VERBOSE || "").trim() === "1" || !isProductionRuntime();
-  const base = {
-    ok: true,
-    service: "moonrise-studio-worker",
-  };
-  if (!verbose) {
-    return res.json({
-      ...base,
-      hasAuth: !!(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY),
-      hasPayments: !!process.env.STRIPE_SECRET_KEY,
-    });
-  }
-
   const manifest = loadPresetManifest();
   let sampleKit = 0;
   try {
@@ -351,10 +328,12 @@ app.get("/health", (_req, res) => {
     sampleKit = 0;
   }
   res.json({
-    ...base,
+    ok: true,
+    service: "moonrise-studio-worker",
     websiteGenerationModel: WEBSITE_GENERATION_MODEL,
     websiteMaxOutputTokens: WEBSITE_MAX_OUTPUT_TOKENS,
     workerPublicUrl: WORKER_PUBLIC_URL,
+    watermarkEmbedPath: WATERMARK_EMBED_PATH,
     watermarkEmbedExists: fs.existsSync(WATERMARK_EMBED_PATH),
     websitePresetBudget: {
       maxFiles: PRESET_MAX_FILES,
@@ -362,6 +341,7 @@ app.get("/health", (_req, res) => {
       maxTotalChars: PRESET_MAX_TOTAL_CHARS,
     },
     websitePresets: {
+      dir: WEBSITE_PRESETS_DIR,
       manifestCount: manifest.length,
       sampleKitCount: sampleKit,
       ready: manifest.length > 0 && sampleKit > 0,
@@ -618,7 +598,7 @@ app.post("/webhooks/stripe", express.raw({ type: "application/json" }), async (r
   }
 });
 
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json({ limit: "2mb" }));
 
 async function requireUser(req, res, next) {
   try {
@@ -629,8 +609,8 @@ async function requireUser(req, res, next) {
     if (error || !data?.user) return res.status(401).json({ error: "Invalid auth token" });
     req.user = data.user;
     next();
-  } catch (_) {
-    res.status(401).json({ error: "Unauthorized" });
+  } catch (e) {
+    res.status(401).json({ error: e.message || "Unauthorized" });
   }
 }
 
@@ -672,24 +652,69 @@ const mapsLimiter = createRateLimiter({
   name: "resolve-maps",
   keyFn: (req) => "maps:" + (req.user?.id || clientIp(req)),
 });
-const publicOrdersLimiter = createRateLimiter({
-  windowMs: 60 * 1000,
-  max: 60,
-  name: "public-orders",
-  keyFn: (req) => "orders:" + clientIp(req),
+const contactSubmitLimiter = createRateLimiter({
+  windowMs: 60 * 60 * 1000,
+  max: 30,
+  name: "contact-submit",
+  keyFn: (req) => "cform:" + clientIp(req) + ":" + String(req.body?.projectId || ""),
 });
-const globalApiLimiter = createRateLimiter({
-  windowMs: 60 * 1000,
-  max: 180,
-  name: "api",
-  keyFn: (req) => "api:" + clientIp(req),
-});
-app.use(globalApiLimiter);
+
 
 function stripDemoChrome(html) {
   return String(html || "")
     .replace(/<div[^>]*class=["'][^"']*toggles[^"']*["'][^>]*>[\s\S]*?<\/div>/gi, "")
     .replace(/<script[^>]*>[\s\S]*?toggles[\s\S]*?<\/script>/gi, "");
+}
+
+/**
+ * Inject mobile-fit CSS so generated sites scroll and don't overflow on phones.
+ * Fixes common AI output issues: fixed pill navs too wide, body height locks, etc.
+ */
+function ensureMobileFriendlyHtml(html) {
+  let out = String(html || "");
+  if (!out.trim()) return out;
+
+  if (!/<meta[^>]+name=["']viewport["']/i.test(out)) {
+    out = out.replace(
+      /<head([^>]*)>/i,
+      '<head$1>\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'
+    );
+  } else {
+    out = out.replace(
+      /<meta[^>]+name=["']viewport["'][^>]*>/i,
+      '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'
+    );
+  }
+
+  if (out.includes("data-ms-mobile-fit")) return out;
+
+  const css = `
+/* Moonrise mobile-fit */
+html,body{max-width:100%;overflow-x:clip!important;overflow-y:auto!important;height:auto!important;min-height:100%;overscroll-behavior-y:contain}
+body{position:relative!important}
+img,video,canvas,svg{max-width:100%;height:auto}
+iframe{max-width:100%}
+.nav,.dock,nav[class],header .dock,header nav{max-width:100%}
+@media (max-width:767px){
+  .nav{padding:.65rem!important;left:0;right:0}
+  .dock,header .dock,nav.dock{max-width:calc(100vw - 1.25rem);width:max-content;margin-left:auto;margin-right:auto;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-wrap:nowrap}
+  .dock::-webkit-scrollbar,header .dock::-webkit-scrollbar{display:none}
+  .dock a,header .dock a{white-space:nowrap;flex:0 0 auto}
+  .hero,.hero-content,section,.container{max-width:100vw;box-sizing:border-box}
+  .hero{min-height:min(100svh,100vh);overflow-x:clip}
+  .about-badge{right:.75rem!important;bottom:.75rem!important}
+  .cred-strip,.hero-btns,.cta-btns{gap:.75rem}
+}
+`.trim();
+
+  const styleTag = `<style data-ms-mobile-fit="1">${css}</style>`;
+  if (/<\/head>/i.test(out)) {
+    return out.replace(/<\/head>/i, `${styleTag}\n</head>`);
+  }
+  if (/<body[^>]*>/i.test(out)) {
+    return out.replace(/<body([^>]*)>/i, `<body$1>\n${styleTag}`);
+  }
+  return styleTag + out;
 }
 
 function sanitizeUserText(raw, maxLen) {
@@ -1224,7 +1249,9 @@ async function generateWithOpenRouter(ctx, presetPack, plan) {
     if (!html.includes("<html") && !html.includes("<!DOCTYPE")) {
       throw new Error("MiniMax did not return a complete HTML document");
     }
-    html = sanitizeGeneratedCopy(ensureStockMediaInHtml(stripDemoChrome(html), stockMedia));
+    html = sanitizeGeneratedCopy(
+      ensureMobileFriendlyHtml(ensureStockMediaInHtml(stripDemoChrome(html), stockMedia))
+    );
     return html;
   }
 
@@ -1929,12 +1956,91 @@ app.get("/embed.js", (_req, res) => {
   }
 });
 
+/** Serve the contact form handler for published sites. */
+app.get("/contact-form.js", (_req, res) => {
+  try {
+    const js = fs.readFileSync(CONTACT_FORM_SCRIPT_PATH, "utf8");
+    res.setHeader("Content-Type", "application/javascript; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=300");
+    res.send(js);
+  } catch (e) {
+    console.error("contact-form.js read failed", e.message);
+    res.status(500).type("application/javascript").send("// Moonrise contact form unavailable");
+  }
+});
+
+/**
+ * Public contact form submit (Auto mode).
+ * Delivers leads to the notification email configured in Builder.
+ */
+app.post("/contact-submit", contactSubmitLimiter, async (req, res) => {
+  try {
+    const projectId = String(req.body?.projectId || req.body?.project_id || "").trim();
+    if (!projectId) return res.status(400).json({ error: "projectId required" });
+
+    const name = String(req.body?.name || "").trim().slice(0, 200);
+    const phone = String(req.body?.phone || "").trim().slice(0, 80);
+    const message = String(req.body?.message || "").trim().slice(0, 5000);
+    const extras =
+      req.body?.extras && typeof req.body.extras === "object" && !Array.isArray(req.body.extras)
+        ? req.body.extras
+        : {};
+
+    if (!name && !phone && !message && !Object.keys(extras).length) {
+      return res.status(400).json({ error: "Please fill out the form before submitting" });
+    }
+
+    const supabase = db();
+    const { data: project, error } = await supabase
+      .from("projects")
+      .select("id,user_id,business_name,business_context")
+      .eq("id", projectId)
+      .maybeSingle();
+    if (error) throw error;
+    if (!project) return res.status(404).json({ error: "Project not found" });
+
+    const cfg = readContactFormConfig(project);
+    if (!cfg?.enabled || cfg.mode !== "auto") {
+      return res.status(403).json({ error: "Contact form is not enabled for this site" });
+    }
+
+    const to = String(cfg.notificationEmail || "").trim();
+    if (!to || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) {
+      return res.status(400).json({ error: "Notification email is not configured" });
+    }
+
+    const payload = { name, phone, message, extras };
+
+    const { error: insertError } = await supabase.from("contact_leads").insert({
+      project_id: project.id,
+      user_id: project.user_id,
+      mode: "auto",
+      notification_email: to,
+      endpoint_url: null,
+      payload,
+    });
+    if (insertError) throw insertError;
+
+    await sendContactLeadEmail({
+      to,
+      businessName: project.business_name,
+      fields: payload,
+      projectId: project.id,
+    });
+
+    res.json({ ok: true });
+  } catch (e) {
+    console.error("contact-submit", e);
+    respondApiError(res, e, "Could not send message");
+  }
+});
+
 /**
  * Public catalog of published preview / live sites for Locate My Order.
  * Every successful /publish writes vercel_url + status=published, so sites appear here automatically.
  * Safe fields only — no HTML, no owner identity.
  */
-app.get("/public-orders", publicOrdersLimiter, async (req, res) => {
+app.get("/public-orders", async (req, res) => {
   try {
     const supabase = db();
     const q = String(req.query.q || "").trim();
@@ -2156,6 +2262,59 @@ function injectWatermarkEmbed(html, project) {
     return src.replace(/<\/body>/i, `${tag}</body>`);
   }
   return src + tag;
+}
+
+/**
+ * Inject the Moonrise contact form handler on published sites when enabled.
+ * Auto mode emails leads via /contact-submit; Custom mode POSTs to the pasted URL.
+ */
+function injectContactFormHandler(html, project) {
+  const cfg = readContactFormConfig(project);
+  if (!cfg?.enabled) return String(html || "");
+
+  const workerBase = resolveWorkerPublicUrl();
+  let attrs =
+    `data-project-id="${escapeHtmlAttr(project.id)}" ` +
+    `data-worker="${escapeHtmlAttr(workerBase)}"`;
+
+  if (cfg.mode === "custom") {
+    const detected = detectContactEndpoint(cfg.endpointUrl);
+    if (!cfg.endpointUrl || detected.type === "invalid") {
+      console.warn("contact form custom: invalid endpoint for project", project.id);
+      return String(html || "");
+    }
+    if (detected.needsChatId) {
+      console.warn("contact form telegram: missing chat_id for project", project.id);
+      return String(html || "");
+    }
+    attrs +=
+      ` data-mode="custom"` +
+      ` data-endpoint="${escapeHtmlAttr(cfg.endpointUrl)}"` +
+      ` data-endpoint-type="${escapeHtmlAttr(detected.type)}"`;
+  } else {
+    const email = String(cfg.notificationEmail || "").trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      console.warn("contact form auto: missing notification email for project", project.id);
+      return String(html || "");
+    }
+    attrs += ` data-mode="auto"`;
+  }
+
+  const src = String(html || "");
+  const tag = `\n<script src="${workerBase}/contact-form.js" ${attrs}></script>\n`;
+  if (/<\/body>/i.test(src)) {
+    return src.replace(/<\/body>/i, `${tag}</body>`);
+  }
+  return src + tag;
+}
+
+function preparePublishedHtml(project) {
+  let html = ensureMobileFriendlyHtml(project.html || "<!doctype html><title>Site</title>");
+  if (project.watermark_enabled) {
+    html = injectWatermarkEmbed(html, project);
+  }
+  html = injectContactFormHandler(html, project);
+  return html;
 }
 
 const VERCEL_SLUG_STOP_WORDS = new Set([
@@ -2464,10 +2623,7 @@ async function ensureVercelProjectForMoonrise(headers, project, preferredSlug) {
  * clean redeploy after the business owner pays).
  */
 async function deployProjectToVercel(supabase, project) {
-  const baseHtml = project.html || "<!doctype html><title>Site</title>";
-  const html = project.watermark_enabled
-    ? injectWatermarkEmbed(baseHtml, project)
-    : String(baseHtml);
+  const html = preparePublishedHtml(project);
 
   const token = process.env.VERCEL_TOKEN;
   if (!token) {

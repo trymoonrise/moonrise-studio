@@ -224,7 +224,20 @@
 
   function setPromptBusy(busy, label) {
     const status = document.getElementById("builder-status");
+    const empty = document.getElementById("preview-empty");
     document.body.classList.toggle("ms-lb-generating", !!busy);
+    empty?.classList.toggle("is-generating", !!busy);
+    if (busy) {
+      const copy = empty?.querySelector("p");
+      const name = businessValue("businessName");
+      if (copy) {
+        copy.textContent = name
+          ? "Generating a site for " + name + "…"
+          : "Generating your site…";
+      }
+    } else {
+      updateEmptyCopy(state.fromFinder);
+    }
     // Only show channel progress while a generate request is actually in flight
     window.StudioShell?.setChannelGenerating?.("builder", !!busy && !!generateAbort);
     if (status && busy) status.textContent = label || "";
@@ -2094,16 +2107,112 @@
     editState.lastSandboxMode = mode;
   }
 
+  /**
+   * Keep preview (and eventually saved HTML) scrollable on phones:
+   * unlock body height locks and tame wide fixed nav docks.
+   */
+  function ensureMobileFriendlyHtml(html) {
+    let out = String(html || "");
+    if (!out.trim()) return out;
+
+    if (!/<meta[^>]+name=["']viewport["']/i.test(out)) {
+      out = out.replace(
+        /<head([^>]*)>/i,
+        '<head$1>\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'
+      );
+    } else {
+      out = out.replace(
+        /<meta[^>]+name=["']viewport["'][^>]*>/i,
+        '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'
+      );
+    }
+
+    if (out.includes("data-ms-mobile-fit")) return out;
+
+    const css = [
+      "html,body{max-width:100%;overflow-x:clip!important;overflow-y:auto!important;height:auto!important;min-height:100%;overscroll-behavior-y:contain}",
+      "body{position:relative!important}",
+      "img,video,canvas,svg{max-width:100%;height:auto}",
+      "iframe{max-width:100%}",
+      ".nav,.dock,nav[class],header .dock,header nav{max-width:100%}",
+      "@media (max-width:767px){",
+      ".nav{padding:.65rem!important;left:0;right:0}",
+      ".dock,header .dock,nav.dock{max-width:calc(100vw - 1.25rem);width:max-content;margin-left:auto;margin-right:auto;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-wrap:nowrap}",
+      ".dock::-webkit-scrollbar,header .dock::-webkit-scrollbar{display:none}",
+      ".dock a,header .dock a{white-space:nowrap;flex:0 0 auto}",
+      ".hero,.hero-content,section,.container{max-width:100vw;box-sizing:border-box}",
+      ".hero{min-height:min(100svh,100vh);overflow-x:clip}",
+      "}",
+    ].join("");
+
+    const styleTag = '<style data-ms-mobile-fit="1">' + css + "</style>";
+    if (/<\/head>/i.test(out)) return out.replace(/<\/head>/i, styleTag + "\n</head>");
+    if (/<body[^>]*>/i.test(out)) return out.replace(/<body([^>]*)>/i, "<body$1>\n" + styleTag);
+    return styleTag + out;
+  }
+
   function writePreviewDocument(html) {
     const frame = getPreviewFrame();
     if (!frame || !html) return null;
     const doc = frame.contentDocument;
     if (!doc) return null;
+    const safeHtml = ensureMobileFriendlyHtml(html);
     doc.open();
-    doc.write(html);
+    doc.write(safeHtml);
     doc.close();
     editState.lastWrittenHtml = html;
+    bindPreviewTapToFullscreen(doc);
     return doc;
+  }
+
+  function bindPreviewTapToFullscreen(doc) {
+    if (!doc || !doc.documentElement) return;
+    if (doc.documentElement.dataset.msFsTapBound === "1") return;
+    doc.documentElement.dataset.msFsTapBound = "1";
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let moved = false;
+
+    doc.addEventListener(
+      "touchstart",
+      (event) => {
+        const t = event.changedTouches?.[0];
+        if (!t) return;
+        touchStartX = t.clientX;
+        touchStartY = t.clientY;
+        moved = false;
+      },
+      { passive: true }
+    );
+
+    doc.addEventListener(
+      "touchmove",
+      (event) => {
+        const t = event.changedTouches?.[0];
+        if (!t) return;
+        if (Math.abs(t.clientX - touchStartX) > 10 || Math.abs(t.clientY - touchStartY) > 10) {
+          moved = true;
+        }
+      },
+      { passive: true }
+    );
+
+    doc.addEventListener("click", (event) => {
+      if (state.viewport === "fullscreen") return;
+      if (state.mode === "edit" || state.mode === "code") return;
+      if (!state.html || !String(state.html).trim()) return;
+      if (moved) return;
+      const target = event.target;
+      if (
+        target &&
+        typeof target.closest === "function" &&
+        target.closest("a,button,input,textarea,select,label,form,[role='button'],[contenteditable='true']")
+      ) {
+        return;
+      }
+      setViewport("fullscreen");
+    });
   }
 
   function setEditHint(msg) {
@@ -2457,15 +2566,8 @@
     editState.hovered = null;
     hideEditToolbar();
     editState.skipRewrite = false;
-    const frame = document.getElementById("preview-frame");
-    const doc = frame?.contentDocument;
-    if (doc) {
-      doc.open();
-      doc.write(html);
-      doc.close();
-      editState.lastWrittenHtml = html;
-      attachEditMode(doc);
-    }
+    const doc = writePreviewDocument(html);
+    if (doc) attachEditMode(doc);
     scheduleEditAutosave();
   }
 
@@ -3575,6 +3677,13 @@
 
     if (needsWrite) {
       writePreviewDocument(state.html);
+    } else {
+      const existing = getPreviewDoc();
+      if (existing && state.html && !existing.querySelector("[data-ms-mobile-fit]")) {
+        writePreviewDocument(state.html);
+      } else if (existing) {
+        bindPreviewTapToFullscreen(existing);
+      }
     }
 
     setEditSaveStatus("idle");
@@ -3645,6 +3754,7 @@
     syncPreviewChromeUrl();
     const publishBtn = document.getElementById("btn-publish-top");
     const unpublishBtn = document.getElementById("btn-unpublish-top");
+    const deleteBtn = document.getElementById("btn-delete-top");
     const settingsUnpublishBtn = document.getElementById("lb-set-unpublish");
     const label = publishBtn?.querySelector(".ms-lb-publish-label");
     const icon = publishBtn?.querySelector(".ms-lb-publish-icon");
@@ -3657,6 +3767,7 @@
     if (icon) icon.innerHTML = isLive ? LIVE_BTN_ICON : PUBLISH_BTN_ICON;
     if (unpublishBtn) unpublishBtn.hidden = !isLive;
     if (settingsUnpublishBtn) settingsUnpublishBtn.hidden = !isLive;
+    if (deleteBtn) deleteBtn.hidden = !state.projectId;
 
     const offlineBanner = document.getElementById("lb-offline-banner");
     if (isLive && offlineBanner) offlineBanner.hidden = true;
@@ -3770,10 +3881,27 @@
 
   function refreshWatermark() {
     const host = document.getElementById("watermark-host");
-    // Never show the order watermark inside the builder — sellers need a clean
-    // canvas. It still ships on the live published site when enabled.
+    const project = state.project;
+    const show =
+      !!state.projectId &&
+      !!state.html &&
+      !!project &&
+      project.watermark_enabled !== false &&
+      state.onboardDone;
+
     window.MoonriseWatermarkEmbed?.unmount?.();
     if (host) host.innerHTML = "";
+
+    if (show && window.MoonriseWatermarkEmbed?.mount) {
+      // Same widget that ships on the live site — sellers see it in Builder too.
+      // After Stripe pay, watermark_enabled flips false and this unmounts for good.
+      window.MoonriseWatermarkEmbed.mount({
+        projectId: state.projectId,
+        workerUrl: workerUrl() || window.SITE_CONFIG?.workerUrl || "",
+        host: host || undefined,
+        urgencyEndsAt: project.urgency_ends_at || undefined,
+      });
+    }
     setPublishEnabled();
   }
 
@@ -3798,7 +3926,7 @@
     if (!data) throw new Error("Project not found");
     state.projectId = data.id;
     state.project = data;
-    state.html = data.html || "";
+    state.html = ensureMobileFriendlyHtml(data.html || "");
     const allowedPrices = [100, 30000, 50000, 70000, 100000, 150000];
     const dbPrice = Number(data.price_cents);
     const savedPrice = Number(localStorage.getItem("ms_project_price_" + data.id));
@@ -3928,7 +4056,7 @@
         document.dispatchEvent(new CustomEvent("ms:credits-changed", { detail: data.credits }));
       }
       state.projectId = data.projectId;
-      state.html = data.html || "";
+      state.html = ensureMobileFriendlyHtml(data.html || "");
       state.onboardDone = true;
       state.autoGeneratePending = false;
       editState.history = [];
@@ -3997,7 +4125,10 @@
       flushEditHtmlToState();
       await flushEditAutosaveNow();
     } else if (state.mode === "code") {
-      state.html = document.getElementById("code-editor")?.value || state.html;
+      state.html = ensureMobileFriendlyHtml(document.getElementById("code-editor")?.value || state.html);
+      await persistHtmlQuiet(state.html).catch(() => {});
+    } else if (state.html) {
+      state.html = ensureMobileFriendlyHtml(state.html);
       await persistHtmlQuiet(state.html).catch(() => {});
     }
     // Publishing is allowed while the watermark is on. The seller isn't the
@@ -4175,10 +4306,32 @@
       setError("No project to delete");
       return;
     }
-    if (!confirm("Delete this project permanently?")) return;
-    const user = await window.StudioAuth.getUser();
-    await sb().from("projects").delete().eq("id", state.projectId).eq("user_id", user.id);
-    location.href = "dashboard.html";
+    if (!confirm("Delete this project permanently? This cannot be undone.")) return;
+    setError("");
+    setStatus("Deleting project…");
+    try {
+      if (liveSiteUrl()) {
+        try {
+          await workerPost("/publish", {
+            projectId: state.projectId,
+            action: "unpublish",
+          });
+        } catch (_) {
+          /* Still delete the project row if Vercel cleanup fails. */
+        }
+      }
+      const user = await window.StudioAuth.getUser();
+      const { error } = await sb()
+        .from("projects")
+        .delete()
+        .eq("id", state.projectId)
+        .eq("user_id", user.id);
+      if (error) throw error;
+      location.href = "dashboard.html";
+    } catch (e) {
+      setStatus("");
+      setError(e.message || "Could not delete project");
+    }
   }
 
   function downloadHtml() {
@@ -4533,7 +4686,50 @@
       mode: raw.mode === "custom" ? "custom" : "auto",
       notificationEmail: String(raw.notificationEmail || "").trim(),
       endpointUrl: String(raw.endpointUrl || "").trim(),
+      endpointType: String(raw.endpointType || "").trim(),
     };
+  }
+
+  function detectContactEndpoint(url) {
+    const raw = String(url || "").trim();
+    if (!raw) return { type: "invalid", url: "" };
+    let parsed;
+    try {
+      parsed = new URL(raw);
+    } catch (_) {
+      return { type: "invalid", url: raw };
+    }
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return { type: "invalid", url: raw };
+    }
+    const host = parsed.hostname.toLowerCase();
+    const pathname = parsed.pathname.toLowerCase();
+    if (host.includes("formspree.io") && /\/f\/[a-z0-9]+/i.test(pathname)) {
+      return { type: "formspree", url: raw };
+    }
+    if (
+      (host.includes("discord.com") || host.includes("discordapp.com")) &&
+      pathname.includes("/api/webhooks/")
+    ) {
+      return { type: "discord", url: raw };
+    }
+    if (host === "api.telegram.org" && pathname.includes("/sendmessage")) {
+      const chatId = parsed.searchParams.get("chat_id");
+      if (!chatId) return { type: "telegram", url: raw, needsChatId: true };
+      return { type: "telegram", url: raw, chatId };
+    }
+    return { type: "webhook", url: raw };
+  }
+
+  function validateCustomContactEndpoint(endpointUrl) {
+    const detected = detectContactEndpoint(endpointUrl);
+    if (detected.type === "invalid") {
+      return "Enter a valid HTTPS endpoint URL.";
+    }
+    if (detected.needsChatId) {
+      return "Telegram links must include ?chat_id=YOUR_CHAT_ID in the URL.";
+    }
+    return "";
   }
 
   function syncContactFormWidgetUi() {
@@ -4604,11 +4800,15 @@
       }
     }
     if (enabled && mode === "custom") {
-      if (!endpointUrl || !/^https?:\/\//i.test(endpointUrl)) {
-        setSiteSettingsError("Enter a valid form endpoint URL starting with http:// or https://.");
+      const endpointError = validateCustomContactEndpoint(endpointUrl);
+      if (endpointError) {
+        setSiteSettingsError(endpointError);
         return;
       }
     }
+
+    const detected =
+      mode === "custom" ? detectContactEndpoint(endpointUrl) : { type: "auto", url: "" };
 
     const ctx = {
       ...(state.project?.business_context || {}),
@@ -4617,6 +4817,7 @@
         mode,
         notificationEmail: mode === "auto" ? notificationEmail : "",
         endpointUrl: mode === "custom" ? endpointUrl : "",
+        endpointType: mode === "custom" ? detected.type : "",
       },
     };
 
@@ -4630,7 +4831,13 @@
     try {
       await persistProjectPatch({ business_context: ctx });
       syncSiteSettingsUi();
-      setSiteSettingsStatus("Contact form settings saved.");
+      const live = liveSiteUrl();
+      if (live) {
+        setSiteSettingsStatus("Contact form settings saved. Republish to apply on the live site.");
+        window.StudioToast?.success?.("Republish your site to activate the contact form on the live URL.");
+      } else {
+        setSiteSettingsStatus("Contact form settings saved.");
+      }
     } catch (e) {
       setSiteSettingsError(e.message || "Could not save contact form settings");
     }
@@ -5066,7 +5273,9 @@
   }
 
   function bindFullscreenControls() {
-    document.getElementById("lb-exit-fullscreen")?.addEventListener("click", () => {
+    document.getElementById("lb-exit-fullscreen")?.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
       exitFullscreen();
     });
     document.addEventListener("keydown", (event) => {
@@ -5235,6 +5444,9 @@
     document.getElementById("btn-download-html")?.addEventListener("click", downloadHtml);
     document.getElementById("btn-publish-top")?.addEventListener("click", publish);
     document.getElementById("btn-unpublish-top")?.addEventListener("click", unpublish);
+    document.getElementById("btn-delete-top")?.addEventListener("click", () => {
+      void deleteProject();
+    });
     document.getElementById("lb-live-banner-close")?.addEventListener("click", () => dismissLiveBanner());
     document.getElementById("lb-offline-banner-close")?.addEventListener("click", () => dismissOfflineBanner());
   }

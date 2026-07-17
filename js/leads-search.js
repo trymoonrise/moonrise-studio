@@ -682,9 +682,10 @@
   }
 
   function leadFinderBaseUrl() {
-    return String(window.SITE_CONFIG?.leadFinderUrl || "")
-      .trim()
-      .replace(/\/$/, "");
+    if (typeof window.resolveLeadFinderUrl === "function") {
+      return window.resolveLeadFinderUrl();
+    }
+    return "";
   }
 
   function rowsToFinderLeads(rows) {

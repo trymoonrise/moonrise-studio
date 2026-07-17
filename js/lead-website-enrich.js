@@ -10,9 +10,10 @@
   let running = false;
 
   function baseUrl() {
-    return String(global.SITE_CONFIG?.leadFinderUrl || "")
-      .trim()
-      .replace(/\/$/, "");
+    if (typeof global.resolveLeadFinderUrl === "function") {
+      return global.resolveLeadFinderUrl();
+    }
+    return "";
   }
 
   function mapsKey(lead) {
