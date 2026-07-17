@@ -2202,29 +2202,34 @@ function pickProductionUrl(deployData, projectSlug) {
 
 async function disableVercelDeploymentProtection(headers, projectId) {
   if (!projectId) return false;
-  const body = { ssoProtection: null, passwordProtection: null };
-  try {
-    const res = await fetch(
-      `https://api.vercel.com/v10/projects/${encodeURIComponent(projectId)}${vercelTeamQuery()}`,
-      {
-        method: "PATCH",
-        headers,
-        body: JSON.stringify(body),
-      }
-    );
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      console.warn(
-        "Vercel deployment protection not disabled:",
-        data?.error?.message || res.status
+  // passwordProtection is update-only (not accepted on project create). Try
+  // both fields, then fall back to SSO-only if the plan/schema rejects password.
+  const attempts = [
+    { ssoProtection: null, passwordProtection: null },
+    { ssoProtection: null },
+  ];
+  for (const body of attempts) {
+    try {
+      const res = await fetch(
+        `https://api.vercel.com/v10/projects/${encodeURIComponent(projectId)}${vercelTeamQuery()}`,
+        {
+          method: "PATCH",
+          headers,
+          body: JSON.stringify(body),
+        }
       );
+      if (res.ok) return true;
+      const data = await res.json().catch(() => ({}));
+      const msg = String(data?.error?.message || res.status);
+      if (/passwordProtection/i.test(msg)) continue;
+      console.warn("Vercel deployment protection not disabled:", msg);
+      return false;
+    } catch (e) {
+      console.warn("Vercel deployment protection patch failed:", e.message);
       return false;
     }
-    return true;
-  } catch (e) {
-    console.warn("Vercel deployment protection patch failed:", e.message);
-    return false;
   }
+  return false;
 }
 
 async function assignVercelProductionAlias(headers, deploymentId, projectSlug) {
@@ -2307,8 +2312,8 @@ async function ensureVercelProject(headers, slug) {
     headers,
     body: JSON.stringify({
       name: slug,
+      // Create schema accepts ssoProtection, not passwordProtection.
       ssoProtection: null,
-      passwordProtection: null,
     }),
   });
   const createData = await createRes.json().catch(() => ({}));
