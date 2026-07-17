@@ -20,9 +20,19 @@ const { formatApiError, respondApiError, sendStripeMissing } = require("./api-er
 const PORT = Number(process.env.PORT || 8787);
 const PUBLIC_APP_URL = String(process.env.PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "");
 /** Public base URL of THIS worker (used to embed the watermark widget into live sites). */
-const WORKER_PUBLIC_URL = String(
-  process.env.WORKER_PUBLIC_URL || `http://127.0.0.1:${PORT}`
-).replace(/\/$/, "");
+function resolveWorkerPublicUrl() {
+  const fromEnv = String(process.env.WORKER_PUBLIC_URL || "").trim().replace(/\/$/, "");
+  if (fromEnv) return fromEnv;
+  // Vercel sets VERCEL_URL without protocol (e.g. moonrise-studio.vercel.app).
+  const vercelHost = String(process.env.VERCEL_URL || "").trim().replace(/^https?:\/\//, "");
+  if (vercelHost) return `https://${vercelHost.replace(/\/$/, "")}`;
+  // Prefer the Studio cloud worker when publishing from local without env set.
+  if (process.env.VERCEL_TOKEN || process.env.NODE_ENV === "production") {
+    return "https://moonrise-studio.vercel.app";
+  }
+  return `http://127.0.0.1:${PORT}`;
+}
+const WORKER_PUBLIC_URL = resolveWorkerPublicUrl();
 const WATERMARK_EMBED_PATH = path.join(__dirname, "..", "watermark", "embed.js");
 /** Website generation and editing — override with WEBSITE_GENERATION_MODEL. */
 const WEBSITE_GENERATION_MODEL = String(
@@ -307,6 +317,9 @@ app.get("/health", (_req, res) => {
     service: "moonrise-studio-worker",
     websiteGenerationModel: WEBSITE_GENERATION_MODEL,
     websiteMaxOutputTokens: WEBSITE_MAX_OUTPUT_TOKENS,
+    workerPublicUrl: WORKER_PUBLIC_URL,
+    watermarkEmbedPath: WATERMARK_EMBED_PATH,
+    watermarkEmbedExists: fs.existsSync(WATERMARK_EMBED_PATH),
     websitePresetBudget: {
       maxFiles: PRESET_MAX_FILES,
       maxCharsEach: PRESET_MAX_CHARS_EACH,
@@ -2080,14 +2093,17 @@ app.post("/edit", requireUser, editLimiter, async (req, res) => {
  */
 function injectWatermarkEmbed(html, project) {
   const src = String(html || "");
+  const workerBase = resolveWorkerPublicUrl();
   const urgency = String(project?.urgency_ends_at || "").trim();
   const urgencyAttr = urgency
     ? ` data-urgency-ends-at="${String(urgency).replace(/"/g, "")}"`
     : "";
+  // Avoid defer so the widget can read data-* attributes via currentScript
+  // immediately; also keeps the badge visible as soon as the page paints.
   const tag =
-    `\n<script src="${WORKER_PUBLIC_URL}/embed.js" ` +
+    `\n<script src="${workerBase}/embed.js" ` +
     `data-project-id="${project.id}" ` +
-    `data-worker="${WORKER_PUBLIC_URL}"${urgencyAttr} defer></` +
+    `data-worker="${workerBase}"${urgencyAttr}></` +
     `script>\n`;
   if (/<\/body>/i.test(src)) {
     return src.replace(/<\/body>/i, `${tag}</body>`);

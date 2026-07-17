@@ -10,6 +10,7 @@
  * Or: MoonriseWatermarkEmbed.mount({ projectId, workerUrl, host, urgencyEndsAt })
  */
 (function (global) {
+  const bootScriptEl = typeof document !== "undefined" ? document.currentScript : null;
   const AVATAR =
     "https://moonrise-studio.vercel.app/doc/MoonriseLogo.png";
   const SITE_HOST = "trymoonrise.com";
@@ -378,8 +379,13 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
   }
 
   function autoMountFromScript() {
-    const script = document.currentScript;
-    if (!script?.src) return;
+    // Capture at parse time — document.currentScript is null inside deferred
+    // callbacks / DOMContentLoaded, which is how live sites load this file.
+    const script =
+      bootScriptEl ||
+      document.currentScript ||
+      document.querySelector("script[data-project-id][src*='embed.js']");
+    if (!script) return;
     const projectId = script.getAttribute("data-project-id") || "";
     if (!projectId) return;
     mount({
@@ -392,9 +398,11 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
 
   global.MoonriseWatermarkEmbed = { mount, unmount, AVATAR, SITE_URL };
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", autoMountFromScript);
-  } else {
-    autoMountFromScript();
+  if (typeof document !== "undefined") {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", autoMountFromScript);
+    } else {
+      autoMountFromScript();
+    }
   }
 })(typeof window !== "undefined" ? window : globalThis);
