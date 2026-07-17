@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1112
+    slug: bios-skills-bio-09
+    title: Skills Bio 09
+    category: bios
+    tags: bios, skills, experimental, shapes
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1112 — Skills Bio 09</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700&family=DM+Sans:wght@400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0d1117;font-family:'DM Sans',sans-serif;overflow:hidden}
+    .system{position:relative;width:280px;height:280px;display:grid;place-items:center;animation:in .8s cubic-bezier(.22,1,.36,1) both}
+    .ring{position:absolute;inset:36px;border:1px dashed rgba(255,255,255,.12);border-radius:50%;pointer-events:none}
+    .center{width:96px;height:96px;border-radius:50%;background:#161b22;border:1px solid rgba(255,255,255,.12);display:grid;place-items:center;text-align:center;z-index:2;padding:.5rem}
+    .center strong{display:block;font-family:Syne,sans-serif;font-size:.9rem;color:#f0f3f6}
+    .center span{font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(240,243,246,.4)}
+    .orbit{position:absolute;inset:0}
+    .skill{position:absolute;top:50%;left:50%;margin:-14px 0 0 -28px;padding:.35rem .7rem;font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:#0d1117;white-space:nowrap;animation:orbit 16s linear infinite}
+    .skill:nth-child(1){background:#7ee787;border-radius:999px;animation-delay:0s}
+    .skill:nth-child(2){background:#79c0ff;border-radius:6px;animation-delay:-4s}
+    .skill:nth-child(3){background:#ffa657;clip-path:polygon(10% 0,90% 0,100% 50%,90% 100%,10% 100%,0 50%);animation-delay:-8s}
+    .skill:nth-child(4){background:#d2a8ff;border-radius:50% 20%;animation-delay:-12s}
+    @keyframes orbit{
+      from{transform:rotate(0deg) translateX(110px) rotate(0deg)}
+      to{transform:rotate(360deg) translateX(110px) rotate(-360deg)}
+    }
+    @keyframes in{from{opacity:0;transform:scale(.9)}}
+    @media (prefers-reduced-motion:reduce){.skill,.system{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="system">
+    <span class="ring" aria-hidden="true"></span>
+    <div class="orbit">
+      <span class="skill">Type</span>
+      <span class="skill">Motion</span>
+      <span class="skill">Code</span>
+      <span class="skill">3D</span>
+    </div>
+    <div class="center"><strong>Kai Bloom</strong><span>Maker</span></div>
+  </div>
+</body>
+</html>

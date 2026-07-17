@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0460
+    slug: image-scroll-ken-burns-10
+    title: Ken Burns 10
+    category: image-scroll
+    tags: image-scroll, ken
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0460 — Ken Burns 10</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#000;color:#fff;font-family:Georgia,serif}.slides{position:relative;height:100vh;overflow:hidden}.slide{position:absolute;inset:0;opacity:0;transition:opacity 1s}.slide.on{opacity:1}.slide img{width:110%;height:110%;object-fit:cover;animation:kb 18s ease-in-out infinite alternate}@keyframes kb{0%{transform:scale(1) translate(0,0)}100%{transform:scale(1.15) translate(-3%,-2%)}}@media (prefers-reduced-motion:reduce){.slide img{animation:none}}.copy{position:absolute;bottom:3rem;left:3rem;z-index:2}.copy h1{font-size:clamp(1.8rem,5vw,3rem);font-weight:400;font-style:italic}.dots{position:absolute;bottom:3rem;right:3rem;display:flex;gap:8px;z-index:2}.dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3)}.dot.on{background:#fff}.spacer{height:300vh}
+  </style>
+</head>
+<body>
+<div class="slides"><div class="slide on" data-i="0"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div><div class="slide" data-i="1"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div><div class="slide" data-i="2"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div><div class="copy"><h1 id="cap">Stillness in motion</h1></div><div class="dots" id="dots"><div class="dot on" data-i="0"></div><div class="dot" data-i="1"></div><div class="dot" data-i="2"></div></div></div><div class="spacer" id="t"></div>
+<script>const _el=document.querySelector('#t');function prog(){const r=_el.getBoundingClientRect();return Math.min(1,Math.max(0,-r.top/(r.height-innerHeight)));}const slides=[...document.querySelectorAll('.slide')],dots=[...document.querySelectorAll('.dot')],caps=['Stillness in motion','Light finds form','Time unfolds'];addEventListener('scroll',()=>{const p=prog();const i=Math.min(2,Math.floor(p*3));slides.forEach((s,j)=>s.classList.toggle('on',j===i));dots.forEach((d,j)=>d.classList.toggle('on',j===i));document.getElementById('cap').textContent=caps[i];},{passive:true});</script>
+</body>
+</html>

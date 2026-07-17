@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0136
+    slug: docks-floating-dock
+    title: Floating Pill Dock
+    category: docks
+    tags: docks, floating
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0136 — Floating Pill Dock</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:linear-gradient(165deg,#e8ecf2,#f7f8fb);font-family:Outfit,sans-serif}
+    .pill{display:flex;align-items:center;gap:4px;padding:6px;background:rgba(255,255,255,.85);backdrop-filter:blur(16px);border:1px solid rgba(0,0,0,.06);border-radius:999px;box-shadow:0 18px 40px rgba(20,30,50,.1);animation:float 4.5s ease-in-out infinite}
+    .pill a{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;text-decoration:none;color:#555;transition:background .3s,color .3s,transform .35s cubic-bezier(.22,1,.36,1)}
+    .pill a svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8}
+    .pill a:hover{transform:translateY(-3px);color:#111}
+    .pill a.active{background:#111;color:#fff;transform:scale(1.06)}
+    .div{width:1px;height:22px;background:rgba(0,0,0,.1);margin:0 2px}
+    @keyframes float{0%,100%{translate:0 0}50%{translate:0 -8px}}
+    @media(prefers-reduced-motion:reduce){.pill{animation:none}}
+  </style>
+</head>
+<body>
+  <nav class="pill" aria-label="Floating dock">
+    <a class="active" href="#" aria-label="Home"><svg viewBox="0 0 24 24"><path d="M4 10.5L12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-5H10v5H5a1 1 0 0 1-1-1z"/></svg></a>
+    <a href="#" aria-label="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3"/></svg></a>
+    <a href="#" aria-label="Create"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></a>
+    <div class="div" aria-hidden="true"></div>
+    <a href="#" aria-label="Profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg></a>
+  </nav>
+  <script>
+    const links=[...document.querySelectorAll('.pill a')];
+    links.forEach(a=>a.addEventListener('click',e=>{e.preventDefault();links.forEach(l=>l.classList.remove('active'));a.classList.add('active')}));
+  </script>
+</body>
+</html>

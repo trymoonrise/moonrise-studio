@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0358
+    slug: navigation-sticky-nav
+    title: Sticky Navigation
+    category: navigation
+    tags: navigation, sticky
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0358 — Sticky Navigation</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;background:#fafafa;color:#111;font-family:Outfit,sans-serif}
+    .nav{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:1.25rem clamp(1.25rem,4vw,3rem);background:rgba(250,250,250,.7);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+    .logo{font-family:Syne,sans-serif;font-weight:800;letter-spacing:-.04em;font-size:1.05rem}
+    .links{display:flex;gap:2.25rem}
+    .links a{position:relative;color:#111;text-decoration:none;font-size:.78rem;font-weight:300;letter-spacing:.14em;text-transform:uppercase;opacity:.4;transition:opacity .3s}
+    .links a:hover,.links a.active{opacity:1}
+    .links a::after{content:"";position:absolute;left:0;right:0;bottom:-6px;height:1px;background:currentColor;transform:scaleX(0);transition:transform .35s cubic-bezier(.22,1,.36,1)}
+    .links a:hover::after,.links a.active::after{transform:scaleX(1)}
+    .hero{height:70vh;display:grid;place-items:end start;padding:3rem clamp(1.25rem,4vw,3rem)}
+    .hero h1{margin:0;font-family:Syne,sans-serif;font-size:clamp(2.5rem,8vw,5rem);letter-spacing:-.05em;line-height:.95;font-weight:800}
+    .spacer{min-height:140vh;padding:4rem clamp(1.25rem,4vw,3rem);color:#aaa;font-weight:300;line-height:1.8;max-width:36ch}
+    @media(prefers-reduced-motion:reduce){.links a,.links a::after{transition:none}}
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="logo">AXIS</div>
+    <div class="links"><a class="active" href="#">Home</a><a href="#">Work</a><a href="#">About</a></div>
+  </nav>
+  <section class="hero"><h1>Stay<br>still</h1></section>
+  <section class="spacer">The bar never leaves. It barely exists — one line of type floating on frosted air while the page continues beneath.</section>
+</body>
+</html>

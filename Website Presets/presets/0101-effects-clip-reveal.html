@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0101
+    slug: effects-clip-reveal
+    title: Aperture Sweep Reveal
+    category: effects
+    tags: effects, clip
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0101 — Aperture Sweep Reveal</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#060608;color:#e8e8ec;font-family:Outfit,sans-serif;overflow:hidden}
+    .stage{position:relative;width:min(520px,92vw);aspect-ratio:4/3;cursor:crosshair}
+    .frame{position:absolute;inset:0;border-radius:4px;overflow:hidden;border:1px solid rgba(255,255,255,.08)}
+    .frame img{width:100%;height:100%;object-fit:cover;display:block;filter:contrast(1.1) saturate(.85)}
+    .mask{position:absolute;inset:0;background:#060608;clip-path:polygon(0 0,0 0,0 100%,0 100%);transition:clip-path .9s cubic-bezier(.16,1,.3,1)}
+    .stage.open .mask{clip-path:polygon(0 0,100% 0,100% 100%,0 100%)}
+    .blade{position:absolute;top:0;left:0;width:120%;height:100%;background:linear-gradient(105deg,transparent 44%,rgba(0,255,170,.18) 50%,transparent 56%);transform:translateX(-110%);animation:sweep 3.2s ease-in-out infinite}
+    .label{position:absolute;left:20px;bottom:18px;z-index:3;pointer-events:none}
+    .label span{display:block;font:500 .65rem Outfit,sans-serif;letter-spacing:.28em;text-transform:uppercase;color:rgba(0,255,170,.6);margin-bottom:6px}
+    .label b{font-family:Syne,sans-serif;font-size:clamp(1.4rem,4vw,2rem);letter-spacing:-.04em}
+    .reticle{position:absolute;width:48px;height:48px;border:1px solid rgba(0,255,170,.5);border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;opacity:0;transition:opacity .3s}
+    .reticle::before,.reticle::after{content:'';position:absolute;background:rgba(0,255,170,.4)}
+    .reticle::before{width:1px;height:14px;top:50%;left:50%;transform:translate(-50%,-50%)}
+    .reticle::after{width:14px;height:1px;top:50%;left:50%;transform:translate(-50%,-50%)}
+    .stage:hover .reticle{opacity:1}
+    @keyframes sweep{0%,20%{transform:translateX(-110%)}70%,100%{transform:translateX(30%)}}
+    @media(prefers-reduced-motion:reduce){.blade{animation:none}.mask{transition:none}}
+  </style>
+</head>
+<body>
+<main class="stage" id="stage">
+  <div class="frame"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div>
+  <div class="mask" id="mask"><div class="blade"></div></div>
+  <div class="reticle" id="reticle"></div>
+  <div class="label"><span>Clip aperture</span><b>Sweep reveal</b></div>
+</main>
+<script>
+const stage=document.getElementById('stage'),mask=document.getElementById('mask'),reticle=document.getElementById('reticle');
+stage.addEventListener('pointermove',e=>{const r=stage.getBoundingClientRect();reticle.style.left=(e.clientX-r.left)+'px';reticle.style.top=(e.clientY-r.top)+'px';const x=(e.clientX-r.left)/r.width*100;mask.style.clipPath=`polygon(0 0,${x}% 0,${x}% 100%,0 100%)`;});
+stage.addEventListener('pointerenter',()=>stage.classList.add('open'));
+stage.addEventListener('pointerleave',()=>{stage.classList.remove('open');mask.style.clipPath='';});
+setTimeout(()=>stage.classList.add('open'),600);
+</script>
+</body>
+</html>

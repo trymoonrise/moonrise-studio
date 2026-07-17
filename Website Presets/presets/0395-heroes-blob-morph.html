@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0395
+    slug: heroes-blob-morph
+    title: Morphing Blob Hero
+    category: heroes
+    tags: heroes, landing, experimental, light
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0395 — Morphing Blob Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 2rem;
+      overflow: hidden;
+      background: #050508;
+      color: #fff;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      text-align: center;
+    }
+
+    .lights {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .glow {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      mix-blend-mode: screen;
+      animation: pulse 7s ease-in-out infinite alternate;
+    }
+
+    .glow--core {
+      width: 50vmax;
+      height: 50vmax;
+      left: 50%;
+      top: 42%;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle, rgba(140, 170, 255, 0.55) 0%, rgba(108, 140, 255, 0.2) 38%, transparent 68%);
+    }
+
+    .glow--left {
+      width: 34vmax;
+      height: 34vmax;
+      left: -8vmax;
+      top: 18%;
+      background: radial-gradient(circle, rgba(108, 255, 184, 0.35), transparent 68%);
+      animation-delay: -2s;
+    }
+
+    .glow--right {
+      width: 30vmax;
+      height: 30vmax;
+      right: -6vmax;
+      bottom: 10%;
+      background: radial-gradient(circle, rgba(255, 140, 200, 0.32), transparent 70%);
+      animation-delay: -4s;
+    }
+
+    .beam {
+      position: absolute;
+      inset: -30%;
+      opacity: 0.35;
+      filter: blur(28px);
+      mix-blend-mode: screen;
+      animation: sweep 14s ease-in-out infinite alternate;
+    }
+
+    .beam--a {
+      background: conic-gradient(
+        from 200deg at 50% 40%,
+        transparent 0deg,
+        rgba(108, 140, 255, 0.5) 42deg,
+        transparent 84deg,
+        transparent 360deg
+      );
+    }
+
+    .beam--b {
+      background: conic-gradient(
+        from 20deg at 58% 62%,
+        transparent 0deg,
+        rgba(108, 255, 184, 0.28) 36deg,
+        transparent 72deg,
+        transparent 360deg
+      );
+      animation-delay: -7s;
+      opacity: 0.28;
+    }
+
+    .haze {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.06), transparent 52%);
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      width: min(520px, 100%);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      margin-bottom: 1rem;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    h1 {
+      font-size: clamp(2.2rem, 5.5vw, 3.6rem);
+      font-weight: 800;
+      line-height: 1.04;
+      letter-spacing: -0.04em;
+      margin-bottom: 1rem;
+      text-shadow: 0 0 40px rgba(108, 140, 255, 0.25);
+    }
+
+    p {
+      color: rgba(255, 255, 255, 0.62);
+      font-size: 0.98rem;
+      line-height: 1.6;
+      max-width: 34ch;
+      margin: 0 auto;
+    }
+
+    @keyframes pulse {
+      from { opacity: 0.72; transform: translate(-50%, -50%) scale(0.96); }
+      to { opacity: 1; transform: translate(-50%, -50%) scale(1.06); }
+    }
+
+    .glow--left,
+    .glow--right {
+      animation-name: drift;
+    }
+
+    @keyframes drift {
+      from { transform: translate3d(0, 0, 0) scale(1); opacity: 0.7; }
+      to { transform: translate3d(4vw, -3vh, 0) scale(1.08); opacity: 1; }
+    }
+
+    @keyframes sweep {
+      from { transform: rotate(-6deg) scale(1); }
+      to { transform: rotate(8deg) scale(1.05); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .glow,
+      .beam {
+        animation: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="lights" aria-hidden="true">
+    <div class="beam beam--a"></div>
+    <div class="beam beam--b"></div>
+    <div class="glow glow--core"></div>
+    <div class="glow glow--left"></div>
+    <div class="glow glow--right"></div>
+    <div class="haze"></div>
+  </div>
+
+  <section class="content">
+    <span class="eyebrow">Luminous surface</span>
+    <h1>Lit from within</h1>
+    <p>Soft beams and glowing haze replace heavy shapes with pure light and atmosphere.</p>
+  </section>
+</body>
+</html>

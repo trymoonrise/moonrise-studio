@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 015
+    slug: svg-path-draw
+    title: SVG Path Draw
+    category: animation
+    tags: svg, draw
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>015 — SVG Path Draw</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body{margin:0;min-height:100vh;background:#000;overflow:hidden}
+    body.done{background:#fff}
+    .draw-stage{
+      position:fixed;left:0;right:0;top:50%;height:2px;width:100%;
+      transform:translateY(-50%);z-index:2;display:block;
+    }
+    .line{
+      stroke:#fff;stroke-width:2;stroke-linecap:round;
+      stroke-dasharray:50;stroke-dashoffset:50;
+    }
+    .line.draw{animation:draw 1.5s ease forwards}
+    @keyframes draw{to{stroke-dashoffset:0}}
+    .expand-bar{
+      position:fixed;inset:0;background:#fff;
+      transform:scaleY(0);transform-origin:center;z-index:1;pointer-events:none;
+    }
+    .expand-bar.go{animation:zoom 1.35s cubic-bezier(.76,0,.24,1) forwards}
+    @keyframes zoom{to{transform:scaleY(1)}}
+    @media (prefers-reduced-motion:reduce){
+      .line.draw{animation:none;stroke-dashoffset:0}
+      .expand-bar{transform:none}
+      body{background:#fff}
+    }
+  </style>
+</head>
+<body>
+  <svg class="draw-stage" viewBox="0 0 100 2" preserveAspectRatio="none" aria-hidden="true">
+    <line class="line" x1="50" y1="1" x2="0" y2="1"/>
+    <line class="line" x1="50" y1="1" x2="100" y2="1"/>
+  </svg>
+  <div class="expand-bar" id="bar"></div>
+  <script>
+    const lines = document.querySelectorAll('.line');
+    const bar = document.getElementById('bar');
+    const root = document.body;
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) {
+      root.classList.add('done');
+    } else {
+      lines.forEach((line) => line.classList.add('draw'));
+      lines[0].addEventListener('animationend', () => {
+        bar.classList.add('go');
+        document.querySelector('.draw-stage').style.opacity = '0';
+      }, { once: true });
+      bar.addEventListener('animationend', () => root.classList.add('done'), { once: true });
+    }
+  </script>
+</body>
+</html>

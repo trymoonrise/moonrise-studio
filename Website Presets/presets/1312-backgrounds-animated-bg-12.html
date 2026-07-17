@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1312
+    slug: backgrounds-animated-bg-12
+    title: Animated Bg 12
+    category: backgrounds
+    tags: backgrounds, animated
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1312 — Animated Bg 12</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');body{margin:0;min-height:100vh;display:grid;place-items:center;overflow:hidden;position:relative;background:#0f0f0f;color:#fff;font-family:"DM Sans",system-ui,-apple-system,sans-serif}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+    .geo{position:absolute;border:1px solid rgba(255,255,255,.15);animation:spin 40s linear infinite}
+    .geo--1{width:60vmax;height:60vmax;left:50%;top:50%;margin:-30vmax;border-radius:50%}
+    .geo--2{width:42vmax;height:42vmax;left:50%;top:50%;margin:-21vmax;animation-direction:reverse;animation-duration:28s}
+    .geo--3{width:24vmax;height:24vmax;left:50%;top:50%;margin:-12vmax;transform:rotate(45deg);animation-name:spinSq;animation-duration:20s}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes spinSq{to{transform:rotate(405deg)}}
+    
+.label{position:relative;z-index:2;text-align:center;padding:2rem;pointer-events:none}
+.kicker{margin:0 0 .75rem;font-size:.65rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;opacity:.45}
+h1{margin:0;font-family:"Syne",system-ui,sans-serif;font-size:clamp(1.85rem,5vw,2.85rem);font-weight:800;letter-spacing:-.045em;line-height:1.05}
+.sub{margin:.7rem 0 0;font-size:.9rem;opacity:.5;font-weight:400}
+  </style>
+</head>
+<body>
+<div class="geo geo--1" aria-hidden="true"></div><div class="geo geo--2" aria-hidden="true"></div><div class="geo geo--3" aria-hidden="true"></div><div class="label"><p class="kicker">Background</p><h1>Animated</h1><p class="sub">Geometry in orbit.</p></div>
+
+</body>
+</html>

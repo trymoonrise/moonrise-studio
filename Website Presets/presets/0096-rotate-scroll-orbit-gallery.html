@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0096
+    slug: rotate-scroll-orbit-gallery
+    title: Orbit Gallery
+    category: rotate-scroll
+    tags: rotate-scroll, orbit
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0096 — Orbit Gallery</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#000} .orbit{position:relative;width:280px;height:280px;transform:rotate(var(--r,0deg))}.item{position:absolute;width:80px;height:80px;border-radius:12px;overflow:hidden;top:50%;left:50%;margin:-40px;transform:rotate(calc(var(--i)*90deg)) translateY(-120px)}.item img{width:100%;height:100%;object-fit:cover}
+  </style>
+</head>
+<body>
+<div class="orbit" id="o"><div class="item" style="--i:0"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div><div class="item" style="--i:1"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div><div class="item" style="--i:2"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div><div class="item" style="--i:3"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div></div>
+<script>let t=0;function a(){t+=.3;document.getElementById('o').style.setProperty('--r',t+'deg');requestAnimationFrame(a);}a();</script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0408
+    slug: cursor-trails-ink-trail-13
+    title: Ink Trail 13
+    category: cursor-trails
+    tags: cursor-trails, ink
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0408 — Ink Trail 13</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body{
+      margin:0;
+      min-height:100vh;
+      background:#f4f4f5;
+      color:#18181b;
+      cursor:crosshair;
+      overflow:hidden;
+    }
+
+    canvas{position:fixed;inset:0;pointer-events:none}
+
+    .hint{
+      position:fixed;
+      inset:0;
+      display:grid;
+      place-items:center;
+      color:#3b5ccc;
+      font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+      font-size:.82rem;
+      font-weight:600;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      opacity:.38;
+      pointer-events:none;
+      user-select:none;
+    }
+  </style>
+</head>
+<body>
+  <p class="hint" id="hint">Move your cursor</p>
+  <canvas id="c" aria-hidden="true"></canvas>
+
+  <script>
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+    const hint = document.getElementById('hint');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const blobs = [];
+    let mx = innerWidth / 2;
+    let my = innerHeight / 2;
+    let pmx = mx;
+    let pmy = my;
+    let moved = false;
+
+    function resize() {
+      canvas.width = innerWidth;
+      canvas.height = innerHeight;
+    }
+    resize();
+    addEventListener('resize', resize);
+
+    function spawn(x, y, vx, vy) {
+      const speed = Math.hypot(vx, vy);
+      const count = Math.min(4, Math.max(1, Math.floor(speed / 14) + 1));
+      for (let i = 0; i < count; i += 1) {
+        const jitter = (Math.random() - 0.5) * 8;
+        blobs.push({
+          x: x + jitter,
+          y: y + jitter,
+          vx: vx * 0.05 + (Math.random() - 0.5) * 0.6,
+          vy: vy * 0.05 + (Math.random() - 0.5) * 0.6,
+          r: 4 + Math.random() * 10 + Math.min(14, speed * 0.2),
+          grow: 0.985 + Math.random() * 0.01,
+          life: 1,
+        });
+      }
+      if (blobs.length > 340) blobs.splice(0, blobs.length - 340);
+    }
+
+    if (!reduced) {
+      addEventListener('mousemove', (e) => {
+        mx = e.clientX;
+        my = e.clientY;
+        if (!moved) {
+          moved = true;
+          hint.style.opacity = '0';
+        }
+        const vx = mx - pmx;
+        const vy = my - pmy;
+        pmx = mx;
+        pmy = my;
+        spawn(mx, my, vx, vy);
+      }, { passive: true });
+
+      function frame() {
+        // subtle paper fade so ink slowly dries away
+        ctx.fillStyle = 'rgba(244, 244, 245, 0.06)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = blobs.length - 1; i >= 0; i -= 1) {
+          const b = blobs[i];
+          b.x += b.vx;
+          b.y += b.vy;
+          b.vx *= 0.9;
+          b.vy *= 0.9;
+          b.r *= b.grow;
+          b.life -= 0.006;
+
+          if (b.life <= 0.02 || b.r < 0.4) {
+            blobs.splice(i, 1);
+            continue;
+          }
+
+          const a = Math.max(0, Math.min(1, b.life));
+          const g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
+          g.addColorStop(0, `rgba(24, 24, 27, ${0.5 * a})`);
+          g.addColorStop(0.7, `rgba(59, 92, 204, ${0.28 * a})`);
+          g.addColorStop(1, 'transparent');
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        requestAnimationFrame(frame);
+      }
+
+      frame();
+    }
+  </script>
+</body>
+</html>

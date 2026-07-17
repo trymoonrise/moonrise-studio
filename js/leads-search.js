@@ -8,7 +8,6 @@
   const statusEl = document.getElementById("lf-status");
   const errorEl = document.getElementById("lf-error");
   const resultsEl = document.getElementById("lf-results");
-  const listHeadEl = document.getElementById("lf-list-head");
   const listCountEl = document.getElementById("lf-list-count");
   const findBtn = document.getElementById("lf-find");
   const SAVED_KEY = "ms_lf_quick_save_v1";
@@ -22,6 +21,8 @@
   let lastQuery = "";
   let lastUsedDemo = false;
   let savedMap = loadSavedMap();
+  const revealedLeadIds = new Set();
+  let leadRevealObserver = null;
 
   /** Business-type catalog for suggestions + Popular tags. */
   const TYPE_CATALOG = [
@@ -523,10 +524,10 @@
   }
 
   function setListCount(n) {
-    if (!listCountEl || !listHeadEl) return;
+    if (!listCountEl) return;
     const count = Math.max(0, Number(n) || 0);
     listCountEl.textContent = count + " lead" + (count === 1 ? "" : "s");
-    listHeadEl.hidden = false;
+    listCountEl.hidden = false;
   }
 
   function leadFinderBaseUrl() {
@@ -558,7 +559,9 @@
         mapsUrl,
         website: String(row.website_url || "").trim(),
         hours: String(row.hours || "").trim(),
-        hasWebsite: row.has_website === true || Boolean(String(row.website_url || "").trim()),
+        hasWebsite: window.LeadCsvFormat?.resolveLeadHasWebsite
+          ? window.LeadCsvFormat.resolveLeadHasWebsite(row)
+          : Boolean(String(row.website_url || "").trim()),
         searchQuery: String(row.search_query || "").trim(),
         formatValid: true,
       });
@@ -646,13 +649,16 @@
   }
 
   function leadWebsite(lead) {
-    return String(lead.website || lead.websiteUrl || "").trim();
+    const fmt = window.LeadCsvFormat;
+    if (fmt?.resolveLeadWebsite) return fmt.resolveLeadWebsite(lead);
+    return String(lead.website || lead.websiteUrl || lead.website_url || "").trim();
   }
 
   function leadHasWebsite(lead) {
-    if (lead?.hasWebsite === true) return true;
-    if (lead?.hasWebsite === false) return false;
-    return !!leadWebsite(lead);
+    const fmt = window.LeadCsvFormat;
+    if (fmt?.resolveLeadHasWebsite) return fmt.resolveLeadHasWebsite(lead);
+    const w = leadWebsite(lead);
+    return w.startsWith("http://") || w.startsWith("https://");
   }
 
   function getWebsiteFilter() {
@@ -665,6 +671,74 @@
     if (mode === "with") return (leads || []).filter(leadHasWebsite);
     if (mode === "without") return (leads || []).filter((lead) => !leadHasWebsite(lead));
     return leads || [];
+  }
+
+  function motionReduced() {
+    return (
+      document.documentElement.getAttribute("data-reduce-motion") === "1" ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    );
+  }
+
+  function observeLeadReveals(root) {
+    leadRevealObserver?.disconnect();
+    if (!root) return;
+
+    const cards = Array.from(root.querySelectorAll(".ms-lf-reveal"));
+    if (!cards.length) return;
+
+    if (motionReduced()) {
+      cards.forEach((el) => el.classList.add("is-visible"));
+      return;
+    }
+
+    function revealCard(el) {
+      if (!el || el.classList.contains("is-visible")) return;
+      el.classList.add("is-visible");
+      const id = el.getAttribute("data-lead-id");
+      if (id) revealedLeadIds.add(id);
+    }
+
+    leadRevealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          revealCard(entry.target);
+          leadRevealObserver?.unobserve(entry.target);
+        });
+      },
+      { root: null, rootMargin: "0px 0px -8% 0px", threshold: 0.08 }
+    );
+
+    // Wait a frame so layout settles after innerHTML / un-hiding.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        cards.forEach((el) => {
+          const id = el.getAttribute("data-lead-id");
+          if (id && revealedLeadIds.has(id)) {
+            el.classList.add("is-visible");
+            return;
+          }
+          const rect = el.getBoundingClientRect();
+          const inView =
+            rect.bottom > 40 &&
+            rect.top < (window.innerHeight || document.documentElement.clientHeight) - 24;
+          if (inView) {
+            // Force a paint at opacity 0, then ease in.
+            void el.offsetWidth;
+            revealCard(el);
+            return;
+          }
+          leadRevealObserver?.observe(el);
+        });
+      });
+    });
+  }
+
+  function resetLeadReveals() {
+    revealedLeadIds.clear();
+    leadRevealObserver?.disconnect();
+    leadRevealObserver = null;
   }
 
   function revealResults() {
@@ -872,6 +946,8 @@
   function builderHrefForLead(lead) {
     const pick = builderPickFromLead(lead);
     const params = new URLSearchParams({
+      from_finder: "1",
+      auto_generate: "1",
       lead_id: pick.leadId || "",
       name: pick.businessName || "",
       category: pick.category || "",
@@ -879,6 +955,8 @@
       address: pick.address || "",
       maps: pick.mapsUrl || "",
     });
+    if (pick.website) params.set("website", pick.website);
+    if (pick.hours) params.set("hours", pick.hours);
     try {
       const json = JSON.stringify(pick);
       const b64 = btoa(unescape(encodeURIComponent(json)))
@@ -892,8 +970,10 @@
     return { href: "builder.html?" + params.toString(), pick };
   }
 
-  function renderLeadCard(lead) {
+  function renderLeadCard(lead, index) {
     const id = leadId(lead);
+    const revealDelay = Math.min((index || 0) % 8, 7) * 45;
+    const alreadyVisible = revealedLeadIds.has(id);
     const name = displayName(lead);
     const category = displayCategory(lead) || "Business";
     const address = displayAddress(lead);
@@ -955,12 +1035,15 @@
       ),
     ];
 
-    return (
-      '<article class="ms-card ms-lead-card ms-lf-pro' +
+        return (
+      '<article class="ms-card ms-lead-card ms-lf-pro ms-lf-reveal' +
       (saved ? " is-saved" : "") +
+      (alreadyVisible ? " is-visible" : "") +
       '" data-lead-id="' +
       escapeHtml(id) +
-      '">' +
+      '" style="--lf-reveal-delay:' +
+      revealDelay +
+      'ms">' +
       '<header class="ms-lf-pro-head">' +
       '<div class="ms-lf-pro-identity">' +
       '<div class="ms-lf-pro-avatar" style="' +
@@ -970,7 +1053,7 @@
       "</div>" +
       '<div class="ms-lf-pro-titles">' +
       '<h3 class="ms-lf-pro-name">' +
-      escapeHtml(name) +
+          escapeHtml(name) +
       "</h3>" +
       '<p class="ms-lf-pro-category">' +
       escapeHtml(category) +
@@ -993,7 +1076,7 @@
       '<div class="ms-lf-pro-details" aria-label="Business details">' +
       '<div class="ms-lf-pro-details-main">' +
       mainRows.join("") +
-      "</div>" +
+          "</div>" +
       '<div class="ms-lf-pro-details-side">' +
       sideRows.join("") +
       "</div></div>" +
@@ -1043,12 +1126,18 @@
       (isDemo && listView !== "saved"
         ? '<p class="ms-muted ms-lf-demo-note">Showing demo leads for preview</p>'
         : "") +
-      shown.map(renderLeadCard).join("") +
+      shown.map((lead, index) => renderLeadCard(lead, index)).join("") +
       (hasMore
         ? '<div class="ms-lf-more-wrap"><button type="button" class="ms-btn ms-btn-secondary" id="lf-load-more">Show more (' +
           (visible.length - displayLimit) +
           " remaining)</button></div>"
         : "");
+
+    observeLeadReveals(resultsEl);
+
+    window.LeadWebsiteEnrich?.enqueue?.(shown, () => {
+      refreshVisibleLeads();
+    });
   }
 
   function refreshVisibleLeads() {
@@ -1101,6 +1190,7 @@
     setStatus("");
     hideAllSuggests();
     displayLimit = DISPLAY_PAGE;
+    resetLeadReveals();
 
     setFindBusy(true);
     if (resultsEl) resultsEl.hidden = true;
@@ -1152,7 +1242,7 @@
             remoteError = remoteError || String(result.error);
             console.warn("Business Finder search failed:", remoteError);
           }
-        } catch (e) {
+    } catch (e) {
           remoteError = remoteError || e?.message || String(e);
           console.warn(e);
         }
@@ -1407,6 +1497,7 @@
       b.classList.toggle("is-active", b === btn);
     });
     if (listView === "saved") {
+      resetLeadReveals();
       refreshVisibleLeads();
       return;
     }
@@ -1417,6 +1508,7 @@
       if (type.trim() || location.trim()) {
         findLeads();
       } else {
+        resetLeadReveals();
         renderLeads(allLeads, "All leads", false);
         setStatus("");
       }
@@ -1425,6 +1517,7 @@
     if (typeInput?.value?.trim() || locationInput?.value?.trim()) {
       findLeads();
     } else if (lastLeads.length) {
+      resetLeadReveals();
       refreshVisibleLeads();
     }
   });
@@ -1436,6 +1529,7 @@
     if (next === listView) return;
     listView = next;
     syncListViewToggle();
+    resetLeadReveals();
     refreshVisibleLeads();
   });
 

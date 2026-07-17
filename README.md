@@ -67,7 +67,7 @@ Paste the webhook signing secret into `worker/.env` as `STRIPE_WEBHOOK_SECRET`.
 3. Pick template → **Generate site** (OpenRouter; falls back to template fill if key missing)
 4. Click watermark chip → **Checkout with Stripe** (test mode)
 5. After webhook, watermark clears → **Publish to Vercel**
-6. Confirm URL on **Projects** / Builder meta
+6. Confirm URL on Builder meta
 
 ## Channels
 
@@ -76,10 +76,10 @@ Paste the webhook signing secret into `worker/.env` as `STRIPE_WEBHOOK_SECRET`.
 - `dashboard.html` — metrics
 - `leads.html` — Lead Finder
 - `builder.html` — generate / preview / code / paywall / publish
-- `projects.html` — project library
 - `course.html` — University lessons
 - `settings.html` — profile + payments
-- `domains.html` / `finance.html` / `help.html` — stubs
+- `finance.html` / `help.html` — stubs
+- `store.html` — coming soon
 
 ## Deploy worker to Render
 

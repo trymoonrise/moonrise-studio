@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1831
+    slug: timeline-glitch-chrono
+    title: Glitch Chronometer Timeline
+    category: timeline
+    tags: timeline, glitch, cyberpunk, insane
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1831 — Glitch Chronometer Timeline</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700&family=JetBrains+Mono:wght@400;600&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#050508;color:#0f0;font-family:'JetBrains Mono',monospace;display:grid;place-items:center;padding:2rem;overflow:hidden}
+    .scan{position:fixed;inset:0;background:repeating-linear-gradient(transparent 0 2px,rgba(0,255,100,.03) 2px 3px);pointer-events:none;animation:scan 8s linear infinite;z-index:3}
+    .box{width:min(440px,94vw);position:relative;z-index:1}
+    .title{font-family:Syne,sans-serif;font-size:.7rem;letter-spacing:.25em;color:#0a6;margin-bottom:1.5rem;text-transform:uppercase}
+    .era{border:1px solid #0a3;padding:1rem 1.15rem;margin-bottom:.65rem;cursor:pointer;position:relative;background:rgba(0,20,8,.6);transition:background .25s,border-color .25s,transform .35s;overflow:hidden}
+    .era:hover,.era.on{border-color:#0f0;background:rgba(0,40,15,.75);transform:translateX(6px);box-shadow:0 0 24px rgba(0,255,80,.15)}
+    .era.on::before{content:attr(data-t);position:absolute;inset:0;display:grid;place-items:center;font-family:Syne,sans-serif;font-size:1.5rem;color:#0f0;background:rgba(0,0,0,.85);animation:glitch .6s steps(2) both;mix-blend-mode:screen;pointer-events:none}
+    .era .y{font-size:.7rem;color:#0a5;margin-bottom:.25rem}
+    .era h4{font-family:Syne,sans-serif;margin:0 0 .3rem;font-size:1rem;color:#8f8;font-weight:700}
+    .era p{margin:0;font-size:.75rem;color:#3a6;line-height:1.5}
+    .cursor{display:inline-block;width:8px;height:1em;background:#0f0;animation:blink 1s step-end infinite;vertical-align:text-bottom;margin-left:4px}
+    @keyframes blink{50%{opacity:0}}
+    @keyframes scan{to{transform:translateY(20px)}}
+    @keyframes glitch{
+      0%{clip-path:inset(0 0 80% 0);transform:translate(-4px,0);color:#f0f}
+      20%{clip-path:inset(20% 0 40% 0);transform:translate(4px,0);color:#0ff}
+      40%{clip-path:inset(60% 0 10% 0);transform:translate(-3px,0)}
+      60%{clip-path:inset(10% 0 50% 0);transform:translate(3px,0);color:#0f0}
+      100%{clip-path:inset(0 0 0 0);opacity:0}
+    }
+    @media(prefers-reduced-motion:reduce){.scan,.era.on::before,.cursor{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="scan" aria-hidden="true"></div>
+  <div class="box">
+    <div class="title">// chrono_dump<span class="cursor"></span></div>
+    <div class="era on" data-t="INIT" data-i="0"><div class="y">T-00</div><h4>boot_sequence</h4><p>Kernel loads. Ambition = true.</p></div>
+    <div class="era" data-t="SYNC" data-i="1"><div class="y">T-01</div><h4>handshake</h4><p>First users authenticate into myth.</p></div>
+    <div class="era" data-t="OVERFLOW" data-i="2"><div class="y">T-02</div><h4>stack_smash</h4><p>Growth exceeds allocated memory.</p></div>
+    <div class="era" data-t="ROOT" data-i="3"><div class="y">T-03</div><h4>privilege_escalation</h4><p>Market dominance acquired.</p></div>
+    <div class="era" data-t="LEGACY" data-i="4"><div class="y">T-04</div><h4>daemon_forever</h4><p>Process never dies. Brand persists.</p></div>
+  </div>
+  <script>
+    const eras=[...document.querySelectorAll('.era')];
+    eras.forEach(e=>e.onclick=()=>{
+      eras.forEach(x=>x.classList.remove('on'));
+      e.classList.add('on');
+      void e.offsetWidth;
+    });
+  </script>
+</body>
+</html>

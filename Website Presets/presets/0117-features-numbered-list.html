@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0117
+    slug: features-numbered-list
+    title: Numbered Feature List
+    category: features
+    tags: features, numbered
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0117 — Numbered Feature List</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fafafa;color:#111;font-family:Outfit,sans-serif;padding:2rem}
+    .wrap{width:min(640px,100%)}
+    h1{margin:0 0 2rem;font-family:Syne,sans-serif;font-size:clamp(2rem,5vw,3rem);letter-spacing:-.05em;font-weight:800}
+    .list{display:flex;flex-direction:column}
+    .item{display:grid;grid-template-columns:4.5rem 1fr;gap:1.25rem;padding:1.4rem 0;border-top:1px solid #e8e8e8;cursor:default;transition:padding .35s cubic-bezier(.22,1,.36,1)}
+    .item:last-child{border-bottom:1px solid #e8e8e8}
+    .item:hover{padding-left:.75rem}
+    .num{font-family:Syne,sans-serif;font-size:2rem;font-weight:800;letter-spacing:-.06em;line-height:1;opacity:.15;transition:opacity .35s,transform .4s cubic-bezier(.22,1,.36,1)}
+    .item:hover .num{opacity:1;transform:translateX(4px)}
+    h3{margin:0;font-family:Syne,sans-serif;font-size:1.15rem;letter-spacing:-.02em}
+    p{margin:.35rem 0 0;font-size:.9rem;opacity:.5;font-weight:300;line-height:1.55;max-width:42ch}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>In order</h1>
+    <div class="list">
+      <div class="item"><div class="num">01</div><div><h3>Define the edge</h3><p>Start with the constraint that makes the product feel inevitable.</p></div></div>
+      <div class="item"><div class="num">02</div><div><h3>Cut the rest</h3><p>If it doesn't earn the first viewport, it doesn't ship.</p></div></div>
+      <div class="item"><div class="num">03</div><div><h3>Animate with purpose</h3><p>Motion confirms state — it never fills silence.</p></div></div>
+      <div class="item"><div class="num">04</div><div><h3>Leave air</h3><p>Negative space is a feature, not leftover room.</p></div></div>
+    </div>
+  </div>
+</body>
+</html>

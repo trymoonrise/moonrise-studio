@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0321
+    slug: countdown-ring-countdown
+    title: Ring Countdown
+    category: countdown
+    tags: countdown, ring
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0321 — Ring Countdown</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');*{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0a0a0a;color:#fff;font-family:"DM Sans",system-ui,-apple-system,sans-serif;padding:2rem}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.marq-track{animation:none!important}}
+    .wrap{position:relative;width:200px;height:200px}
+    svg{transform:rotate(-90deg);display:block;overflow:visible}
+    circle{fill:none;stroke-width:3}
+    .bg{stroke:rgba(255,255,255,.08)}
+    .fg{stroke:#fff;stroke-linecap:square;stroke-dasharray:565;stroke-dashoffset:0;transition:stroke-dashoffset 1s linear}
+    .txt{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+    .txt b{font-family:"Syne",system-ui,sans-serif;font-size:3.2rem;font-weight:800;letter-spacing:-.06em;font-variant-numeric:tabular-nums;line-height:1}
+    .txt span{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:#555;margin-top:.35rem}
+    .marq{position:fixed;bottom:0;left:0;right:0;overflow:hidden;border-top:1px solid #1a1a1a;padding:.5rem 0}
+    .marq-track{display:flex;gap:2rem;width:max-content;animation:scroll 26s linear infinite;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:#333;font-weight:600}
+    @keyframes scroll{to{transform:translateX(-50%)}}
+  </style>
+</head>
+<body>
+<div class="wrap"><svg width="200" height="200" viewBox="0 0 200 200" aria-hidden="true"><circle class="bg" cx="100" cy="100" r="90"/><circle class="fg" id="ring" cx="100" cy="100" r="90"/></svg>
+    <div class="txt"><div><b id="n">30</b><span>seconds</span></div></div></div>
+    <div class="marq" aria-hidden="true"><div class="marq-track"><span>Ring · Orbit · Decay · Ring · Orbit · Decay · </span><span>Ring · Orbit · Decay · Ring · Orbit · Decay · </span></div></div>
+<script>const TOTAL=30;let s=TOTAL;const ring=document.getElementById('ring'),n=document.getElementById('n'),C=2*Math.PI*90;
+ring.style.strokeDasharray=C;function draw(){n.textContent=String(s);ring.style.strokeDashoffset=C*(1-s/TOTAL);}draw();
+const iv=setInterval(()=>{s--;if(s<0){clearInterval(iv);n.textContent='0';return;}draw();},1000);</script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 012
+    slug: magnetic-button
+    title: Magnetic Button
+    category: animation
+    tags: button, magnetic
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>012 — Magnetic Button</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    
+    body{display:grid;place-items:center;min-height:100vh;background:#0d0d0f}
+    .wrap{padding:2rem}.btn{padding:16px 40px;border:none;border-radius:99px;background:#6c8cff;color:#fff;font-size:1rem;font-weight:600;transition:transform .15s ease-out}
+    
+  </style>
+</head>
+<body>
+<div class="wrap"><button class="btn" id="btn">Magnetic CTA</button></div>
+<script>
+    const btn=document.getElementById('btn');const radius=Math.min(innerWidth,innerHeight)*.55;const strength=.42;
+    function pull(x,y){const r=btn.getBoundingClientRect();const dx=x-(r.left+r.width/2);const dy=y-(r.top+r.height/2);const dist=Math.hypot(dx,dy);if(dist>radius){btn.style.transform='';return;}const f=(1-dist/radius)*strength;btn.style.transform='translate('+dx*f+'px,'+dy*f+'px)';}
+    document.addEventListener('mousemove',e=>pull(e.clientX,e.clientY),{passive:true});
+    document.addEventListener('mouseleave',()=>btn.style.transform='');
+    </script>
+</body>
+</html>

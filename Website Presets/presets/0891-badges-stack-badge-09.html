@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0891
+    slug: badges-stack-badge-09
+    title: Stack Badge 09
+    category: badges
+    tags: badges, stack
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0891 — Stack Badge 09</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&display=swap');
+
+    * { box-sizing: border-box; }
+    body {
+      display: grid; place-items: center; min-height: 100vh;
+      background: #0e0e12; font-family: 'Space Grotesk', sans-serif;
+      overflow: hidden;
+    }
+
+    .stack {
+      position: relative;
+      width: 160px; height: 48px;
+      cursor: pointer;
+    }
+
+    .layer {
+      position: absolute;
+      left: 0; right: 0; top: 0;
+      height: 48px;
+      border-radius: 999px;
+      display: grid; place-items: center;
+      font-size: 0.85rem; font-weight: 700;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: #0e0e12;
+      transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .layer:nth-child(1) { background: #4de1ff; z-index: 3; }
+    .layer:nth-child(2) { background: #d6ff3f; z-index: 2; }
+    .layer:nth-child(3) { background: #ff4ecd; z-index: 1; }
+
+    .stack:hover .layer:nth-child(1),
+    .stack:focus-within .layer:nth-child(1) { transform: translate(-18px, -22px) rotate(-8deg); }
+    .stack:hover .layer:nth-child(2),
+    .stack:focus-within .layer:nth-child(2) { transform: translate(0, -10px) rotate(2deg); }
+    .stack:hover .layer:nth-child(3),
+    .stack:focus-within .layer:nth-child(3) { transform: translate(18px, 6px) rotate(8deg); }
+
+    .hint {
+      position: fixed; bottom: 1.5rem;
+      font-size: 0.65rem; letter-spacing: 0.24em; text-transform: uppercase;
+      color: rgba(255,255,255,0.3);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .layer { transition: none; }
+      .layer:nth-child(1) { transform: translate(-18px, -22px) rotate(-8deg); }
+      .layer:nth-child(2) { transform: translate(0, -10px) rotate(2deg); }
+      .layer:nth-child(3) { transform: translate(18px, 6px) rotate(8deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="stack" tabindex="0" aria-label="Stacked badges">
+    <div class="layer">New</div>
+    <div class="layer">Hot</div>
+    <div class="layer">Sale</div>
+  </div>
+  <p class="hint">Hover to fan out</p>
+</body>
+</html>

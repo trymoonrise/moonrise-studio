@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0380
+    slug: heroes-image-text-mask
+    title: Image Text Mask Hero
+    category: heroes
+    tags: heroes, landing, image, experimental, scroll
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0380 — Image Text Mask Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      margin: 0;
+      min-height: 220vh;
+      background: #000;
+      color: #fff;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    .stage {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .bg {
+      position: absolute;
+      inset: 0;
+    }
+
+    .bg img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: var(--bg-opacity, 0.28);
+      transform: scale(var(--bg-scale, 1.12));
+      will-change: transform, opacity;
+    }
+
+    .title {
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      padding: 0 1rem;
+      font-size: clamp(4rem, 14vw, 11rem);
+      font-weight: 900;
+      text-transform: uppercase;
+      line-height: 0.85;
+      text-align: center;
+      background-image: url('../stock/media/16-9 Aspect Ratio(image).png');
+      background-size: cover;
+      background-position: var(--mask-x, 50%) var(--mask-y, 50%);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      transform: scale(var(--title-scale, 0.88));
+      letter-spacing: var(--title-track, 0.08em);
+      will-change: transform, letter-spacing, background-position;
+    }
+
+    .sub {
+      position: absolute;
+      bottom: 3rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.78rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      opacity: var(--sub-opacity, 0);
+      color: rgba(255, 255, 255, 0.72);
+      white-space: nowrap;
+    }
+
+    .hint {
+      position: absolute;
+      bottom: 1.25rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.68rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.38);
+      opacity: calc(1 - var(--sub-opacity, 0));
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body { min-height: 100vh; }
+      .title, .bg img { transform: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage" id="stage">
+    <div class="bg" aria-hidden="true">
+      <img src="../stock/media/16-9 Aspect Ratio(image).png" alt="">
+    </div>
+    <h1 class="title" id="title">Wild</h1>
+    <p class="sub">Image-filled typography</p>
+    <span class="hint">Scroll</span>
+  </div>
+
+  <script>
+    const stage = document.getElementById('stage');
+    const title = document.getElementById('title');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function ease(t) {
+      return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    }
+
+    function lerp(a, b, t) {
+      return a + (b - a) * t;
+    }
+
+    function update() {
+      if (reduced) {
+        stage.style.setProperty('--sub-opacity', '0.7');
+        stage.style.setProperty('--title-scale', '1');
+        return;
+      }
+
+      const max = document.documentElement.scrollHeight - innerHeight;
+      const p = max > 0 ? ease(Math.min(1, scrollY / max)) : 0;
+
+      stage.style.setProperty('--title-scale', lerp(0.88, 1, p).toFixed(3));
+      stage.style.setProperty('--title-track', lerp(0.08, 0.02, p).toFixed(3) + 'em');
+      stage.style.setProperty('--mask-x', lerp(42, 58, p).toFixed(1) + '%');
+      stage.style.setProperty('--mask-y', lerp(38, 62, p).toFixed(1) + '%');
+      stage.style.setProperty('--bg-opacity', lerp(0.28, 0.42, p).toFixed(3));
+      stage.style.setProperty('--bg-scale', lerp(1.12, 1, p).toFixed(3));
+      stage.style.setProperty('--sub-opacity', Math.max(0, (p - 0.55) / 0.45).toFixed(3));
+    }
+
+    let ticking = false;
+    addEventListener('scroll', () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        update();
+      });
+    }, { passive: true });
+
+    addEventListener('resize', update, { passive: true });
+    update();
+  </script>
+</body>
+</html>

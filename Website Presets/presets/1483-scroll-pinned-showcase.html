@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1483
+    slug: scroll-pinned-showcase
+    title: Pinned Showcase Scroll
+    category: scroll-effects
+    tags: scroll, pinned, showcase
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1483 — Pinned Showcase Scroll</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#0d0d0f;color:#fff}.pin{height:350vh}.stage{position:sticky;top:0;height:100vh;display:grid;grid-template-columns:1fr 1fr;gap:2rem;padding:2rem;align-items:center}.visual{border-radius:20px;overflow:hidden;aspect-ratio:16/10}.visual img{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s}.visual img.on{opacity:1}.copy h2{font-size:2rem;font-weight:800;margin-bottom:1rem;transition:opacity .4s}.copy p{color:#888;line-height:1.7;transition:opacity .4s}.copy .step{position:absolute;opacity:0;transition:opacity .4s}.copy .step.on{opacity:1;position:relative}
+  </style>
+</head>
+<body>
+<div class="pin"><div class="stage"><div class="visual"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt="" data-i="0" class="on"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt="" data-i="1"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt="" data-i="2"></div><div class="copy" id="c"><div class="step on" data-i="0"><h2>Discover</h2><p>Pinned content swaps as you scroll through the section.</p></div><div class="step" data-i="1"><h2>Design</h2><p>Pinned content swaps as you scroll through the section.</p></div><div class="step" data-i="2"><h2>Deliver</h2><p>Pinned content swaps as you scroll through the section.</p></div></div></div></div>
+<script>const pin=document.querySelector('.pin');const imgs=[...document.querySelectorAll('.visual img')];const steps=[...document.querySelectorAll('.step')];addEventListener('scroll',()=>{const r=pin.getBoundingClientRect();const p=Math.min(1,Math.max(0,-r.top/(r.height-window.innerHeight)));const i=Math.min(2,Math.floor(p*3));imgs.forEach((img,j)=>img.classList.toggle('on',j===i));steps.forEach((s,j)=>s.classList.toggle('on',j===i));},{passive:true});</script>
+</body>
+</html>

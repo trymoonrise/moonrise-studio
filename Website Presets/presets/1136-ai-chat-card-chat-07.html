@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1136
+    slug: ai-chat-card-chat-07
+    title: Card Chat 07
+    category: ai-chat
+    tags: ai-chat, card
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1136 — Card Chat 07</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#e8ecf2;font-family:Inter,system-ui,sans-serif;padding:2rem;color:#111}
+    .card{width:min(420px,100%);background:#fff;border-radius:24px;overflow:hidden;box-shadow:0 24px 60px rgba(20,30,50,.12);animation:up .75s cubic-bezier(.16,1,.3,1) both}
+    .head{padding:1.25rem 1.25rem 0;display:flex;align-items:center;gap:.75rem}
+    .av{width:36px;height:36px;border-radius:50%;background:conic-gradient(from 0deg,#10a37f,#6c8cff,#10a37f);animation:spin 4s linear infinite;position:relative}
+    .av::after{content:"";position:absolute;inset:3px;border-radius:50%;background:#fff}
+    .meta{font-size:.85rem;font-weight:600}
+    .meta span{display:block;font-weight:400;color:#888;font-size:.75rem}
+    .body{padding:1.25rem;display:flex;flex-direction:column;gap:.7rem;min-height:160px}
+    .msg{max-width:88%;padding:.7rem .9rem;border-radius:14px;font-size:.85rem;line-height:1.45}
+    .msg.bot{align-self:flex-start;background:#f3f4f6}
+    .msg.user{align-self:flex-end;background:#111;color:#fff}
+    .foot{padding:0 1rem 1rem}
+    .ask{display:flex;align-items:center;gap:.4rem;padding:.5rem .5rem .5rem .9rem;border:1px solid #e5e5e5;border-radius:22px;background:#fafafa;transition:box-shadow .25s}
+    .ask:focus-within{box-shadow:0 0 0 3px rgba(16,163,127,.15);background:#fff}
+    .ask input{flex:1;border:none;outline:none;background:transparent;font:inherit;font-size:.85rem}
+    .send{width:32px;height:32px;border:none;border-radius:50%;background:#10a37f;color:#fff;cursor:pointer;display:grid;place-items:center}
+    .send svg{width:14px;height:14px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes up{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
+    @media(prefers-reduced-motion:reduce){.card,.av{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="head">
+      <div class="av" aria-hidden="true"></div>
+      <div class="meta">Assistant<span>Online · ready</span></div>
+    </div>
+    <div class="body">
+      <div class="msg bot">Drop a question — I’ll keep answers short.</div>
+      <div class="msg user">What’s a good CTA for a waitlist?</div>
+    </div>
+    <div class="foot">
+      <form class="ask">
+        <input type="text" placeholder="Ask anything…" autocomplete="off" aria-label="Ask anything">
+        <button class="send" type="submit" aria-label="Send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

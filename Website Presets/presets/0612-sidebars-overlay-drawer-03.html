@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0612
+    slug: sidebars-overlay-drawer-03
+    title: Glitch Slide Drawer
+    category: sidebars
+    tags: sidebars, overlay
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0612 — Glitch Slide Drawer</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Outfit', sans-serif;
+      background: #080a0e;
+      color: #e2e8f0;
+      overflow: hidden;
+    }
+
+    .stage {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid #1e293b;
+      background: #0c1018;
+    }
+
+    .menu-btn {
+      width: 44px;
+      height: 44px;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      background: #111827;
+      color: #94a3b8;
+      display: grid;
+      place-items: center;
+      transition: border-color 0.25s, color 0.25s;
+    }
+
+    .menu-btn:hover { border-color: #00d4aa; color: #00d4aa; }
+    .menu-btn[aria-expanded="true"] { border-color: #00d4aa; color: #00d4aa; }
+
+    .brand {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .content {
+      padding: 2rem 1.5rem;
+    }
+
+    .content h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+    }
+
+    .content p { color: #64748b; max-width: 42ch; line-height: 1.6; }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s;
+      z-index: 10;
+    }
+
+    .overlay.open { opacity: 1; pointer-events: auto; }
+
+    .drawer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: min(300px, 85vw);
+      height: 100%;
+      background: #0f1419;
+      border-right: 1px solid #1e293b;
+      transform: translateX(-105%);
+      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .drawer.open { transform: translateX(0); }
+
+    .drawer.open.glitch {
+      animation: drawerGlitch 0.35s steps(2) 1;
+    }
+
+    @keyframes drawerGlitch {
+      0%, 100% { filter: none; transform: translateX(0); }
+      25% { filter: hue-rotate(90deg); transform: translateX(-4px); }
+      50% { filter: contrast(1.4); transform: translateX(2px); }
+      75% { filter: hue-rotate(-40deg); transform: translateX(-2px); }
+    }
+
+    .drawer-head {
+      padding: 1.5rem;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    .drawer-head span {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #00d4aa;
+    }
+
+    .drawer nav { padding: 1rem; flex: 1; }
+
+    .drawer nav a {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.85rem 1rem;
+      color: #94a3b8;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      transition: background 0.2s, color 0.2s, transform 0.2s;
+      animation: navIn 0.4s ease backwards;
+    }
+
+    .drawer nav a:nth-child(1) { animation-delay: 0.05s; }
+    .drawer nav a:nth-child(2) { animation-delay: 0.1s; }
+    .drawer nav a:nth-child(3) { animation-delay: 0.15s; }
+    .drawer nav a:nth-child(4) { animation-delay: 0.2s; }
+
+    @keyframes navIn {
+      from { opacity: 0; transform: translateX(-12px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .drawer nav a:hover,
+    .drawer nav a.active {
+      background: #00d4aa14;
+      color: #00d4aa;
+      transform: translateX(4px);
+    }
+
+    .scanline {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 212, 170, 0.03) 2px,
+        rgba(0, 212, 170, 0.03) 4px
+      );
+      animation: scan 8s linear infinite;
+    }
+
+    @keyframes scan {
+      0% { background-position: 0 0; }
+      100% { background-position: 0 200px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .drawer.open.glitch { animation: none; }
+      .drawer nav a { animation: none; }
+      .scanline { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <header class="topbar">
+      <button type="button" class="menu-btn" id="toggle" aria-expanded="false" aria-controls="drawer" aria-label="Open navigation">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <span class="brand">Nexus Console</span>
+    </header>
+    <main class="content">
+      <h1>Overlay drawer</h1>
+      <p>Tap the menu control to slide in a navigation panel with a brief glitch transition. Click outside or press Escape to dismiss.</p>
+    </main>
+  </div>
+
+  <div class="overlay" id="overlay" hidden></div>
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="scanline" aria-hidden="true"></div>
+    <div class="drawer-head"><span>Navigation</span></div>
+    <nav aria-label="Primary">
+      <a href="#" class="active">Dashboard</a>
+      <a href="#">Deployments</a>
+      <a href="#">Analytics</a>
+      <a href="#">Settings</a>
+    </nav>
+  </aside>
+
+  <script>
+    const toggle = document.getElementById('toggle');
+    const drawer = document.getElementById('drawer');
+    const overlay = document.getElementById('overlay');
+    let open = false;
+
+    function setOpen(next) {
+      open = next;
+      toggle.setAttribute('aria-expanded', String(open));
+      drawer.setAttribute('aria-hidden', String(!open));
+      overlay.hidden = !open;
+      overlay.classList.toggle('open', open);
+      drawer.classList.toggle('open', open);
+      if (open) {
+        drawer.classList.add('glitch');
+        drawer.addEventListener('animationend', () => drawer.classList.remove('glitch'), { once: true });
+      }
+    }
+
+    toggle.addEventListener('click', () => setOpen(!open));
+    overlay.addEventListener('click', () => setOpen(false));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setOpen(false); });
+    drawer.querySelectorAll('a').forEach((a) => {
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        drawer.querySelectorAll('a').forEach((x) => x.classList.remove('active'));
+        a.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

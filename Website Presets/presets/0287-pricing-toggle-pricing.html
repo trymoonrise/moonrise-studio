@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0287
+    slug: pricing-toggle-pricing
+    title: Monthly Annual Toggle
+    category: pricing
+    tags: pricing, toggle
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0287 — Monthly Annual Toggle</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#0d0d0f;padding:2rem;color:#fff}.toggle{display:flex;gap:8px;justify-content:center;margin-bottom:1.5rem}.opt{padding:8px 20px;border-radius:99px;cursor:pointer;font-size:.85rem;color:#888}.opt.on{background:#6c8cff;color:#fff}.price{font-size:3rem;font-weight:900;text-align:center}.sub{text-align:center;opacity:.6;font-size:.9rem;margin-top:.5rem}
+  </style>
+</head>
+<body>
+<div><div class="toggle"><div class="opt on" data-p="19">Monthly</div><div class="opt" data-p="15">Annual</div></div><div class="price" id="pr">$19</div><div class="sub">per month</div></div>
+<script>document.querySelectorAll('.opt').forEach(o=>o.onclick=()=>{document.querySelectorAll('.opt').forEach(x=>x.classList.remove('on'));o.classList.add('on');document.getElementById('pr').textContent='$'+o.dataset.p;});</script>
+</body>
+</html>

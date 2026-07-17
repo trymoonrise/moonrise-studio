@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0517
+    slug: brutalist-alert-brutal-14
+    title: Alert Brutal 14
+    category: brutalist
+    tags: brutalist, alert
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0517 — Alert Brutal 14</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@600;700&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#000;overflow:hidden;font-family:'IBM Plex Mono',monospace;padding:2rem}
+    .siren{position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(90deg,#ff0033 0 50%,#000 50% 100%);background-size:200% 100%;opacity:.12;animation:siren .4s steps(2) infinite}
+    .alert{position:relative;width:min(480px,94vw);background:#ff0033;border:8px solid #fff;box-shadow:0 0 0 8px #000,18px 18px 0 #fff;padding:1.5rem;animation:shake .5s ease-in-out infinite;color:#fff}
+    .bar{display:flex;justify-content:space-between;align-items:center;font-size:.7rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;border-bottom:4px solid #fff;padding-bottom:.75rem;margin-bottom:1rem}
+    .blink{animation:blink .5s steps(1) infinite}
+    h1{margin:0;font-family:'Archivo Black',sans-serif;font-size:clamp(2.4rem,10vw,4.4rem);line-height:.85;text-transform:uppercase;letter-spacing:-.04em}
+    p{margin:1rem 0 0;font-size:.9rem;line-height:1.45;max-width:34ch}
+    .actions{display:flex;gap:.6rem;margin-top:1.5rem;flex-wrap:wrap}
+    button{border:4px solid #fff;background:#000;color:#fff;font:inherit;font-weight:700;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;padding:.7rem 1rem;cursor:pointer;box-shadow:5px 5px 0 #fff}
+    button:hover{translate:-2px -2px;box-shadow:7px 7px 0 #fff}
+    button.ghost{background:transparent}
+    .tri{position:absolute;right:1rem;top:3.5rem;width:0;height:0;border-left:28px solid transparent;border-right:28px solid transparent;border-bottom:48px solid #ffee00;filter:drop-shadow(4px 4px 0 #000);animation:bounce 1s ease-in-out infinite}
+    .tri::after{content:"!";position:absolute;left:-6px;top:14px;font-family:'Archivo Black',sans-serif;font-size:1.4rem;color:#000}
+    @keyframes siren{to{background-position:100% 0}}
+    @keyframes shake{0%,100%{transform:translate(0)}25%{transform:translate(-3px,1px)}75%{transform:translate(3px,-1px)}}
+    @keyframes blink{50%{opacity:0}}
+    @keyframes bounce{50%{translate:0 -8px}}
+    @media(prefers-reduced-motion:reduce){.siren,.alert,.blink,.tri{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="siren" aria-hidden="true"></div>
+  <div class="alert" role="alert">
+    <div class="bar"><span>SYSTEM // 0517</span><span class="blink">● LIVE</span></div>
+    <div class="tri" aria-hidden="true"></div>
+    <h1>Alert<br>Brutal</h1>
+    <p>Something broke. Probably the design system. Good.</p>
+    <div class="actions">
+      <button type="button">Acknowledge</button>
+      <button class="ghost" type="button">Ignore louder</button>
+    </div>
+  </div>
+</body>
+</html>

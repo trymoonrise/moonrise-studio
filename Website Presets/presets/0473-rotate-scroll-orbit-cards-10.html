@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0473
+    slug: rotate-scroll-orbit-cards-10
+    title: Orbit Cards 10
+    category: rotate-scroll
+    tags: rotate-scroll, orbit
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0473 — Orbit Cards 10</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#111827;color:#f9fafb;font-family:system-ui}.track{height:260vh}.sticky{position:sticky;top:0;height:100vh;display:grid;place-items:center}.system{position:relative;width:min(95vw,560px);height:min(95vw,560px)}.card{position:absolute;left:50%;top:50%;width:140px;padding:1rem;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(8px);transform:rotate(var(--a,0deg)) translateY(-220px) rotate(calc(var(--a,0deg)*-1));text-align:center}.card strong{display:block;font-size:1.1rem;margin-bottom:.25rem}.card span{font-size:.7rem;color:rgba(249,250,251,.6)}
+  </style>
+</head>
+<body>
+<div class="track" id="t"><div class="sticky"><div class="system"><div class="card" data-i="0"><strong>Alpha</strong><span>Orbit 1</span></div><div class="card" data-i="1"><strong>Beta</strong><span>Orbit 2</span></div><div class="card" data-i="2"><strong>Gamma</strong><span>Orbit 3</span></div><div class="card" data-i="3"><strong>Delta</strong><span>Orbit 4</span></div><div class="card" data-i="4"><strong>Epsilon</strong><span>Orbit 5</span></div></div></div></div>
+<script>const _el=document.querySelector('#t');function prog(){const r=_el.getBoundingClientRect();return Math.min(1,Math.max(0,-r.top/(r.height-innerHeight)));}const cards=[...document.querySelectorAll('.card')];addEventListener('scroll',()=>{const base=prog()*360;cards.forEach((c,i)=>c.style.setProperty('--a',base+i*72+'deg'));},{passive:true});</script>
+</body>
+</html>

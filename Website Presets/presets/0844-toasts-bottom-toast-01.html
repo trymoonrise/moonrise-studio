@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0844
+    slug: toasts-bottom-toast-01
+    title: Dock Reveal Toast
+    category: toasts
+    tags: toasts, bottom
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0844 — Dock Reveal Toast</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #0a0c10;
+      font-family: 'Outfit', sans-serif;
+      color: #e8eaef;
+    }
+
+    .trigger {
+      padding: 0.85rem 1.6rem;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      color: #e8eaef;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .trigger:hover { border-color: rgba(0, 212, 170, 0.5); background: rgba(0, 212, 170, 0.08); }
+
+    .dock {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      transform: translateY(100%);
+      transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: 20;
+    }
+
+    .dock.show { transform: translateY(0); }
+
+    .dock-inner {
+      max-width: 520px;
+      margin: 0 auto 1.5rem;
+      padding: 0 1rem;
+    }
+
+    .panel {
+      display: grid;
+      grid-template-columns: 4px 1fr;
+      gap: 0;
+      background: #12151c;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 212, 170, 0.06);
+    }
+
+    .accent {
+      background: linear-gradient(180deg, #00d4aa, #0088ff);
+      transform: scaleY(0);
+      transform-origin: bottom;
+      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1) 0.15s;
+    }
+
+    .dock.show .accent { transform: scaleY(1); }
+
+    .content {
+      padding: 1.1rem 1.25rem;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.35s ease 0.25s, transform 0.35s ease 0.25s;
+    }
+
+    .dock.show .content { opacity: 1; transform: translateY(0); }
+
+    .content h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .content p { font-size: 0.82rem; color: rgba(232, 234, 239, 0.6); line-height: 1.5; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .dock, .accent, .content { transition: none; }
+      .dock.show .content { opacity: 1; transform: none; }
+      .dock.show .accent { transform: scaleY(1); }
+    }
+  </style>
+</head>
+<body>
+  <button class="trigger" id="btn" type="button">Trigger dock toast</button>
+
+  <div class="dock" id="dock" role="status" aria-live="polite" aria-hidden="true">
+    <div class="dock-inner">
+      <div class="panel">
+        <div class="accent" aria-hidden="true"></div>
+        <div class="content">
+          <h2>Sync complete</h2>
+          <p>Workspace mirrored to edge nodes. 847 files in 2.3s.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const btn = document.getElementById('btn');
+    const dock = document.getElementById('dock');
+    let timer;
+
+    btn.addEventListener('click', () => {
+      clearTimeout(timer);
+      dock.classList.add('show');
+      dock.setAttribute('aria-hidden', 'false');
+      timer = setTimeout(() => {
+        dock.classList.remove('show');
+        dock.setAttribute('aria-hidden', 'true');
+      }, 3200);
+    });
+  </script>
+</body>
+</html>

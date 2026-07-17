@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0901
+    slug: avatars-image-avatar-06
+    title: Aperture Image Avatar
+    category: avatars
+    tags: avatars, image, aperture, reveal
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0901 — Aperture Image Avatar</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0d1117;color:#c9d1d9;font-family:Outfit,sans-serif}
+    .frame{position:relative;width:160px;height:160px;cursor:pointer}
+    .ring{position:absolute;inset:-12px;border-radius:50%;border:1px dashed rgba(56,189,248,.35);animation:spin 20s linear infinite}
+    .ring:nth-child(2){inset:-24px;border-style:solid;border-color:rgba(56,189,248,.12);animation-direction:reverse;animation-duration:30s}
+    .aperture{position:relative;width:100%;height:100%;border-radius:50%;overflow:hidden;background:#161b22;border:2px solid rgba(255,255,255,.08);clip-path:circle(50% at 50% 50%);transition:clip-path .6s cubic-bezier(.16,1,.3,1)}
+    .aperture img{width:100%;height:100%;object-fit:cover;transition:transform .6s cubic-bezier(.16,1,.3,1),filter .4s}
+    .blade{position:absolute;width:50%;height:50%;background:#0d1117;transform-origin:100% 100%;transition:transform .5s cubic-bezier(.16,1,.3,1)}
+    .blade:nth-child(2){top:0;right:0;transform-origin:0% 100%;transform:rotate(0deg)}
+    .blade:nth-child(3){bottom:0;right:0;transform-origin:0% 0%;transform:rotate(0deg)}
+    .blade:nth-child(4){bottom:0;left:0;transform-origin:100% 0%;transform:rotate(0deg)}
+    .blade:nth-child(5){top:0;left:0;transform-origin:100% 100%;transform:rotate(0deg)}
+    .frame:hover .blade{transform:rotate(45deg)}
+    .frame:hover .aperture img{transform:scale(1.15);filter:brightness(1.1)}
+    .label{margin-top:2rem;text-align:center}
+    .label h2{font-family:Syne,sans-serif;font-size:1.1rem;letter-spacing:-.02em;margin-bottom:.25rem}
+    .label p{font-size:.75rem;color:rgba(201,209,217,.45);letter-spacing:.1em;text-transform:uppercase}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @media(prefers-reduced-motion:reduce){.ring{animation:none}.frame:hover .blade{transform:none}}
+  </style>
+</head>
+<body>
+  <div>
+    <div class="frame">
+      <div class="ring"></div>
+      <div class="ring"></div>
+      <div class="aperture">
+        <img src="../stock/media/16-9 Aspect Ratio(image).png" alt="Profile">
+        <div class="blade"></div><div class="blade"></div><div class="blade"></div><div class="blade"></div><div class="blade"></div>
+      </div>
+    </div>
+    <div class="label">
+      <h2>Elena Voss</h2>
+      <p>Hover to open</p>
+    </div>
+  </div>
+</body>
+</html>

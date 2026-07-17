@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1505
+    slug: dots-magnetic-cluster
+    title: Magnetic Dot Cluster
+    category: dots
+    tags: dots, magnetic, interactive
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1505 — Magnetic Dot Cluster</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#111;overflow:hidden}.field{position:relative;width:min(400px,90vw);height:min(400px,70vh)}.dot{position:absolute;width:var(--s,12px);height:var(--s,12px);border-radius:50%;background:var(--c,#6c8cff);transition:transform .15s ease-out;box-shadow:0 0 20px var(--c,#6c8cff)}
+  </style>
+</head>
+<body>
+<div class="field" id="f"><div class="dot" style="--c:#6c8cff;--s:10.78219073345126px;left:64.12669018942991%;top:57.77350855300663%"></div><div class="dot" style="--c:#ff6cb0;--s:12.401602334186567px;left:54.96880093822426%;top:78.96035350336771%"></div><div class="dot" style="--c:#6cffb8;--s:13.976002520306023px;left:79.25906458377543%;top:32.12323025788122%"></div><div class="dot" style="--c:#6c8cff;--s:9.788731538957208px;left:59.997441474483395%;top:66.27187018194371%"></div><div class="dot" style="--c:#ff6cb0;--s:13.807862125581867px;left:43.13942516369051%;top:48.2643650091149%"></div><div class="dot" style="--c:#6cffb8;--s:9.61292282397745px;left:76.89977211186967%;top:45.37492520491308%"></div><div class="dot" style="--c:#6c8cff;--s:8.847268602302078px;left:51.74001649592701%;top:48.701316584494755%"></div><div class="dot" style="--c:#ff6cb0;--s:9.353353345172255px;left:47.9378830091858%;top:76.76738510694318%"></div><div class="dot" style="--c:#6cffb8;--s:10.766776910279763px;left:32.3411198922184%;top:48.99228400411034%"></div><div class="dot" style="--c:#6c8cff;--s:8.280834465873001px;left:50.06533109677983%;top:37.59543250300818%"></div><div class="dot" style="--c:#ff6cb0;--s:10.33830595585089px;left:60.10438681200148%;top:68.79518410178788%"></div><div class="dot" style="--c:#6cffb8;--s:15.479161815608888px;left:25.007899987318993%;top:50.551472687795865%"></div><div class="dot" style="--c:#6c8cff;--s:10.013740388551506px;left:44.104924042298876%;top:47.408409035216025%"></div><div class="dot" style="--c:#ff6cb0;--s:10.412010546882035px;left:32.159219074471935%;top:33.82975773360412%"></div><div class="dot" style="--c:#6cffb8;--s:8.172630359984451px;left:47.660078644234396%;top:21.525150230588274%"></div><div class="dot" style="--c:#6c8cff;--s:15.665350458806937px;left:39.518618301005176%;top:58.463900147053785%"></div><div class="dot" style="--c:#ff6cb0;--s:14.51173987698033px;left:49.21801114918096%;top:54.75250402159687%"></div><div class="dot" style="--c:#6cffb8;--s:13.329619654957622px;left:29.143572573968385%;top:52.62867231072552%"></div><div class="dot" style="--c:#6c8cff;--s:15.542793621931692px;left:30.769665304698208%;top:60.76164085263712%"></div><div class="dot" style="--c:#ff6cb0;--s:11.210108662500353px;left:60.9927897259466%;top:22.744112720291625%"></div><div class="dot" style="--c:#6cffb8;--s:8.406414659043133px;left:52.47308646023039%;top:56.54398282257897%"></div><div class="dot" style="--c:#6c8cff;--s:12.291452974854025px;left:36.247438149928186%;top:63.94169694425968%"></div><div class="dot" style="--c:#ff6cb0;--s:14.667708558774653px;left:32.464986007429424%;top:40.52564181057351%"></div><div class="dot" style="--c:#6cffb8;--s:10.092303396325907px;left:52.591669217103465%;top:73.03592088732441%"></div></div>
+<script>const f=document.getElementById('f');const dots=[...f.querySelectorAll('.dot')];f.onmousemove=e=>{const r=f.getBoundingClientRect();const mx=e.clientX-r.left,my=e.clientY-r.top;dots.forEach(d=>{const dr=d.getBoundingClientRect();const dx=dr.left+dr.width/2-r.left-mx,dy=dr.top+dr.height/2-r.top-my;const dist=Math.hypot(dx,dy);const push=Math.max(0,80-dist);d.style.transform='translate('+(dx/dist*push||0)+'px,'+(dy/dist*push||0)+'px)';});};f.onmouseleave=()=>dots.forEach(d=>d.style.transform='');</script>
+</body>
+</html>

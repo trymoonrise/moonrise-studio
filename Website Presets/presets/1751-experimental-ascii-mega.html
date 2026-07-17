@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1751
+    slug: experimental-ascii-mega
+    title: ASCII Mega Type
+    category: experimental
+    tags: experimental, ascii, bitmap, type
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1751 — ASCII Mega Type</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;700&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#04140d;display:grid;place-items:center;overflow:hidden;font-family:'IBM Plex Mono',monospace;color:#38ffb0}
+    .frame{position:relative;padding:1.5rem;border:1px solid rgba(56,255,176,.35);box-shadow:0 0 40px rgba(56,255,176,.12),inset 0 0 30px rgba(56,255,176,.04);background:rgba(4,20,13,.9);max-width:95vw}
+    .frame::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 2px,rgba(0,0,0,.25) 2px 3px);pointer-events:none}
+    pre{margin:0;font-size:clamp(.45rem,1.6vw,.85rem);line-height:1.05;letter-spacing:.02em;white-space:pre;overflow:hidden}
+    .blink{animation:blink 1s steps(1) infinite}
+    .meta{margin-top:.8rem;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;opacity:.5}
+    @keyframes blink{50%{opacity:0}}
+    @media (prefers-reduced-motion:reduce){.blink{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <pre id="art"></pre>
+    <p class="meta">1751 · ASCII render · <span class="blink">█</span></p>
+  </div>
+  <script>
+    const glyphs=' .:-=+*#%@';
+    const canvas=document.createElement('canvas');
+    const ctx=canvas.getContext('2d');
+    const W=48,H=14;
+    canvas.width=W;canvas.height=H;
+    function draw(t){
+      ctx.fillStyle='#000';
+      ctx.fillRect(0,0,W,H);
+      ctx.fillStyle='#fff';
+      ctx.font='bold 12px monospace';
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      const pulse=1+Math.sin(t/300)*.08;
+      ctx.save();
+      ctx.translate(W/2,H/2);
+      ctx.scale(pulse,pulse);
+      ctx.fillText('BRUTAL',0,1);
+      ctx.restore();
+      const data=ctx.getImageData(0,0,W,H).data;
+      let out='';
+      for(let y=0;y<H;y++){
+        for(let x=0;x<W;x++){
+          const i=(y*W+x)*4;
+          const v=data[i];
+          out+=glyphs[Math.floor(v/255*(glyphs.length-1))];
+        }
+        out+='\n';
+      }
+      document.getElementById('art').textContent=out;
+      requestAnimationFrame(draw);
+    }
+    requestAnimationFrame(draw);
+  </script>
+</body>
+</html>

@@ -85,6 +85,7 @@
 
   async function signOut() {
     const sb = getClient();
+    setFinanceOnboardingSoftSkip(false);
     if (!sb) return;
     try {
       await withTimeout(sb.auth.signOut(), 4000, "Sign out");
@@ -152,6 +153,116 @@
     }
   }
 
+  function payoutProfileFrom(profile) {
+    return profile?.payout_profile &&
+      typeof profile.payout_profile === "object" &&
+      !Array.isArray(profile.payout_profile)
+      ? profile.payout_profile
+      : {};
+  }
+
+  function financeProfileComplete(profile) {
+    const payout = payoutProfileFrom(profile);
+    if (payout.onboardingStatus === "complete") return true;
+    const methods =
+      payout.methods && typeof payout.methods === "object" && !Array.isArray(payout.methods)
+        ? payout.methods
+        : {};
+    const hasMethod = Object.values(methods).some(
+      (method) => method?.enabled && String(method.handle || "").trim()
+    );
+    return !!(String(payout.email || "").trim() && String(payout.phone || "").trim() && hasMethod);
+  }
+
+  const FINANCE_SOFT_SKIP_KEY = "ms_finance_onboarding_soft_skip";
+
+  function hasFinanceOnboardingSoftSkip() {
+    try {
+      return sessionStorage.getItem(FINANCE_SOFT_SKIP_KEY) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function setFinanceOnboardingSoftSkip(enabled) {
+    try {
+      if (enabled) sessionStorage.setItem(FINANCE_SOFT_SKIP_KEY, "1");
+      else sessionStorage.removeItem(FINANCE_SOFT_SKIP_KEY);
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  function financeOnboardingDone(profile) {
+    return financeProfileComplete(profile);
+  }
+
+  async function financeOnboardingRedirect(nextUrl) {
+    const destination = String(nextUrl || "dashboard.html");
+    const profile = await getProfile();
+    if (financeOnboardingDone(profile)) {
+      setFinanceOnboardingSoftSkip(false);
+      return destination;
+    }
+    return (
+      "finance.html?onboarding=1&next=" +
+      encodeURIComponent(destination)
+    );
+  }
+
+  async function ensureFinanceOnboarding() {
+    const page = document.body?.dataset?.page || "";
+    if (PUBLIC_PAGES.has(page)) return null;
+    const params = new URLSearchParams(location.search);
+    if (page === "finance" && params.get("onboarding") === "1") return null;
+
+    const session = await getSession();
+    if (!session) return null;
+
+    const profile = await getProfile();
+    if (financeProfileComplete(profile)) {
+      setFinanceOnboardingSoftSkip(false);
+      return null;
+    }
+    if (hasFinanceOnboardingSoftSkip()) return null;
+
+    const next =
+      (location.pathname.split("/").pop() || "dashboard.html") + location.search + location.hash;
+    location.replace(
+      "finance.html?onboarding=1&next=" + encodeURIComponent(next)
+    );
+    return "redirect";
+  }
+
+  async function requestPasswordReset(email) {
+    const sb = getClient();
+    if (!sb) throw new Error("Supabase is not configured");
+    const address = String(email || "").trim();
+    if (!address) throw new Error("Enter your email");
+    const redirectTo = new URL("apply.html?mode=recover", location.href).href;
+    const { data, error } = await withTimeout(
+      sb.auth.resetPasswordForEmail(address, { redirectTo }),
+      AUTH_TIMEOUT_MS,
+      "Password reset"
+    );
+    if (error) throw error;
+    return data;
+  }
+
+  async function setPassword(newPassword) {
+    const sb = getClient();
+    if (!sb) throw new Error("Supabase is not configured");
+    const next = String(newPassword || "");
+    if (next.length < 8) throw new Error("New password must be at least 8 characters");
+    const { data, error } = await withTimeout(
+      sb.auth.updateUser({ password: next }),
+      AUTH_TIMEOUT_MS,
+      "Set password"
+    );
+    if (error) throw error;
+    return data;
+  }
+
   async function changePassword(currentPassword, newPassword) {
     const sb = getClient();
     if (!sb) throw new Error("Supabase is not configured");
@@ -203,9 +314,17 @@
     getSession,
     getUser,
     getProfile,
+    financeProfileComplete,
+    financeOnboardingDone,
+    financeOnboardingRedirect,
+    ensureFinanceOnboarding,
+    hasFinanceOnboardingSoftSkip,
+    setFinanceOnboardingSoftSkip,
     signUp,
     signIn,
     signOut,
+    requestPasswordReset,
+    setPassword,
     changePassword,
     ensureProfile,
     requireAuth,

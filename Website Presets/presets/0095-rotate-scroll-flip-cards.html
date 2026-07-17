@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0095
+    slug: rotate-scroll-flip-cards
+    title: Flip Cards on Scroll
+    category: rotate-scroll
+    tags: rotate-scroll, flip
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0095 — Flip Cards on Scroll</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: #f7f7fa;
+      background:
+        radial-gradient(circle at 20% 8%, rgba(123, 97, 255, 0.14), transparent 30rem),
+        radial-gradient(circle at 85% 50%, rgba(58, 211, 168, 0.08), transparent 28rem),
+        #09090b;
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    }
+
+    .intro {
+      min-height: 62vh;
+      display: grid;
+      align-content: end;
+      width: min(680px, calc(100% - 2.5rem));
+      margin: 0 auto;
+      padding-bottom: 10vh;
+    }
+
+    .eyebrow {
+      margin: 0 0 1rem;
+      color: #9d8cff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .intro h1 {
+      max-width: 10ch;
+      margin: 0;
+      font-size: clamp(2.65rem, 8vw, 5.4rem);
+      line-height: 0.94;
+      letter-spacing: -0.055em;
+    }
+
+    .intro__hint {
+      margin: 1.4rem 0 0;
+      color: rgba(255, 255, 255, 0.48);
+      font-size: 0.88rem;
+    }
+
+    .stack {
+      display: grid;
+      gap: 25vh;
+      width: min(680px, calc(100% - 2.5rem));
+      margin: 0 auto;
+      padding-bottom: 52vh;
+    }
+
+    .card-wrap {
+      height: clamp(280px, 54vw, 390px);
+      perspective: 1600px;
+    }
+
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transform: rotateY(var(--ry, 0deg));
+      will-change: transform;
+    }
+
+    .face {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      padding: clamp(1.5rem, 4vw, 2.5rem);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 28px;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      box-shadow: 0 35px 90px rgba(0, 0, 0, 0.48);
+    }
+
+    .face::after {
+      content: '';
+      position: absolute;
+      width: 18rem;
+      height: 18rem;
+      right: -7rem;
+      bottom: -8rem;
+      border: 1px solid currentColor;
+      border-radius: 50%;
+      opacity: 0.12;
+      box-shadow: 0 0 0 3.5rem currentColor, 0 0 0 7rem currentColor;
+      pointer-events: none;
+    }
+
+    .face__top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .face__mark {
+      display: grid;
+      width: 2.6rem;
+      height: 2.6rem;
+      place-items: center;
+      border: 1px solid currentColor;
+      border-radius: 50%;
+      font-size: 1rem;
+    }
+
+    .face h2 {
+      position: relative;
+      z-index: 1;
+      max-width: 9ch;
+      margin: 0;
+      font-size: clamp(2.1rem, 6vw, 3.65rem);
+      font-weight: 700;
+      line-height: 0.98;
+      letter-spacing: -0.045em;
+    }
+
+    .face p {
+      position: relative;
+      z-index: 1;
+      max-width: 31ch;
+      margin: 0.8rem 0 0;
+      font-size: 0.92rem;
+      line-height: 1.55;
+      opacity: 0.66;
+    }
+
+    .face--front {
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 55%),
+        #17171b;
+    }
+
+    .face--back {
+      color: #101114;
+      background: var(--accent);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: rotateY(180deg);
+    }
+
+    .card-wrap:nth-child(1) { --accent: #a999ff; }
+    .card-wrap:nth-child(2) { --accent: #75dfbd; }
+    .card-wrap:nth-child(3) { --accent: #ffb875; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .card-inner { transform: none !important; }
+      .face--back { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="intro">
+    <p class="eyebrow">Scroll study · 03 cards</p>
+    <h1>Turn ideas over.</h1>
+    <p class="intro__hint">Scroll to reveal the other side ↓</p>
+  </header>
+  <main class="stack" id="stack">
+    <div class="card-wrap">
+      <div class="card-inner">
+        <div class="face face--front">
+          <div class="face__top"><span>01 / Strategy</span><span class="face__mark">↗</span></div>
+          <div><h2>Find the signal.</h2><p>Begin with the question worth answering.</p></div>
+        </div>
+        <div class="face face--back">
+          <div class="face__top"><span>Insight</span><span class="face__mark">01</span></div>
+          <div><h2>Clarity creates momentum.</h2><p>Align the team around one sharp idea before adding motion.</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-wrap">
+      <div class="card-inner">
+        <div class="face face--front">
+          <div class="face__top"><span>02 / Design</span><span class="face__mark">↗</span></div>
+          <div><h2>Shape the feeling.</h2><p>Build rhythm through contrast, space, and timing.</p></div>
+        </div>
+        <div class="face face--back">
+          <div class="face__top"><span>Craft</span><span class="face__mark">02</span></div>
+          <div><h2>Details carry the experience.</h2><p>Depth and restraint turn a simple interaction into a memorable one.</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-wrap">
+      <div class="card-inner">
+        <div class="face face--front">
+          <div class="face__top"><span>03 / Launch</span><span class="face__mark">↗</span></div>
+          <div><h2>Make it real.</h2><p>Move from polished concept to confident release.</p></div>
+        </div>
+        <div class="face face--back">
+          <div class="face__top"><span>Release</span><span class="face__mark">03</span></div>
+          <div><h2>Ship with intention.</h2><p>Every transition should support the story, never compete with it.</p></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const cards = [...document.querySelectorAll('.card-inner')];
+
+    function update() {
+      const vh = innerHeight;
+
+      cards.forEach((card) => {
+        const wrap = card.parentElement;
+        const r = wrap.getBoundingClientRect();
+        const center = r.top + r.height / 2;
+        const start = vh * 0.88;
+        const end = vh * 0.12;
+        const raw = 1 - Math.min(1, Math.max(0, (center - end) / (start - end)));
+        const p = raw < 0.5 ? 4 * raw * raw * raw : 1 - Math.pow(-2 * raw + 2, 3) / 2;
+        card.style.setProperty('--ry', (p * 180) + 'deg');
+      });
+    }
+
+    let ticking = false;
+    addEventListener('scroll', () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        update();
+      });
+    }, { passive: true });
+
+    addEventListener('resize', update, { passive: true });
+    update();
+  </script>
+</body>
+</html>

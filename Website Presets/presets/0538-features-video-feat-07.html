@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0538
+    slug: features-video-feat-07
+    title: Video Feat 07
+    category: features
+    tags: features, video
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0538 — Video Feat 07</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0a0a0a;color:#fff;font-family:Outfit,sans-serif;padding:2rem}
+    .wrap{width:min(800px,100%);display:grid;grid-template-columns:1.3fr 1fr;gap:2rem;align-items:center}
+    .screen{aspect-ratio:16/10;background:#151515;border:1px solid rgba(255,255,255,.1);position:relative;overflow:hidden}
+    .screen::before{content:"";position:absolute;inset:0;background:
+      linear-gradient(90deg,transparent 0%,rgba(255,255,255,.04) 50%,transparent 100%),
+      repeating-linear-gradient(0deg,transparent 0 3px,rgba(255,255,255,.03) 3px 4px);
+      animation:scan 3s linear infinite}
+    .play{position:absolute;left:50%;top:50%;translate:-50% -50%;width:56px;height:56px;border-radius:50%;border:1px solid rgba(255,255,255,.4);display:grid;place-items:center;cursor:pointer;background:rgba(0,0,0,.3);backdrop-filter:blur(6px);transition:transform .35s cubic-bezier(.22,1,.36,1),border-color .3s}
+    .play:hover{transform:scale(1.08);border-color:#fff}
+    .play::after{content:"";border-left:12px solid #fff;border-top:8px solid transparent;border-bottom:8px solid transparent;margin-left:3px}
+    .copy .tag{font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;opacity:.4;margin:0 0 .7rem;font-weight:300}
+    h2{margin:0;font-family:Syne,sans-serif;font-size:clamp(1.6rem,3.5vw,2.2rem);letter-spacing:-.04em;line-height:1;font-weight:800}
+    p{margin:.9rem 0 0;font-size:.9rem;opacity:.5;font-weight:300;line-height:1.6}
+    .meta{margin-top:1.25rem;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;opacity:.3}
+    @keyframes scan{to{background-position:0 40px,0 0}}
+    @media(max-width:700px){.wrap{grid-template-columns:1fr}}
+    @media(prefers-reduced-motion:reduce){.screen::before{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="screen"><button class="play" type="button" aria-label="Play"></button></div>
+    <div class="copy">
+      <p class="tag">Featured film</p>
+      <h2>Watch the<br>system move.</h2>
+      <p>A frame that feels like a product reel — scanlines, soft play, no fake thumbnail collage.</p>
+      <div class="meta">02:14 · Silent demo</div>
+    </div>
+  </div>
+</body>
+</html>

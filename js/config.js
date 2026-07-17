@@ -33,7 +33,7 @@ window.SITE_CONFIG = {
 
   useSupabaseLeads: true,
 
-  /** Profile handles that can open owner-only channels (My clients). */
+  /** Profile handles reserved for the official Moonrise account. */
   ownerHandles: ["moonrise"],
 
   /**
@@ -44,4 +44,7 @@ window.SITE_CONFIG = {
 
   /** Official team Telegram chat (Account → Telegram). */
   telegramUrl: "https://t.me/c/3541685239/1",
+
+  /** Official Discord community (Account → Discord). */
+  discordUrl: "https://discord.gg/yFJajbBNj",
 };

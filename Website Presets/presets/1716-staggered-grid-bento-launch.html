@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1716
+    slug: staggered-grid-bento-launch
+    title: Bento Launch Grid
+    category: animation
+    tags: grid, stagger, bento, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1716 — Bento Launch Grid</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:2rem;background:radial-gradient(circle at 50% 20%,#1f2b55,#070910 68%);color:#fff;font-family:Inter,system-ui,sans-serif}.wrap{width:min(1040px,100%)}.eyebrow{font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:#8fb4ff;margin:0 0 .75rem}.title{margin:0 0 1.5rem;font-size:clamp(2.3rem,6vw,4.8rem);letter-spacing:-.07em;line-height:.9}.grid{display:grid;grid-template-columns:repeat(8,1fr);grid-auto-rows:110px;gap:.75rem}.card{grid-column:span var(--c);grid-row:span var(--r);border-radius:22px;padding:1rem;position:relative;overflow:hidden;background:linear-gradient(145deg,rgba(255,255,255,.15),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(14px);opacity:0;transform:translateY(24px) scale(.96);animation:rise .7s cubic-bezier(.16,1,.3,1) forwards;animation-delay:calc(var(--i)*80ms)}.card:after{content:'';position:absolute;inset:auto -20% -45% -20%;height:80%;background:radial-gradient(circle, var(--glow), transparent 65%);opacity:.55}.card b{position:relative;z-index:1;display:block;font-size:clamp(1.2rem,3vw,2.4rem);letter-spacing:-.06em}.card span{position:relative;z-index:1;display:block;margin-top:.35rem;color:rgba(255,255,255,.58);font-size:.78rem}.card:hover{transform:translateY(-6px);transition:transform .3s ease}@keyframes rise{to{opacity:1;transform:none}}@media(max-width:720px){.grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:120px}.card{grid-column:span 1!important;grid-row:span 1!important}.card.big{grid-column:span 2!important}}@media(prefers-reduced-motion:reduce){.card{animation:none;opacity:1;transform:none}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <p class="eyebrow">Product launch</p>
+    <h1 class="title">A bento grid with stage lights.</h1>
+    <section class="grid">
+      <article class="card big" style="--i:1;--c:4;--r:2;--glow:#6c8cff"><b>Realtime</b><span>Live presence and shared cursors</span></article>
+      <article class="card" style="--i:2;--c:2;--r:1;--glow:#7ee0c3"><b>98%</b><span>Faster previews</span></article>
+      <article class="card" style="--i:3;--c:2;--r:1;--glow:#ffb86b"><b>Edge</b><span>Global deploys</span></article>
+      <article class="card" style="--i:4;--c:2;--r:2;--glow:#ff6bcb"><b>AI</b><span>Inline suggestions</span></article>
+      <article class="card" style="--i:5;--c:3;--r:1;--glow:#6bff95"><b>Security</b><span>Policy checks included</span></article>
+      <article class="card" style="--i:6;--c:3;--r:1;--glow:#6be1ff"><b>Workflow</b><span>Everything connected</span></article>
+    </section>
+  </main>
+</body>
+</html>

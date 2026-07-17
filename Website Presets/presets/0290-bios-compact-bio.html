@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0290
+    slug: bios-compact-bio
+    title: Compact Bio
+    category: bios
+    tags: bios, compact, experimental, shapes
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0290 — Compact Bio</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700&family=DM+Sans:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0f1115;font-family:'DM Sans',sans-serif;overflow:hidden}
+    .orb{position:fixed;width:40vmax;height:40vmax;border-radius:50%;filter:blur(80px);opacity:.25;pointer-events:none;animation:drift 12s ease-in-out infinite alternate}
+    .orb.a{top:-10%;left:-8%;background:#3d5afe}
+    .orb.b{bottom:-15%;right:-10%;background:#00bfa5;animation-duration:16s;animation-direction:alternate-reverse}
+    .bio{position:relative;display:flex;align-items:center;gap:1rem;padding:.7rem 1.2rem .7rem .7rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:999px;backdrop-filter:blur(12px);animation:rise .8s cubic-bezier(.22,1,.36,1) both}
+    .shape{position:relative;width:52px;height:52px;flex-shrink:0}
+    .blob{position:absolute;inset:0;background:linear-gradient(135deg,#5c7cfa,#12b886);border-radius:60% 40% 55% 45% / 45% 55% 40% 60%;animation:morph 6s ease-in-out infinite;display:grid;place-items:center;color:#fff;font-family:Syne,sans-serif;font-weight:700;font-size:.85rem}
+    .ring{position:absolute;inset:-6px;border:1px dashed rgba(255,255,255,.25);border-radius:50%;animation:spin 18s linear infinite}
+    .meta{min-width:0}
+    .name{margin:0;font-family:Syne,sans-serif;font-weight:700;font-size:.95rem;color:#f4f5f7;letter-spacing:-.02em}
+    .role{margin:.15rem 0 0;font-size:.72rem;color:rgba(244,245,247,.5);letter-spacing:.04em}
+    @keyframes morph{0%,100%{border-radius:60% 40% 55% 45% / 45% 55% 40% 60%}50%{border-radius:40% 60% 40% 60% / 60% 40% 60% 40%}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes drift{to{transform:translate(4%,3%) scale(1.08)}}
+    @keyframes rise{from{opacity:0;transform:translateY(16px) scale(.96)}}
+    @media (prefers-reduced-motion:reduce){.blob,.ring,.orb,.bio{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="orb a" aria-hidden="true"></div>
+  <div class="orb b" aria-hidden="true"></div>
+  <div class="bio">
+    <div class="shape"><span class="ring" aria-hidden="true"></span><div class="blob">NL</div></div>
+    <div class="meta"><p class="name">Nora Lane</p><p class="role">Product designer</p></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1699
+    slug: animation-liquid-morph
+    title: Liquid Morph Blob
+    category: animation
+    tags: animation, liquid, morph, blob
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1689 — Liquid Morph Blob</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@500&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #071018;
+      overflow: hidden;
+      font-family: 'DM Sans', sans-serif;
+      color: #e8f4ff;
+    }
+
+    .scene {
+      position: relative;
+      width: min(80vw, 420px);
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+    }
+
+    .blob {
+      position: absolute;
+      inset: 8%;
+      border-radius: 42% 58% 55% 45% / 48% 42% 58% 52%;
+      background:
+        radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.45), transparent 28%),
+        linear-gradient(135deg, #4de1ff, #7c5cff 45%, #ff4ecd);
+      filter: blur(0.2px);
+      box-shadow:
+        0 0 80px rgba(124, 92, 255, 0.45),
+        inset 0 -20px 50px rgba(0, 0, 0, 0.25);
+      animation: morph 7s ease-in-out infinite, drift 11s ease-in-out infinite;
+      will-change: border-radius, transform;
+    }
+
+    .blob::before {
+      content: '';
+      position: absolute;
+      inset: 18%;
+      border-radius: inherit;
+      background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.35), transparent 50%);
+      mix-blend-mode: soft-light;
+    }
+
+    .orbit {
+      position: absolute;
+      inset: 0;
+      border: 1px dashed rgba(77, 225, 255, 0.2);
+      border-radius: 50%;
+      animation: spin 18s linear infinite;
+    }
+
+    .orbit span {
+      position: absolute;
+      top: -5px;
+      left: 50%;
+      width: 10px;
+      height: 10px;
+      margin-left: -5px;
+      border-radius: 50%;
+      background: #4de1ff;
+      box-shadow: 0 0 16px #4de1ff;
+    }
+
+    .label {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .label h1 {
+      margin: 0;
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(2.4rem, 7vw, 3.8rem);
+      font-style: italic;
+      font-weight: 400;
+      letter-spacing: -0.03em;
+      text-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .label p {
+      margin: 0.4rem 0 0;
+      font-size: 0.68rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      opacity: 0.7;
+    }
+
+    @keyframes morph {
+      0%, 100% { border-radius: 42% 58% 55% 45% / 48% 42% 58% 52%; }
+      25% { border-radius: 60% 40% 35% 65% / 55% 60% 40% 45%; }
+      50% { border-radius: 38% 62% 70% 30% / 40% 35% 65% 60%; }
+      75% { border-radius: 55% 45% 40% 60% / 62% 50% 50% 38%; }
+    }
+
+    @keyframes drift {
+      0%, 100% { transform: rotate(0deg) scale(1); }
+      50% { transform: rotate(18deg) scale(1.08); }
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .blob, .orbit { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="scene">
+    <div class="orbit" aria-hidden="true"><span></span></div>
+    <div class="blob" aria-hidden="true"></div>
+    <div class="label">
+      <h1>Fluid</h1>
+      <p>Always shifting</p>
+    </div>
+  </div>
+</body>
+</html>

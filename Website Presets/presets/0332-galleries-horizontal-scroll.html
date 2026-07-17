@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0332
+    slug: galleries-horizontal-scroll
+    title: Horizontal Scroll Gallery
+    category: galleries
+    tags: galleries, scroll
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0332 — Horizontal Scroll Gallery</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(108, 140, 255, 0.14), transparent 34%),
+        radial-gradient(circle at 88% 82%, rgba(108, 255, 184, 0.1), transparent 36%),
+        #0d0d0f;
+      color: #fff;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    .gallery {
+      width: 100%;
+      padding: 2rem 0;
+    }
+
+    .head {
+      padding: 0 2rem 1.5rem;
+      max-width: 720px;
+    }
+
+    .head .eyebrow {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #6c8cff;
+      margin-bottom: 0.35rem;
+    }
+
+    .head h2 {
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.35rem;
+    }
+
+    .head p {
+      font-size: 0.88rem;
+      color: #9ca3af;
+    }
+
+    .scroller-wrap {
+      position: relative;
+    }
+
+    .scroller-wrap::before,
+    .scroller-wrap::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 56px;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .scroller-wrap::before {
+      left: 0;
+      background: linear-gradient(90deg, #0d0d0f, transparent);
+    }
+
+    .scroller-wrap::after {
+      right: 0;
+      background: linear-gradient(270deg, #0d0d0f, transparent);
+    }
+
+    .scroller {
+      display: flex;
+      gap: 18px;
+      padding: 0.25rem 2rem 1rem;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-padding: 2rem;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+    }
+
+    .scroller::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .scroller::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.22);
+      border-radius: 999px;
+    }
+
+    .card {
+      flex: 0 0 min(78vw, 320px);
+      scroll-snap-align: start;
+      border-radius: 20px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+      transition:
+        transform 0.35s cubic-bezier(.22, .61, .36, 1),
+        box-shadow 0.35s cubic-bezier(.22, .61, .36, 1),
+        border-color 0.35s;
+    }
+
+    .card:hover {
+      transform: translateY(-8px) scale(1.01);
+      border-color: rgba(108, 140, 255, 0.28);
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.42);
+    }
+
+    .card__media {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card__media img {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.5s cubic-bezier(.22, .61, .36, 1);
+    }
+
+    .card:hover .card__media img {
+      transform: scale(1.05);
+    }
+
+    .card__index {
+      position: absolute;
+      top: 0.85rem;
+      left: 0.85rem;
+      padding: 0.3rem 0.55rem;
+      border-radius: 999px;
+      background: rgba(17, 24, 39, 0.78);
+      backdrop-filter: blur(8px);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #d1d5db;
+    }
+
+    .card__cap {
+      padding: 1rem 1.1rem 1.15rem;
+    }
+
+    .card__cap h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 0.2rem;
+    }
+
+    .card__cap p {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      line-height: 1.45;
+    }
+  </style>
+</head>
+<body>
+  <section class="gallery">
+    <header class="head">
+      <div class="eyebrow">Gallery</div>
+      <h2>Scroll to explore</h2>
+      <p>Swipe through a curated set of featured shots.</p>
+    </header>
+
+    <div class="scroller-wrap">
+      <div class="scroller">
+        <article class="card">
+          <div class="card__media">
+            <span class="card__index">01</span>
+            <img src="../stock/media/16-9 Aspect Ratio(image).png" alt="Coastal study">
+          </div>
+          <div class="card__cap">
+            <h3>Coastal Study</h3>
+            <p>Soft light over open water.</p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card__media">
+            <span class="card__index">02</span>
+            <img src="../stock/media/16-9 Aspect Ratio(image).png" alt="Night drive">
+          </div>
+          <div class="card__cap">
+            <h3>Night Drive</h3>
+            <p>Neon reflections in motion.</p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card__media">
+            <span class="card__index">03</span>
+            <img src="../stock/media/16-9 Aspect Ratio(image).png" alt="Open horizon">
+          </div>
+          <div class="card__cap">
+            <h3>Open Horizon</h3>
+            <p>Wide frames and quiet tones.</p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card__media">
+            <span class="card__index">04</span>
+            <img src="../stock/media/16-9 Aspect Ratio(image).png" alt="Urban lines">
+          </div>
+          <div class="card__cap">
+            <h3>Urban Lines</h3>
+            <p>Geometry in the city grid.</p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card__media">
+            <span class="card__index">05</span>
+            <img src="../stock/media/16-9 Aspect Ratio(image).png" alt="Golden hour">
+          </div>
+          <div class="card__cap">
+            <h3>Golden Hour</h3>
+            <p>Warm highlights at dusk.</p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+</body>
+</html>

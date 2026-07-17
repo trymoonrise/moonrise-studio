@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0208
+    slug: modals-image-modal
+    title: Image Lightbox Modal
+    category: modals
+    tags: modals, lightbox
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0208 — Image Lightbox Modal</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#111}.thumb{width:200px;border-radius:8px;cursor:pointer;overflow:hidden}.thumb img{width:100%;aspect-ratio:16/9;object-fit:cover}.overlay{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;place-items:center;z-index:10;cursor:pointer}.overlay.open{display:grid}.overlay img{max-width:90vw;max-height:90vh;border-radius:8px}
+  </style>
+</head>
+<body>
+<div class="thumb" id="t"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div><div class="overlay" id="ov"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div>
+<script>document.getElementById('t').onclick=()=>document.getElementById('ov').classList.add('open');document.getElementById('ov').onclick=()=>document.getElementById('ov').classList.remove('open');</script>
+</body>
+</html>

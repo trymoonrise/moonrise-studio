@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1762
+    slug: staggered-grid-magnetic-tiles
+    title: Magnetic Tiles Grid
+    category: animation
+    tags: grid, stagger, magnetic, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1762 — Magnetic Tiles Grid</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');*{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;overflow:hidden;background:#060606;color:#fff;font-family:"DM Sans",system-ui,sans-serif;padding:clamp(1rem,3vw,2rem)}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.tile,.cell,.brick,.module,.card,.panel{opacity:1!important;transform:none!important;clip-path:none!important;filter:none!important}}
+    .wrap{width:min(960px,100%);position:relative}
+    .head{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;margin-bottom:1.5rem}
+    h1{margin:0;font-family:"Syne",system-ui,sans-serif;font-size:clamp(2.2rem,7vw,5rem);font-weight:800;letter-spacing:-.07em;line-height:.88}
+    .hint{margin:0;font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:#555}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;perspective:1100px}
+    .tile{position:relative;height:200px;overflow:hidden;background:#0e0e0e;border:1px solid #1c1c1c;transform-style:preserve-3d;
+      transform:translate3d(var(--tx,0),var(--ty,0),var(--tz,0)) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
+      opacity:0;animation:enter .7s cubic-bezier(.16,1,.3,1) forwards;animation-delay:calc(var(--i)*60ms);will-change:transform}
+    .tile::before{content:'';position:absolute;width:180px;height:180px;border-radius:50%;left:var(--gx,50%);top:var(--gy,50%);translate:-50% -50%;background:#fff;filter:blur(50px);opacity:var(--glow,.08);pointer-events:none}
+    .idx{position:absolute;left:1rem;top:.85rem;font-size:.58rem;letter-spacing:.16em;color:#444;transform:translateZ(20px)}
+    .label{position:absolute;left:1rem;bottom:.9rem;font-family:"Syne",system-ui,sans-serif;font-size:clamp(1.1rem,2.5vw,1.5rem);font-weight:700;letter-spacing:-.03em;transform:translateZ(28px)}
+    .dot{position:absolute;right:1rem;top:1rem;width:6px;height:6px;border-radius:50%;background:#fff;opacity:.5;transform:translateZ(20px)}
+    @keyframes enter{to{opacity:1}}
+    @media(max-width:640px){.grid{grid-template-columns:1fr 1fr}.tile{height:150px}}
+  </style>
+</head>
+<body>
+<div class="wrap"><div class="head"><h1>Magnetic<br>field</h1><p class="hint">Move cursor</p></div>
+    <section class="grid" id="g">
+      <div class="tile" style="--i:1" data-i="0"><span class="idx">01</span><span class="label">Polar</span><i class="dot"></i></div><div class="tile" style="--i:2" data-i="1"><span class="idx">02</span><span class="label">Drift</span><i class="dot"></i></div><div class="tile" style="--i:3" data-i="2"><span class="idx">03</span><span class="label">Force</span><i class="dot"></i></div><div class="tile" style="--i:4" data-i="3"><span class="idx">04</span><span class="label">Pull</span><i class="dot"></i></div><div class="tile" style="--i:5" data-i="4"><span class="idx">05</span><span class="label">Orbit</span><i class="dot"></i></div><div class="tile" style="--i:6" data-i="5"><span class="idx">06</span><span class="label">Charge</span><i class="dot"></i></div><div class="tile" style="--i:7" data-i="6"><span class="idx">07</span><span class="label">Flux</span><i class="dot"></i></div><div class="tile" style="--i:8" data-i="7"><span class="idx">08</span><span class="label">Spin</span><i class="dot"></i></div><div class="tile" style="--i:9" data-i="8"><span class="idx">09</span><span class="label">Core</span><i class="dot"></i></div>
+    </section></div>
+<script>const g=document.getElementById('g'),tiles=[...g.querySelectorAll('.tile')];let mx=innerWidth/2,my=innerHeight/2;
+    addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+    function frame(){const gr=g.getBoundingClientRect(),cx=gr.left+gr.width/2,cy=gr.top+gr.height/2;
+      tiles.forEach(t=>{const r=t.getBoundingClientRect(),tx=r.left+r.width/2,ty=r.top+r.height/2;
+        const dx=(mx-tx)/gr.width,dy=(my-ty)/gr.height,dist=Math.hypot(mx-tx,my-ty),prox=Math.max(0,1-dist/420);
+        t.style.setProperty('--tx',(dx*18*prox)+'px');t.style.setProperty('--ty',(dy*18*prox)+'px');
+        t.style.setProperty('--tz',(prox*40)+'px');t.style.setProperty('--rx',(-dy*12*prox)+'deg');t.style.setProperty('--ry',(dx*14*prox)+'deg');
+        t.style.setProperty('--gx',((mx-r.left)/r.width*100)+'%');t.style.setProperty('--gy',((my-r.top)/r.height*100)+'%');
+        t.style.setProperty('--glow',(.08+prox*.22).toFixed(3));
+      });requestAnimationFrame(frame);}frame();</script>
+</body>
+</html>

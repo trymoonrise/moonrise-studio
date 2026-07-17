@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1503
+    slug: dots-step-pips
+    title: Step Pip Dots
+    category: dots
+    tags: dots, steps, pips
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1503 — Step Pip Dots</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#fff;padding:2rem}.wrap{text-align:center}.pips{display:flex;gap:8px;justify-content:center;margin-bottom:2rem}.pip{width:8px;height:8px;border-radius:50%;background:#ddd;cursor:pointer;transition:all .35s cubic-bezier(.22,.61,.36,1)}.pip.on{width:28px;border-radius:99px;background:#6c8cff}.panel{width:min(360px,90vw);padding:2rem;border-radius:16px;background:#f8f8f8}.panel h3{font-size:1.1rem;margin-bottom:.35rem}.panel p{color:#666;font-size:.9rem}
+  </style>
+</head>
+<body>
+<div class="wrap"><div class="pips" id="pips"></div><div class="panel" id="panel"></div></div>
+<script>const slides=['Upload files','Review details','Confirm payment','Done'];let i=0;const pips=document.getElementById('pips'),panel=document.getElementById('panel');function r(){pips.innerHTML=slides.map((_,j)=>'<div class="pip'+(j===i?' on':'')+'" data-j="'+j+'"></div>').join('');panel.innerHTML='<h3>'+slides[i]+'</h3><p>Step '+(i+1)+' of '+slides.length+'</p>';[...pips.children].forEach(p=>p.onclick=()=>{i=+p.dataset.j;r();});setInterval(()=>{i=(i+1)%slides.length;r();},2500);}r();</script>
+</body>
+</html>

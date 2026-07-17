@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0887
+    slug: badges-icon-badge-05
+    title: Icon Badge 05
+    category: badges
+    tags: badges, icon
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0887 — Icon Badge 05</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Sora:wght@600;700&display=swap');
+
+    * { box-sizing: border-box; }
+    body {
+      display: grid; place-items: center; min-height: 100vh;
+      background: #0d1117; font-family: Sora, sans-serif;
+    }
+
+    .row { display: flex; gap: 1.2rem; flex-wrap: wrap; justify-content: center; padding: 2rem; }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 0.55rem;
+      padding: 0.55rem 1rem 0.55rem 0.65rem;
+      border-radius: 14px;
+      font-size: 0.82rem; font-weight: 700;
+      color: #fff;
+      background: #1a2230;
+      border: 1px solid rgba(255,255,255,0.08);
+      overflow: hidden;
+    }
+
+    .ico {
+      width: 32px; height: 32px;
+      border-radius: 10px;
+      display: grid; place-items: center;
+      font-size: 1.05rem;
+    }
+
+    .fire .ico {
+      background: linear-gradient(145deg, #ff6b2d, #ff2d55);
+      animation: shake 0.8s ease-in-out infinite;
+      box-shadow: 0 0 16px rgba(255, 80, 40, 0.5);
+    }
+    .bolt .ico {
+      background: linear-gradient(145deg, #ffe74e, #f59e0b);
+      animation: zap 1.2s ease-in-out infinite;
+      box-shadow: 0 0 16px rgba(255, 200, 40, 0.45);
+    }
+    .star .ico {
+      background: linear-gradient(145deg, #a78bfa, #7c5cff);
+      animation: spin 2.5s linear infinite;
+      box-shadow: 0 0 16px rgba(124, 92, 255, 0.45);
+    }
+
+    @keyframes shake {
+      0%,100% { transform: rotate(0); }
+      25% { transform: rotate(-10deg) scale(1.08); }
+      75% { transform: rotate(10deg) scale(1.08); }
+    }
+    @keyframes zap {
+      0%,100% { transform: scale(1); filter: brightness(1); }
+      40% { transform: scale(1.15); filter: brightness(1.4); }
+      50% { transform: scale(0.95); }
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ico { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="row">
+    <span class="badge fire"><span class="ico" aria-hidden="true">🔥</span>Hot</span>
+    <span class="badge bolt"><span class="ico" aria-hidden="true">⚡</span>Fast</span>
+    <span class="badge star"><span class="ico" aria-hidden="true">✦</span>Pro</span>
+  </div>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1489
+    slug: stack-gallery-click-cycle
+    title: Gallery Stack Click Cycle
+    category: stack-gallery
+    tags: stack, gallery, images, click
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1489 — Gallery Stack Click Cycle</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#f5f5f5;padding:2rem}.wrap{text-align:center}.stack{position:relative;width:min(300px,85vw);aspect-ratio:4/5;margin:0 auto 1rem;cursor:pointer}.card{position:absolute;inset:0;border-radius:18px;overflow:hidden;transition:transform .5s cubic-bezier(.22,.61,.36,1),opacity .4s;box-shadow:0 12px 36px rgba(0,0,0,.15)}.card img{width:100%;height:100%;object-fit:cover}.hint{font-size:.85rem;color:#888}
+  </style>
+</head>
+<body>
+<div class="wrap"><div class="stack" id="s"><div class="card"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt="Photo 1"></div><div class="card"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt="Photo 2"></div><div class="card"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt="Photo 3"></div><div class="card"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt="Photo 4"></div><div class="card"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt="Photo 5"></div></div><p class="hint">Click to cycle through the gallery</p></div>
+<script>const s=document.getElementById('s');const cards=[...s.children];let top=0;function layout(){cards.forEach((c,i)=>{const pos=(i-top+cards.length)%cards.length;c.style.zIndex=cards.length-pos;c.style.transform='translateY('+(pos*8)+'px) scale('+(1-pos*.04)+') rotate('+(pos*2-4)+'deg)';c.style.opacity=pos>3?0:1;});}s.onclick=()=>{top=(top+1)%cards.length;layout();};layout();</script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1810
+    slug: maps-city-teleport-carousel
+    title: City Teleport Carousel
+    category: maps
+    tags: maps, embed, experimental, widgets, motion
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1810 — City Teleport Carousel</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;padding:1.5rem;overflow:hidden;background:#0c0c0c;color:#fff;font-family:Syne,sans-serif}
+    iframe{border:0;width:100%;height:100%;display:block}
+    button{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit}
+    .wrap{width:min(580px,94vw)}.stage{position:relative;aspect-ratio:16/10;border-radius:28px;overflow:hidden;border:1px solid rgba(255,255,255,.1)}
+.stage iframe{transition:opacity .45s,filter .45s}.stage.flash iframe{opacity:.4;filter:blur(8px) brightness(1.4)}
+.cap{position:absolute;left:0;right:0;bottom:0;padding:1.25rem 1.4rem;background:linear-gradient(transparent,rgba(0,0,0,.85));font-size:clamp(1.6rem,5vw,2.4rem);font-weight:800;letter-spacing:-.05em}
+.nav{display:flex;justify-content:space-between;align-items:center;margin-top:1rem}
+.nav button{width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.2);font-size:1rem;transition:.25s}
+.nav button:hover{background:#fff;color:#111}
+.dots{display:flex;gap:8px}.dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.25)}.dot.on{background:#fff;transform:scale(1.25)}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="wrap"><div class="stage" id="s"><iframe id="map" src="https://www.google.com/maps?q=Cairo%2C%20Egypt&hl=en&z=11&output=embed" title="Teleport map" loading="lazy"></iframe><div class="cap" id="cap">Cairo</div></div>
+<div class="nav"><button id="prev">←</button><div class="dots" id="dots"></div><button id="next">→</button></div></div>
+<script>const cities=[{q:'Cairo, Egypt',z:11},{q:'Mexico City, Mexico',z:11},{q:'Berlin, Germany',z:12},{q:'Bangkok, Thailand',z:12},{q:'Cape Town, South Africa',z:11}];
+let i=0;const map=document.getElementById('map'),cap=document.getElementById('cap'),dots=document.getElementById('dots'),s=document.getElementById('s');
+cities.forEach((_,n)=>{const d=document.createElement('button');d.className='dot'+(n? '':' on');d.onclick=()=>go(n);dots.appendChild(d);});
+function go(n){i=(n+cities.length)%cities.length;s.classList.add('flash');setTimeout(()=>{const c=cities[i];map.src='https://www.google.com/maps?q='+encodeURIComponent(c.q)+'&hl=en&z='+c.z+'&output=embed';cap.textContent=c.q.split(',')[0];[...dots.children].forEach((d,k)=>d.classList.toggle('on',k===i));s.classList.remove('flash')},220);}
+document.getElementById('prev').onclick=()=>go(i-1);document.getElementById('next').onclick=()=>go(i+1);setInterval(()=>go(i+1),4500);</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0363
+    slug: experimental-text-scramble
+    title: Text Scramble Effect
+    category: experimental
+    tags: experimental, scramble
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0363 — Text Scramble Effect</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#111;color:#6cffb8;font-family:monospace}h1{font-size:clamp(1.5rem,5vw,3rem);letter-spacing:.15em;cursor:default}
+  </style>
+</head>
+<body>
+<h1 id="t">EXPERIMENTAL</h1>
+<script>const el=document.getElementById('t'),target='EXPERIMENTAL',chars='!@#$%&*ABCDEFGHIJKLMNOPQRSTUVWXYZ';let f=0;function s(){let o='';for(let i=0;i<target.length;i++)o+=f>i*3?target[i]:chars[Math.floor(Math.random()*chars.length)];el.textContent=o;if(f<target.length*3+10){f++;requestAnimationFrame(s);}}s();</script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0155
+    slug: toggles-pill-toggle
+    title: Pill Toggle Group
+    category: toggles
+    tags: toggles, pill
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0155 — Pill Toggle Group</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #f4f5f8;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      padding: 2rem;
+    }
+
+    .wrap {
+      display: grid;
+      gap: 1rem;
+      text-align: center;
+    }
+
+    .label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #8b8fa3;
+    }
+
+    .group {
+      position: relative;
+      display: inline-flex;
+      gap: 4px;
+      padding: 5px;
+      background: #e8eaef;
+      border-radius: 999px;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+
+    .indicator {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      height: calc(100% - 10px);
+      width: var(--w, 72px);
+      border-radius: 999px;
+      background: #fff;
+      box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.06),
+        0 8px 24px rgba(79, 110, 247, 0.12);
+      transform: translateX(var(--x, 0));
+      transition:
+        transform 0.48s cubic-bezier(0.22, 0.61, 0.36, 1),
+        width 0.48s cubic-bezier(0.22, 0.61, 0.36, 1);
+      pointer-events: none;
+    }
+
+    .opt {
+      position: relative;
+      z-index: 1;
+      padding: 0.55rem 1.35rem;
+      border: none;
+      border-radius: 999px;
+      background: none;
+      color: #6b7085;
+      font-size: 0.88rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition:
+        color 0.35s cubic-bezier(0.22, 0.61, 0.36, 1),
+        transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    .opt:hover {
+      color: #3d4255;
+    }
+
+    .opt.on {
+      color: #111;
+    }
+
+    .opt.on {
+      transform: translateY(-0.5px);
+    }
+
+    .opt:focus-visible {
+      outline: 2px solid #4f6ef7;
+      outline-offset: 2px;
+    }
+
+    .hint {
+      font-size: 0.9rem;
+      color: #666;
+      min-height: 1.4em;
+      transition: opacity 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .indicator,
+      .opt,
+      .hint {
+        transition: none;
+      }
+
+      .opt.on {
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <span class="label">Time range</span>
+    <div class="group" id="group" role="group" aria-label="Time range">
+      <span class="indicator" id="indicator"></span>
+      <button class="opt on" type="button" aria-pressed="true" data-label="Daily overview">Day</button>
+      <button class="opt" type="button" aria-pressed="false" data-label="Weekly summary">Week</button>
+      <button class="opt" type="button" aria-pressed="false" data-label="Monthly trends">Month</button>
+    </div>
+    <p class="hint" id="hint">Daily overview</p>
+  </div>
+
+  <script>
+    const group = document.getElementById('group');
+    const indicator = document.getElementById('indicator');
+    const hint = document.getElementById('hint');
+    const opts = [...document.querySelectorAll('.opt')];
+
+    function moveIndicator(opt) {
+      const g = group.getBoundingClientRect();
+      const r = opt.getBoundingClientRect();
+      indicator.style.setProperty('--x', (r.left - g.left - 5) + 'px');
+      indicator.style.setProperty('--w', r.width + 'px');
+    }
+
+    opts.forEach((opt) => {
+      opt.addEventListener('click', () => {
+        opts.forEach((el) => {
+          el.classList.remove('on');
+          el.setAttribute('aria-pressed', 'false');
+        });
+        opt.classList.add('on');
+        opt.setAttribute('aria-pressed', 'true');
+        hint.textContent = opt.dataset.label;
+        moveIndicator(opt);
+      });
+    });
+
+    addEventListener('resize', () => {
+      moveIndicator(document.querySelector('.opt.on'));
+    }, { passive: true });
+
+    moveIndicator(document.querySelector('.opt.on'));
+  </script>
+</body>
+</html>

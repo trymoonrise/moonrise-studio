@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1681
+    slug: text-marquee-orbital-ring
+    title: Orbital Ring Marquee
+    category: text
+    tags: marquee, orbital, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1681 — Orbital Ring Marquee</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+    :root {
+      --void: #07070b;
+      --flare: #f4f0e6;
+      --ember: #ff5c2e;
+      --ice: #7ec8ff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow: hidden;
+      background: var(--void);
+      color: var(--flare);
+      font-family: Syne, sans-serif;
+    }
+
+    .stage {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      perspective: 1200px;
+    }
+
+    .ring {
+      position: absolute;
+      width: min(78vmin, 640px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      transform-style: preserve-3d;
+      animation: spin var(--dur, 28s) linear infinite;
+    }
+
+    .ring--outer { --dur: 32s; z-index: 1; }
+    .ring--mid { --dur: 22s; animation-direction: reverse; z-index: 2; width: min(52vmin, 420px); }
+    .ring--inner { --dur: 16s; z-index: 3; width: min(28vmin, 240px); }
+
+    .ring span {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform:
+        rotate(calc(var(--i) * 1deg))
+        translateY(calc(var(--r) * -1))
+        rotateX(0deg);
+      transform-origin: center;
+      font-size: var(--size, 1.1rem);
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      color: var(--c, var(--flare));
+    }
+
+    .ring--mid span {
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 500;
+      font-size: 0.72rem;
+      letter-spacing: 0.22em;
+      color: var(--ice);
+    }
+
+    .ring--inner span {
+      color: var(--ember);
+      font-size: 0.85rem;
+    }
+
+    .core {
+      position: relative;
+      z-index: 4;
+      width: min(18vmin, 140px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      border: 1px solid rgba(244, 240, 230, 0.2);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      background: radial-gradient(circle at 40% 35%, #1a1a22, #07070b 70%);
+      box-shadow: 0 0 60px rgba(255, 92, 46, 0.25);
+    }
+
+    .core strong {
+      font-size: clamp(0.9rem, 2.4vw, 1.2rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+    }
+
+    .core em {
+      display: block;
+      margin-top: 0.35rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-style: normal;
+      font-size: 0.55rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(244, 240, 230, 0.4);
+    }
+
+    .glow {
+      position: absolute;
+      width: min(90vmin, 720px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 92, 46, 0.12), transparent 62%);
+      filter: blur(20px);
+      animation: pulse 5s ease-in-out infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes pulse {
+      0%, 100% { transform: scale(0.92); opacity: 0.7; }
+      50% { transform: scale(1.05); opacity: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ring, .glow { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage" id="stage">
+    <div class="glow" aria-hidden="true"></div>
+    <div class="ring ring--outer" id="outer" aria-hidden="true"></div>
+    <div class="ring ring--mid" id="mid" aria-hidden="true"></div>
+    <div class="ring ring--inner" id="inner" aria-hidden="true"></div>
+    <div class="core">
+      <div>
+        <strong>Orbit</strong>
+        <em>Type / Loop</em>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function place(ring, text, radius, size) {
+      const chars = text.split('');
+      const step = 360 / chars.length;
+      ring.innerHTML = chars.map((ch, i) =>
+        '<span style="--i:' + (i * step) + ';--r:' + radius + ';--size:' + size + '">' +
+        (ch === ' ' ? '&nbsp;' : ch) +
+        '</span>'
+      ).join('');
+    }
+
+    place(document.getElementById('outer'), 'INFINITE CIRCLE  ·  TEXT WITHOUT EDGES  ·  ', 'min(39vmin, 320px)', 'clamp(0.85rem, 2vw, 1.2rem)');
+    place(document.getElementById('mid'), 'ALWAYS SPINNING  ·  ALWAYS READING  ·  ', 'min(26vmin, 210px)', '0.7rem');
+    place(document.getElementById('inner'), 'LOOP · DRIFT · HOLD · ', 'min(14vmin, 120px)', '0.75rem');
+
+    const stage = document.getElementById('stage');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    addEventListener('pointermove', (e) => {
+      if (reduced) return;
+      const x = (e.clientX / innerWidth - 0.5) * 12;
+      const y = (e.clientY / innerHeight - 0.5) * -10;
+      stage.style.transform = 'perspective(1200px) rotateX(' + y + 'deg) rotateY(' + x + 'deg)';
+    }, { passive: true });
+  </script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1828
+    slug: timeline-depth-tunnel
+    title: Depth Tunnel Timeline
+    category: timeline
+    tags: timeline, tunnel, depth, insane
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1828 — Depth Tunnel Timeline</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700&family=Outfit:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#020208;color:#fff;font-family:Outfit,sans-serif;display:grid;place-items:center;overflow:hidden}
+    .tunnel{width:min(480px,95vw);height:min(560px,90vh);perspective:600px;position:relative}
+    .track{position:absolute;inset:0;transform-style:preserve-3d;transition:transform 1s cubic-bezier(.22,1,.36,1)}
+    .ring{position:absolute;left:50%;top:50%;width:280px;height:280px;margin:-140px;border:2px solid rgba(100,200,255,.25);border-radius:50%;transform:translateZ(var(--z)) scale(var(--s,1));display:grid;place-items:center;cursor:pointer;transition:border-color .3s,box-shadow .3s}
+    .ring:hover,.ring.on{border-color:#7dd3fc;box-shadow:0 0 40px rgba(125,211,252,.3),inset 0 0 40px rgba(125,211,252,.08)}
+    .ring span{font-family:Syne,sans-serif;font-size:.9rem;opacity:.85;text-align:center;padding:1rem;pointer-events:none}
+    .hud{position:absolute;bottom:4%;left:50%;translate:-50% 0;text-align:center;width:90%;z-index:5}
+    .hud h3{font-family:Syne,sans-serif;margin:0 0 .3rem;font-size:1.35rem}
+    .hud p{margin:0;color:#6a8a9a;font-size:.88rem}
+    .hint{position:absolute;top:5%;left:50%;translate:-50% 0;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:#3a4a58;z-index:5}
+  </style>
+</head>
+<body>
+  <div class="tunnel">
+    <div class="hint">Scroll the void</div>
+    <div class="track" id="track"></div>
+    <div class="hud" id="hud"><h3>—</h3><p>—</p></div>
+  </div>
+  <script>
+    const eras=[
+      {t:'Origin',d:'Light at the vanishing point.'},
+      {t:'Drift',d:'Signals stretch across distance.'},
+      {t:'Warp',d:'Time compresses; ambition expands.'},
+      {t:'Breach',d:'The tunnel opens into market.'},
+      {t:'Horizon',d:'What was far is now underfoot.'}
+    ];
+    const track=document.getElementById('track'),hud=document.getElementById('hud');
+    let depth=0;
+    eras.forEach((e,i)=>{
+      const r=document.createElement('button');
+      r.className='ring';
+      r.style.setProperty('--z',(-i*180)+'px');
+      r.innerHTML='<span>'+e.t+'</span>';
+      r.onclick=()=>focus(i);
+      track.appendChild(r);
+    });
+    function focus(i){
+      depth=i;
+      track.style.transform=`translateZ(${i*180}px)`;
+      [...track.children].forEach((r,j)=>r.classList.toggle('on',j===i));
+      hud.innerHTML=`<h3>${eras[i].t}</h3><p>${eras[i].d}</p>`;
+    }
+    addEventListener('wheel',e=>{
+      e.preventDefault();
+      focus(Math.max(0,Math.min(eras.length-1,depth+(e.deltaY>0?1:-1))));
+    },{passive:false});
+    focus(0);
+  </script>
+</body>
+</html>

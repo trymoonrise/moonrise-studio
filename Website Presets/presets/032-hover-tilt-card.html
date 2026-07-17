@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 032
+    slug: hover-tilt-card
+    title: Hover Tilt Card
+    category: cards
+    tags: tilt, hover
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>032 — Hover Tilt Card</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    
+    body{display:grid;place-items:center;min-height:100vh;background:#111;perspective:500px}
+    .card{width:300px;padding:2rem;background:#1a1a2e;border-radius:16px;border:1px solid #2a2a40;color:#fff;transition:transform .12s ease-out;transform-style:preserve-3d;will-change:transform;box-shadow:0 20px 40px rgba(0,0,0,.35)}
+    .card h3{font-size:1.3rem;margin-bottom:.5rem}.card p{color:#888;font-size:.9rem}
+    
+  </style>
+</head>
+<body>
+<div class="card" id="c"><h3>Tilt Card</h3><p>Move your mouse over this card</p></div>
+<script>
+    const c=document.getElementById('c');
+    const tilt=26;
+    c.addEventListener('mousemove',e=>{const r=c.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5;const y=(e.clientY-r.top)/r.height-.5;const lift=Math.hypot(x,y)*12;c.style.transform='rotateY('+(x*tilt)+'deg) rotateX('+(-y*tilt)+'deg) translateZ('+lift+'px) scale(1.02)';});
+    c.addEventListener('mouseleave',()=>c.style.transform='');
+    </script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0656
+    slug: navigation-search-nav-08
+    title: Search Nav 08
+    category: navigation
+    tags: navigation, search
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0656 — Search Nav 08</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Outfit:wght@300&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#0f0f0f;color:#fff;font-family:Outfit,sans-serif}
+    nav{display:flex;align-items:center;gap:1.5rem;padding:1.5rem clamp(1.25rem,4vw,3rem)}
+    .logo{font-family:Syne,sans-serif;font-weight:800;letter-spacing:-.04em}
+    .spacer{flex:1}
+    .search{position:relative;display:flex;align-items:center;width:40px;transition:width .5s cubic-bezier(.22,1,.36,1)}
+    .search.open,.search:focus-within{width:min(280px,50vw)}
+    .search input{width:100%;border:none;border-bottom:1px solid rgba(255,255,255,.2);background:transparent;color:#fff;font:inherit;font-size:.9rem;font-weight:300;padding:.5rem 1.5rem .5rem 0;outline:none;opacity:0;transition:opacity .3s .1s}
+    .search.open input,.search:focus-within input{opacity:1}
+    .search input::placeholder{color:rgba(255,255,255,.3)}
+    .search button{position:absolute;right:0;border:none;background:transparent;color:#fff;cursor:pointer;padding:.4rem;opacity:.5;transition:opacity .3s}
+    .search button:hover{opacity:1}
+    .search button svg{width:16px;height:16px;display:block}
+    .stage{height:70vh;display:grid;place-items:center;color:rgba(255,255,255,.25);font-weight:300;letter-spacing:.16em;text-transform:uppercase;font-size:.72rem}
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="logo">FIND</div>
+    <div class="spacer"></div>
+    <form class="search" id="search" role="search">
+      <input type="search" placeholder="Search…" aria-label="Search">
+      <button type="button" id="toggle" aria-label="Open search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3"/></svg>
+      </button>
+    </form>
+  </nav>
+  <div class="stage">Expand the line</div>
+  <script>
+    const s=document.getElementById('search'),t=document.getElementById('toggle'),i=s.querySelector('input');
+    t.addEventListener('click',()=>{s.classList.toggle('open');if(s.classList.contains('open'))i.focus()});
+  </script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0921
+    slug: tags-animated-tags-13
+    title: Animated Tags 13
+    category: tags
+    tags: tags, animated
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0921 — Animated Tags 13</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');*{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0d0d0d;color:#fff;font-family:"DM Sans",system-ui,-apple-system,sans-serif;padding:2rem;overflow:hidden}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+    .kicker{text-align:center;margin:0 0 1.75rem;font-size:.62rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#555}
+    .tags{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+    .tag{padding:9px 16px;border:1px solid #2a2a2a;background:#111;font-size:.82rem;font-weight:600;opacity:0;transform:translateY(16px) scale(.94);animation:pop .55s cubic-bezier(.22,1,.36,1) forwards}
+    .tag:nth-child(1){animation-delay:.05s}.tag:nth-child(2){animation-delay:.15s}.tag:nth-child(3){animation-delay:.25s}.tag:nth-child(4){animation-delay:.35s}.tag:nth-child(5){animation-delay:.45s}
+    .tag::before{content:'';display:inline-block;width:6px;height:6px;background:#fff;margin-right:8px;vertical-align:middle;animation:blink 1.2s steps(1) infinite}
+    .tag:nth-child(2)::before{animation-delay:.2s}.tag:nth-child(3)::before{animation-delay:.4s}
+    @keyframes pop{to{opacity:1;transform:none}}
+    @keyframes blink{50%{opacity:.2}}
+  </style>
+</head>
+<body>
+<div><p class="kicker">Animated entry</p><div class="tags"><span class="tag">Pulse</span><span class="tag">Stagger</span><span class="tag">Signal</span><span class="tag">Live</span><span class="tag">Sync</span></div></div>
+
+</body>
+</html>

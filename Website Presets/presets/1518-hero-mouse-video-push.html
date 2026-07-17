@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1518
+    slug: hero-mouse-video-push
+    title: Video Particle Push Hero
+    category: heroes
+    tags: heroes, mouse, video, particles
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1518 — Video Particle Push Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:100vh;overflow:hidden;position:relative;color:#fff}video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.5)}canvas{position:absolute;inset:0;z-index:1}main{position:relative;z-index:2;min-height:100vh;display:grid;place-items:center;text-align:center;padding:2rem}h1{font-size:clamp(2rem,5vw,3.5rem);font-weight:800;text-shadow:0 2px 20px rgba(0,0,0,.8)}
+  </style>
+</head>
+<body>
+<video src="../stock/media/16-9 Aspect Ratio(video).mp4" autoplay muted loop playsinline></video><canvas id="c"></canvas><main><h1>Disrupt the field</h1></main>
+<script>const c=document.getElementById('c'),x=c.getContext('2d');let pts=[],mx=0,my=0;function r(){c.width=innerWidth;c.height=innerHeight;pts=Array.from({length:70},()=>({x:Math.random()*c.width,y:Math.random()*c.height,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3}));}r();addEventListener('resize',r);addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});function d(){x.clearRect(0,0,c.width,c.height);pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;const dx=p.x-mx,dy=p.y-my,d=Math.hypot(dx,dy);if(d<100){p.vx+=dx/d*2;p.vy+=dy/d*2;}p.vx*=.95;p.vy*=.95;if(p.x<0||p.x>c.width)p.vx*=-1;if(p.y<0||p.y>c.height)p.vy*=-1;x.fillStyle='rgba(255,255,255,.6)';x.beginPath();x.arc(p.x,p.y,2,0,Math.PI*2);x.fill();});requestAnimationFrame(d);}d();</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1550
+    slug: loader-stack-squares
+    title: Stack Squares Loader
+    category: loading
+    tags: loading, stack, squares
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1550 — Stack Squares Loader</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#0d0d0f}.stack{position:relative;width:48px;height:48px}.sq{position:absolute;width:20px;height:20px;border-radius:4px;background:#6c8cff;animation:sq 1.2s ease-in-out infinite}.sq:nth-child(1){top:0;left:0;animation-delay:0s}.sq:nth-child(2){top:0;right:0;background:#ff6cb0;animation-delay:.15s}.sq:nth-child(3){bottom:0;left:0;background:#6cffb8;animation-delay:.3s}.sq:nth-child(4){bottom:0;right:0;background:#f59e0b;animation-delay:.45s}@keyframes sq{0%,100%{transform:scale(.8);opacity:.5}50%{transform:scale(1.1);opacity:1}}
+  </style>
+</head>
+<body>
+<div class="stack"><div class="sq"></div><div class="sq"></div><div class="sq"></div><div class="sq"></div></div>
+
+</body>
+</html>

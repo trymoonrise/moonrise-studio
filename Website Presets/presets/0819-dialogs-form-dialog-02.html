@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0819
+    slug: dialogs-form-dialog-02
+    title: Quick Edit Form Dialog
+    category: dialogs
+    tags: dialogs, form
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0819 — Quick Edit Form Dialog</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #080a0e;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+      padding: 1.5rem;
+    }
+
+    .open-btn {
+      padding: 0.75rem 1.25rem;
+      border: 1px solid #38bdf8;
+      border-radius: 8px;
+      background: #38bdf812;
+      color: #38bdf8;
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      transition: transform 0.2s;
+    }
+
+    .open-btn:hover { transform: translateY(-2px); }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      display: grid;
+      place-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 50;
+      padding: 1rem;
+    }
+
+    .overlay.open { opacity: 1; pointer-events: auto; }
+
+    .dialog {
+      width: min(400px, 94vw);
+      background: #0f1419;
+      border: 1px solid #1e293b;
+      border-radius: 14px;
+      overflow: hidden;
+      transform: translateY(20px);
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .overlay.open .dialog {
+      transform: translateY(0);
+      animation: dialogSlide 0.4s ease;
+    }
+
+    @keyframes dialogSlide {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .dialog-head {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    .dialog-head h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+    }
+
+    .dialog-body { padding: 1.25rem 1.5rem; }
+
+    .field { margin-bottom: 1rem; }
+
+    label {
+      display: block;
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-bottom: 0.35rem;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 0.7rem 0.85rem;
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #e2e8f0;
+      font-size: 0.9rem;
+      outline: none;
+      font-family: inherit;
+    }
+
+    input:focus, textarea:focus {
+      border-color: #38bdf8;
+      animation: focusRing 0.3s ease;
+    }
+
+    @keyframes focusRing {
+      50% { box-shadow: 0 0 0 3px #38bdf822; }
+    }
+
+    textarea { min-height: 80px; resize: vertical; }
+
+    .dialog-foot {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.65rem;
+      padding: 1rem 1.5rem;
+      border-top: 1px solid #1e293b;
+      background: #111827;
+    }
+
+    .dialog-foot button {
+      padding: 0.6rem 1.1rem;
+      border-radius: 8px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 0.8rem;
+      border: none;
+    }
+
+    .cancel { background: transparent; color: #94a3b8; border: 1px solid #334155 !important; }
+    .save { background: #38bdf8; color: #080a0e; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .overlay.open .dialog { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <button type="button" class="open-btn" id="open">Edit workspace</button>
+
+  <div class="overlay" id="overlay" hidden>
+    <div class="dialog" role="dialog" aria-labelledby="title">
+      <div class="dialog-head"><h2 id="title">Edit workspace</h2></div>
+      <form class="dialog-body" id="form">
+        <div class="field">
+          <label for="name">Name</label>
+          <input type="text" id="name" value="Acme Production">
+        </div>
+        <div class="field">
+          <label for="desc">Description</label>
+          <textarea id="desc">Primary deployment environment for customer-facing apps.</textarea>
+        </div>
+      </form>
+      <div class="dialog-foot">
+        <button type="button" class="cancel" id="cancel">Cancel</button>
+        <button type="submit" form="form" class="save">Save changes</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const overlay = document.getElementById('overlay');
+    const open = () => { overlay.hidden = false; requestAnimationFrame(() => overlay.classList.add('open')); };
+    const close = () => { overlay.classList.remove('open'); setTimeout(() => { overlay.hidden = true; }, 300); };
+
+    document.getElementById('open').onclick = open;
+    document.getElementById('cancel').onclick = close;
+    document.getElementById('form').onsubmit = (e) => { e.preventDefault(); close(); };
+  </script>
+</body>
+</html>

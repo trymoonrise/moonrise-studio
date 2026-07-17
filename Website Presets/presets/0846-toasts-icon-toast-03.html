@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0846
+    slug: toasts-icon-toast-03
+    title: Beacon Ping Toast
+    category: toasts
+    tags: toasts, icon
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0846 — Beacon Ping Toast</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: radial-gradient(circle at 80% 20%, #0f1820, #080a0e 65%);
+      font-family: 'Outfit', sans-serif;
+      color: #e8eaef;
+    }
+
+    .trigger {
+      padding: 0.85rem 1.6rem;
+      border: none;
+      border-radius: 8px;
+      background: #1a2332;
+      color: #7dd3fc;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .toast {
+      position: fixed;
+      top: 1.5rem;
+      right: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.2rem;
+      background: rgba(12, 18, 28, 0.92);
+      border: 1px solid rgba(125, 211, 252, 0.2);
+      border-radius: 12px;
+      backdrop-filter: blur(12px);
+      opacity: 0;
+      transform: translateX(120%) scale(0.9);
+      transition: opacity 0.35s, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: 20;
+    }
+
+    .toast.show { opacity: 1; transform: translateX(0) scale(1); }
+
+    .beacon {
+      position: relative;
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+    }
+
+    .beacon-core {
+      position: absolute;
+      inset: 14px;
+      background: #7dd3fc;
+      border-radius: 50%;
+      box-shadow: 0 0 16px rgba(125, 211, 252, 0.6);
+    }
+
+    .beacon-ring {
+      position: absolute;
+      inset: 0;
+      border: 2px solid rgba(125, 211, 252, 0.5);
+      border-radius: 50%;
+      animation: ping 1.8s ease-out infinite;
+    }
+
+    .beacon-ring:nth-child(2) { animation-delay: 0.6s; }
+
+    @keyframes ping {
+      0% { transform: scale(0.5); opacity: 1; }
+      100% { transform: scale(1.4); opacity: 0; }
+    }
+
+    .toast h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 0.15rem;
+    }
+
+    .toast p { font-size: 0.78rem; color: rgba(232, 234, 239, 0.55); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .beacon-ring { animation: none; }
+      .toast { transition: opacity 0.2s; transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <button class="trigger" id="btn" type="button">Ping notification</button>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <div class="beacon" aria-hidden="true">
+      <span class="beacon-ring"></span>
+      <span class="beacon-ring"></span>
+      <span class="beacon-core"></span>
+    </div>
+    <div>
+      <h2>Signal detected</h2>
+      <p>New activity on node 7 · 14ms ago</p>
+    </div>
+  </div>
+
+  <script>
+    const btn = document.getElementById('btn');
+    const toast = document.getElementById('toast');
+    let timer;
+
+    btn.addEventListener('click', () => {
+      clearTimeout(timer);
+      toast.classList.add('show');
+      timer = setTimeout(() => toast.classList.remove('show'), 3000);
+    });
+  </script>
+</body>
+</html>

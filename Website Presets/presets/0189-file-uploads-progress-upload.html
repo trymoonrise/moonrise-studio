@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0189
+    slug: file-uploads-progress-upload
+    title: Progress Upload
+    category: file-uploads
+    tags: file-uploads, progress
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0189 — Progress Upload</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#fff;padding:2rem}.bar{width:280px;height:8px;background:#eee;border-radius:99px;overflow:hidden;margin:1rem 0}.fill{height:100%;background:#6c8cff;width:0%;transition:width .1s}.btn{padding:10px 24px;background:#6c8cff;color:#fff;border:none;border-radius:8px;cursor:pointer}.status{font-size:.85rem;color:#666}
+  </style>
+</head>
+<body>
+<button class="btn" id="b">Upload</button><div class="bar"><div class="fill" id="f"></div></div><div class="status" id="s">Ready</div>
+<script>document.getElementById('b').onclick=()=>{const f=document.getElementById('f'),s=document.getElementById('s');let p=0;s.textContent='Uploading...';const iv=setInterval(()=>{p+=5;f.style.width=p+'%';if(p>=100){clearInterval(iv);s.textContent='Complete!';}},100);};</script>
+</body>
+</html>

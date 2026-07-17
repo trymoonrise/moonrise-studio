@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1684
+    slug: text-marquee-mirror-liquid
+    title: Mirror Liquid Marquee
+    category: text
+    tags: marquee, mirror, liquid, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1684 — Mirror Liquid Marquee</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Manrope:wght@500;600&display=swap');
+
+    :root {
+      --ink: #12141a;
+      --paper: #f3efe6;
+      --blush: #ff7a59;
+      --teal: #1f8a7a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow: hidden;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Cormorant Garamond', serif;
+    }
+
+    .scene {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      grid-template-rows: 1fr 1fr;
+    }
+
+    .half {
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+    }
+
+    .half--top {
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 80%, rgba(255, 122, 89, 0.28), transparent 55%),
+        radial-gradient(ellipse 70% 50% at 90% 20%, rgba(31, 138, 122, 0.22), transparent 50%),
+        var(--paper);
+    }
+
+    .half--bottom {
+      background: #0f1218;
+      color: #f3efe6;
+      transform: scaleY(-1);
+      filter: blur(0.4px) saturate(1.15);
+      opacity: 0.92;
+      mask-image: linear-gradient(to bottom, #000 0%, transparent 88%);
+      -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 88%);
+    }
+
+    .half--bottom .track {
+      animation-duration: 16s;
+      filter: url(#wave);
+    }
+
+    .rail {
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .track {
+      display: flex;
+      width: max-content;
+      white-space: nowrap;
+      animation: flow 20s linear infinite;
+      will-change: transform;
+    }
+
+    .word {
+      padding: 0 1.2rem;
+      font-size: clamp(4rem, 14vw, 9rem);
+      font-weight: 600;
+      font-style: italic;
+      line-height: 0.9;
+      letter-spacing: -0.04em;
+    }
+
+    .word:nth-child(3n) { color: var(--blush); }
+    .half--bottom .word:nth-child(3n) { color: #ff9a7c; }
+
+    .word:nth-child(4n) {
+      color: transparent;
+      -webkit-text-stroke: 1.5px currentColor;
+    }
+
+    .dot {
+      display: inline-block;
+      width: 0.28em;
+      height: 0.28em;
+      margin: 0 0.4rem;
+      border-radius: 50%;
+      background: var(--teal);
+      vertical-align: 0.35em;
+    }
+
+    .half--bottom .dot { background: #4fd1b8; }
+
+    .caption {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      z-index: 4;
+      transform: translate(-50%, -50%);
+      padding: 0.7rem 1.1rem;
+      border: 1px solid rgba(18, 20, 26, 0.18);
+      border-radius: 999px;
+      background: rgba(243, 239, 230, 0.88);
+      backdrop-filter: blur(10px);
+      font-family: Manrope, sans-serif;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+
+    .ripple {
+      position: fixed;
+      left: 0;
+      right: 0;
+      top: calc(50% - 1px);
+      height: 2px;
+      z-index: 3;
+      background: linear-gradient(90deg, transparent, rgba(31, 138, 122, 0.7), transparent);
+      box-shadow: 0 0 24px rgba(31, 138, 122, 0.35);
+      animation: shimmer 3.5s ease-in-out infinite;
+    }
+
+    @keyframes flow { to { transform: translateX(-50%); } }
+    @keyframes shimmer {
+      0%, 100% { opacity: 0.35; transform: scaleX(0.7); }
+      50% { opacity: 1; transform: scaleX(1); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .track, .ripple { animation: none; }
+      .half--bottom .track { filter: none; }
+    }
+  </style>
+</head>
+<body>
+  <svg width="0" height="0" aria-hidden="true">
+    <filter id="wave">
+      <feTurbulence type="fractalNoise" baseFrequency="0.015 0.04" numOctaves="2" seed="3" result="noise">
+        <animate attributeName="baseFrequency" dur="8s" values="0.015 0.04;0.02 0.06;0.015 0.04" repeatCount="indefinite"/>
+      </feTurbulence>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="14" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </svg>
+
+  <div class="scene">
+    <div class="half half--top">
+      <div class="rail">
+        <div class="track" data-fill></div>
+      </div>
+    </div>
+    <div class="half half--bottom" aria-hidden="true">
+      <div class="rail">
+        <div class="track" data-fill></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ripple" aria-hidden="true"></div>
+  <p class="caption">Reflection active</p>
+
+  <script>
+    const words = ['Liquid', 'Mirror', 'Stillness', 'Ripple', 'Echo', 'Surface'];
+    const html = words.map((w) =>
+      '<span class="word">' + w + '</span><span class="dot" aria-hidden="true"></span>'
+    ).join('');
+    document.querySelectorAll('[data-fill]').forEach((el) => {
+      el.innerHTML = html + html;
+    });
+  </script>
+</body>
+</html>

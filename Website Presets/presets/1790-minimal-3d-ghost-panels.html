@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1790
+    slug: minimal-3d-ghost-panels
+    title: Ghost Panels Parallax
+    category: 3d-effects
+    tags: 3d, minimal, parallax, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1790 — Ghost Panels Parallax</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Outfit:wght@300&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f4f2ec;perspective:1000px;overflow:hidden;font-family:Outfit,sans-serif;color:#111}
+    .stack{position:relative;width:280px;height:180px;transform-style:preserve-3d;transform:rotateX(var(--rx,14deg)) rotateY(var(--ry,-12deg))}
+    .panel{position:absolute;inset:0;border:1px solid rgba(0,0,0,.2);background:rgba(255,255,255,.35);backdrop-filter:blur(4px);transform:translateZ(calc(var(--i)*36px)) translateX(calc(var(--i)*var(--sx,0px)))}
+    .panel:nth-child(1){--i:0}.panel:nth-child(2){--i:1;opacity:.7}.panel:nth-child(3){--i:2;opacity:.45}
+    .mark{position:absolute;inset:0;display:grid;place-items:center;font-family:Syne,sans-serif;font-weight:800;font-size:1.6rem;letter-spacing:-.04em;transform:translateZ(80px)}
+    .label{position:fixed;bottom:1.5rem;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;opacity:.4;font-weight:300}
+  </style>
+</head>
+<body>
+  <div class="stack" id="stack">
+    <div class="panel"></div><div class="panel"></div><div class="panel"></div>
+    <div class="mark">GHOST</div>
+  </div>
+  <div class="label">Shear the layers</div>
+  <script>
+    const s=document.getElementById('stack');let rx=14,ry=-12,sx=0,trx=14,try_=-12,tsx=0;
+    addEventListener('pointermove',e=>{const x=(e.clientX/innerWidth-.5)*2;const y=(e.clientY/innerHeight-.5)*2;try_=x*-28;trx=14+y*-10;tsx=x*18});
+    (function loop(){rx+=(trx-rx)*.1;ry+=(try_-ry)*.1;sx+=(tsx-sx)*.1;
+      s.style.setProperty('--rx',rx+'deg');s.style.setProperty('--ry',ry+'deg');s.style.setProperty('--sx',sx+'px');requestAnimationFrame(loop)})();
+  </script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1158
+    slug: maps-location-list-03
+    title: Coordinate Location Index
+    category: maps
+    tags: maps, location, coordinate, index
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1158 — Coordinate Location Index</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0a0c10;color:#e0e4eb;font-family:Outfit,sans-serif;padding:2rem}
+    .list{width:min(440px,100%)}
+    .head{font-family:Syne,sans-serif;font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;color:rgba(224,228,235,.35);margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid rgba(255,255,255,.06)}
+    .item{display:grid;grid-template-columns:auto 1fr auto;gap:1rem;align-items:center;padding:1rem 0;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:padding-left .3s}
+    .item:hover{padding-left:8px}
+    .pin{width:36px;height:36px;border:1px solid rgba(56,189,248,.3);border-radius:8px;display:grid;place-items:center;font-family:Syne,sans-serif;font-weight:800;font-size:.7rem;color:#38bdf8;transition:background .3s,border-color .3s}
+    .item:hover .pin{background:rgba(56,189,248,.1);border-color:#38bdf8;animation:pin-bounce .4s ease}
+    .info h3{font-family:Syne,sans-serif;font-size:.95rem;font-weight:700;margin:0}
+    .info p{font-size:.75rem;color:rgba(224,228,235,.4);margin-top:2px}
+    .coords{font-family:monospace;font-size:.65rem;color:rgba(56,189,248,.6);letter-spacing:.05em;animation:coords-flicker 4s step-end infinite}
+    .item.active .coords{color:#38bdf8}
+    .item.active .pin{background:#38bdf8;color:#0a0c10}
+    @keyframes pin-bounce{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+    @keyframes coords-flicker{0%,100%{opacity:1}50%{opacity:.6}}
+    @media(prefers-reduced-motion:reduce){.item:hover{padding-left:0}.item:hover .pin,.coords{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="list">
+    <div class="head">Registered locations · 3</div>
+    <div class="item active">
+      <div class="pin">01</div>
+      <div class="info"><h3>Meridian HQ</h3><p>San Francisco, CA</p></div>
+      <div class="coords">37.7749° N<br>122.4194° W</div>
+    </div>
+    <div class="item">
+      <div class="pin">02</div>
+      <div class="info"><h3>East Coast Lab</h3><p>Brooklyn, NY</p></div>
+      <div class="coords">40.6782° N<br>73.9442° W</div>
+    </div>
+    <div class="item">
+      <div class="pin">03</div>
+      <div class="info"><h3>EU Operations</h3><p>Berlin, DE</p></div>
+      <div class="coords">52.5200° N<br>13.4050° E</div>
+    </div>
+  </div>
+</body>
+</html>

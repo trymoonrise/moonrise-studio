@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0794
+    slug: tooltips-arrow-tip-03
+    title: Caret Beam Tip
+    category: tooltips
+    tags: tooltips, arrow, beam
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0794 — Caret Beam Tip</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700&family=Outfit:wght@400;500;600&display=swap');*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0a0c12;font-family:Outfit,sans-serif}.wrap{position:relative}.btn{padding:.7rem 1.2rem;border:none;border-radius:10px;background:#6c8cff;color:#fff;font:600 .9rem Outfit,sans-serif;cursor:pointer}.tip{position:absolute;left:50%;bottom:calc(100% + 16px);translate:-50% 0;padding:.5rem .85rem;background:#1a1e2a;color:#c8d0ff;font-size:.78rem;border-radius:10px;border:1px solid #2a3050;opacity:0;transition:opacity .3s,translate .3s;pointer-events:none;white-space:nowrap}.tip::after{content:"";position:absolute;left:50%;top:100%;translate:-50% 0;border:7px solid transparent;border-top-color:#1a1e2a}.wrap:hover .tip{opacity:1;translate:-50% -4px}
+  </style>
+</head>
+<body>
+<div class="wrap"><span class="tip">Beam locked on target</span><button class="btn">Aim</button></div>
+
+</body>
+</html>

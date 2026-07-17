@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0404
+    slug: cursor-trails-echo-trail-09
+    title: Echo Trail 09
+    category: cursor-trails
+    tags: cursor-trails, echo
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0404 — Echo Trail 09</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{
+      margin:0;
+      min-height:100vh;
+      background:#f4f4f5;
+      color:#18181b;
+      cursor:crosshair;
+      overflow:hidden;
+    }
+
+    canvas{position:fixed;inset:0;pointer-events:none}
+
+    .hint{
+      position:fixed;
+      inset:0;
+      display:grid;
+      place-items:center;
+      color:#3b5ccc;
+      font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+      font-size:.82rem;
+      font-weight:600;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      opacity:.38;
+      pointer-events:none;
+      user-select:none;
+    }
+  </style>
+</head>
+<body>
+  <p class="hint" id="hint">Move your cursor</p>
+  <canvas id="c" aria-hidden="true"></canvas>
+
+  <script>
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+    const hint = document.getElementById('hint');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const TAPS = 10;
+    const history = [];
+    let mx = innerWidth / 2;
+    let my = innerHeight / 2;
+    let moved = false;
+
+    function resize() {
+      canvas.width = innerWidth;
+      canvas.height = innerHeight;
+    }
+    resize();
+    addEventListener('resize', resize);
+
+    // Fill initial history so echoes don't jump in.
+    for (let i = 0; i < 80; i += 1) history.push({ x: mx, y: my });
+
+    if (!reduced) {
+      addEventListener('mousemove', (e) => {
+        mx = e.clientX;
+        my = e.clientY;
+        if (!moved) {
+          moved = true;
+          hint.style.opacity = '0';
+        }
+      }, { passive: true });
+
+      function frame() {
+        // soft clear
+        ctx.fillStyle = 'rgba(244, 244, 245, 0.22)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // push position history
+        history.push({ x: mx, y: my });
+        if (history.length > 260) history.splice(0, history.length - 260);
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'multiply';
+
+        for (let i = 0; i < TAPS; i += 1) {
+          const idx = history.length - 1 - i * 12;
+          const p = history[Math.max(0, idx)];
+          const t = i / (TAPS - 1);
+          const r = 18 - t * 10;
+          const a = 0.38 * (1 - t);
+
+          // echo ring
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(59, 92, 204, ${a})`;
+          ctx.lineWidth = 2.2 - t * 1.1;
+          ctx.stroke();
+
+          // soft inner glow
+          const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r * 1.6);
+          g.addColorStop(0, `rgba(59, 92, 204, ${a * 0.55})`);
+          g.addColorStop(1, 'transparent');
+          ctx.fillStyle = g;
+          ctx.fillRect(p.x - r * 1.6, p.y - r * 1.6, r * 3.2, r * 3.2);
+        }
+
+        ctx.restore();
+        requestAnimationFrame(frame);
+      }
+
+      frame();
+    }
+  </script>
+</body>
+</html>

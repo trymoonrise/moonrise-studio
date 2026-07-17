@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1015
+    slug: announcements-gradient-banner-03
+    title: Gradient Banner 03
+    category: announcements
+    tags: announcements, gradient
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1015 — Gradient Banner 03</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Manrope:wght@500;600&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#0b0c10;font-family:Manrope,sans-serif;perspective:1100px}
+    .banner{
+      position:fixed;top:1.1rem;left:50%;width:min(760px,calc(100% - 2rem));transform:translateX(-50%) rotateX(6deg);
+      border-radius:22px;overflow:hidden;z-index:20;
+      box-shadow:0 30px 70px rgba(0,0,0,.45);
+      animation:enter .9s cubic-bezier(.16,1,.3,1) both;
+    }
+    .mesh{
+      position:absolute;inset:-20%;
+      background:
+        radial-gradient(circle at 20% 30%,#ff6b9d,transparent 40%),
+        radial-gradient(circle at 80% 20%,#6c8cff,transparent 42%),
+        radial-gradient(circle at 50% 80%,#6bffd3,transparent 40%),
+        #1a1a2e;
+      filter:saturate(1.15);
+    }
+    .content{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.15rem 1.35rem;color:#fff}
+    h2{margin:0;font-family:Syne,sans-serif;font-size:clamp(1.15rem,3vw,1.45rem);font-weight:800;letter-spacing:-.03em}
+    p{margin:.3rem 0 0;font-size:.8rem;color:rgba(255,255,255,.75)}
+    .btn{appearance:none;border:0;border-radius:999px;padding:.6rem 1rem;background:rgba(255,255,255,.92);color:#111;font:700 .78rem Manrope,sans-serif;cursor:pointer;white-space:nowrap}
+    .page{padding:7rem 1.5rem;text-align:center;color:#666}
+    @keyframes enter{from{opacity:0;transform:translateX(-50%) rotateX(14deg) translateY(-12px)}to{opacity:1;transform:translateX(-50%) rotateX(6deg) translateY(0)}}
+    @media (prefers-reduced-motion:reduce){.banner{animation:none;transform:translateX(-50%) rotateX(6deg)}}
+  </style>
+</head>
+<body>
+  <div class="banner" role="status">
+    <div class="mesh" aria-hidden="true"></div>
+    <div class="content">
+      <div>
+        <h2>Color systems, remixed</h2>
+        <p>A living gradient field behind a 3D announcement plane.</p>
+      </div>
+      <button class="btn" type="button">See themes</button>
+    </div>
+  </div>
+  <p class="page">Animated mesh gradient inside a tilting banner.</p>
+</body>
+</html>

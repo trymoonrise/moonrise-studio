@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0883
+    slug: badges-status-badge-01
+    title: EKG Status Badge
+    category: badges
+    tags: badges, status
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0883 — EKG Status Badge</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #0a0c10;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.65rem 1.1rem 0.65rem 0.85rem;
+      background: #12151c;
+      border: 1px solid rgba(52, 211, 153, 0.25);
+      border-radius: 999px;
+    }
+
+    .ekg {
+      width: 48px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .ekg path {
+      fill: none;
+      stroke: #34d399;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 80;
+      stroke-dashoffset: 80;
+      animation: beat 2s ease-in-out infinite;
+    }
+
+    @keyframes beat {
+      0%, 100% { stroke-dashoffset: 80; opacity: 0.4; }
+      15% { stroke-dashoffset: 0; opacity: 1; }
+      30% { stroke-dashoffset: 0; opacity: 1; }
+      50% { stroke-dashoffset: 80; opacity: 0.4; }
+    }
+
+    .label {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #6ee7b7;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ekg path { animation: none; stroke-dashoffset: 0; opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <span class="badge" role="status">
+    <svg class="ekg" viewBox="0 0 48 20" aria-hidden="true">
+      <path d="M0 10h8l3-6 4 12 3-8h6l2 4 4-4h8"/>
+    </svg>
+    <span class="label">Operational</span>
+  </span>
+</body>
+</html>

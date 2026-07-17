@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0913
+    slug: tags-pill-tags-05
+    title: Pill Tags 05
+    category: tags
+    tags: tags, pill
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0913 — Pill Tags 05</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');*{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fff;color:#111;font-family:"DM Sans",system-ui,-apple-system,sans-serif;padding:2rem}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+    .kicker{text-align:center;margin:0 0 1.5rem;font-size:.62rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#888}
+    .tags{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+    .tag{padding:8px 18px;border:1.5px solid #111;font-size:.78rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;background:#fff;transition:transform .25s cubic-bezier(.22,1,.36,1),background .25s,color .25s}
+    .tag:hover{background:#111;color:#fff;transform:translateY(-3px)}
+  </style>
+</head>
+<body>
+<div><p class="kicker">Pill row</p><div class="tags"><span class="tag">Alpha</span><span class="tag">Beta</span><span class="tag">Gamma</span><span class="tag">Delta</span></div></div>
+
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1739
+    slug: experimental-overprint-scream
+    title: Overprint Scream
+    category: experimental
+    tags: experimental, brutalist, overprint, type
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1739 — Overprint Scream</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#f2e100;overflow:hidden;font-family:Anton,sans-serif;cursor:crosshair}
+    .stack{position:fixed;inset:0;display:grid;place-items:center}
+    .layer{position:absolute;font-size:clamp(5rem,22vw,14rem);line-height:.8;text-transform:uppercase;letter-spacing:-.06em;white-space:nowrap;mix-blend-mode:multiply;animation:jitter 2.4s steps(2) infinite}
+    .layer:nth-child(1){color:#000;transform:translate(-8px,-6px);animation-delay:0s}
+    .layer:nth-child(2){color:#ff0033;transform:translate(10px,4px);animation-delay:-.4s;mix-blend-mode:screen}
+    .layer:nth-child(3){color:#0044ff;transform:translate(-4px,10px);animation-delay:-.8s;mix-blend-mode:exclusion}
+    .layer:nth-child(4){color:#000;opacity:.35;transform:translate(14px,-12px) rotate(-2deg);animation-delay:-1.2s}
+    .stamp{position:fixed;bottom:1.2rem;left:1.2rem;right:1.2rem;display:flex;justify-content:space-between;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;font-family:monospace;font-weight:700;border-top:4px solid #000;padding-top:.7rem}
+    @keyframes jitter{0%,100%{filter:none}40%{transform:translate(6px,-3px) skewX(-2deg)}60%{transform:translate(-8px,4px) skewX(3deg)}80%{transform:translate(3px,2px)}}
+    @media (prefers-reduced-motion:reduce){.layer{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="stack" aria-label="SCREAM">
+    <div class="layer">SCREAM</div>
+    <div class="layer">SCREAM</div>
+    <div class="layer">SCREAM</div>
+    <div class="layer">SCREAM</div>
+  </div>
+  <div class="stamp"><span>INK / FAIL</span><span>1739</span><span>OVERPRINT</span></div>
+  <script>
+    const layers=[...document.querySelectorAll('.layer')];
+    addEventListener('pointermove',e=>{
+      const x=(e.clientX/innerWidth-.5)*24;
+      const y=(e.clientY/innerHeight-.5)*18;
+      layers.forEach((l,i)=>l.style.translate=`${x*(i+1)*.35}px ${y*(i+1)*.35}px`);
+    });
+  </script>
+</body>
+</html>

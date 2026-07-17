@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0236
+    slug: pagination-load-more
+    title: Load More Button
+    category: pagination
+    tags: pagination, loadmore
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0236 — Load More Button</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#fff;padding:2rem;align-items:flex-start}.list{display:flex;flex-direction:column;gap:8px;margin-bottom:1.5rem;width:300px}.item{padding:12px;background:#f5f5f5;border-radius:8px;font-size:.9rem}.btn{padding:10px 32px;background:#6c8cff;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.9rem}
+  </style>
+</head>
+<body>
+<div><div class="list" id="l"><div class="item">Item 1</div><div class="item">Item 2</div><div class="item">Item 3</div></div><button class="btn" id="b">Load More</button></div>
+<script>let n=3;document.getElementById('b').onclick=()=>{for(let i=0;i<3;i++){n++;const d=document.createElement('div');d.className='item';d.textContent='Item '+n;document.getElementById('l').appendChild(d);}};</script>
+</body>
+</html>

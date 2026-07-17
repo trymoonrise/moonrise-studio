@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0149
+    slug: menus-tab-menu
+    title: Tab Menu Bar
+    category: menus
+    tags: menus, tabs
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0149 — Tab Menu Bar</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#fafafa}.tabs{display:flex;border-bottom:2px solid #eee}.tab{padding:12px 24px;cursor:pointer;color:#888;font-size:.9rem;border-bottom:2px solid transparent;margin-bottom:-2px}.tab.on{color:#6c8cff;border-color:#6c8cff;font-weight:600}.panel{padding:2rem;color:#333}
+  </style>
+</head>
+<body>
+<div><div class="tabs"><div class="tab on">Overview</div><div class="tab">Details</div><div class="tab">Reviews</div></div><div class="panel" id="pn">Overview content</div></div>
+<script>const tabs=document.querySelectorAll('.tab');tabs.forEach(t=>t.onclick=()=>{tabs.forEach(x=>x.classList.remove('on'));t.classList.add('on');document.getElementById('pn').textContent=t.textContent+' content';});</script>
+</body>
+</html>

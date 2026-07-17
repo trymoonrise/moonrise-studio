@@ -1,0 +1,962 @@
+[
+  {
+    "id": "1430",
+    "file": "1430-text-gradient-animate.html",
+    "from": "Animated Gradient Text",
+    "to": "Orbital Animated Gradient Text",
+    "effect": "orbit",
+    "family": "animated gradient text"
+  },
+  {
+    "id": "0101",
+    "file": "0101-effects-clip-reveal.html",
+    "from": "Clip Path Reveal",
+    "to": "Signal Clip Path Reveal",
+    "effect": "scan",
+    "family": "clip path reveal"
+  },
+  {
+    "id": "1318",
+    "file": "1318-buttons-loading-button-04.html",
+    "from": "Loading Button 04",
+    "to": "Liquid Loading Button",
+    "effect": "blob",
+    "family": "loading button"
+  },
+  {
+    "id": "1329",
+    "file": "1329-tabs-vertical-tabs-01.html",
+    "from": "Vertical Tabs 01",
+    "to": "Shard Vertical Tabs",
+    "effect": "shards",
+    "family": "vertical tabs"
+  },
+  {
+    "id": "1342",
+    "file": "1342-dropdowns-basic-dropdown-01.html",
+    "from": "Basic Dropdown 01",
+    "to": "Halftone Basic Dropdown",
+    "effect": "dots",
+    "family": "basic dropdown"
+  },
+  {
+    "id": "0640",
+    "file": "0640-menus-mega-menu-05.html",
+    "from": "Mega Menu 05",
+    "to": "Framed Mega Menu",
+    "effect": "frame",
+    "family": "mega menu"
+  },
+  {
+    "id": "1343",
+    "file": "1343-dropdowns-mega-menu-02.html",
+    "from": "Mega Menu 02",
+    "to": "Dimensional Mega Menu",
+    "effect": "depth",
+    "family": "mega menu"
+  },
+  {
+    "id": "1344",
+    "file": "1344-dropdowns-nested-submenu-03.html",
+    "from": "Nested Submenu 03",
+    "to": "Dimensional Nested Submenu",
+    "effect": "depth",
+    "family": "nested submenu"
+  },
+  {
+    "id": "0437",
+    "file": "0437-scroll-animations-reveal-on-scroll-01.html",
+    "from": "Reveal On Scroll 01",
+    "to": "Orbital Reveal On Scroll",
+    "effect": "orbit",
+    "family": "reveal on scroll"
+  },
+  {
+    "id": "0438",
+    "file": "0438-scroll-animations-pin-fade-section-02.html",
+    "from": "Pin Fade Section 02",
+    "to": "Signal Pin Fade Section",
+    "effect": "scan",
+    "family": "pin fade section"
+  },
+  {
+    "id": "0440",
+    "file": "0440-scroll-animations-stacked-cards-unroll-04.html",
+    "from": "Stacked Cards Unroll 04",
+    "to": "Liquid Stacked Cards Unroll",
+    "effect": "blob",
+    "family": "stacked cards unroll"
+  },
+  {
+    "id": "0466",
+    "file": "0466-rotate-scroll-orbit-gallery-03.html",
+    "from": "Orbit Gallery 03",
+    "to": "Shard Orbit Gallery",
+    "effect": "shards",
+    "family": "orbit gallery"
+  },
+  {
+    "id": "0505",
+    "file": "0505-brutalist-offset-stack-02.html",
+    "from": "Offset Stack 02",
+    "to": "Halftone Offset Stack",
+    "effect": "dots",
+    "family": "offset stack"
+  },
+  {
+    "id": "0506",
+    "file": "0506-brutalist-mono-grid-03.html",
+    "from": "Mono Grid 03",
+    "to": "Framed Mono Grid",
+    "effect": "frame",
+    "family": "mono grid"
+  },
+  {
+    "id": "0612",
+    "file": "0612-sidebars-overlay-drawer-03.html",
+    "from": "Overlay Drawer 03",
+    "to": "Kinetic Overlay Drawer",
+    "effect": "marquee",
+    "family": "overlay drawer"
+  },
+  {
+    "id": "0624",
+    "file": "0624-folder-dropdown-accordion-folders-02.html",
+    "from": "Accordion Folders 02",
+    "to": "Dimensional Accordion Folders",
+    "effect": "depth",
+    "family": "accordion folders"
+  },
+  {
+    "id": "0625",
+    "file": "0625-folder-dropdown-breadcrumb-path-03.html",
+    "from": "Breadcrumb Path 03",
+    "to": "Orbital Breadcrumb Path",
+    "effect": "orbit",
+    "family": "breadcrumb path"
+  },
+  {
+    "id": "0637",
+    "file": "0637-menus-context-menu-02.html",
+    "from": "Context Menu 02",
+    "to": "Signal Context Menu",
+    "effect": "scan",
+    "family": "context menu"
+  },
+  {
+    "id": "0638",
+    "file": "0638-menus-hamburger-menu-03.html",
+    "from": "Hamburger Menu 03",
+    "to": "Liquid Hamburger Menu",
+    "effect": "blob",
+    "family": "hamburger menu"
+  },
+  {
+    "id": "0663",
+    "file": "0663-accordions-icon-accordion-02.html",
+    "from": "Icon Accordion 02",
+    "to": "Shard Icon Accordion",
+    "effect": "shards",
+    "family": "icon accordion"
+  },
+  {
+    "id": "0675",
+    "file": "0675-checkboxes-basic-checkboxes-01.html",
+    "from": "Basic Checkboxes 01",
+    "to": "Halftone Basic Checkboxes",
+    "effect": "dots",
+    "family": "basic checkboxes"
+  },
+  {
+    "id": "0677",
+    "file": "0677-checkboxes-card-checkboxes-03.html",
+    "from": "Card Checkboxes 03",
+    "to": "Framed Card Checkboxes",
+    "effect": "frame",
+    "family": "card checkboxes"
+  },
+  {
+    "id": "0690",
+    "file": "0690-radio-groups-segmented-radio-03.html",
+    "from": "Segmented Radio 03",
+    "to": "Kinetic Segmented Radio",
+    "effect": "marquee",
+    "family": "segmented radio"
+  },
+  {
+    "id": "0691",
+    "file": "0691-radio-groups-custom-dot-radio-04.html",
+    "from": "Custom Dot Radio 04",
+    "to": "Dimensional Custom Dot Radio",
+    "effect": "depth",
+    "family": "custom dot radio"
+  },
+  {
+    "id": "0702",
+    "file": "0702-inputs-icon-input-02.html",
+    "from": "Icon Input 02",
+    "to": "Orbital Icon Input",
+    "effect": "orbit",
+    "family": "icon input"
+  },
+  {
+    "id": "0703",
+    "file": "0703-inputs-inline-validation-03.html",
+    "from": "Inline Validation 03",
+    "to": "Signal Inline Validation",
+    "effect": "scan",
+    "family": "inline validation"
+  },
+  {
+    "id": "0704",
+    "file": "0704-inputs-password-toggle-04.html",
+    "from": "Password Toggle 04",
+    "to": "Liquid Password Toggle",
+    "effect": "blob",
+    "family": "password toggle"
+  },
+  {
+    "id": "0717",
+    "file": "0717-textareas-toolbar-textarea-04.html",
+    "from": "Toolbar Textarea 04",
+    "to": "Shard Toolbar Textarea",
+    "effect": "shards",
+    "family": "toolbar textarea"
+  },
+  {
+    "id": "0727",
+    "file": "0727-selects-native-select-01.html",
+    "from": "Native Select 01",
+    "to": "Halftone Native Select",
+    "effect": "dots",
+    "family": "native select"
+  },
+  {
+    "id": "0728",
+    "file": "0728-selects-custom-dropdown-02.html",
+    "from": "Custom Dropdown 02",
+    "to": "Framed Custom Dropdown",
+    "effect": "frame",
+    "family": "custom dropdown"
+  },
+  {
+    "id": "0730",
+    "file": "0730-selects-searchable-select-04.html",
+    "from": "Searchable Select 04",
+    "to": "Kinetic Searchable Select",
+    "effect": "marquee",
+    "family": "searchable select"
+  },
+  {
+    "id": "0740",
+    "file": "0740-sliders-range-slider-01.html",
+    "from": "Range Slider 01",
+    "to": "Dimensional Range Slider",
+    "effect": "depth",
+    "family": "range slider"
+  },
+  {
+    "id": "0742",
+    "file": "0742-sliders-step-slider-03.html",
+    "from": "Step Slider 03",
+    "to": "Orbital Step Slider",
+    "effect": "orbit",
+    "family": "step slider"
+  },
+  {
+    "id": "0743",
+    "file": "0743-sliders-vertical-slider-04.html",
+    "from": "Vertical Slider 04",
+    "to": "Signal Vertical Slider",
+    "effect": "scan",
+    "family": "vertical slider"
+  },
+  {
+    "id": "0754",
+    "file": "0754-date-pickers-calendar-grid-02.html",
+    "from": "Calendar Grid 02",
+    "to": "Liquid Calendar Grid",
+    "effect": "blob",
+    "family": "calendar grid"
+  },
+  {
+    "id": "0756",
+    "file": "0756-date-pickers-inline-datepicker-04.html",
+    "from": "Inline Datepicker 04",
+    "to": "Shard Inline Datepicker",
+    "effect": "shards",
+    "family": "inline datepicker"
+  },
+  {
+    "id": "0767",
+    "file": "0767-file-uploads-button-upload-02.html",
+    "from": "Button Upload 02",
+    "to": "Halftone Button Upload",
+    "effect": "dots",
+    "family": "button upload"
+  },
+  {
+    "id": "0768",
+    "file": "0768-file-uploads-preview-upload-03.html",
+    "from": "Preview Upload 03",
+    "to": "Framed Preview Upload",
+    "effect": "frame",
+    "family": "preview upload"
+  },
+  {
+    "id": "0769",
+    "file": "0769-file-uploads-progress-upload-04.html",
+    "from": "Progress Upload 04",
+    "to": "Kinetic Progress Upload",
+    "effect": "marquee",
+    "family": "progress upload"
+  },
+  {
+    "id": "0779",
+    "file": "0779-forms-login-form-01.html",
+    "from": "Login Form 01",
+    "to": "Dimensional Login Form",
+    "effect": "depth",
+    "family": "login form"
+  },
+  {
+    "id": "0782",
+    "file": "0782-forms-fieldset-form-04.html",
+    "from": "Fieldset Form 04",
+    "to": "Orbital Fieldset Form",
+    "effect": "orbit",
+    "family": "fieldset form"
+  },
+  {
+    "id": "0805",
+    "file": "0805-popovers-click-popover-01.html",
+    "from": "Click Popover 01",
+    "to": "Signal Click Popover",
+    "effect": "scan",
+    "family": "click popover"
+  },
+  {
+    "id": "0807",
+    "file": "0807-popovers-menu-popover-03.html",
+    "from": "Menu Popover 03",
+    "to": "Liquid Menu Popover",
+    "effect": "blob",
+    "family": "menu popover"
+  },
+  {
+    "id": "0818",
+    "file": "0818-dialogs-confirm-dialog-01.html",
+    "from": "Confirm Dialog 01",
+    "to": "Shard Confirm Dialog",
+    "effect": "shards",
+    "family": "confirm dialog"
+  },
+  {
+    "id": "0819",
+    "file": "0819-dialogs-form-dialog-02.html",
+    "from": "Form Dialog 02",
+    "to": "Halftone Form Dialog",
+    "effect": "dots",
+    "family": "form dialog"
+  },
+  {
+    "id": "0820",
+    "file": "0820-dialogs-alert-dialog-03.html",
+    "from": "Alert Dialog 03",
+    "to": "Framed Alert Dialog",
+    "effect": "frame",
+    "family": "alert dialog"
+  },
+  {
+    "id": "0821",
+    "file": "0821-dialogs-fullscreen-dialog-04.html",
+    "from": "Fullscreen Dialog 04",
+    "to": "Kinetic Fullscreen Dialog",
+    "effect": "marquee",
+    "family": "fullscreen dialog"
+  },
+  {
+    "id": "0831",
+    "file": "0831-modals-fade-modal-01.html",
+    "from": "Fade Modal 01",
+    "to": "Dimensional Fade Modal",
+    "effect": "depth",
+    "family": "fade modal"
+  },
+  {
+    "id": "0844",
+    "file": "0844-toasts-bottom-toast-01.html",
+    "from": "Bottom Toast 01",
+    "to": "Orbital Bottom Toast",
+    "effect": "orbit",
+    "family": "bottom toast"
+  },
+  {
+    "id": "0846",
+    "file": "0846-toasts-icon-toast-03.html",
+    "from": "Icon Toast 03",
+    "to": "Signal Icon Toast",
+    "effect": "scan",
+    "family": "icon toast"
+  },
+  {
+    "id": "0847",
+    "file": "0847-toasts-action-toast-04.html",
+    "from": "Action Toast 04",
+    "to": "Liquid Action Toast",
+    "effect": "blob",
+    "family": "action toast"
+  },
+  {
+    "id": "0857",
+    "file": "0857-alerts-info-alert-01.html",
+    "from": "Info Alert 01",
+    "to": "Shard Info Alert",
+    "effect": "shards",
+    "family": "info alert"
+  },
+  {
+    "id": "0858",
+    "file": "0858-alerts-warning-alert-02.html",
+    "from": "Warning Alert 02",
+    "to": "Halftone Warning Alert",
+    "effect": "dots",
+    "family": "warning alert"
+  },
+  {
+    "id": "0859",
+    "file": "0859-alerts-error-alert-03.html",
+    "from": "Error Alert 03",
+    "to": "Framed Error Alert",
+    "effect": "frame",
+    "family": "error alert"
+  },
+  {
+    "id": "0860",
+    "file": "0860-alerts-success-banner-04.html",
+    "from": "Success Banner 04",
+    "to": "Kinetic Success Banner",
+    "effect": "marquee",
+    "family": "success banner"
+  },
+  {
+    "id": "0883",
+    "file": "0883-badges-status-badge-01.html",
+    "from": "Status Badge 01",
+    "to": "Dimensional Status Badge",
+    "effect": "depth",
+    "family": "status badge"
+  },
+  {
+    "id": "0884",
+    "file": "0884-badges-count-badge-02.html",
+    "from": "Count Badge 02",
+    "to": "Orbital Count Badge",
+    "effect": "orbit",
+    "family": "count badge"
+  },
+  {
+    "id": "0886",
+    "file": "0886-badges-dot-badge-04.html",
+    "from": "Dot Badge 04",
+    "to": "Signal Dot Badge",
+    "effect": "scan",
+    "family": "dot badge"
+  },
+  {
+    "id": "0889",
+    "file": "0889-badges-outline-badge-07.html",
+    "from": "Outline Badge 07",
+    "to": "Liquid Outline Badge",
+    "effect": "blob",
+    "family": "outline badge"
+  },
+  {
+    "id": "0900",
+    "file": "0900-avatars-initials-avatar-05.html",
+    "from": "Initials Avatar 05",
+    "to": "Shard Initials Avatar",
+    "effect": "shards",
+    "family": "initials avatar"
+  },
+  {
+    "id": "0901",
+    "file": "0901-avatars-image-avatar-06.html",
+    "from": "Image Avatar 06",
+    "to": "Halftone Image Avatar",
+    "effect": "dots",
+    "family": "image avatar"
+  },
+  {
+    "id": "0898",
+    "file": "0898-avatars-avatar-group-03.html",
+    "from": "Avatar Group 03",
+    "to": "Framed Avatar Group",
+    "effect": "frame",
+    "family": "avatar group"
+  },
+  {
+    "id": "0910",
+    "file": "0910-tags-removable-tags-02.html",
+    "from": "Removable Tags 02",
+    "to": "Kinetic Removable Tags",
+    "effect": "marquee",
+    "family": "removable tags"
+  },
+  {
+    "id": "0706",
+    "file": "0706-inputs-tag-input-06.html",
+    "from": "Tag Input 06",
+    "to": "Dimensional Tag Input",
+    "effect": "depth",
+    "family": "tag input"
+  },
+  {
+    "id": "0922",
+    "file": "0922-pagination-numbered-pages-01.html",
+    "from": "Numbered Pages 01",
+    "to": "Orbital Numbered Pages",
+    "effect": "orbit",
+    "family": "numbered pages"
+  },
+  {
+    "id": "0936",
+    "file": "0936-tables-striped-table-02.html",
+    "from": "Striped Table 02",
+    "to": "Signal Striped Table",
+    "effect": "scan",
+    "family": "striped table"
+  },
+  {
+    "id": "0948",
+    "file": "0948-empty-states-illustration-empty-01.html",
+    "from": "Illustration Empty 01",
+    "to": "Liquid Illustration Empty",
+    "effect": "blob",
+    "family": "illustration empty"
+  },
+  {
+    "id": "0975",
+    "file": "0975-loaders-dots-loader-02.html",
+    "from": "Dots Loader 02",
+    "to": "Shard Dots Loader",
+    "effect": "shards",
+    "family": "dots loader"
+  },
+  {
+    "id": "0980",
+    "file": "0980-loaders-progress-loader-07.html",
+    "from": "Progress Loader 07",
+    "to": "Halftone Progress Loader",
+    "effect": "dots",
+    "family": "progress loader"
+  },
+  {
+    "id": "0532",
+    "file": "0532-features-icon-grid-01.html",
+    "from": "Icon Grid 01",
+    "to": "Framed Icon Grid",
+    "effect": "frame",
+    "family": "icon grid"
+  },
+  {
+    "id": "0987",
+    "file": "0987-icons-icon-grid-01.html",
+    "from": "Icon Grid 01",
+    "to": "Dimensional Icon Grid",
+    "effect": "depth",
+    "family": "icon grid"
+  },
+  {
+    "id": "1001",
+    "file": "1001-links-arrow-link-02.html",
+    "from": "Arrow Link 02",
+    "to": "Dimensional Arrow Link",
+    "effect": "depth",
+    "family": "arrow link"
+  },
+  {
+    "id": "1026",
+    "file": "1026-auth-login-card-01.html",
+    "from": "Login Card 01",
+    "to": "Orbital Login Card",
+    "effect": "orbit",
+    "family": "login card"
+  },
+  {
+    "id": "0783",
+    "file": "0783-forms-signup-form-05.html",
+    "from": "Signup Form 05",
+    "to": "Signal Signup Form",
+    "effect": "scan",
+    "family": "signup form"
+  },
+  {
+    "id": "0518",
+    "file": "0518-heroes-centered-cta-01.html",
+    "from": "Centered Cta 01",
+    "to": "Liquid Centered CTA",
+    "effect": "blob",
+    "family": "centered cta"
+  },
+  {
+    "id": "1039",
+    "file": "1039-cta-centered-cta-01.html",
+    "from": "Centered Cta 01",
+    "to": "Halftone Centered CTA",
+    "effect": "dots",
+    "family": "centered cta"
+  },
+  {
+    "id": "1040",
+    "file": "1040-cta-split-cta-02.html",
+    "from": "Split Cta 02",
+    "to": "Halftone Split CTA",
+    "effect": "dots",
+    "family": "split cta"
+  },
+  {
+    "id": "1041",
+    "file": "1041-cta-banner-cta-03.html",
+    "from": "Banner Cta 03",
+    "to": "Framed Banner CTA",
+    "effect": "frame",
+    "family": "banner cta"
+  },
+  {
+    "id": "1065",
+    "file": "1065-testimonials-quote-card-01.html",
+    "from": "Quote Card 01",
+    "to": "Kinetic Quote Card",
+    "effect": "marquee",
+    "family": "quote card"
+  },
+  {
+    "id": "1113",
+    "file": "1113-bios-compact-bio-10.html",
+    "from": "Compact Bio 10",
+    "to": "Dimensional Compact Bio",
+    "effect": "depth",
+    "family": "compact bio"
+  },
+  {
+    "id": "1118",
+    "file": "1118-profiles-tabbed-profile-02.html",
+    "from": "Tabbed Profile 02",
+    "to": "Orbital Tabbed Profile",
+    "effect": "orbit",
+    "family": "tabbed profile"
+  },
+  {
+    "id": "1130",
+    "file": "1130-ai-chat-chat-bubbles-01.html",
+    "from": "Chat Bubbles 01",
+    "to": "Signal Chat Bubbles",
+    "effect": "scan",
+    "family": "chat bubbles"
+  },
+  {
+    "id": "1132",
+    "file": "1132-ai-chat-typing-indicator-03.html",
+    "from": "Typing Indicator 03",
+    "to": "Liquid Typing Indicator",
+    "effect": "blob",
+    "family": "typing indicator"
+  },
+  {
+    "id": "1144",
+    "file": "1144-calendars-event-calendar-02.html",
+    "from": "Event Calendar 02",
+    "to": "Shard Event Calendar",
+    "effect": "shards",
+    "family": "event calendar"
+  },
+  {
+    "id": "1158",
+    "file": "1158-maps-location-list-03.html",
+    "from": "Location List 03",
+    "to": "Halftone Location List",
+    "effect": "dots",
+    "family": "location list"
+  },
+  {
+    "id": "1182",
+    "file": "1182-timers-stopwatch-01.html",
+    "from": "Stopwatch 01",
+    "to": "Framed Stopwatch",
+    "effect": "frame",
+    "family": "stopwatch"
+  },
+  {
+    "id": "1185",
+    "file": "1185-timers-interval-timer-04.html",
+    "from": "Interval Timer 04",
+    "to": "Kinetic Interval Timer",
+    "effect": "marquee",
+    "family": "interval timer"
+  },
+  {
+    "id": "1195",
+    "file": "1195-countdown-flip-countdown-01.html",
+    "from": "Flip Countdown 01",
+    "to": "Dimensional Flip Countdown",
+    "effect": "depth",
+    "family": "flip countdown"
+  },
+  {
+    "id": "1196",
+    "file": "1196-countdown-simple-countdown-02.html",
+    "from": "Simple Countdown 02",
+    "to": "Orbital Simple Countdown",
+    "effect": "orbit",
+    "family": "simple countdown"
+  },
+  {
+    "id": "1197",
+    "file": "1197-countdown-event-countdown-03.html",
+    "from": "Event Countdown 03",
+    "to": "Signal Event Countdown",
+    "effect": "scan",
+    "family": "event countdown"
+  },
+  {
+    "id": "1198",
+    "file": "1198-countdown-ring-countdown-04.html",
+    "from": "Ring Countdown 04",
+    "to": "Liquid Ring Countdown",
+    "effect": "blob",
+    "family": "ring countdown"
+  },
+  {
+    "id": "1208",
+    "file": "1208-images-rounded-image-01.html",
+    "from": "Rounded Image 01",
+    "to": "Shard Rounded Image",
+    "effect": "shards",
+    "family": "rounded image"
+  },
+  {
+    "id": "1223",
+    "file": "1223-videos-vertical-video-03.html",
+    "from": "Vertical Video 03",
+    "to": "Halftone Vertical Video",
+    "effect": "dots",
+    "family": "vertical video"
+  },
+  {
+    "id": "1234",
+    "file": "1234-galleries-masonry-grid-01.html",
+    "from": "Masonry Grid 01",
+    "to": "Framed Masonry Grid",
+    "effect": "frame",
+    "family": "masonry grid"
+  },
+  {
+    "id": "1235",
+    "file": "1235-galleries-lightbox-gallery-02.html",
+    "from": "Lightbox Gallery 02",
+    "to": "Kinetic Lightbox Gallery",
+    "effect": "marquee",
+    "family": "lightbox gallery"
+  },
+  {
+    "id": "1237",
+    "file": "1237-galleries-caption-gallery-04.html",
+    "from": "Caption Gallery 04",
+    "to": "Dimensional Caption Gallery",
+    "effect": "depth",
+    "family": "caption gallery"
+  },
+  {
+    "id": "1248",
+    "file": "1248-carousels-slide-carousel-01.html",
+    "from": "Slide Carousel 01",
+    "to": "Orbital Slide Carousel",
+    "effect": "orbit",
+    "family": "slide carousel"
+  },
+  {
+    "id": "0470",
+    "file": "0470-rotate-scroll-3d-carousel-07.html",
+    "from": "3d Carousel 07",
+    "to": "Signal 3D Carousel",
+    "effect": "scan",
+    "family": "3d carousel"
+  },
+  {
+    "id": "1251",
+    "file": "1251-carousels-3d-carousel-04.html",
+    "from": "3d Carousel 04",
+    "to": "Shard 3D Carousel",
+    "effect": "shards",
+    "family": "3d carousel"
+  },
+  {
+    "id": "1368",
+    "file": "1368-cards-basic-card-01.html",
+    "from": "Basic Card 01",
+    "to": "Shard Basic Card",
+    "effect": "shards",
+    "family": "basic card"
+  },
+  {
+    "id": "1369",
+    "file": "1369-cards-image-card-02.html",
+    "from": "Image Card 02",
+    "to": "Halftone Image Card",
+    "effect": "dots",
+    "family": "image card"
+  },
+  {
+    "id": "1371",
+    "file": "1371-cards-bordered-card-04.html",
+    "from": "Bordered Card 04",
+    "to": "Framed Bordered Card",
+    "effect": "frame",
+    "family": "bordered card"
+  },
+  {
+    "id": "1262",
+    "file": "1262-card-shuffles-stack-shuffle-01.html",
+    "from": "Stack Shuffle 01",
+    "to": "Kinetic Stack Shuffle",
+    "effect": "marquee",
+    "family": "stack shuffle"
+  },
+  {
+    "id": "1264",
+    "file": "1264-card-shuffles-flip-shuffle-03.html",
+    "from": "Flip Shuffle 03",
+    "to": "Dimensional Flip Shuffle",
+    "effect": "depth",
+    "family": "flip shuffle"
+  },
+  {
+    "id": "1275",
+    "file": "1275-puzzles-sliding-puzzle-01.html",
+    "from": "Sliding Puzzle 01",
+    "to": "Orbital Sliding Puzzle",
+    "effect": "orbit",
+    "family": "sliding puzzle"
+  },
+  {
+    "id": "1276",
+    "file": "1276-puzzles-jigsaw-piece-02.html",
+    "from": "Jigsaw Piece 02",
+    "to": "Signal Jigsaw Piece",
+    "effect": "scan",
+    "family": "jigsaw piece"
+  },
+  {
+    "id": "1277",
+    "file": "1277-puzzles-word-scramble-03.html",
+    "from": "Word Scramble 03",
+    "to": "Liquid Word Scramble",
+    "effect": "blob",
+    "family": "word scramble"
+  },
+  {
+    "id": "1278",
+    "file": "1278-puzzles-memory-match-04.html",
+    "from": "Memory Match 04",
+    "to": "Shard Memory Match",
+    "effect": "shards",
+    "family": "memory match"
+  },
+  {
+    "id": "1288",
+    "file": "1288-borders-gradient-border-01.html",
+    "from": "Gradient Border 01",
+    "to": "Halftone Gradient Border",
+    "effect": "dots",
+    "family": "gradient border"
+  },
+  {
+    "id": "1290",
+    "file": "1290-borders-double-border-03.html",
+    "from": "Double Border 03",
+    "to": "Framed Double Border",
+    "effect": "frame",
+    "family": "double border"
+  },
+  {
+    "id": "1291",
+    "file": "1291-borders-animated-border-04.html",
+    "from": "Animated Border 04",
+    "to": "Kinetic Animated Border",
+    "effect": "marquee",
+    "family": "animated border"
+  },
+  {
+    "id": "1301",
+    "file": "1301-backgrounds-mesh-gradient-01.html",
+    "from": "Mesh Gradient 01",
+    "to": "Dimensional Mesh Gradient",
+    "effect": "depth",
+    "family": "mesh gradient"
+  },
+  {
+    "id": "1302",
+    "file": "1302-backgrounds-dot-pattern-02.html",
+    "from": "Dot Pattern 02",
+    "to": "Orbital Dot Pattern",
+    "effect": "orbit",
+    "family": "dot pattern"
+  },
+  {
+    "id": "1304",
+    "file": "1304-backgrounds-grid-lines-04.html",
+    "from": "Grid Lines 04",
+    "to": "Signal Grid Lines",
+    "effect": "scan",
+    "family": "grid lines"
+  },
+  {
+    "id": "1385",
+    "file": "1385-experimental-glitch-text-04.html",
+    "from": "Glitch Text 04",
+    "to": "Liquid Glitch Text",
+    "effect": "blob",
+    "family": "glitch text"
+  },
+  {
+    "id": "1169",
+    "file": "1169-numbers-stat-counter-01.html",
+    "from": "Stat Counter 01",
+    "to": "Shard Stat Counter",
+    "effect": "shards",
+    "family": "stat counter"
+  },
+  {
+    "id": "1020",
+    "file": "1020-announcements-cta-banner-08.html",
+    "from": "Cta Banner 08",
+    "to": "Halftone Cta Banner",
+    "effect": "dots",
+    "family": "cta banner"
+  },
+  {
+    "id": "1236",
+    "file": "1236-galleries-horizontal-scroll-03.html",
+    "from": "Horizontal Scroll 03",
+    "to": "Framed Horizontal Scroll",
+    "effect": "frame",
+    "family": "horizontal scroll"
+  },
+  {
+    "id": "1148",
+    "file": "1148-calendars-dark-calendar-06.html",
+    "from": "Dark Calendar 06",
+    "to": "Kinetic Dark Calendar",
+    "effect": "marquee",
+    "family": "dark calendar"
+  },
+  {
+    "id": "1150",
+    "file": "1150-calendars-card-calendar-08.html",
+    "from": "Card Calendar 08",
+    "to": "Dimensional Card Calendar",
+    "effect": "depth",
+    "family": "card calendar"
+  }
+]

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1623
+    slug: 3d-mouse-hero-float
+    title: 3D Hero Float Mouse
+    category: 3d-mouse
+    tags: 3d, mouse, hero
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1623 — 3D Hero Float Mouse</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Outfit:wght@400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#06070c;perspective:1200px;overflow:hidden;font-family:Outfit,sans-serif;color:#fff}
+    .hero{text-align:center;transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg))}
+    .eyebrow{font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;opacity:.5;transform:translateZ(20px);margin:0 0 1rem}
+    h1{margin:0;font-family:Syne,sans-serif;font-size:clamp(2.8rem,10vw,5.5rem);letter-spacing:-.05em;line-height:.9;transform:translateZ(70px);text-shadow:0 20px 50px rgba(108,140,255,.4)}
+    p{margin:1.2rem auto 0;max-width:32ch;opacity:.6;transform:translateZ(35px)}
+    .cta{margin-top:1.75rem;display:inline-grid;place-items:center;padding:.85rem 1.6rem;border-radius:999px;background:#6c8cff;color:#fff;font-family:Syne,sans-serif;font-weight:800;font-size:.9rem;border:none;cursor:pointer;transform:translateZ(55px);box-shadow:0 16px 40px rgba(108,140,255,.4)}
+    .orb{position:absolute;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(108,140,255,.35),transparent 70%);filter:blur(30px);transform:translateZ(-40px);left:50%;top:40%;margin:-100px;pointer-events:none}
+  </style>
+</head>
+<body>
+  <div class="hero" id="hero">
+    <div class="orb" aria-hidden="true"></div>
+    <p class="eyebrow">Experimental</p>
+    <h1>Float<br>Hero</h1>
+    <p>A layered headline that tilts in space as you move.</p>
+    <button class="cta" type="button">Explore</button>
+  </div>
+  <script>
+    const h=document.getElementById('hero');let rx=0,ry=0,trx=0,try_=0;
+    addEventListener('pointermove',e=>{const x=(e.clientX/innerWidth-.5)*2;const y=(e.clientY/innerHeight-.5)*2;try_=x*22;trx=y*-16});
+    (function loop(){rx+=(trx-rx)*.1;ry+=(try_-ry)*.1;h.style.setProperty('--rx',rx+'deg');h.style.setProperty('--ry',ry+'deg');requestAnimationFrame(loop)})();
+  </script>
+</body>
+</html>

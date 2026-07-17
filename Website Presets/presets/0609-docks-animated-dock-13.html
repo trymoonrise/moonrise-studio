@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0609
+    slug: docks-animated-dock-13
+    title: Animated Dock 13
+    category: docks
+    tags: docks, animated
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0609 — Animated Dock 13</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:end center;background:#0b0c12;padding-bottom:2.5rem;overflow:hidden}
+    .dock{display:flex;align-items:flex-end;gap:10px;padding:12px 16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:22px;backdrop-filter:blur(16px)}
+    .icon{width:52px;height:52px;border:none;border-radius:16px;cursor:pointer;background:linear-gradient(145deg,var(--a),var(--b));box-shadow:0 8px 20px rgba(0,0,0,.3);transform-origin:50% 100%;animation:wave 2.4s ease-in-out infinite;animation-delay:calc(var(--i)*120ms);transition:filter .2s}
+    .icon:hover{animation-play-state:paused;filter:brightness(1.1);transform:scale(1.18) translateY(-10px)}
+    .icon:active{transform:scale(.95)}
+    .rip{position:absolute;inset:0;border-radius:16px;pointer-events:none}
+    @keyframes wave{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+    @media(prefers-reduced-motion:reduce){.icon{animation:none}}
+  </style>
+</head>
+<body>
+  <nav class="dock" aria-label="Animated dock">
+    <button class="icon" style="--i:0;--a:#6c8cff;--b:#3d5fd4" aria-label="App 1"></button>
+    <button class="icon" style="--i:1;--a:#34d399;--b:#059669" aria-label="App 2"></button>
+    <button class="icon" style="--i:2;--a:#f472b6;--b:#db2777" aria-label="App 3"></button>
+    <button class="icon" style="--i:3;--a:#fbbf24;--b:#d97706" aria-label="App 4"></button>
+    <button class="icon" style="--i:4;--a:#a78bfa;--b:#7c3aed" aria-label="App 5"></button>
+    <button class="icon" style="--i:5;--a:#22d3ee;--b:#0891b2" aria-label="App 6"></button>
+  </nav>
+  <script>
+    document.querySelectorAll('.icon').forEach(icon=>{
+      icon.addEventListener('click',()=>{
+        icon.style.animation='none';
+        icon.style.transform='scale(1.2) translateY(-14px)';
+        setTimeout(()=>{icon.style.transform='';icon.style.animation=''},400);
+      });
+    });
+  </script>
+</body>
+</html>

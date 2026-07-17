@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1570
+    slug: 3d-card-spread-mouse
+    title: 3D Mouse Spread Cards
+    category: 3d-effects
+    tags: 3d, card, mouse
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1570 — 3D Mouse Spread Cards</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#090a10;perspective:1000px;overflow:hidden;font-family:Syne,sans-serif;cursor:default}
+    .hint{position:fixed;bottom:1.5rem;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.35)}
+    .hand{position:relative;width:200px;height:280px;transform-style:preserve-3d;transform:rotateX(12deg)}
+    .card{position:absolute;inset:0;border-radius:18px;display:grid;place-items:center;font-size:1.8rem;font-weight:800;color:#fff;border:1px solid rgba(255,255,255,.2);transform-origin:50% 110%;transition:transform .15s ease-out;box-shadow:0 20px 40px rgba(0,0,0,.35)}
+    .c0{background:linear-gradient(160deg,#6c8cff,#3147c8);z-index:5}
+    .c1{background:linear-gradient(160deg,#ff6bcb,#a31f6e);z-index:4}
+    .c2{background:linear-gradient(160deg,#7ee0c3,#1f8a6e);z-index:3}
+    .c3{background:linear-gradient(160deg,#ffd16c,#b07a12);z-index:2}
+    .c4{background:linear-gradient(160deg,#b06cff,#5520b8);z-index:1}
+  </style>
+</head>
+<body>
+  <div class="hand" id="hand">
+    <div class="card c0">01</div>
+    <div class="card c1">02</div>
+    <div class="card c2">03</div>
+    <div class="card c3">04</div>
+    <div class="card c4">05</div>
+  </div>
+  <div class="hint">Move to fan</div>
+  <script>
+    const cards=[...document.querySelectorAll('.card')];
+    const n=cards.length;
+    let mx=0;
+    addEventListener('pointermove',(e)=>{mx=(e.clientX/innerWidth-.5)*2});
+    (function loop(){
+      const spread=12+Math.abs(mx)*28;
+      cards.forEach((c,i)=>{
+        const t=(i-(n-1)/2);
+        const rot=t*spread+mx*18;
+        const z=40-Math.abs(t)*8;
+        c.style.transform=`rotateZ(${rot}deg) translateY(${Math.abs(t)*6}px) translateZ(${z}px)`;
+      });
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1293
+    slug: borders-corner-border-06
+    title: Corner Border 06
+    category: borders
+    tags: borders, corner
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1293 — Corner Border 06</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fafafa;font-family:"DM Sans",system-ui,-apple-system,sans-serif;padding:2rem;color:#111}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+    .frame{position:relative;width:min(100%,300px);padding:2.5rem 2rem;text-align:center}
+    .c{position:absolute;width:28px;height:28px;border:2px solid #111;opacity:0;animation:corner .6s cubic-bezier(.22,1,.36,1) forwards}
+    .c--tl{top:0;left:0;border-right:none;border-bottom:none;animation-delay:.1s}
+    .c--tr{top:0;right:0;border-left:none;border-bottom:none;animation-delay:.2s}
+    .c--bl{bottom:0;left:0;border-right:none;border-top:none;animation-delay:.3s}
+    .c--br{bottom:0;right:0;border-left:none;border-top:none;animation-delay:.4s}
+    @keyframes corner{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+    h2{font-family:"Syne",system-ui,sans-serif;font-size:1.4rem;font-weight:800;letter-spacing:-.03em;margin:0 0 .35rem}
+    p{margin:0;color:#666;font-size:.88rem}
+  </style>
+</head>
+<body>
+<div class="frame"><span class="c c--tl" aria-hidden="true"></span><span class="c c--tr" aria-hidden="true"></span><span class="c c--bl" aria-hidden="true"></span><span class="c c--br" aria-hidden="true"></span><h2>Corner brackets</h2><p>Four anchors draw in.</p></div>
+
+</body>
+</html>

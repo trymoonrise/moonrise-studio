@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1599
+    slug: 3d-mouse-cube-track
+    title: 3D Cube Mouse Track
+    category: 3d-mouse
+    tags: 3d, mouse, cube
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1599 — 3D Cube Mouse Track</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#07080e;perspective:1000px;overflow:hidden;font-family:Syne,sans-serif;cursor:crosshair}
+    .hint{position:fixed;bottom:1.4rem;font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.35)}
+    .scene{width:160px;height:160px;transform-style:preserve-3d;transform:rotateX(var(--rx,-18deg)) rotateY(var(--ry,28deg))}
+    .cube{width:100%;height:100%;position:relative;transform-style:preserve-3d}
+    .face{position:absolute;inset:0;display:grid;place-items:center;font-size:1.3rem;font-weight:800;color:#fff;border:1px solid rgba(255,255,255,.2)}
+    .f0{background:linear-gradient(145deg,#6c8cff,#3147c8);transform:translateZ(80px)}
+    .f1{background:linear-gradient(145deg,#ff6bcb,#a31f6e);transform:rotateY(90deg) translateZ(80px)}
+    .f2{background:linear-gradient(145deg,#7ee0c3,#1f8a6e);transform:rotateY(180deg) translateZ(80px)}
+    .f3{background:linear-gradient(145deg,#ffd16c,#b07a12);transform:rotateY(-90deg) translateZ(80px)}
+    .f4{background:linear-gradient(145deg,#b06cff,#5520b8);transform:rotateX(90deg) translateZ(80px)}
+    .f5{background:linear-gradient(145deg,#222,#111);transform:rotateX(-90deg) translateZ(80px)}
+    .trail{position:absolute;inset:-24px;border:1px dashed rgba(108,140,255,.35);transform:translateZ(-50px);pointer-events:none}
+  </style>
+</head>
+<body>
+  <div class="scene" id="scene">
+    <div class="trail" aria-hidden="true"></div>
+    <div class="cube">
+      <div class="face f0">+</div><div class="face f1">×</div><div class="face f2">−</div>
+      <div class="face f3">÷</div><div class="face f4">↑</div><div class="face f5">↓</div>
+    </div>
+  </div>
+  <div class="hint">Track the cube</div>
+  <script>
+    const s=document.getElementById('scene');let tx=-18,ty=28,cx=tx,cy=ty;
+    addEventListener('pointermove',e=>{const x=(e.clientX/innerWidth-.5)*2;const y=(e.clientY/innerHeight-.5)*2;tx=y*-48;ty=x*58});
+    (function loop(){cx+=(tx-cx)*.12;cy+=(ty-cy)*.12;s.style.setProperty('--rx',cx+'deg');s.style.setProperty('--ry',cy+'deg');requestAnimationFrame(loop)})();
+  </script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0490
+    slug: split-screens-vertical-half-01
+    title: Vertical Half 01
+    category: split-screens
+    tags: split-screens, experimental, mask, shapes
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0490 — Vertical Half 01</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;overflow:hidden;font-family:Syne,sans-serif;background:#e8ebe4;color:#111}
+    .stage{min-height:100vh;display:grid;grid-template-columns:1.1fr .9fr;position:relative}
+.a{background:#111;color:#e8ebe4;display:grid;place-items:center;clip-path:polygon(0 0,92% 0,78% 100%,0 100%);padding:2rem;position:relative;z-index:1}
+.b{display:grid;place-items:center;padding:2rem;margin-left:-18%}
+.hex{width:min(280px,70vw);height:min(280px,70vw);background:url('../stock/media/4-5 Aspect Ratio(image).png') center/cover;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);animation:spin 20s linear infinite;filter:grayscale(.3)}
+.a h1{font-size:clamp(2.5rem,7vw,5rem);font-weight:800;letter-spacing:-.06em;margin:0;line-height:.9}
+.tag{font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;margin-top:1rem;opacity:.5}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:700px){.stage{grid-template-columns:1fr}.a{clip-path:none}.b{margin:0}}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="stage"><div class="a"><div><h1>Half<br>space</h1><p class="tag">Vertical half 01</p></div></div><div class="b"><div class="hex" aria-hidden="true"></div></div></div>
+
+</body>
+</html>

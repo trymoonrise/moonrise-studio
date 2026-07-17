@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1626
+    slug: 3d-mouse-scene-warp
+    title: 3D Scene Warp Mouse
+    category: 3d-mouse
+    tags: 3d, mouse, warp
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1626 — 3D Scene Warp Mouse</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#05060a;perspective:900px;overflow:hidden;font-family:Syne,sans-serif}
+    .scene{position:relative;width:min(480px,90vw);height:300px;transform-style:preserve-3d;transform:rotateX(var(--rx,6deg)) rotateY(var(--ry,0deg)) scale(var(--sc,1))}
+    .grid{position:absolute;inset:0;display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(4,1fr);gap:8px;transform:translateZ(-40px)}
+    .grid i{border-radius:10px;background:rgba(108,140,255,.12);border:1px solid rgba(108,140,255,.2);transform:translateZ(0)}
+    .title{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:clamp(2rem,7vw,3.5rem);letter-spacing:-.04em;transform:translateZ(60px);text-shadow:0 16px 40px rgba(108,140,255,.4)}
+    .hint{position:fixed;bottom:1.4rem;font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.35)}
+  </style>
+</head>
+<body>
+  <div class="scene" id="scene">
+    <div class="grid" id="grid"></div>
+    <div class="title">WARP</div>
+  </div>
+  <div class="hint">Warp the field</div>
+  <script>
+    const scene=document.getElementById('scene'),grid=document.getElementById('grid');
+    for(let i=0;i<24;i++){const c=document.createElement('i');grid.appendChild(c)}
+    const cells=[...grid.children];
+    let rx=6,ry=0,sc=1,trx=6,try_=0,tsc=1,mx=.5,my=.5;
+    addEventListener('pointermove',e=>{
+      mx=e.clientX/innerWidth;my=e.clientY/innerHeight;
+      const x=(mx-.5)*2,y=(my-.5)*2;
+      try_=x*30;trx=6+y*-16;tsc=1+Math.hypot(x,y)*.12;
+    });
+    (function loop(){
+      rx+=(trx-rx)*.1;ry+=(try_-ry)*.1;sc+=(tsc-sc)*.1;
+      scene.style.setProperty('--rx',rx+'deg');scene.style.setProperty('--ry',ry+'deg');scene.style.setProperty('--sc',sc);
+      cells.forEach((c,i)=>{
+        const col=i%6,row=Math.floor(i/6);
+        const d=Math.hypot(col/5-mx,row/3-my);
+        const z=Math.max(0,50-d*80);
+        c.style.transform=`translateZ(${z}px)`;
+        c.style.background=`rgba(108,140,255,${.1+z*.008})`;
+      });
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>

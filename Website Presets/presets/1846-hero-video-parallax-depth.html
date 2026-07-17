@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1846
+    slug: hero-video-parallax-depth
+    title: Parallax Depth Video Hero
+    category: hero
+    tags: hero, video, interactive, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1846 — Parallax Depth Video Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;overflow:hidden;background:#050505;color:#fff;font-family:Syne,sans-serif}
+    video{display:block}
+    button{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit}
+    .stage{position:relative;min-height:100vh;overflow:hidden;perspective:1000px}
+.layer{position:absolute;inset:-8%;will-change:transform}
+.layer video{width:100%;height:100%;object-fit:cover}
+.far{filter:blur(6px) brightness(.45);transform:translateZ(-80px) scale(1.2)}
+.near{clip-path:inset(18% 22%);border:1px solid rgba(255,255,255,.2);box-shadow:0 40px 100px rgba(0,0,0,.45)}
+.near video{filter:none}
+.copy{position:relative;z-index:3;min-height:100vh;display:grid;place-items:center;text-align:center;padding:2rem;pointer-events:none}
+h1{font-size:clamp(2.5rem,8vw,5rem);font-weight:800;letter-spacing:-.06em;margin:0;text-shadow:0 20px 40px rgba(0,0,0,.5)}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="stage" id="s"><div class="layer far" id="far"><video src="../stock/media/16-9 Aspect Ratio(video).mp4" autoplay muted loop playsinline></video></div><div class="layer near" id="near"><video src="../stock/media/16-9 Aspect Ratio(video).mp4" autoplay muted loop playsinline></video></div><div class="copy"><h1>Depth field</h1></div></div>
+<script>const s=document.getElementById('s'),far=document.getElementById('far'),near=document.getElementById('near');s.onmousemove=e=>{const x=(e.clientX/innerWidth-.5)*30,y=(e.clientY/innerHeight-.5)*20;far.style.transform='translate('+(-x*.4)+'px,'+(-y*.4)+'px) scale(1.15)';near.style.transform='translate('+x+'px,'+y+'px)';};</script>
+</body>
+</html>

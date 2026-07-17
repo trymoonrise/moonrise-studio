@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0621
+    slug: sidebars-card-sidebar-12
+    title: Card Sidebar 12
+    category: sidebars
+    tags: sidebars, card
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0621 — Card Sidebar 12</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:100vh;display:flex;background:#1a0a12}.sb{width:200px;background:#241018;color:#ffe8f0;padding:1.5rem 1rem;border-right:1px solid #b0809033}.sb a{display:block;padding:10px;color:#b08090;text-decoration:none;font-size:.9rem;border-radius:6px}.sb a:hover,.sb a.on{background:#ff8c4222;color:#ff8c42}.main{flex:1;padding:2rem;color:#ffe8f0}
+  </style>
+</head>
+<body>
+<aside class="sb"><a href="#" class="on">Dashboard</a><a href="#" class="">Projects</a><a href="#" class="">Settings</a><a href="#" class="">Help</a></aside><main class="main"><h2 style="color:#ff8c42">Card Sidebar 237</h2></main>
+<script>document.querySelectorAll('.sb a').forEach(a=>a.onclick=e=>{e.preventDefault();document.querySelectorAll('.sb a').forEach(x=>x.classList.remove('on'));a.classList.add('on');});</script>
+</body>
+</html>

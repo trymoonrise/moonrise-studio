@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0402
+    slug: cursor-trails-dot-chain-07
+    title: Dot Chain 07
+    category: cursor-trails
+    tags: cursor-trails, dot
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0402 — Dot Chain 07</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #1a0a12;
+      color: #ffe8f0;
+      cursor: crosshair;
+      overflow: hidden;
+    }
+
+    canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .hint {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: #ff8c42;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      opacity: 0.38;
+      pointer-events: none;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+  <p class="hint" id="hint">Move your cursor</p>
+  <canvas id="c" aria-hidden="true"></canvas>
+
+  <script>
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+    const hint = document.getElementById('hint');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const COUNT = 28;
+    const dots = [];
+    let mx = innerWidth / 2;
+    let my = innerHeight / 2;
+    let moved = false;
+
+    function resize() {
+      canvas.width = innerWidth;
+      canvas.height = innerHeight;
+    }
+
+    resize();
+    addEventListener('resize', resize);
+
+    for (let i = 0; i < COUNT; i += 1) {
+      dots.push({ x: mx, y: my });
+    }
+
+    if (!reduced) {
+      addEventListener('mousemove', (e) => {
+        mx = e.clientX;
+        my = e.clientY;
+        if (!moved) {
+          moved = true;
+          hint.style.opacity = '0';
+        }
+      }, { passive: true });
+
+      function frame() {
+        dots[0].x += (mx - dots[0].x) * 0.38;
+        dots[0].y += (my - dots[0].y) * 0.38;
+
+        for (let i = 1; i < dots.length; i += 1) {
+          const prev = dots[i - 1];
+          const curr = dots[i];
+          const ease = 0.32 - i * 0.004;
+          curr.x += (prev.x - curr.x) * ease;
+          curr.y += (prev.y - curr.y) * ease;
+        }
+
+        ctx.fillStyle = 'rgba(26, 10, 18, 0.22)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = dots.length - 1; i >= 0; i -= 1) {
+          const p = dots[i];
+          const t = i / (dots.length - 1);
+          const r = 3 + (1 - t) * 9;
+          const alpha = 0.18 + (1 - t) * 0.72;
+
+          if (i > 0) {
+            const next = dots[i - 1];
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(next.x, next.y);
+            ctx.strokeStyle = `rgba(255, 140, 66, ${alpha * 0.35})`;
+            ctx.lineWidth = r * 0.55;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+          }
+
+          const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r * 2.4);
+          glow.addColorStop(0, `rgba(255, 232, 240, ${alpha * 0.55})`);
+          glow.addColorStop(0.45, `rgba(255, 140, 66, ${alpha * 0.35})`);
+          glow.addColorStop(1, 'transparent');
+          ctx.fillStyle = glow;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, r * 2.4, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 140, 66, ${alpha})`;
+          ctx.fill();
+        }
+
+        requestAnimationFrame(frame);
+      }
+
+      frame();
+    }
+  </script>
+</body>
+</html>

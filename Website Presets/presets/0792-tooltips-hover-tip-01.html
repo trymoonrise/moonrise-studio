@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0792
+    slug: tooltips-hover-tip-01
+    title: Orbit Hover Tip
+    category: tooltips
+    tags: tooltips, orbit, hover
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0792 — Orbit Hover Tip</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700&family=Outfit:wght@400;500;600&display=swap');*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0e1016;font-family:Outfit,sans-serif}.wrap{position:relative}.btn{padding:.75rem 1.25rem;border-radius:999px;border:1px solid #2a2e3a;background:#161a24;color:#fff;font:600 .9rem Outfit,sans-serif;cursor:pointer}.tip{position:absolute;left:50%;bottom:calc(100% + 14px);translate:-50% 0;padding:.45rem .75rem;border-radius:8px;background:#7ee0c3;color:#08140f;font-size:.75rem;font-weight:600;white-space:nowrap;opacity:0;transform:translateY(8px) scale(.95);transition:opacity .3s,transform .35s cubic-bezier(.22,1,.36,1);pointer-events:none}.wrap:hover .tip{opacity:1;transform:translateY(0) scale(1)}
+  </style>
+</head>
+<body>
+<div class="wrap"><span class="tip">Saved to library</span><button class="btn">Hover me</button></div>
+
+</body>
+</html>

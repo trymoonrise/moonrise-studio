@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1222
+    slug: videos-video-controls-02
+    title: Minimal Scrub Controls
+    category: videos
+    tags: videos, controls, scrub
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1222 — Minimal Scrub Controls</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700&family=Outfit:wght@400;500;600&display=swap');*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0a0a0a;font-family:Outfit,sans-serif}.player{width:min(400px,92vw)}.stage{aspect-ratio:16/9;background:linear-gradient(135deg,#1a2030,#0d1118);border-radius:12px 12px 0 0;display:grid;place-items:center}.play{width:56px;height:56px;border-radius:50%;border:none;background:rgba(255,255,255,.15);color:#fff;font-size:1.2rem;cursor:pointer;backdrop-filter:blur(8px)}.bar{display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;background:#121212;border-radius:0 0 12px 12px}.scrub{flex:1;height:4px;border-radius:99px;background:#333;cursor:pointer;position:relative}.scrub i{position:absolute;left:0;top:0;bottom:0;width:35%;background:#7ee0c3;border-radius:99px;pointer-events:none}.t{font-size:.7rem;color:#666;font-variant-numeric:tabular-nums}
+  </style>
+</head>
+<body>
+<div class="player"><div class="stage"><button class="play" id="p" aria-label="Play">▶</button></div><div class="bar"><span class="t">0:42</span><div class="scrub" id="s"><i id="fill"></i></div><span class="t">2:18</span></div></div>
+<script>let playing=false;document.getElementById('p').onclick=function(){playing=!playing;this.textContent=playing?'❚❚':'▶'};
+document.getElementById('s').onclick=e=>{const r=e.currentTarget.getBoundingClientRect();document.getElementById('fill').style.width=((e.clientX-r.left)/r.width*100)+'%'};</script>
+</body>
+</html>

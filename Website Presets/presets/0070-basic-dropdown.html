@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0070
+    slug: basic-dropdown
+    title: Basic Dropdown
+    category: dropdowns
+    tags: menu
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0070 — Basic Dropdown</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#f5f5f5} .dd{position:relative} .btn{padding:10px 20px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer} .menu{position:absolute;top:calc(100% + 4px);left:0;min-width:160px;background:#fff;border:1px solid #eee;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.1);display:none;overflow:hidden} .menu.open{display:block} .menu a{display:block;padding:10px 16px;color:#333;text-decoration:none;font-size:.9rem} .menu a:hover{background:#f5f5f5}
+  </style>
+</head>
+<body>
+<div class="dd"><button class="btn" id="b">Options ▾</button><div class="menu" id="m"><a href="#">Edit</a><a href="#">Duplicate</a><a href="#">Delete</a></div></div>
+<script>const b=document.getElementById('b'),m=document.getElementById('m');b.onclick=e=>{e.stopPropagation();m.classList.toggle('open');};document.onclick=()=>m.classList.remove('open');</script>
+</body>
+</html>

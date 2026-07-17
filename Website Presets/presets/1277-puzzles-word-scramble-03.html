@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1277
+    slug: puzzles-word-scramble-03
+    title: Decode Scramble
+    category: puzzles
+    tags: puzzles, word
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1277 — Decode Scramble</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#050508;color:#eee;font-family:Outfit,sans-serif;padding:24px}
+    button{font:inherit;border:0;cursor:pointer}
+    .panel{text-align:center;max-width:420px}
+    .label{font:500 .65rem Outfit,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:16px}
+    .word{display:flex;justify-content:center;gap:8px;margin-bottom:24px;min-height:56px}
+    .char{width:44px;height:52px;border:1px solid rgba(255,255,255,.15);border-radius:3px;display:grid;place-items:center;font-family:Syne,sans-serif;font-size:1.4rem;font-weight:800;cursor:pointer;transition:transform .25s,background .25s,border-color .25s;animation:float 3s ease-in-out infinite}
+    .char:nth-child(2){animation-delay:-.5s}.char:nth-child(3){animation-delay:-1s}.char:nth-child(4){animation-delay:-1.5s}.char:nth-child(5){animation-delay:-2s}
+    .char.selected{background:#00c896;color:#050508;border-color:#00c896;transform:translateY(-6px)}
+    .char.correct{background:rgba(0,200,150,.15);border-color:rgba(0,200,150,.5)}
+    .actions{display:flex;gap:10px;justify-content:center}
+    .actions button{padding:12px 20px;font:500 .72rem Outfit,sans-serif;letter-spacing:.12em;text-transform:uppercase;border:1px solid rgba(255,255,255,.2);background:transparent;color:#fff;transition:background .25s}
+    .actions button:hover{background:rgba(255,255,255,.06)}
+    .status{margin-top:16px;font-size:.8rem;color:rgba(255,255,255,.4);min-height:1.2em}
+    .status.ok{color:#00c896}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+    @media(prefers-reduced-motion:reduce){.char{animation:none}}
+  </style>
+</head>
+<body>
+<div class="panel">
+  <p class="label">Unscramble the signal</p>
+  <div class="word" id="word"></div>
+  <div class="actions">
+    <button id="swap" type="button">Swap selected</button>
+    <button id="hint" type="button">Hint</button>
+  </div>
+  <p class="status" id="status">Click two letters to swap</p>
+</div>
+<script>
+const answer='CODE',wordEl=document.getElementById('word'),statusEl=document.getElementById('status');
+let letters=answer.split('').sort(()=>Math.random()-.5);let sel=[];
+function render(){wordEl.innerHTML='';letters.forEach((l,i)=>{const c=document.createElement('button');c.className='char';c.textContent=l;c.type='button';c.onclick=()=>{if(sel.includes(i)){sel=sel.filter(x=>x!==i);}else{sel.push(i);if(sel.length>2)sel=sel.slice(-2);}render();if(sel.length===2){const[a,b]=sel;[letters[a],letters[b]]=[letters[b],letters[a]];setTimeout(()=>{sel=[];render();check();},200);}};if(sel.includes(i))c.classList.add('selected');if(letters.join('')===answer)c.classList.add('correct');wordEl.appendChild(c);});}
+function check(){if(letters.join('')===answer){statusEl.textContent='Decoded successfully';statusEl.classList.add('ok');}}
+document.getElementById('hint').onclick=()=>{statusEl.textContent=`First letter: ${answer[0]}`;};
+render();
+</script>
+</body>
+</html>

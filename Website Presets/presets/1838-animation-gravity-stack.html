@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1838
+    slug: animation-gravity-stack
+    title: Gravity Stack Settle
+    category: animation
+    tags: animation, physics, stack, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1838 — Gravity Stack Settle</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');*{box-sizing:border-box}
+      body{margin:0;min-height:100vh;display:grid;place-items:end center;background:#f5f5f5;color:#111;font-family:"DM Sans",system-ui,-apple-system,sans-serif;padding:0 2rem 12vh;overflow:hidden}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+      .stack{display:flex;flex-direction:column-reverse;gap:8px;width:min(100%,280px)}
+      .bar{height:48px;background:#111;color:#fff;display:flex;align-items:center;padding:0 1rem;font-family:"Syne",system-ui,sans-serif;font-weight:800;font-size:.95rem;letter-spacing:-.02em;opacity:0;transform:translateY(-100vh);animation:drop .7s cubic-bezier(.22,1,.36,1) forwards}
+      .bar:nth-child(1){animation-delay:.1s;width:100%}.bar:nth-child(2){animation-delay:.28s;width:88%;background:#222}.bar:nth-child(3){animation-delay:.46s;width:72%;background:#333}.bar:nth-child(4){animation-delay:.64s;width:58%;background:#fff;color:#111;border:1.5px solid #111}.bar:nth-child(5){animation-delay:.82s;width:42%;background:#111}
+      @keyframes drop{0%{opacity:0;transform:translateY(-100vh)}70%{opacity:1;transform:translateY(8px)}100%{opacity:1;transform:none}}
+      .label{position:fixed;top:2rem;left:50%;translate:-50% 0;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:#999}
+  </style>
+</head>
+<body>
+<p class="label">Gravity settle</p><div class="stack"><div class="bar">Base</div><div class="bar">Mass</div><div class="bar">Weight</div><div class="bar">Impact</div><div class="bar">Top</div></div>
+
+</body>
+</html>

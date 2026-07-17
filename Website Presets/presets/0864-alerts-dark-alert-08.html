@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0864
+    slug: alerts-dark-alert-08
+    title: Dark Alert 08
+    category: alerts
+    tags: alerts, dark
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0864 — Dark Alert 08</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      padding: 2rem;
+      background: #000;
+      font-family: 'Outfit', sans-serif;
+      overflow: hidden;
+    }
+
+    .space {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(1px 1px at 20% 30%, #fff, transparent),
+        radial-gradient(1px 1px at 70% 60%, rgba(255,255,255,0.7), transparent),
+        radial-gradient(1.5px 1.5px at 40% 80%, #fff, transparent),
+        radial-gradient(1px 1px at 85% 20%, rgba(255,255,255,0.6), transparent),
+        radial-gradient(1px 1px at 55% 45%, #fff, transparent),
+        radial-gradient(1.5px 1.5px at 10% 70%, rgba(255,255,255,0.5), transparent);
+      animation: twinkle 6s ease-in-out infinite alternate;
+    }
+
+    .alert {
+      position: relative;
+      width: min(100%, 440px);
+      padding: 2rem 1.9rem;
+      border-radius: 20px;
+      background: rgba(10, 10, 14, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #e8e8f0;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
+      overflow: hidden;
+    }
+
+    .orb {
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #8b7bff, #3b2c8a 60%, transparent 75%);
+      filter: blur(6px);
+      opacity: 0.7;
+      animation: float 8s ease-in-out infinite;
+    }
+
+    .moon {
+      position: relative;
+      width: 52px;
+      height: 52px;
+      margin-bottom: 1.2rem;
+      border-radius: 50%;
+      background: radial-gradient(circle at 32% 30%, #fff, #c7ccff 55%, #6b74c9);
+      box-shadow: 0 0 40px rgba(160, 170, 255, 0.6);
+      animation: glow 3s ease-in-out infinite;
+    }
+
+    .tag {
+      font-size: 0.66rem;
+      font-weight: 500;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: #9a8bff;
+    }
+
+    .title {
+      margin: 0.3rem 0 0.5rem;
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .msg {
+      margin: 0;
+      font-size: 0.92rem;
+      font-weight: 300;
+      line-height: 1.7;
+      color: rgba(232, 232, 240, 0.6);
+    }
+
+    @keyframes twinkle { to { opacity: 0.55; } }
+    @keyframes float { 50% { transform: translate(-14px, 18px) scale(1.06); } }
+    @keyframes glow { 50% { box-shadow: 0 0 60px rgba(160, 170, 255, 0.9); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .space, .orb, .moon { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="space" aria-hidden="true"></div>
+  <div class="alert" role="status" aria-live="polite">
+    <div class="orb" aria-hidden="true"></div>
+    <div class="moon" aria-hidden="true"></div>
+    <span class="tag">Quiet hours</span>
+    <h2 class="title">Do not disturb is on</h2>
+    <p class="msg">Notifications are paused until 7:00 AM. We'll keep everything waiting for you in the morning.</p>
+  </div>
+</body>
+</html>

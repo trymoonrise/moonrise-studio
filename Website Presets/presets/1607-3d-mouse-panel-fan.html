@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1607
+    slug: 3d-mouse-panel-fan
+    title: 3D Panel Mouse Fan
+    category: 3d-mouse
+    tags: 3d, mouse, panel, fan
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1607 — 3D Panel Mouse Fan</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#090a10;perspective:1000px;overflow:hidden;font-family:Syne,sans-serif}
+    .hand{position:relative;width:180px;height:260px;transform-style:preserve-3d;transform:rotateX(14deg)}
+    .panel{position:absolute;inset:0;border-radius:18px;display:grid;place-items:center;font-size:1.6rem;font-weight:800;color:#fff;border:1px solid rgba(255,255,255,.2);transform-origin:50% 110%;box-shadow:0 20px 40px rgba(0,0,0,.35)}
+    .p0{background:linear-gradient(160deg,#6c8cff,#3147c8);z-index:5}.p1{background:linear-gradient(160deg,#ff6bcb,#a31f6e);z-index:4}
+    .p2{background:linear-gradient(160deg,#7ee0c3,#1f8a6e);z-index:3}.p3{background:linear-gradient(160deg,#ffd16c,#b07a12);z-index:2}
+    .p4{background:linear-gradient(160deg,#b06cff,#5520b8);z-index:1}
+    .hint{position:fixed;bottom:1.4rem;font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.35)}
+  </style>
+</head>
+<body>
+  <div class="hand" id="hand">
+    <div class="panel p0">01</div><div class="panel p1">02</div><div class="panel p2">03</div>
+    <div class="panel p3">04</div><div class="panel p4">05</div>
+  </div>
+  <div class="hint">Fan the panels</div>
+  <script>
+    const panels=[...document.querySelectorAll('.panel')];let mx=0,spread=14;
+    addEventListener('pointermove',e=>{mx=(e.clientX/innerWidth-.5)*2;spread=12+Math.abs(mx)*32});
+    (function loop(){
+      panels.forEach((p,i)=>{const t=i-(panels.length-1)/2;const rot=t*spread+mx*16;const z=50-Math.abs(t)*10;
+        p.style.transform=`rotateZ(${rot}deg) translateY(${Math.abs(t)*5}px) translateZ(${z}px)`});
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>

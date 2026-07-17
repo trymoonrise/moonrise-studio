@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1440
+    slug: videos-glitch-overlay
+    title: Glitch Video Overlay
+    category: videos
+    tags: videos, glitch, overlay
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1440 — Glitch Video Overlay</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background: radial-gradient(ellipse 70% 60% at 50% 45%, #14161d, #05060a 75%);
+      font-family: 'Space Grotesk', sans-serif;
+      perspective: 1400px;
+    }
+
+    .mosaic {
+      --cols: 6;
+      --rows: 4;
+      position: relative;
+      width: min(92vw, 960px);
+      aspect-ratio: 16 / 9;
+      display: grid;
+      grid-template-columns: repeat(var(--cols), 1fr);
+      grid-template-rows: repeat(var(--rows), 1fr);
+      transform-style: preserve-3d;
+      animation: mosaic-orbit 16s ease-in-out infinite;
+      box-shadow: 0 40px 120px rgba(0, 0, 0, 0.6);
+    }
+
+    .cell {
+      position: relative;
+      overflow: hidden;
+      transform-style: preserve-3d;
+      transform: translateZ(var(--z, 0px));
+      animation: cell-wave 6s ease-in-out infinite;
+      animation-delay: var(--delay, 0s);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+    }
+
+    .cell video {
+      position: absolute;
+      left: calc(var(--c) * -100%);
+      top: calc(var(--r) * -100%);
+      width: calc(var(--cols) * 100%);
+      height: calc(var(--rows) * 100%);
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Per-tile color grade cycling for a living, shifting grid */
+    .cell::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      mix-blend-mode: color;
+      background: var(--tint, transparent);
+      opacity: 0.35;
+      animation: tint-cycle 8s ease-in-out infinite;
+      animation-delay: var(--delay, 0s);
+      pointer-events: none;
+    }
+
+    /* Scanning highlight sweep that travels across tiles by index */
+    .cell::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      background: linear-gradient(120deg, transparent 40%, rgba(255, 255, 255, 0.5) 50%, transparent 60%);
+      opacity: 0;
+      animation: sweep-pass 5s linear infinite;
+      animation-delay: var(--sweep-delay, 0s);
+      pointer-events: none;
+    }
+
+    .vignette {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+      background: radial-gradient(ellipse 80% 80% at 50% 50%, transparent 55%, rgba(5, 6, 10, 0.55));
+      transform: translateZ(60px);
+    }
+
+    .title {
+      position: absolute;
+      left: 50%;
+      bottom: -3rem;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 1rem;
+      align-items: baseline;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+
+    .title span { color: rgba(255, 255, 255, 0.3); font-weight: 500; }
+
+    @keyframes mosaic-orbit {
+      0%, 100% { transform: rotateX(9deg) rotateY(-12deg); }
+      50% { transform: rotateX(6deg) rotateY(12deg); }
+    }
+
+    @keyframes cell-wave {
+      0%, 100% { transform: translateZ(0px); }
+      50% { transform: translateZ(48px); }
+    }
+
+    @keyframes tint-cycle {
+      0%, 100% { background: rgba(255, 0, 110, 0.0); }
+      25% { background: rgba(0, 240, 255, 0.9); }
+      50% { background: rgba(255, 0, 110, 0.9); }
+      75% { background: rgba(124, 255, 107, 0.9); }
+    }
+
+    @keyframes sweep-pass {
+      0%, 12% { opacity: 0; transform: translateX(-30%); }
+      16% { opacity: 0.9; }
+      24% { opacity: 0; transform: translateX(30%); }
+      100% { opacity: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .mosaic, .cell, .cell::after, .cell::before { animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="mosaic" id="mosaic" aria-label="Video time-echo mosaic">
+    <div class="vignette" aria-hidden="true"></div>
+    <div class="title">Time Echo <span>1440</span></div>
+  </div>
+
+  <script>
+    const SRC = '../stock/media/16-9 Aspect Ratio(video).mp4';
+    const mosaic = document.getElementById('mosaic');
+    const cols = 6;
+    const rows = 4;
+    const tints = ['rgba(0,240,255,1)', 'rgba(255,0,110,1)', 'rgba(124,255,107,1)', 'rgba(255,190,80,1)'];
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const cells = [];
+
+    for (let r = 0; r < rows; r += 1) {
+      for (let c = 0; c < cols; c += 1) {
+        const diag = r + c;
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.style.setProperty('--c', c);
+        cell.style.setProperty('--r', r);
+        cell.style.setProperty('--z', (diag % 4) * 12 + 'px');
+        cell.style.setProperty('--delay', (-diag * 0.35) + 's');
+        cell.style.setProperty('--sweep-delay', (diag * 0.18) + 's');
+        cell.style.setProperty('--tint', tints[diag % tints.length]);
+
+        const video = document.createElement('video');
+        video.src = SRC;
+        video.muted = true;
+        video.loop = true;
+        video.autoplay = true;
+        video.playsInline = true;
+        video.setAttribute('playsinline', '');
+        cell.appendChild(video);
+
+        // Time-echo: each tile is offset along its diagonal
+        video.dataset.offset = (diag * 0.14).toFixed(3);
+        video.addEventListener('loadedmetadata', () => {
+          const off = parseFloat(video.dataset.offset);
+          const d = video.duration || 0;
+          if (d > 0) {
+            try { video.currentTime = (off % d); } catch (e) {}
+          }
+          video.play().catch(() => {});
+        });
+
+        cells.push(video);
+        mosaic.insertBefore(cell, mosaic.querySelector('.vignette'));
+      }
+    }
+
+    // Periodically re-stagger the echo so the wave keeps rippling
+    if (!reduced) {
+      setInterval(() => {
+        cells.forEach((video, i) => {
+          const d = video.duration || 0;
+          if (d > 0) {
+            const off = (i * 0.14) % d;
+            try { video.currentTime = off; } catch (e) {}
+          }
+        });
+      }, 4000);
+    }
+  </script>
+</body>
+</html>

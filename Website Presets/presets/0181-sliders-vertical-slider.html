@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0181
+    slug: sliders-vertical-slider
+    title: Vertical Slider
+    category: sliders
+    tags: sliders, vertical
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0181 — Vertical Slider</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #f4f5f8;
+      padding: 2rem;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    .wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.5rem 1.25rem;
+      border-radius: 16px;
+      background: #fff;
+      border: 1px solid #e4e6ec;
+      box-shadow: 0 10px 32px rgba(15, 23, 42, 0.06);
+    }
+
+    .val {
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #4f6ef7;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    input[type="range"] {
+      --fill: 60%;
+      -webkit-appearance: none;
+      appearance: none;
+      writing-mode: vertical-lr;
+      direction: rtl;
+      width: 6px;
+      height: 180px;
+      border-radius: 999px;
+      background: linear-gradient(
+        to top,
+        #4f6ef7 0%,
+        #6c8cff var(--fill),
+        #e8eaef var(--fill),
+        #e8eaef 100%
+      );
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]:focus-visible {
+      box-shadow: 0 0 0 3px rgba(79, 110, 247, 0.2);
+      border-radius: 999px;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      border: 3px solid #4f6ef7;
+      box-shadow: 0 2px 8px rgba(79, 110, 247, 0.3);
+      cursor: grab;
+      transition: transform 0.2s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.08);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      border: 3px solid #4f6ef7;
+      box-shadow: 0 2px 8px rgba(79, 110, 247, 0.3);
+      cursor: grab;
+    }
+
+    input[type="range"]::-moz-range-track {
+      width: 6px;
+      border-radius: 999px;
+      background: transparent;
+    }
+
+    .ticks {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 180px;
+      font-size: 0.72rem;
+      color: #a0a5b8;
+      margin-left: 0.5rem;
+      pointer-events: none;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="val" id="val">60</div>
+    <div class="row">
+      <input type="range" min="0" max="100" value="60" id="range" aria-valuemin="0" aria-valuemax="100" aria-valuenow="60" aria-label="Level">
+      <div class="ticks" aria-hidden="true">
+        <span>100</span>
+        <span>0</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const range = document.getElementById('range');
+    const val = document.getElementById('val');
+
+    function update() {
+      const n = Number(range.value);
+      const pct = (n / Number(range.max)) * 100 + '%';
+      range.style.setProperty('--fill', pct);
+      range.setAttribute('aria-valuenow', n);
+      val.textContent = n;
+    }
+
+    range.addEventListener('input', update);
+    update();
+  </script>
+</body>
+</html>

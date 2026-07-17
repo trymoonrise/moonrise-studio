@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1547
+    slug: loader-line-progress
+    title: Line Progress Loader
+    category: loading
+    tags: loading, line, progress
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1547 — Line Progress Loader</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#0d0d0f;color:#fff;padding:2rem}.wrap{width:min(360px,90vw);text-align:center}.bar{height:4px;background:#222;border-radius:99px;overflow:hidden;margin:1.5rem 0}.fill{height:100%;width:0;background:linear-gradient(90deg,#6c8cff,#6cffb8);border-radius:99px;transition:width .15s}.pct{font-size:2.5rem;font-weight:800;font-variant-numeric:tabular-nums;color:#6c8cff}.label{font-size:.8rem;color:#666;margin-top:.5rem}
+  </style>
+</head>
+<body>
+<div class="wrap"><div class="pct" id="p">0%</div><div class="bar"><div class="fill" id="f"></div></div><p class="label">Loading assets</p></div>
+<script>const f=document.getElementById('f'),p=document.getElementById('p');let v=0;const t=setInterval(()=>{v+=Math.random()*8+2;if(v>=100){v=100;clearInterval(t);}f.style.width=v+'%';p.textContent=Math.round(v)+'%';},120);</script>
+</body>
+</html>

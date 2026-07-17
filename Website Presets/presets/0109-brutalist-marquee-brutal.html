@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0109
+    slug: brutalist-marquee-brutal
+    title: Brutal Marquee
+    category: brutalist
+    tags: brutalist, marquee
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0109 — Brutal Marquee</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:wght@700&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow: hidden;
+      background: #0a0a0a;
+      color: #fff;
+      font-family: Anton, sans-serif;
+      cursor: crosshair;
+    }
+
+    .chaos {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: grid;
+      place-items: center;
+      background:
+        repeating-linear-gradient(0deg, transparent, transparent 47px, rgba(255,255,0,.08) 47px, rgba(255,255,0,.08) 48px),
+        repeating-linear-gradient(90deg, transparent, transparent 47px, rgba(255,0,0,.06) 47px, rgba(255,0,0,.06) 48px),
+        #0a0a0a;
+      animation: bg-slam 3s steps(2) infinite;
+    }
+
+    .band {
+      position: absolute;
+      left: -10%;
+      width: 120%;
+      overflow: hidden;
+      white-space: nowrap;
+      border-block: 6px solid #fff;
+      mix-blend-mode: exclusion;
+    }
+
+    .band--1 {
+      top: 12%;
+      transform: rotate(-8deg);
+      background: #ff0033;
+      animation: shake-y 0.4s steps(2) infinite;
+    }
+
+    .band--2 {
+      top: 42%;
+      transform: rotate(3deg);
+      background: #ffff00;
+      color: #000;
+      z-index: 2;
+      animation: shake-x 0.35s steps(2) infinite;
+    }
+
+    .band--3 {
+      top: 68%;
+      transform: rotate(-4deg);
+      background: #00ff88;
+      color: #000;
+      animation: shake-y 0.5s steps(2) infinite reverse;
+    }
+
+    .band--v {
+      top: -20%;
+      left: 50%;
+      width: 140vh;
+      height: auto;
+      transform: translateX(-50%) rotate(90deg);
+      background: #111;
+      color: #fff;
+      border-color: #ff0033;
+      z-index: 3;
+      mix-blend-mode: hard-light;
+      opacity: 0.85;
+    }
+
+    .track {
+      display: inline-flex;
+      animation: mar 6s linear infinite;
+      font-size: clamp(3rem, 12vw, 8rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      line-height: 1.1;
+    }
+
+    .band--2 .track { animation-duration: 4s; animation-direction: reverse; }
+    .band--3 .track { animation-duration: 9s; }
+    .band--v .track {
+      animation-duration: 7s;
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(2rem, 6vw, 4rem);
+    }
+
+    .track span {
+      display: inline-block;
+      padding: 0 0.4em;
+      animation: stamp 1.8s steps(1) infinite;
+    }
+
+    .track span:nth-child(odd) { animation-delay: -0.4s; }
+    .track span:nth-child(3n) { animation-delay: -0.9s; }
+
+    .stamp {
+      position: absolute;
+      font-size: clamp(8rem, 30vw, 22rem);
+      font-weight: 400;
+      text-transform: uppercase;
+      color: transparent;
+      -webkit-text-stroke: 4px #fff;
+      opacity: 0.15;
+      transform: rotate(-18deg);
+      animation: stamp-pulse 2s steps(1) infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes mar {
+      to { transform: translateX(-50%); }
+    }
+
+    @keyframes bg-slam {
+      0%, 90%, 100% { filter: none; }
+      92% { filter: invert(1) hue-rotate(90deg); }
+      94% { filter: none; }
+      96% { filter: contrast(2) saturate(3); }
+    }
+
+    @keyframes shake-y {
+      0%, 100% { transform: rotate(-8deg) translateY(0); }
+      50% { transform: rotate(-8deg) translateY(4px); }
+    }
+
+    .band--2 { animation-name: shake-x; }
+    @keyframes shake-x {
+      0%, 100% { transform: rotate(3deg) translateX(0); }
+      50% { transform: rotate(3deg) translateX(-6px); }
+    }
+
+    @keyframes stamp {
+      0%, 80%, 100% { transform: scale(1) skewX(0); }
+      82% { transform: scale(1.4, 0.6) skewX(-12deg); }
+      86% { transform: scale(0.7, 1.5) skewX(8deg); }
+      90% { transform: scale(1.2) rotate(3deg); }
+    }
+
+    @keyframes stamp-pulse {
+      0%, 70%, 100% { opacity: 0.12; letter-spacing: -0.02em; }
+      72% { opacity: 0.4; letter-spacing: 0.2em; }
+      76% { opacity: 0.05; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .track, .band, .stamp, .chaos { animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="chaos">
+    <div class="stamp" aria-hidden="true">RAW</div>
+    <div class="band band--1">
+      <div class="track">
+        <span>BRUTAL</span><span>★</span><span>RAW</span><span>★</span><span>HONEST</span><span>★</span><span>BRUTAL</span><span>★</span><span>RAW</span><span>★</span><span>HONEST</span><span>★</span>
+        <span>BRUTAL</span><span>★</span><span>RAW</span><span>★</span><span>HONEST</span><span>★</span><span>BRUTAL</span><span>★</span><span>RAW</span><span>★</span><span>HONEST</span><span>★</span>
+      </div>
+    </div>
+    <div class="band band--2">
+      <div class="track">
+        <span>NO FILTER</span><span>/</span><span>NO APOLOGY</span><span>/</span><span>NO POLISH</span><span>/</span>
+        <span>NO FILTER</span><span>/</span><span>NO APOLOGY</span><span>/</span><span>NO POLISH</span><span>/</span>
+      </div>
+    </div>
+    <div class="band band--3">
+      <div class="track">
+        <span>SMASH</span><span>·</span><span>BUILD</span><span>·</span><span>BREAK</span><span>·</span><span>REPEAT</span><span>·</span>
+        <span>SMASH</span><span>·</span><span>BUILD</span><span>·</span><span>BREAK</span><span>·</span><span>REPEAT</span><span>·</span>
+      </div>
+    </div>
+    <div class="band band--v">
+      <div class="track">
+        <span>SYSTEM_ERROR</span><span>████</span><span>TYPE_AS_WEAPON</span><span>████</span>
+        <span>SYSTEM_ERROR</span><span>████</span><span>TYPE_AS_WEAPON</span><span>████</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

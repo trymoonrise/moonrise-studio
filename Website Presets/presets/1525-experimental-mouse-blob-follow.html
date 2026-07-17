@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1525
+    slug: experimental-mouse-blob-follow
+    title: Blob Follow Cursor
+    category: experimental
+    tags: experimental, mouse, blob
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1525 — Blob Follow Cursor</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:100vh;background:#fafafa;display:grid;place-items:center;overflow:hidden}.blob{position:fixed;width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,#6c8cff,#ff6cb0);filter:blur(2px);pointer-events:none;transform:translate(-50%,-50%);transition:width .3s,height .3s}h1{font-size:2.5rem;font-weight:800;color:#111;position:relative;z-index:1}
+  </style>
+</head>
+<body>
+<div class="blob" id="b"></div><h1>Organic motion</h1>
+<script>const b=document.getElementById('b');let x=0,y=0,cx=0,cy=0;addEventListener('mousemove',e=>{x=e.clientX;y=e.clientY;});function tick(){cx+=(x-cx)*.12;cy+=(y-cy)*.12;b.style.left=cx+'px';b.style.top=cy+'px';requestAnimationFrame(tick);}tick();</script>
+</body>
+</html>

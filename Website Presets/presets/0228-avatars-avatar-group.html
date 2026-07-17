@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0228
+    slug: avatars-avatar-group
+    title: Avatar Group
+    category: avatars
+    tags: avatars, group, marquee, minimal
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0228 — Avatar Group</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif&family=DM+Mono:wght@400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#f7f7f4;color:#111;overflow:hidden;font-family:'DM Mono',monospace}
+    .stage{min-height:100vh;display:grid;place-items:center;gap:2rem}
+    .group{display:flex;align-items:center}
+    .av{width:44px;height:44px;border-radius:50%;border:1px solid #111;background:#f7f7f4;margin-left:-12px;display:grid;place-items:center;font-family:'Instrument Serif',serif;font-size:.95rem;position:relative;z-index:1}
+    .av:first-child{margin-left:0}
+    .av:nth-child(2){z-index:2}
+    .av:nth-child(3){z-index:3}
+    .more{width:44px;height:44px;border-radius:50%;border:1px dashed rgba(0,0,0,.35);margin-left:-12px;display:grid;place-items:center;font-size:.55rem;letter-spacing:.08em;color:rgba(0,0,0,.5);background:#f7f7f4;z-index:4}
+    .names{width:min(420px,90vw);overflow:hidden;border-top:1px solid rgba(0,0,0,.1);padding-top:.9rem}
+    .track{display:flex;width:max-content;white-space:nowrap;animation:run 28s linear infinite;font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(0,0,0,.4)}
+    @keyframes run{to{transform:translateX(-50%)}}
+    @media (prefers-reduced-motion:reduce){.track{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="group">
+      <div class="av">A</div>
+      <div class="av">B</div>
+      <div class="av">C</div>
+      <div class="more">+5</div>
+    </div>
+    <div class="names"><div class="track"><span>Ava · Ben · Cam · +5 others · Ava · Ben · Cam · +5 others · </span><span>Ava · Ben · Cam · +5 others · Ava · Ben · Cam · +5 others · </span></div></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0948
+    slug: empty-states-illustration-empty-01
+    title: Void Wireframe Empty
+    category: empty-states
+    tags: empty-states, illustration, void, wireframe
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0948 — Void Wireframe Empty</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#090b0f;color:#dce1ea;font-family:Outfit,sans-serif;padding:2rem}
+    .state{text-align:center;max-width:380px}
+    .illus{position:relative;width:200px;height:160px;margin:0 auto 2rem}
+    .box{position:absolute;border:1px solid rgba(255,255,255,.12);border-radius:8px;background:rgba(255,255,255,.02)}
+    .box.main{width:140px;height:100px;top:30px;left:30px;animation:drift-box 6s ease-in-out infinite}
+    .box.ghost{width:100px;height:70px;top:10px;left:70px;opacity:.4;animation:drift-box 6s ease-in-out infinite 1s}
+    .dot{position:absolute;width:8px;height:8px;border-radius:50%;background:#38bdf8;animation:orbit 4s linear infinite}
+    .dot:nth-child(3){top:20px;left:90px}
+    .dot:nth-child(4){top:80px;left:40px;animation-delay:-1.5s;background:#22d3ee}
+    .dot:nth-child(5){top:120px;left:130px;animation-delay:-3s;background:rgba(56,189,248,.5)}
+    .cross{position:absolute;top:50%;left:50%;width:40px;height:40px;transform:translate(-50%,-50%)}
+    .cross::before,.cross::after{content:'';position:absolute;background:rgba(255,255,255,.08)}
+    .cross::before{width:100%;height:1px;top:50%;animation:fade-pulse 3s ease infinite}
+    .cross::after{height:100%;width:1px;left:50%;animation:fade-pulse 3s ease infinite .5s}
+    h2{font-family:Syne,sans-serif;font-size:1.5rem;letter-spacing:-.04em;margin-bottom:.5rem}
+    p{font-size:.9rem;color:rgba(220,225,234,.5);line-height:1.6;margin-bottom:1.5rem}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.7rem 1.4rem;background:transparent;border:1px solid rgba(56,189,248,.4);color:#38bdf8;border-radius:6px;font-family:Outfit,sans-serif;font-weight:500;font-size:.85rem;transition:background .3s,transform .3s}
+    .btn:hover{background:rgba(56,189,248,.1);transform:translateY(-2px)}
+    .btn svg{width:14px;height:14px;transition:transform .3s}
+    .btn:hover svg{transform:translateX(3px)}
+    @keyframes drift-box{0%,100%{transform:translate(0,0)}50%{transform:translate(4px,-6px)}}
+    @keyframes orbit{to{transform:rotate(360deg) translateX(30px) rotate(-360deg)}}
+    @keyframes fade-pulse{0%,100%{opacity:.3}50%{opacity:.8}}
+    @media(prefers-reduced-motion:reduce){.box,.dot,.cross::before,.cross::after{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="state">
+    <div class="illus">
+      <div class="box main"></div>
+      <div class="box ghost"></div>
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      <div class="cross"></div>
+    </div>
+    <h2>Nothing here yet</h2>
+    <p>Your workspace is empty. Create your first project to populate this view.</p>
+    <button class="btn">Create project <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+  </div>
+</body>
+</html>

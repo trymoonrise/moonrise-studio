@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1463
+    slug: scroll-horizontal-scroll-jack
+    title: Vertical Scroll Jack
+    category: scroll-horizontal
+    tags: horizontal, scroll-jack, scrub
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1463 — Vertical Scroll Jack</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#0d0d0f;color:#fff;overflow-x:hidden}.pin{height:400vh}.sticky{position:sticky;top:0;height:100vh;overflow:hidden;display:flex;align-items:center}.track{display:flex;gap:3rem;padding:0 10vw;will-change:transform}.slide{flex:0 0 70vw;max-width:600px;aspect-ratio:16/10;border-radius:20px;background:linear-gradient(135deg,var(--a),var(--b));display:grid;place-items:center;font-size:2.5rem;font-weight:900}.slide:nth-child(1){--a:#6c8cff;--b:#4a5fd4}.slide:nth-child(2){--a:#ff6cb0;--b:#d44a8a}.slide:nth-child(3){--a:#6cffb8;--b:#3ad4a0;color:#111}.slide:nth-child(4){--a:#764ba2;--b:#5a3a8a}.label{position:fixed;bottom:2rem;left:2rem;font-size:.8rem;color:#666}
+  </style>
+</head>
+<body>
+<div class="pin"><div class="sticky"><div class="track" id="t"><div class="slide">One</div><div class="slide">Two</div><div class="slide">Three</div><div class="slide">Four</div></div></div></div><p class="label">Scroll vertically → moves horizontally</p>
+<script>const pin=document.querySelector('.pin'),t=document.getElementById('t');function u(){const r=pin.getBoundingClientRect();const p=Math.min(1,Math.max(0,-r.top/(r.height-window.innerHeight)));const max=t.scrollWidth-window.innerWidth*.3;t.style.transform='translateX('+(-p*max)+'px)';}addEventListener('scroll',u,{passive:true});u();</script>
+</body>
+</html>

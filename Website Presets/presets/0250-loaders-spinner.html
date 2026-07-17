@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0250
+    slug: loaders-spinner
+    title: Circular Spinner
+    category: loaders
+    tags: loaders, spinner
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0250 — Circular Spinner</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#fafafa}.spin{width:40px;height:40px;border:3px solid #eee;border-top-color:#6c8cff;border-radius:50%;animation:sp .7s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+<div class="spin"></div>
+
+</body>
+</html>

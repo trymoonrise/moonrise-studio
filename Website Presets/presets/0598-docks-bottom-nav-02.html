@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0598
+    slug: docks-bottom-nav-02
+    title: Notch Tab Dock
+    category: docks
+    tags: docks, notch, tabs
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0598 — Notch Tab Dock</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700&family=Outfit:wght@400;500;600&display=swap');
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:end center;background:#e8e6e1;padding-bottom:2rem;font-family:Outfit,sans-serif}
+.phone{width:min(340px,92vw);background:#111;border-radius:36px;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,.25)}
+.screen{background:#faf9f6;border-radius:28px;height:420px;position:relative;overflow:hidden;display:flex;flex-direction:column}
+.content{flex:1;display:grid;place-items:center;font-family:Syne,sans-serif;font-size:1.4rem;color:#111;transition:opacity .3s}
+.nav{position:relative;display:flex;padding:10px 8px 14px;background:#fff;border-top:1px solid #eee}
+.tab{flex:1;border:none;background:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;color:#999;font:500 .65rem Outfit,sans-serif;letter-spacing:.04em;transition:color .3s;position:relative;z-index:1}
+.tab svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8}
+.tab.on{color:#111}
+.notch{position:absolute;top:6px;width:56px;height:40px;border-radius:14px;background:#111;transition:left .45s cubic-bezier(.22,1,.36,1);pointer-events:none}
+.tab.on{color:#fff}
+  </style>
+</head>
+<body>
+<div class="phone"><div class="screen">
+  <div class="content" id="c">Home</div>
+  <nav class="nav" aria-label="Notch tabs">
+    <div class="notch" id="notch"></div>
+    <button class="tab on" data-t="Home"><svg viewBox="0 0 24 24"><path d="M4 10.5L12 4l8 6.5V20h-5v-5H9v5H4z"/></svg>Home</button>
+    <button class="tab" data-t="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3"/></svg>Search</button>
+    <button class="tab" data-t="Create"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Create</button>
+    <button class="tab" data-t="You"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>You</button>
+  </nav>
+</div></div>
+<script>const tabs=[...document.querySelectorAll('.tab')],notch=document.getElementById('notch'),c=document.getElementById('c');
+function go(t){tabs.forEach(x=>x.classList.remove('on'));t.classList.add('on');const r=t.getBoundingClientRect(),p=t.parentElement.getBoundingClientRect();notch.style.left=(r.left-p.left+(r.width-56)/2)+'px';c.style.opacity=0;setTimeout(()=>{c.textContent=t.dataset.t;c.style.opacity=1},150)}
+tabs.forEach(t=>t.onclick=()=>go(t));go(tabs[0]);</script>
+</body>
+</html>

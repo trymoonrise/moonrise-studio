@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1417
+    slug: buttons-tilt-3d
+    title: 3D Tilt Button
+    category: buttons
+    tags: buttons, tilt, 3d
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1417 — 3D Tilt Button</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#0d0d0f;perspective:600px}.btn{padding:16px 36px;border:none;border-radius:12px;background:linear-gradient(135deg,#6c8cff,#4a6ae0);color:#fff;font-weight:700;font-size:1rem;cursor:pointer;transition:transform .1s ease-out;box-shadow:0 8px 24px rgba(108,140,255,.3)}
+  </style>
+</head>
+<body>
+<button class="btn" id="b">Tilt Me</button>
+<script>const b=document.getElementById('b');b.onmousemove=e=>{const r=b.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5;const y=(e.clientY-r.top)/r.height-.5;b.style.transform='rotateY('+x*20+'deg) rotateX('+(-y*20)+'deg)';};b.onmouseleave=()=>b.style.transform='';</script>
+</body>
+</html>

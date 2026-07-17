@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1467
+    slug: scroll-horizontal-edge-fade
+    title: Edge Fade Horizontal
+    category: scroll-horizontal
+    tags: horizontal, fade, mask
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1467 — Edge Fade Horizontal</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#fafafa;min-height:100vh;display:grid;place-items:center}.wrap{position:relative;width:100%;max-width:900px;padding:2rem 0}.wrap::before,.wrap::after{content:'';position:absolute;top:0;bottom:0;width:80px;z-index:2;pointer-events:none}.wrap::before{left:0;background:linear-gradient(90deg,#fafafa,transparent)}.wrap::after{right:0;background:linear-gradient(-90deg,#fafafa,transparent)}.scroll{display:flex;gap:16px;overflow-x:auto;padding:1rem 2rem;scroll-snap-type:x mandatory;scrollbar-width:none}.scroll::-webkit-scrollbar{display:none}.chip{flex:0 0 160px;scroll-snap-align:center;padding:1.5rem 1rem;border-radius:14px;background:#fff;box-shadow:0 4px 20px rgba(0,0,0,.06);text-align:center;font-weight:600;font-size:.9rem}
+  </style>
+</head>
+<body>
+<div class="wrap"><div class="scroll"><div class="chip">Motion</div><div class="chip">Layout</div><div class="chip">Type</div><div class="chip">Color</div><div class="chip">Grid</div><div class="chip">Flex</div><div class="chip">Ease</div><div class="chip">Snap</div><div class="chip">Stack</div><div class="chip">Flow</div></div></div>
+
+</body>
+</html>

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0347
+    slug: puzzles-jigsaw-piece
+    title: Jigsaw Piece
+    category: puzzles
+    tags: puzzles, jigsaw
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0347 — Jigsaw Piece</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{
+      display:grid;
+      place-items:center;
+      min-height:100vh;
+      margin:0;
+      padding:2rem;
+      background:
+        radial-gradient(circle at 20% 18%, rgba(108,140,255,.16), transparent 34%),
+        radial-gradient(circle at 82% 82%, rgba(255,108,176,.12), transparent 36%),
+        #0d0d0f;
+      font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+      color:#fff;
+    }
+
+    .wrap{
+      width:min(92vw,380px);
+      text-align:center;
+    }
+
+    .eyebrow{
+      font-size:.68rem;
+      font-weight:700;
+      letter-spacing:.1em;
+      text-transform:uppercase;
+      color:#6c8cff;
+      margin-bottom:.35rem;
+    }
+
+    h2{
+      font-size:1.25rem;
+      font-weight:800;
+      letter-spacing:-.02em;
+      margin-bottom:1.2rem;
+    }
+
+    .board{
+      --tile: 140px;
+      --gap: 10px;
+      position:relative;
+      width:calc(var(--tile)*2 + var(--gap));
+      height:calc(var(--tile)*2 + var(--gap));
+      margin:0 auto;
+      border-radius:22px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.1);
+      box-shadow:0 28px 80px rgba(0,0,0,.38);
+      backdrop-filter:blur(18px);
+      overflow:hidden;
+    }
+
+    .slot{
+      position:absolute;
+      width:var(--tile);
+      height:var(--tile);
+      border-radius:18px;
+      background:rgba(0,0,0,.18);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+      transform:translate(
+        calc(var(--sx)*(var(--tile) + var(--gap))),
+        calc(var(--sy)*(var(--tile) + var(--gap)))
+      );
+    }
+
+    .piece{
+      position:absolute;
+      left:0;
+      top:0;
+      width:var(--tile);
+      height:var(--tile);
+      border-radius:18px;
+      background-image:url("../stock/media/16-9 Aspect Ratio(image).png");
+      background-size:calc(var(--tile)*2 + var(--gap)) calc(var(--tile)*2 + var(--gap));
+      background-position:
+        calc(-1 * var(--bx) * (var(--tile) + var(--gap)))
+        calc(-1 * var(--by) * (var(--tile) + var(--gap)));
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:0 18px 45px rgba(0,0,0,.35);
+      cursor:grab;
+      user-select:none;
+      transform:translate(var(--x,0px), var(--y,0px));
+      transition:transform .38s cubic-bezier(.22,.61,.36,1), box-shadow .2s;
+      will-change:transform;
+      touch-action:none;
+      z-index:2;
+    }
+
+    .piece:hover{
+      box-shadow:0 24px 60px rgba(0,0,0,.45);
+    }
+
+    .piece.is-dragging{
+      cursor:grabbing;
+      transition:none;
+      z-index:5;
+      box-shadow:0 28px 70px rgba(0,0,0,.55);
+    }
+
+    .piece.is-locked{
+      cursor:default;
+      box-shadow:0 14px 32px rgba(0,0,0,.32);
+    }
+
+    .footer{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1rem;
+      margin-top:1rem;
+    }
+
+    .status{
+      font-size:.82rem;
+      color:#9ca3af;
+      text-align:left;
+    }
+
+    .btn{
+      padding:.55rem .85rem;
+      border:0;
+      border-radius:10px;
+      background:rgba(255,255,255,.1);
+      color:#fff;
+      font-family:inherit;
+      font-size:.82rem;
+      font-weight:700;
+      cursor:pointer;
+      transition:background .2s;
+      white-space:nowrap;
+    }
+
+    .btn:hover{ background:rgba(255,255,255,.16); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="eyebrow">Puzzle</div>
+    <h2>Jigsaw pieces</h2>
+
+    <div class="board" id="board" aria-label="Jigsaw board">
+      <div class="slot" style="--sx:0;--sy:0" aria-hidden="true"></div>
+      <div class="slot" style="--sx:1;--sy:0" aria-hidden="true"></div>
+      <div class="slot" style="--sx:0;--sy:1" aria-hidden="true"></div>
+      <div class="slot" style="--sx:1;--sy:1" aria-hidden="true"></div>
+
+      <div class="piece" data-piece="0" style="--bx:0;--by:0"></div>
+      <div class="piece" data-piece="1" style="--bx:1;--by:0"></div>
+      <div class="piece" data-piece="2" style="--bx:0;--by:1"></div>
+      <div class="piece" data-piece="3" style="--bx:1;--by:1"></div>
+    </div>
+
+    <div class="footer">
+      <div class="status" id="status">Drag pieces into place. <span style="color:#6c8cff;font-weight:700">Shuffle</span> to restart.</div>
+      <button class="btn" id="shuffle" type="button">Shuffle</button>
+    </div>
+  </div>
+
+  <script>
+    const board = document.getElementById('board');
+    const statusEl = document.getElementById('status');
+    const pieces = [...document.querySelectorAll('.piece')];
+
+    const tile = 140;
+    const gap = 10;
+    const snapPx = 18;
+
+    const home = new Map();
+
+    function homeXY(idx) {
+      const x = (idx % 2) * (tile + gap);
+      const y = Math.floor(idx / 2) * (tile + gap);
+      return { x, y };
+    }
+
+    function setPieceXY(el, x, y) {
+      el.style.setProperty('--x', `${x}px`);
+      el.style.setProperty('--y', `${y}px`);
+    }
+
+    function lockPiece(el) {
+      el.classList.add('is-locked');
+      const idx = Number(el.dataset.piece);
+      const { x, y } = homeXY(idx);
+      setPieceXY(el, x, y);
+    }
+
+    function unlockedPieces() {
+      return pieces.filter(p => !p.classList.contains('is-locked'));
+    }
+
+    function checkSolved() {
+      if (unlockedPieces().length === 0) {
+        statusEl.textContent = 'Solved!';
+        return true;
+      }
+      return false;
+    }
+
+    function shuffle() {
+      pieces.forEach((p) => p.classList.remove('is-locked'));
+      statusEl.textContent = 'Drag pieces into place. Shuffle to restart.';
+
+      const scatter = [
+        { x: -22, y: -10 },
+        { x: tile + gap + 22, y: -12 },
+        { x: -24, y: tile + gap + 10 },
+        { x: tile + gap + 26, y: tile + gap + 6 },
+      ];
+
+      pieces
+        .map(p => ({ p, r: Math.random() }))
+        .sort((a, b) => a.r - b.r)
+        .forEach(({ p }, i) => setPieceXY(p, scatter[i].x, scatter[i].y));
+    }
+
+    pieces.forEach((p) => {
+      const idx = Number(p.dataset.piece);
+      home.set(p, homeXY(idx));
+    });
+
+    let drag = null;
+
+    function onDown(e, el) {
+      if (el.classList.contains('is-locked')) return;
+      el.classList.add('is-dragging');
+
+      const start = { x: e.clientX, y: e.clientY };
+      const cur = { ...home.get(el) };
+
+      const sx = parseFloat(getComputedStyle(el).getPropertyValue('--x')) || 0;
+      const sy = parseFloat(getComputedStyle(el).getPropertyValue('--y')) || 0;
+
+      drag = { el, start, startXY: { x: sx, y: sy } };
+      el.setPointerCapture?.(e.pointerId);
+    }
+
+    function onMove(e) {
+      if (!drag) return;
+      const dx = e.clientX - drag.start.x;
+      const dy = e.clientY - drag.start.y;
+      setPieceXY(drag.el, drag.startXY.x + dx, drag.startXY.y + dy);
+    }
+
+    function onUp() {
+      if (!drag) return;
+      const el = drag.el;
+      el.classList.remove('is-dragging');
+
+      const idx = Number(el.dataset.piece);
+      const h = homeXY(idx);
+      const x = parseFloat(getComputedStyle(el).getPropertyValue('--x')) || 0;
+      const y = parseFloat(getComputedStyle(el).getPropertyValue('--y')) || 0;
+
+      const dist = Math.hypot(x - h.x, y - h.y);
+      if (dist <= snapPx) {
+        lockPiece(el);
+        checkSolved();
+      }
+
+      drag = null;
+    }
+
+    pieces.forEach((el) => {
+      el.addEventListener('pointerdown', (e) => onDown(e, el));
+    });
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+
+    document.getElementById('shuffle').addEventListener('click', shuffle);
+
+    shuffle();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0446
+    slug: scroll-animations-progress-fill-10
+    title: Progress Fill 10
+    category: scroll-animations
+    tags: scroll-animations, progress
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0446 — Progress Fill 10</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#0b1210;color:#e0f0e8;font-family:system-ui}.track{height:240vh}.hud{position:fixed;inset:auto 22px 18px 22px;display:flex;align-items:center;gap:14px;z-index:5}.bar{flex:1;height:12px;border-radius:99px;background:rgba(224,240,232,.12);overflow:hidden}.bar i{display:block;height:100%;width:calc(var(--p,0)*100%);background:linear-gradient(90deg,#6cffb8,#38bdf8)}.pct{min-width:64px;text-align:right;font-variant-numeric:tabular-nums;color:rgba(224,240,232,.7)}.copy{height:240vh;display:grid;place-items:center;text-align:center;padding:2rem}h1{font-size:clamp(2.2rem,7vw,4.4rem);letter-spacing:-.05em}
+  </style>
+</head>
+<body>
+<div class="copy" id="t"><div><h1>Progress Fill</h1><p style="color:rgba(224,240,232,.7);margin-top:.75rem">The bar is the UI.</p></div></div><div class="hud"><div class="bar"><i id="i"></i></div><div class="pct" id="p">0%</div></div>
+<script>const _el=document.querySelector('#t');function prog(){const r=_el.getBoundingClientRect();return Math.min(1,Math.max(0,-r.top/(r.height-innerHeight)));}const i=document.getElementById('i'),pEl=document.getElementById('p');addEventListener('scroll',()=>{const p=prog();i.style.setProperty('--p',String(p));pEl.textContent=Math.round(p*100)+'%';},{passive:true});</script>
+</body>
+</html>

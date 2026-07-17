@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0821
+    slug: dialogs-fullscreen-dialog-04
+    title: Immersive Fullscreen Dialog
+    category: dialogs
+    tags: dialogs, fullscreen
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0821 — Immersive Fullscreen Dialog</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #080a0e;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+      padding: 1.5rem;
+    }
+
+    .open-btn {
+      padding: 0.75rem 1.25rem;
+      border: 1px solid #00d4aa;
+      border-radius: 8px;
+      background: #00d4aa12;
+      color: #00d4aa;
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+    }
+
+    .fullscreen {
+      position: fixed;
+      inset: 0;
+      background: #0a0c10;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .fullscreen.open {
+      transform: translateY(0);
+      animation: fsReveal 0.5s ease;
+    }
+
+    @keyframes fsReveal {
+      from { clip-path: inset(100% 0 0 0); }
+      to { clip-path: inset(0 0 0 0); }
+    }
+
+    .fs-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    .fs-head h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+    }
+
+    .close-btn {
+      width: 40px;
+      height: 40px;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      background: transparent;
+      color: #94a3b8;
+      font-size: 1.25rem;
+      transition: border-color 0.2s, color 0.2s, transform 0.3s;
+    }
+
+    .close-btn:hover {
+      border-color: #f87171;
+      color: #f87171;
+      transform: rotate(90deg);
+    }
+
+    .fs-body {
+      flex: 1;
+      display: grid;
+      place-items: center;
+      padding: 2rem;
+      animation: contentFade 0.6s ease 0.2s backwards;
+    }
+
+    @keyframes contentFade {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero {
+      text-align: center;
+      max-width: 480px;
+    }
+
+    .hero h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 0.75rem;
+    }
+
+    .hero p { color: #64748b; line-height: 1.6; }
+
+    .grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(#1e293b22 1px, transparent 1px), linear-gradient(90deg, #1e293b22 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      animation: gridDrift 20s linear infinite;
+    }
+
+    @keyframes gridDrift {
+      to { background-position: 40px 40px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .fullscreen.open { animation: none; }
+      .fs-body { animation: none; }
+      .grid-bg { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <button type="button" class="open-btn" id="open">Open immersive view</button>
+
+  <div class="fullscreen" id="fs" hidden role="dialog" aria-modal="true" aria-labelledby="fs-title">
+    <div class="grid-bg" aria-hidden="true"></div>
+    <header class="fs-head">
+      <h2 id="fs-title">Release preview</h2>
+      <button type="button" class="close-btn" id="close" aria-label="Close">×</button>
+    </header>
+    <div class="fs-body">
+      <div class="hero">
+        <h3>Version 4.0 is ready</h3>
+        <p>Review the changelog, run smoke tests, and promote to production — all from this fullscreen workspace.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const fs = document.getElementById('fs');
+    const open = () => { fs.hidden = false; requestAnimationFrame(() => fs.classList.add('open')); document.body.style.overflow = 'hidden'; };
+    const close = () => { fs.classList.remove('open'); document.body.style.overflow = ''; setTimeout(() => { fs.hidden = true; }, 500); };
+
+    document.getElementById('open').onclick = open;
+    document.getElementById('close').onclick = close;
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !fs.hidden) close(); });
+  </script>
+</body>
+</html>

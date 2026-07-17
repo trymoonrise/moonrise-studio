@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0857
+    slug: alerts-info-alert-01
+    title: Data Stream Alert
+    category: alerts
+    tags: alerts, info
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0857 — Data Stream Alert</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      padding: 2rem;
+      background: #0a0c10;
+      font-family: 'Outfit', sans-serif;
+      color: #e8eaef;
+    }
+
+    .alert {
+      width: min(100%, 480px);
+      background: #12151c;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .head {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.2rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .head svg { flex-shrink: 0; color: #38bdf8; }
+
+    .head h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .head span {
+      margin-left: auto;
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(56, 189, 248, 0.6);
+    }
+
+    .stream {
+      height: 88px;
+      overflow: hidden;
+      position: relative;
+      background: rgba(0, 0, 0, 0.25);
+    }
+
+    .stream::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, #12151c, transparent 20%, transparent 80%, #12151c);
+      pointer-events: none;
+    }
+
+    .lines {
+      padding: 0.6rem 1.2rem;
+      font-size: 0.72rem;
+      line-height: 1.8;
+      color: rgba(232, 234, 239, 0.45);
+      animation: scroll 8s linear infinite;
+    }
+
+    @keyframes scroll {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-50%); }
+    }
+
+    .lines em { color: #7dd3fc; font-style: normal; }
+    .lines strong { color: rgba(232, 234, 239, 0.75); font-weight: 500; }
+
+    .foot {
+      padding: 0.85rem 1.2rem;
+      font-size: 0.82rem;
+      color: rgba(232, 234, 239, 0.6);
+      line-height: 1.5;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .lines { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="alert" role="status" aria-live="polite">
+    <div class="head">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
+      </svg>
+      <h2>System update available</h2>
+      <span>Info</span>
+    </div>
+    <div class="stream" aria-hidden="true">
+      <div class="lines">
+        <div><em>09:14:02</em> <strong>kernel</strong> — patch 2026.07 ready</div>
+        <div><em>09:14:03</em> <strong>db</strong> — migration pending · 0 downtime</div>
+        <div><em>09:14:04</em> <strong>cdn</strong> — edge cache warm · 99.2%</div>
+        <div><em>09:14:05</em> <strong>auth</strong> — session TTL extended to 24h</div>
+        <div><em>09:14:02</em> <strong>kernel</strong> — patch 2026.07 ready</div>
+        <div><em>09:14:03</em> <strong>db</strong> — migration pending · 0 downtime</div>
+        <div><em>09:14:04</em> <strong>cdn</strong> — edge cache warm · 99.2%</div>
+        <div><em>09:14:05</em> <strong>auth</strong> — session TTL extended to 24h</div>
+      </div>
+    </div>
+    <p class="foot">Version 4.2 includes performance improvements and security patches. Schedule maintenance during off-peak hours.</p>
+  </div>
+</body>
+</html>

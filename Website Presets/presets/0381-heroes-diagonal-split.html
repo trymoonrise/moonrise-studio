@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0381
+    slug: heroes-diagonal-split
+    title: Diagonal Split Hero
+    category: heroes
+    tags: heroes, landing, image, split
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0381 — Diagonal Split Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    
+    body{margin:0;min-height:100vh;display:grid;grid-template-columns:55% 45%;background:#111;color:#fff}
+    .left{display:flex;flex-direction:column;justify-content:center;padding:clamp(2rem,6vw,5rem);clip-path:polygon(0 0,100% 0,88% 100%,0 100%)}
+    h1{font-size:clamp(2.2rem,4vw,3.5rem);font-weight:800;margin-bottom:1rem}
+    p{color:#aaa;max-width:36ch;margin-bottom:2rem}
+    .btn{padding:12px 24px;background:#fff;color:#111;border:none;font-weight:700}
+    .right img{width:100%;height:100vh;object-fit:cover}
+    @media(max-width:800px){body{grid-template-columns:1fr}.left{clip-path:none}.right img{height:50vh}}
+  </style>
+</head>
+<body>
+<div class="left"><h1>Angles that stand out</h1><p>Diagonal splits add energy to standard two-column hero layouts.</p><button class="btn">Explore</button></div><div class="right"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt=""></div>
+
+</body>
+</html>

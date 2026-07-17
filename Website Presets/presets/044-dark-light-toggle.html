@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 044
+    slug: dark-light-toggle
+    title: Dark Light Toggle
+    category: toggles
+    tags: dark, light, theme
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>044 — Dark Light Toggle</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    
+    body{display:grid;place-items:center;min-height:100vh;transition:background .4s,color .4s;background:var(--bg);color:var(--text)}
+    body.dark{--bg:#0d0d0f;--text:#e8e8ed;--track:#3a3a44;--knob:#ffffff}
+    body.light{--bg:#f4f4f5;--text:#18181b;--track:#d4d4d8;--knob:#ffffff}
+    .wrap{display:flex;flex-direction:column;align-items:center;gap:1.5rem}
+    .toggle{width:56px;height:30px;border-radius:15px;border:none;background:var(--track);cursor:pointer;padding:3px;display:flex;align-items:center;color:inherit;transition:background .3s}
+    body.dark .toggle{background:#6c8cff}
+    .knob{width:24px;height:24px;border-radius:50%;background:var(--knob);box-shadow:0 1px 4px rgba(0,0,0,.3);transition:transform .3s cubic-bezier(.4,.2,.2,1);transform:translateX(0)}
+    body.dark .knob{transform:translateX(26px)}
+    h2{font-size:1.5rem;font-weight:600}
+    
+  </style>
+</head>
+<body>
+<div class="wrap"><button class="toggle" id="t" type="button" aria-label="Toggle theme"><div class="knob"></div></button><h2 id="label">Dark Mode</h2></div>
+<script>
+    const btn=document.getElementById('t'),label=document.getElementById('label');
+    function setTheme(isDark){document.body.classList.toggle('dark',isDark);document.body.classList.toggle('light',!isDark);label.textContent=isDark?'Dark Mode':'Light Mode';}
+    document.body.classList.add('dark');
+    btn.addEventListener('click',()=>setTheme(!document.body.classList.contains('dark')));
+    </script>
+</body>
+</html>

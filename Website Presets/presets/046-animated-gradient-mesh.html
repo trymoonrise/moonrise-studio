@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 046
+    slug: animated-gradient-mesh
+    title: Animated Gradient Mesh
+    category: backgrounds
+    tags: gradient, mesh
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>046 — Animated Gradient Mesh</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');body{margin:0;min-height:100vh;display:grid;place-items:center;overflow:hidden;position:relative;background:#0c0c0c;color:#fff;font-family:"DM Sans",system-ui,-apple-system,sans-serif}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+    .orb{position:absolute;border-radius:50%;filter:blur(72px);opacity:.55;animation:drift 14s ease-in-out infinite}
+    .orb--1{width:55vmax;height:55vmax;background:#3a3a3a;top:-20%;left:-15%;animation-duration:16s}
+    .orb--2{width:45vmax;height:45vmax;background:#1a1a1a;bottom:-25%;right:-10%;animation-duration:18s;animation-direction:reverse}
+    .orb--3{width:35vmax;height:35vmax;background:#5a5a5a;top:30%;left:40%;animation-duration:12s}
+    @keyframes drift{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(8%,-6%) scale(1.08)}66%{transform:translate(-6%,8%) scale(.94)}}
+    .grain{position:absolute;inset:0;opacity:.06;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+    
+.label{position:relative;z-index:2;text-align:center;padding:2rem;pointer-events:none}
+.kicker{margin:0 0 .75rem;font-size:.65rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;opacity:.45}
+h1{margin:0;font-family:"Syne",system-ui,sans-serif;font-size:clamp(1.85rem,5vw,2.85rem);font-weight:800;letter-spacing:-.045em;line-height:1.05}
+.sub{margin:.7rem 0 0;font-size:.9rem;opacity:.5;font-weight:400}
+  </style>
+</head>
+<body>
+<div class="orb orb--1" aria-hidden="true"></div><div class="orb orb--2" aria-hidden="true"></div><div class="orb orb--3" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div><div class="label"><p class="kicker">Background</p><h1>Gradient mesh</h1><p class="sub">Soft orbs in slow drift.</p></div>
+
+</body>
+</html>

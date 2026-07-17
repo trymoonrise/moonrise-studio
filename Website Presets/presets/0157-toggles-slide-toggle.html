@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0157
+    slug: toggles-slide-toggle
+    title: Slide Label Toggle
+    category: toggles
+    tags: toggles, slide
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0157 — Slide Label Toggle</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#1a1a2e}.wrap{display:flex;align-items:center;gap:1rem;color:#fff}.track{width:80px;height:36px;background:#333;border-radius:99px;position:relative;cursor:pointer}.thumb{position:absolute;top:4px;left:4px;width:28px;height:28px;background:#fff;border-radius:50%;transition:left .3s}.track.on{background:#6c8cff}.track.on .thumb{left:48px}
+  </style>
+</head>
+<body>
+<div class="wrap"><span>Off</span><div class="track" id="t"><div class="thumb"></div></div><span>On</span></div>
+<script>document.getElementById('t').onclick=function(){this.classList.toggle('on');};</script>
+</body>
+</html>

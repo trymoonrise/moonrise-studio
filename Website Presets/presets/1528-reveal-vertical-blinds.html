@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1528
+    slug: reveal-vertical-blinds
+    title: Vertical Blinds Reveal
+    category: reveals
+    tags: reveal, blinds, vertical
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1528 — Vertical Blinds Reveal</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:100vh;overflow:hidden}.scene{position:relative;height:100vh;background:linear-gradient(135deg,#6c8cff,#764ba2);display:grid;place-items:center}.scene h1{color:#fff;font-size:3rem;font-weight:900;z-index:2}.blinds{position:absolute;inset:0;display:flex;z-index:1}.blind{flex:1;background:#0d0d0f;transform:scaleX(1);transform-origin:left;animation:vb .7s cubic-bezier(.22,.61,.36,1) forwards}.blind:nth-child(odd){transform-origin:right}@keyframes vb{to{transform:scaleX(0)}}.blind:nth-child(1){animation-delay:.05s}.blind:nth-child(2){animation-delay:.1s}.blind:nth-child(3){animation-delay:.15s}.blind:nth-child(4){animation-delay:.2s}.blind:nth-child(5){animation-delay:.25s}.blind:nth-child(6){animation-delay:.3s}.blind:nth-child(7){animation-delay:.35s}.blind:nth-child(8){animation-delay:.4s}
+  </style>
+</head>
+<body>
+<div class="scene"><div class="blinds"><div class="blind"></div><div class="blind"></div><div class="blind"></div><div class="blind"></div><div class="blind"></div><div class="blind"></div><div class="blind"></div><div class="blind"></div></div><h1>Open</h1></div>
+
+</body>
+</html>

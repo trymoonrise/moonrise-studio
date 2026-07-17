@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0216
+    slug: alerts-error-alert
+    title: Error Alert
+    category: alerts
+    tags: alerts, error
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0216 — Error Alert</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=VT323&family=DM+Mono:wght@500&display=swap');
+
+    :root {
+      --red: #ff2b48;
+      --bg: #08060a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      padding: 2rem;
+      background: var(--bg);
+      overflow: hidden;
+      font-family: 'DM Mono', monospace;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(0deg, transparent 0 2px, rgba(0, 0, 0, 0.4) 2px 4px);
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .alert {
+      position: relative;
+      width: min(100%, 480px);
+      padding: 1.6rem 1.7rem;
+      background: rgba(30, 6, 12, 0.85);
+      border: 1px solid var(--red);
+      color: #ffd6dc;
+      box-shadow: 0 0 60px rgba(255, 43, 72, 0.35), inset 0 0 30px rgba(255, 43, 72, 0.08);
+      animation: err-shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97), boot 0.4s ease;
+    }
+
+    .glitch {
+      position: relative;
+      font-family: 'VT323', monospace;
+      font-size: clamp(2rem, 8vw, 3.4rem);
+      line-height: 1;
+      color: #fff;
+      letter-spacing: 0.02em;
+    }
+
+    .glitch::before,
+    .glitch::after {
+      content: attr(data-text);
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .glitch::before {
+      color: #00f0ff;
+      animation: g-shift 2.4s infinite steps(2);
+      clip-path: inset(0 0 55% 0);
+    }
+
+    .glitch::after {
+      color: var(--red);
+      animation: g-shift 3.1s infinite reverse steps(2);
+      clip-path: inset(55% 0 0 0);
+    }
+
+    .code {
+      display: inline-block;
+      margin: 0.4rem 0 0.9rem;
+      padding: 0.15rem 0.55rem;
+      background: var(--red);
+      color: #12000a;
+      font-size: 0.7rem;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+    }
+
+    .log {
+      margin: 0;
+      font-size: 0.82rem;
+      line-height: 1.7;
+      color: rgba(255, 214, 220, 0.75);
+    }
+
+    .log b { color: var(--red); }
+
+    .cursor {
+      display: inline-block;
+      width: 0.6ch;
+      height: 1em;
+      background: var(--red);
+      vertical-align: -0.12em;
+      animation: blink 0.8s steps(1) infinite;
+    }
+
+    @keyframes boot {
+      0% { opacity: 0; filter: brightness(4); transform: scaleY(0.01); }
+      100% { opacity: 1; filter: none; transform: scaleY(1); }
+    }
+    @keyframes err-shake {
+      10%, 90% { transform: translateX(-2px); }
+      20%, 80% { transform: translateX(4px); }
+      30%, 50%, 70% { transform: translateX(-6px); }
+      40%, 60% { transform: translateX(6px); }
+    }
+    @keyframes g-shift {
+      0%, 100% { transform: translate(0, 0); }
+      40% { transform: translate(-3px, 1px); }
+      60% { transform: translate(3px, -1px); }
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .alert, .glitch::before, .glitch::after, .cursor { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="alert" role="alert">
+    <div class="glitch" data-text="FATAL_ERROR" aria-hidden="true">FATAL_ERROR</div>
+    <span class="code">Error 0x216 · Write failed</span>
+    <p class="log">
+      &gt; attempting to save changes<br>
+      &gt; <b>connection dropped</b><br>
+      &gt; rollback complete<span class="cursor" aria-hidden="true"></span>
+    </p>
+  </div>
+</body>
+</html>

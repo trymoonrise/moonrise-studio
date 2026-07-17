@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0799
+    slug: tooltips-animated-tip-08
+    title: Animated Tip 08
+    category: tooltips
+    tags: tooltips, animated
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0799 — Animated Tip 08</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');*{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0d0d0d;color:#fff;font-family:"DM Sans",system-ui,-apple-system,sans-serif;padding:2rem}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.tip,.pop{opacity:1!important;transform:none!important;visibility:visible!important}}
+    .wrap{position:relative;display:inline-block}
+    .btn{padding:12px 28px;border:1px solid #fff;background:transparent;color:#fff;font-family:"DM Sans",system-ui,-apple-system,sans-serif;font-size:.86rem;font-weight:600;cursor:pointer;overflow:hidden;position:relative}
+    .btn span{position:relative;z-index:1}
+    .btn::before{content:'';position:absolute;inset:0;background:#fff;transform:translateY(101%);transition:transform .35s cubic-bezier(.22,1,.36,1)}
+    .btn:hover{color:#0d0d0d}.btn:hover::before{transform:none}
+    .tip{position:absolute;bottom:calc(100% + 14px);left:50%;translate:-50% 0;padding:9px 16px;background:#fff;color:#0d0d0d;font-size:.8rem;font-weight:600;white-space:nowrap;clip-path:inset(0 0 100% 0);opacity:0;transition:clip-path .4s cubic-bezier(.22,1,.36,1),opacity .3s}
+    .wrap:hover .tip{clip-path:inset(0);opacity:1}
+  </style>
+</head>
+<body>
+<div class="wrap"><button class="btn" type="button"><span>Reveal</span></button><div class="tip" role="tooltip">Wipe-in motion tip</div></div>
+
+</body>
+</html>

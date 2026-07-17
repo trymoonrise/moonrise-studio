@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1255
+    slug: carousels-auto-carousel-08
+    title: Auto Carousel 08
+    category: carousels
+    tags: carousels, animated, modern, interactive
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1255 — Auto Carousel 08</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#111827;font-family:'DM Sans',system-ui,sans-serif;color:#fff;overflow:hidden;padding:24px}
+    button{font:inherit;border:0;cursor:pointer;background:transparent;color:inherit}
+    .wrap{width:min(500px,90vw);text-align:center}.stage{position:relative;aspect-ratio:1;border-radius:50%;overflow:hidden;margin:0 auto;max-width:320px;border:1px solid rgba(255,255,255,.12);box-shadow:0 0 0 12px rgba(255,255,255,.03),0 30px 80px rgba(0,0,0,.4)}.slide{position:absolute;inset:0;opacity:0;transform:scale(.92) rotate(-4deg);transition:opacity .8s,transform .9s cubic-bezier(.22,1,.36,1)}.slide.on{opacity:1;transform:none}.slide img{width:100%;height:100%;object-fit:cover}.ring{position:absolute;inset:-14px;border-radius:50%;pointer-events:none}.ring svg{width:100%;height:100%;transform:rotate(-90deg)}.ring circle{fill:none;stroke:rgba(255,255,255,.12);stroke-width:3}.ring .prog{stroke:#60a5fa;stroke-linecap:round}.caption{margin-top:28px;font-family:Syne,sans-serif;font-weight:700;font-size:1.15rem;letter-spacing:-.03em}.sub{margin-top:6px;font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.4)}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="wrap"><div class="stage" id="stage">
+<div class="slide on"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt=""></div>
+<div class="slide"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt="" style="filter:hue-rotate(70deg)"></div>
+<div class="slide"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt="" style="filter:hue-rotate(160deg)"></div>
+<div class="ring"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="48"/><circle class="prog" id="prog" cx="50" cy="50" r="48"/></svg></div>
+</div><div class="caption" id="cap">Auto loop</div><div class="sub">pauseless orbit</div></div>
+<script>
+const slides=[...document.querySelectorAll('.slide')],prog=document.getElementById('prog'),cap=document.getElementById('cap'),labels=['Auto loop','Soft cycle','Next beat'];const C=2*Math.PI*48;prog.style.strokeDasharray=String(C);let i=0,t0=performance.now(),DUR=3500;function frame(now){const p=Math.min(1,(now-t0)/DUR);prog.style.strokeDashoffset=String(C*(1-p));if(now-t0>=DUR){t0=now;i=(i+1)%slides.length;slides.forEach((s,k)=>s.classList.toggle('on',k===i));cap.textContent=labels[i];}requestAnimationFrame(frame);}requestAnimationFrame(frame);
+</script>
+</body>
+</html>

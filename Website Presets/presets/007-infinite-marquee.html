@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 007
+    slug: infinite-marquee
+    title: Infinite Marquee
+    category: text
+    tags: marquee, banner
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>007 — Infinite Marquee</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap');
+
+    :root {
+      --paper: #e9e7df;
+      --ink: #10100f;
+      --acid: #c7ff18;
+      --red: #ff3d24;
+      --blue: #3157ff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow: hidden;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Archivo Black', sans-serif;
+    }
+
+    .installation {
+      position: fixed;
+      inset: -10vmax;
+      transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+      transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform;
+    }
+
+    .installation::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(16, 16, 15, 0.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(16, 16, 15, 0.055) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    .band {
+      position: absolute;
+      left: -15%;
+      width: 130%;
+      overflow: hidden;
+      border-block: 2px solid var(--ink);
+      background: var(--paper);
+      transform-origin: center;
+      box-shadow: 0 12px 0 rgba(16, 16, 15, 0.08);
+    }
+
+    .band__track {
+      display: flex;
+      width: max-content;
+      white-space: nowrap;
+      will-change: transform;
+      animation: run-left var(--speed, 18s) linear infinite;
+    }
+
+    .band__group {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .band__word {
+      display: inline-flex;
+      align-items: center;
+      min-height: clamp(4.5rem, 10vw, 8rem);
+      padding-inline: clamp(1.2rem, 3vw, 2.8rem);
+      font-size: clamp(3rem, 8vw, 7rem);
+      line-height: 0.82;
+      letter-spacing: -0.07em;
+      text-transform: uppercase;
+    }
+
+    .band__mark {
+      font-family: 'DM Mono', monospace;
+      font-size: clamp(1rem, 2vw, 1.7rem);
+      padding-inline: 1rem;
+    }
+
+    .band--top {
+      top: 17%;
+      z-index: 1;
+      transform: rotate(-8deg);
+      --speed: 17s;
+    }
+
+    .band--top .band__word:nth-child(even) {
+      color: transparent;
+      -webkit-text-stroke: 2px var(--ink);
+    }
+
+    .band--middle {
+      top: 43%;
+      z-index: 4;
+      transform: rotate(5deg);
+      background: var(--ink);
+      color: var(--acid);
+      border-color: var(--acid);
+      --speed: 12s;
+    }
+
+    .band--middle .band__track {
+      animation-name: run-right;
+    }
+
+    .band--middle .band__word {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      font-weight: 400;
+      letter-spacing: -0.045em;
+      text-transform: none;
+    }
+
+    .band--middle .band__mark {
+      color: var(--red);
+    }
+
+    .band--bottom {
+      top: 69%;
+      z-index: 2;
+      transform: rotate(-3deg);
+      background: var(--blue);
+      color: #fff;
+      border-color: var(--ink);
+      --speed: 22s;
+    }
+
+    .band--bottom .band__word {
+      min-height: clamp(3.5rem, 7vw, 6rem);
+      font-family: 'DM Mono', monospace;
+      font-size: clamp(1.8rem, 4.8vw, 4.2rem);
+      font-weight: 500;
+      letter-spacing: -0.04em;
+    }
+
+    .orbit {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      z-index: 3;
+      width: min(44vw, 430px);
+      aspect-ratio: 1;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background: var(--red);
+      box-shadow: 0 0 0 2px var(--ink), 12px 12px 0 var(--ink);
+      animation: breathe 5s ease-in-out infinite;
+    }
+
+    .orbit svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      animation: spin 18s linear infinite;
+    }
+
+    .orbit text {
+      fill: var(--ink);
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    .orbit__core {
+      position: absolute;
+      inset: 30%;
+      display: grid;
+      place-items: center;
+      border: 2px solid var(--ink);
+      border-radius: 50%;
+      background: var(--paper);
+      font-family: 'DM Mono', monospace;
+      font-size: clamp(0.65rem, 1.3vw, 0.9rem);
+      text-transform: uppercase;
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    .vertical {
+      position: fixed;
+      top: 50%;
+      right: 1.2rem;
+      z-index: 8;
+      writing-mode: vertical-rl;
+      transform: translateY(-50%);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+
+    .counter {
+      position: fixed;
+      left: 1.25rem;
+      bottom: 1.1rem;
+      z-index: 8;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .grain {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      opacity: 0.06;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    @keyframes run-left {
+      to { transform: translateX(-50%); }
+    }
+
+    @keyframes run-right {
+      from { transform: translateX(-50%); }
+      to { transform: translateX(0); }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes breathe {
+      0%, 100% { transform: translate(-50%, -50%) scale(0.96); }
+      50% { transform: translate(-50%, -50%) scale(1.04); }
+    }
+
+    @media (max-width: 640px) {
+      .installation { inset: -5vmax; }
+      .band { left: -35%; width: 170%; }
+      .band--top { top: 20%; }
+      .band--middle { top: 45%; }
+      .band--bottom { top: 68%; }
+      .orbit { width: min(66vw, 330px); }
+      .vertical { right: 0.55rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .band__track,
+      .orbit,
+      .orbit svg {
+        animation-play-state: paused;
+      }
+      .installation { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="installation" id="installation">
+    <section class="band band--top" aria-label="Form follows friction, endlessly scrolling">
+      <div class="band__track" data-track></div>
+    </section>
+
+    <section class="band band--middle" aria-label="No fixed direction, endlessly scrolling">
+      <div class="band__track" data-track></div>
+    </section>
+
+    <section class="band band--bottom" aria-label="Continuous transmission, endlessly scrolling">
+      <div class="band__track" data-track></div>
+    </section>
+
+    <div class="orbit" aria-hidden="true">
+      <svg viewBox="0 0 120 120">
+        <defs>
+          <path id="orbit-path" d="M60,60 m-46,0 a46,46 0 1,1 92,0 a46,46 0 1,1 -92,0"/>
+        </defs>
+        <text>
+          <textPath href="#orbit-path">INFINITE MOTION • TYPE WITHOUT EDGES • </textPath>
+        </text>
+      </svg>
+      <div class="orbit__core">Live<br>Signal</div>
+    </div>
+  </main>
+
+  <p class="vertical">Kinetic type experiment — 007</p>
+  <p class="counter">Always / moving</p>
+  <div class="grain" aria-hidden="true"></div>
+
+  <script>
+    const rows = [
+      {
+        words: ['Form', 'Follows', 'Friction'],
+        mark: '✦'
+      },
+      {
+        words: ['No fixed direction', 'Always becoming', 'Never still'],
+        mark: '↗'
+      },
+      {
+        words: ['Continuous', 'Transmission', 'Repeat forever'],
+        mark: '00:07'
+      }
+    ];
+
+    function buildGroup({ words, mark }) {
+      return words.map((word) =>
+        '<span class="band__word">' + word + '</span>' +
+        '<span class="band__mark" aria-hidden="true">' + mark + '</span>'
+      ).join('');
+    }
+
+    document.querySelectorAll('[data-track]').forEach((track, index) => {
+      const group = buildGroup(rows[index]);
+      track.innerHTML =
+        '<div class="band__group">' + group + '</div>' +
+        '<div class="band__group" aria-hidden="true">' + group + '</div>';
+    });
+
+    const installation = document.getElementById('installation');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    addEventListener('pointermove', (event) => {
+      if (reduced) return;
+      const x = event.clientX / innerWidth - 0.5;
+      const y = event.clientY / innerHeight - 0.5;
+      installation.style.setProperty('--ry', (x * 3).toFixed(2) + 'deg');
+      installation.style.setProperty('--rx', (-y * 2).toFixed(2) + 'deg');
+    }, { passive: true });
+
+    addEventListener('pointerleave', () => {
+      installation.style.setProperty('--ry', '0deg');
+      installation.style.setProperty('--rx', '0deg');
+    });
+  </script>
+</body>
+</html>

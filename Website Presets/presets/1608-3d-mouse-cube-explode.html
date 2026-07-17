@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1608
+    slug: 3d-mouse-cube-explode
+    title: 3D Cube Explode Mouse
+    category: 3d-mouse
+    tags: 3d, mouse, cube, explode
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1608 — 3D Cube Explode Mouse</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#06070c;perspective:1000px;overflow:hidden;font-family:Syne,sans-serif;cursor:crosshair}
+    .scene{width:140px;height:140px;position:relative;transform-style:preserve-3d;transform:rotateX(-22deg) rotateY(28deg)}
+    .piece{position:absolute;width:46px;height:46px;border-radius:8px;border:1px solid rgba(255,255,255,.2);transform-style:preserve-3d}
+    .hint{position:fixed;bottom:1.4rem;font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.35)}
+  </style>
+</head>
+<body>
+  <div class="scene" id="scene"></div>
+  <div class="hint">Move closer to explode</div>
+  <script>
+    const scene=document.getElementById('scene');
+    const colors=['#6c8cff','#ff6bcb','#7ee0c3','#ffd16c','#b06cff','#5eead4','#ff8a6c','#8aa4ff','#c084fc'];
+    const pieces=[];
+    for(let z=0;z<3;z++)for(let y=0;y<3;y++)for(let x=0;x<3;x++){
+      const el=document.createElement('div');el.className='piece';
+      el.style.background=`linear-gradient(145deg,${colors[(x+y+z)%colors.length]},#111)`;
+      scene.appendChild(el);
+      pieces.push({el,x:x-1,y:y-1,z:z-1,spread:0});
+    }
+    let power=0,tp=0;
+    addEventListener('pointermove',e=>{
+      const r=scene.getBoundingClientRect();
+      const cx=r.left+r.width/2,cy=r.top+r.height/2;
+      const d=Math.hypot(e.clientX-cx,e.clientY-cy);
+      tp=Math.max(0,1-d/280);
+    });
+    addEventListener('pointerleave',()=>tp=0);
+    (function loop(){
+      power+=(tp-power)*.1;
+      pieces.forEach(p=>{
+        const s=48+power*70;
+        const ox=p.x*s,oy=p.y*s,oz=p.z*s;
+        p.el.style.transform=`translate3d(calc(50% + ${ox}px - 23px), calc(50% + ${oy}px - 23px), ${oz}px) rotateX(${power*p.x*25}deg) rotateY(${power*p.y*25}deg)`;
+      });
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1654
+    slug: ease-in-image-card-stack
+    title: Image Card Stack Ease
+    category: ease-in
+    tags: ease-in, image, stack, professional
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1654 — Image Card Stack Ease</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#111;padding:2rem}.stack{position:relative;width:min(240px,70vw);aspect-ratio:4/5}.card{position:absolute;inset:0;border-radius:14px;overflow:hidden;box-shadow:0 16px 40px rgba(0,0,0,.4);opacity:0;transform:translateY(24px) scale(.95);animation:up .75s cubic-bezier(.22,.61,.36,1) forwards}.card img{width:100%;height:100%;object-fit:cover}.card:nth-child(1){animation-delay:.05s;z-index:3}.card:nth-child(2){animation-delay:.15s;z-index:2;transform:translateY(24px) scale(.95) rotate(-3deg)}.card:nth-child(3){animation-delay:.25s;z-index:1;transform:translateY(24px) scale(.95) rotate(3deg)}@keyframes up{to{opacity:1;transform:translateY(0) scale(1) rotate(0deg)}}
+  </style>
+</head>
+<body>
+<div class="stack"><div class="card"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt=""></div><div class="card"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt=""></div><div class="card"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt=""></div></div>
+
+</body>
+</html>

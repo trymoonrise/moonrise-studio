@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1406
+    slug: effects-prism-border
+    title: Prism Animated Border
+    category: effects
+    tags: effects, border, gradient
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1406 — Prism Animated Border</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#0a0a0c;padding:2rem}.box{position:relative;padding:2rem 3rem;border-radius:16px;background:#16161a;color:#fff;font-weight:600}.box::before{content:'';position:absolute;inset:-2px;border-radius:18px;background:linear-gradient(90deg,#6c8cff,#ff6cb0,#6cffb8,#6c8cff);background-size:300%;animation:prism 4s linear infinite;z-index:-1}@keyframes prism{to{background-position:300%}}
+  </style>
+</head>
+<body>
+<div class="box">Prism Border</div>
+
+</body>
+</html>

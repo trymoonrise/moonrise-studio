@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1797
+    slug: staggered-grid-glitch-slice
+    title: Glitch Slice Grid
+    category: animation
+    tags: grid, stagger, glitch, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1797 — Glitch Slice Grid</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');*{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#000;color:#fff;font-family:"DM Sans",system-ui,sans-serif;padding:2rem;display:grid;place-items:center}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.tile,.cell,.brick,.module,.card,.panel{opacity:1!important;transform:none!important;clip-path:none!important;filter:none!important}}
+    .wrap{width:min(920px,100%)}
+    h1{margin:0 0 1.5rem;font-family:"Syne",system-ui,sans-serif;font-size:clamp(2.2rem,6vw,4.2rem);font-weight:800;letter-spacing:-.06em;position:relative}
+    h1::before,h1::after{content:attr(data-t);position:absolute;left:0;top:0;opacity:.5}
+    h1::before{color:#fff;clip-path:inset(0 0 55% 0);transform:translate(-3px,0);animation:gl 2.5s infinite}
+    h1::after{clip-path:inset(55% 0 0 0);transform:translate(3px,0);animation:gl 2.5s infinite reverse}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .panel{min-height:160px;background:#0d0d0d;border:1px solid #1a1a1a;padding:1.25rem;position:relative;overflow:hidden;opacity:0;clip-path:inset(50% 0 50% 0);animation:slice .7s cubic-bezier(.16,1,.3,1) forwards;animation-delay:calc(var(--i)*80ms)}
+    .panel::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,.03) 2px,rgba(255,255,255,.03) 4px);pointer-events:none}
+    .panel b{font-family:"Syne",system-ui,sans-serif;font-size:1.4rem;font-weight:800;letter-spacing:-.03em}
+    .panel span{display:block;margin-top:.4rem;font-size:.75rem;color:#666}
+    @keyframes slice{to{opacity:1;clip-path:inset(0)}}
+    @keyframes gl{0%,90%,100%{transform:translate(0)}92%{transform:translate(-4px,1px)}96%{transform:translate(3px,-1px)}}
+    @media(max-width:560px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<main class="wrap"><h1 data-t="Glitch slice">Glitch slice</h1>
+    <section class="grid">
+      <article class="panel" style="--i:1"><b>SYNC</b><span>Channel A</span></article><article class="panel" style="--i:2"><b>OFFSET</b><span>Channel B</span></article><article class="panel" style="--i:3"><b>NOISE</b><span>Channel C</span></article><article class="panel" style="--i:4"><b>FRAME</b><span>Drop</span></article><article class="panel" style="--i:5"><b>LOCK</b><span>Stabilized</span></article><article class="panel" style="--i:6"><b>RAW</b><span>Feed</span></article>
+    </section></main>
+
+</body>
+</html>

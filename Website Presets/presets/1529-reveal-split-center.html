@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1529
+    slug: reveal-split-center
+    title: Center Split Reveal
+    category: reveals
+    tags: reveal, split, center
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1529 — Center Split Reveal</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:100vh;overflow:hidden}.scene{position:relative;height:100vh;background:url('../stock/media/16-9 Aspect Ratio(image).png') center/cover;display:grid;place-items:center}.scene h1{color:#fff;font-size:3rem;font-weight:800;z-index:1;text-shadow:0 2px 24px rgba(0,0,0,.6)}.half{position:absolute;top:0;bottom:0;width:50%;background:#111;animation:split 1.2s cubic-bezier(.22,.61,.36,1) forwards}.half--l{left:0;transform-origin:left}.half--r{right:0;transform-origin:right}@keyframes split{to{transform:scaleX(0)}}
+  </style>
+</head>
+<body>
+<div class="scene"><div class="half half--l"></div><div class="half half--r"></div><h1>Split</h1></div>
+
+</body>
+</html>

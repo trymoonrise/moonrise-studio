@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1833
+    slug: timeline-morph-blob
+    title: Morph Blob Timeline
+    category: timeline
+    tags: timeline, morph, blob, insane
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1833 — Morph Blob Timeline</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700&family=Outfit:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#0b0e14;color:#fff;font-family:Outfit,sans-serif;display:grid;place-items:center;padding:2rem;overflow:hidden}
+    .wrap{width:min(420px,94vw);text-align:center}
+    .stage{position:relative;height:280px;margin-bottom:1.5rem;display:grid;place-items:center}
+    .blob{width:200px;height:200px;background:linear-gradient(135deg,var(--c1),var(--c2));filter:blur(0);transition:background 1s,border-radius 1.2s cubic-bezier(.22,1,.36,1),transform .8s;animation:float 4s ease-in-out infinite;box-shadow:0 30px 80px color-mix(in srgb,var(--c1) 40%,transparent)}
+    .label{position:absolute;inset:0;display:grid;place-items:center;font-family:Syne,sans-serif;font-size:1.6rem;font-weight:700;pointer-events:none;text-shadow:0 4px 20px rgba(0,0,0,.4);letter-spacing:-.02em}
+    .ticks{display:flex;justify-content:center;gap:.5rem;margin-bottom:1.5rem}
+    .tick{width:10px;height:10px;border-radius:50%;border:none;background:#2a2e3a;cursor:pointer;transition:transform .35s,background .35s,box-shadow .35s}
+    .tick.on{background:#fff;transform:scale(1.4);box-shadow:0 0 16px rgba(255,255,255,.4)}
+    .copy h3{font-family:Syne,sans-serif;margin:0 0 .4rem;font-size:1.3rem}
+    .copy p{margin:0;color:#8a90a0;font-size:.92rem;line-height:1.55;min-height:2.8em}
+    .auto{margin-top:1.25rem;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:#4a5060}
+    @keyframes float{50%{transform:translateY(-10px)}}
+    @media(prefers-reduced-motion:reduce){.blob{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="stage">
+      <div class="blob" id="blob" style="--c1:#34d399;--c2:#059669;border-radius:60% 40% 50% 50% / 50% 60% 40% 50%"></div>
+      <div class="label" id="lab">Seed</div>
+    </div>
+    <div class="ticks" id="ticks"></div>
+    <div class="copy" id="copy"><h3>Seed</h3><p>Amorphous beginning — shape not yet known.</p></div>
+    <div class="auto">Auto-morphing eras</div>
+  </div>
+  <script>
+    const phases=[
+      {t:'Seed',d:'Amorphous beginning — shape not yet known.',c1:'#34d399',c2:'#059669',r:'60% 40% 50% 50% / 50% 60% 40% 50%'},
+      {t:'Bloom',d:'Edges soften into opportunity.',c1:'#60a5fa',c2:'#2563eb',r:'40% 60% 55% 45% / 55% 45% 60% 40%'},
+      {t:'Surge',d:'Mass concentrates; energy spikes.',c1:'#f472b6',c2:'#db2777',r:'70% 30% 45% 55% / 35% 65% 35% 65%'},
+      {t:'Crystal',d:'Form hardens into product.',c1:'#fbbf24',c2:'#d97706',r:'45% 55% 40% 60% / 60% 40% 55% 45%'},
+      {t:'Icon',d:'Shape becomes the brand itself.',c1:'#a78bfa',c2:'#7c3aed',r:'50% 50% 50% 50% / 50% 50% 50% 50%'}
+    ];
+    const blob=document.getElementById('blob'),lab=document.getElementById('lab'),copy=document.getElementById('copy'),ticks=document.getElementById('ticks');
+    let i=0;
+    phases.forEach((_,idx)=>{
+      const b=document.createElement('button');
+      b.className='tick'+(idx===0?' on':'');
+      b.setAttribute('aria-label',phases[idx].t);
+      b.onclick=()=>go(idx);
+      ticks.appendChild(b);
+    });
+    function go(n){
+      i=n;const p=phases[n];
+      blob.style.setProperty('--c1',p.c1);blob.style.setProperty('--c2',p.c2);blob.style.borderRadius=p.r;
+      lab.textContent=p.t;
+      copy.innerHTML=`<h3>${p.t}</h3><p>${p.d}</p>`;
+      [...ticks.children].forEach((t,j)=>t.classList.toggle('on',j===n));
+    }
+    setInterval(()=>go((i+1)%phases.length),3200);
+  </script>
+</body>
+</html>

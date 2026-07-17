@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0217
+    slug: alerts-success-banner
+    title: Success Banner
+    category: alerts
+    tags: alerts, success
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0217 — Success Banner</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #06120c;
+      font-family: 'Space Grotesk', sans-serif;
+      overflow: hidden;
+    }
+
+    .banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.9rem;
+      padding: 1.3rem 1.5rem;
+      color: #eafff2;
+      overflow: hidden;
+      background: linear-gradient(110deg, #0a7f4f, #16c26a 45%, #6ce8a6);
+      background-size: 200% 100%;
+      box-shadow: 0 20px 60px rgba(22, 194, 106, 0.35);
+      transform: translateY(-120%);
+      animation: drop 0.9s cubic-bezier(0.22, 1.3, 0.36, 1) forwards, sheen 4s linear infinite 1s;
+    }
+
+    .banner::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
+      transform: translateX(-120%);
+      animation: wipe 3.5s ease-in-out infinite 1.2s;
+    }
+
+    .check {
+      width: 38px;
+      height: 38px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.18);
+      display: grid;
+      place-items: center;
+    }
+
+    .check svg {
+      width: 22px;
+      height: 22px;
+      fill: none;
+      stroke: #fff;
+      stroke-width: 3.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 30;
+      stroke-dashoffset: 30;
+      animation: draw 0.5s ease forwards 0.7s;
+    }
+
+    .text strong {
+      display: block;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .text span {
+      font-size: 0.85rem;
+      opacity: 0.85;
+    }
+
+    .confetti {
+      position: fixed;
+      top: 70px;
+      left: 0;
+      right: 0;
+      height: 0;
+      z-index: 19;
+      pointer-events: none;
+    }
+
+    .confetti i {
+      position: absolute;
+      width: 9px;
+      height: 14px;
+      top: 0;
+      opacity: 0;
+      animation: fall 2.6s ease-in forwards;
+    }
+
+    .stage {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      color: rgba(234, 255, 242, 0.25);
+      font-size: 0.8rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+    }
+
+    @keyframes drop { to { transform: translateY(0); } }
+    @keyframes sheen { to { background-position: 200% 0; } }
+    @keyframes wipe { 0% { transform: translateX(-120%); } 45%, 100% { transform: translateX(120%); } }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+    @keyframes fall {
+      0% { opacity: 0; transform: translateY(-10px) rotate(0deg); }
+      10% { opacity: 1; }
+      100% { opacity: 0; transform: translateY(70vh) rotate(640deg); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .banner, .banner::after, .check svg, .confetti i { animation: none; transform: none; }
+      .banner { transform: translateY(0); }
+      .check svg { stroke-dashoffset: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="banner" role="status" aria-live="polite">
+    <div class="check" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg>
+    </div>
+    <div class="text">
+      <strong>Payment confirmed</strong>
+      <span>Your order is on its way — receipt sent to your inbox.</span>
+    </div>
+  </div>
+  <div class="confetti" id="confetti" aria-hidden="true"></div>
+  <div class="stage">Success</div>
+
+  <script>
+    const colors = ['#fff', '#6ce8a6', '#ffd93d', '#4de1ff', '#ff6cb0'];
+    const box = document.getElementById('confetti');
+    for (let i = 0; i < 60; i++) {
+      const c = document.createElement('i');
+      c.style.left = Math.random() * 100 + '%';
+      c.style.background = colors[i % colors.length];
+      c.style.animationDelay = (0.7 + Math.random() * 1.2) + 's';
+      c.style.transform = 'rotate(' + (Math.random() * 360) + 'deg)';
+      if (Math.random() > 0.5) c.style.borderRadius = '50%';
+      box.appendChild(c);
+    }
+  </script>
+</body>
+</html>

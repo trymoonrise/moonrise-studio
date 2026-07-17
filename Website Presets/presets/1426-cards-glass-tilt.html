@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1426
+    slug: cards-glass-tilt
+    title: Glass Tilt Card
+    category: cards
+    tags: cards, glass, tilt
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1426 — Glass Tilt Card</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:url('../stock/media/16-9 Aspect Ratio(image).png') center/cover;perspective:800px;padding:2rem}.card{width:280px;padding:2rem;border-radius:20px;background:rgba(255,255,255,.1);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.2);color:#fff;transition:transform .12s}h3{margin-bottom:.5rem}
+  </style>
+</head>
+<body>
+<div class="card" id="c"><h3>Glass Tilt</h3><p style="opacity:.8;font-size:.9rem">Frosted glass with mouse tilt.</p></div>
+<script>const c=document.getElementById('c');c.onmousemove=e=>{const r=c.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5;const y=(e.clientY-r.top)/r.height-.5;c.style.transform='rotateY('+x*12+'deg) rotateX('+(-y*12)+'deg)';};c.onmouseleave=()=>c.style.transform='';</script>
+</body>
+</html>

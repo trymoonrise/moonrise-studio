@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1398
+    slug: effects-chromatic-aberration
+    title: Chromatic Depth Rift
+    category: effects
+    tags: effects, chromatic, image
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1398 — Chromatic Depth Rift</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#050509;color:#fff;display:grid;place-items:center;overflow:hidden;font-family:Syne,sans-serif;perspective:1100px}
+    .scene{position:relative;width:min(620px,90vw);aspect-ratio:16/10;transform-style:preserve-3d;transition:transform .12s ease-out}
+    .channel{position:absolute;inset:0;border-radius:24px;overflow:hidden;border:1px solid rgba(255,255,255,.12);box-shadow:0 35px 90px rgba(0,0,0,.55)}
+    .channel img{width:100%;height:100%;object-fit:cover;display:block}
+    .base{transform:translateZ(0)}
+    .cyan{transform:translate3d(-12px,5px,-45px);mix-blend-mode:screen;opacity:.55;filter:sepia(1) saturate(5) hue-rotate(135deg);clip-path:polygon(0 0,100% 0,100% 46%,0 60%)}
+    .magenta{transform:translate3d(12px,-5px,45px);mix-blend-mode:screen;opacity:.5;filter:sepia(1) saturate(6) hue-rotate(280deg);clip-path:polygon(0 55%,100% 40%,100% 100%,0 100%)}
+    .scan{position:absolute;inset:-20%;background:linear-gradient(105deg,transparent 42%,rgba(255,255,255,.2) 50%,transparent 58%);transform:translateX(-65%);animation:sweep 4s ease-in-out infinite;z-index:5;pointer-events:none}
+    .copy{position:absolute;left:20px;bottom:18px;z-index:8;transform:translateZ(80px)}
+    .copy b{display:block;font-size:clamp(1.5rem,4vw,2.5rem);letter-spacing:-.05em}
+    .copy span{font:500 .6rem 'DM Mono',monospace;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+    .axis{position:absolute;inset:-22px;border:1px dashed rgba(108,140,255,.22);border-radius:34px;transform:translateZ(-70px);animation:orbit 18s linear infinite}
+    @keyframes sweep{0%,15%{transform:translateX(-65%)}75%,100%{transform:translateX(65%)}}
+    @keyframes orbit{to{transform:translateZ(-70px) rotate(360deg)}}
+    @media(prefers-reduced-motion:reduce){.scan,.axis{animation:none}}
+  </style>
+</head>
+<body>
+<main class="scene" id="scene">
+  <div class="axis" aria-hidden="true"></div>
+  <div class="channel cyan"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div>
+  <div class="channel base"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div>
+  <div class="channel magenta"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div>
+  <div class="scan" aria-hidden="true"></div>
+  <div class="copy"><span>3D spectral separation</span><b>Depth rift</b></div>
+</main>
+<script>
+  const scene = document.getElementById('scene');
+  scene.addEventListener('pointermove', (event) => {
+    const rect = scene.getBoundingClientRect();
+    const x = event.clientX / rect.width - rect.left / rect.width - 0.5;
+    const y = event.clientY / rect.height - rect.top / rect.height - 0.5;
+    scene.style.transform = `rotateY(${x * 10}deg) rotateX(${-y * 10}deg)`;
+  });
+  scene.addEventListener('pointerleave', () => { scene.style.transform = ''; });
+</script>
+
+</body>
+</html>

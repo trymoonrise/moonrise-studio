@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1830
+    slug: timeline-split-flap
+    title: Split-Flap Year Timeline
+    category: timeline
+    tags: timeline, split-flap, flip, insane
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1830 — Split-Flap Year Timeline</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700&family=Outfit:wght@400;500;600&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#1a1510;color:#f5e6d0;font-family:Outfit,sans-serif;display:grid;place-items:center;padding:2rem}
+    .board{text-align:center;width:min(480px,94vw)}
+    .board h2{font-family:Syne,sans-serif;font-size:1rem;letter-spacing:.2em;text-transform:uppercase;margin:0 0 2rem;color:#8a7060}
+    .flaps{display:flex;justify-content:center;gap:8px;perspective:600px;margin-bottom:2rem}
+    .cell{width:72px;height:96px;position:relative;font-family:Syne,sans-serif;font-size:3rem;font-weight:700;border-radius:8px;background:#0e0b08;box-shadow:0 8px 0 #050403,0 12px 30px rgba(0,0,0,.5);color:#f5e6d0}
+    .cell .half{position:absolute;left:0;right:0;height:50%;overflow:hidden;display:grid;place-items:center;background:linear-gradient(#2a2218,#1a1510)}
+    .cell .top{top:0;border-radius:8px 8px 0 0;align-items:end;border-bottom:1px solid #050403}
+    .cell .bot{bottom:0;border-radius:0 0 8px 8px;align-items:start}
+    .cell .top span{transform:translateY(50%)}
+    .cell .bot span{transform:translateY(-50%)}
+    .cell .flip{position:absolute;left:0;right:0;height:50%;top:0;transform-origin:bottom;transform-style:preserve-3d;backface-visibility:hidden;background:linear-gradient(#2a2218,#1a1510);display:grid;place-items:end center;border-radius:8px 8px 0 0;overflow:hidden;animation:flap .45s ease-in forwards}
+    .cell .flip span{transform:translateY(50%)}
+    .meta{min-height:4rem}
+    .meta h3{font-family:Syne,sans-serif;margin:0 0 .4rem;font-size:1.4rem}
+    .meta p{margin:0;color:#9a8070;font-size:.92rem;line-height:1.55}
+    .nav{display:flex;gap:.75rem;justify-content:center;margin-top:1.5rem}
+    .nav button{padding:.6rem 1.2rem;border-radius:999px;border:1px solid #3a3028;background:#221c16;color:#f5e6d0;font:600 .85rem Outfit,sans-serif;cursor:pointer}
+    @keyframes flap{to{transform:rotateX(-90deg)}}
+  </style>
+</head>
+<body>
+  <div class="board">
+    <h2>Station chronology</h2>
+    <div class="flaps" id="flaps"></div>
+    <div class="meta" id="meta"></div>
+    <div class="nav">
+      <button id="prev">← Prev</button>
+      <button id="next">Next →</button>
+    </div>
+  </div>
+  <script>
+    const years=[
+      {y:'2021',t:'Ticketed',d:'First departure announced.'},
+      {y:'2022',t:'Boarding',d:'Early passengers fill the cars.'},
+      {y:'2023',t:'Express',d:'Nonstop growth route opens.'},
+      {y:'2024',t:'Hub',d:'Network effect locks in.'},
+      {y:'2025',t:'Terminal',d:'Destination: category lead.'}
+    ];
+    let i=0;
+    const flaps=document.getElementById('flaps'),meta=document.getElementById('meta');
+    function cell(ch){
+      const el=document.createElement('div');
+      el.className='cell';
+      el.innerHTML=`<div class="half top"><span>${ch}</span></div><div class="half bot"><span>${ch}</span></div>`;
+      return el;
+    }
+    function show(n,animate){
+      const y=years[n].y;
+      if(!animate||!flaps.children.length){
+        flaps.innerHTML='';
+        [...y].forEach(ch=>flaps.appendChild(cell(ch)));
+      }else{
+        [...y].forEach((ch,idx)=>{
+          const c=flaps.children[idx];
+          if(!c||c.querySelector('.top span').textContent===ch)return;
+          const flip=document.createElement('div');
+          flip.className='flip';
+          flip.innerHTML=`<span>${c.querySelector('.top span').textContent}</span>`;
+          c.appendChild(flip);
+          setTimeout(()=>{
+            c.querySelectorAll('.half span').forEach(s=>s.textContent=ch);
+            flip.remove();
+          },420);
+        });
+      }
+      meta.innerHTML=`<h3>${years[n].t}</h3><p>${years[n].d}</p>`;
+      i=n;
+    }
+    document.getElementById('next').onclick=()=>show((i+1)%years.length,true);
+    document.getElementById('prev').onclick=()=>show((i-1+years.length)%years.length,true);
+    show(0,false);
+  </script>
+</body>
+</html>

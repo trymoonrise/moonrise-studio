@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1264
+    slug: card-shuffles-flip-shuffle-03
+    title: Binary Flip Cascade
+    category: card-shuffles
+    tags: card-shuffles, flip
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1264 — Binary Flip Cascade</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#060608;color:#f0f0f4;font-family:Outfit,sans-serif;padding:24px}
+    button{font:inherit;border:0;cursor:pointer}
+    .wrap{text-align:center}
+    .row{display:flex;gap:14px;justify-content:center;margin-bottom:28px;perspective:900px}
+    .flip{width:100px;height:140px;position:relative;transform-style:preserve-3d;transition:transform .65s cubic-bezier(.16,1,.3,1);cursor:pointer}
+    .flip.turn{transform:rotateY(180deg)}
+    .face{position:absolute;inset:0;border-radius:6px;backface-visibility:hidden;display:grid;place-items:center;border:1px solid rgba(255,255,255,.12)}
+    .front{background:#111118;font-family:Syne,sans-serif;font-size:1.4rem;font-weight:800}
+    .back{background:#00c896;color:#060608;transform:rotateY(180deg);font-size:.75rem;font-weight:600;letter-spacing:.05em;padding:12px;text-align:center}
+    .trigger{padding:12px 24px;border:1px solid rgba(255,255,255,.2);background:transparent;color:#fff;font:500 .75rem Outfit,sans-serif;letter-spacing:.15em;text-transform:uppercase;transition:background .25s}
+    .trigger:hover{background:rgba(255,255,255,.06)}
+    @media(prefers-reduced-motion:reduce){.flip{transition:none}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="row" id="row"></div>
+  <button class="trigger" id="trigger" type="button">Cascade flip</button>
+</div>
+<script>
+const row=document.getElementById('row'),labels=['0','1','0','1','0'],backs=['Null','Active','Null','Active','Null'];
+labels.forEach((l,i)=>{const f=document.createElement('div');f.className='flip';f.innerHTML=`<div class="face front">${l}</div><div class="face back">${backs[i]}</div>`;f.onclick=()=>f.classList.toggle('turn');row.appendChild(f);});
+document.getElementById('trigger').onclick=()=>{[...row.children].forEach((c,i)=>setTimeout(()=>c.classList.toggle('turn'),i*120));};
+</script>
+</body>
+</html>

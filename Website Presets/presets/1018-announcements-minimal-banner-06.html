@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1018
+    slug: announcements-minimal-banner-06
+    title: Minimal Banner 06
+    category: announcements
+    tags: announcements, minimal
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1018 — Minimal Banner 06</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#f4f4f1;font-family:'Instrument Sans',sans-serif;perspective:1000px}
+    .bar{
+      position:fixed;top:0;left:0;right:0;z-index:20;height:2.6rem;display:flex;align-items:center;justify-content:center;
+      background:#fff;color:#111;font-size:.8rem;font-weight:600;letter-spacing:.02em;
+      box-shadow:0 1px 0 rgba(0,0,0,.06);transform-origin:top;animation:edge 1s cubic-bezier(.16,1,.3,1) both;
+    }
+    .bar::before{
+      content:'';position:absolute;left:0;right:0;top:0;height:2px;
+      background:linear-gradient(90deg,transparent,#111 20%,#111 80%,transparent);
+      opacity:.85;
+    }
+    .bar b{font-weight:600}
+    .page{padding:5rem 1.5rem;text-align:center;color:#999}
+    @keyframes edge{from{transform:rotateX(-90deg)}to{transform:rotateX(0)}}
+    @media (prefers-reduced-motion:reduce){.bar{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="bar" role="status">Maintenance window: <b>&nbsp;Sunday 02:00–04:00 UTC</b></div>
+  <p class="page">Ultra-thin edge-lit banner with a hinge entrance.</p>
+</body>
+</html>

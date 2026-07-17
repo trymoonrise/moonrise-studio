@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0779
+    slug: forms-login-form-01
+    title: Terminal Login Gate
+    category: forms
+    tags: forms, login
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0779 — Terminal Login Gate</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #080a0e;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+      padding: 1.5rem;
+    }
+
+    .terminal {
+      width: min(420px, 94vw);
+      background: #0f1419;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+    }
+
+    .term-bar {
+      display: flex;
+      gap: 6px;
+      padding: 0.75rem 1rem;
+      background: #111827;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot:nth-child(1) { background: #f87171; }
+    .dot:nth-child(2) { background: #fbbf24; }
+    .dot:nth-child(3) { background: #00d4aa; }
+
+    .term-body { padding: 1.5rem; }
+
+    .prompt {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #00d4aa;
+      margin-bottom: 0.5rem;
+      animation: cursorBlink 1.2s step-end infinite;
+    }
+
+    @keyframes cursorBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 800;
+      margin-bottom: 1.5rem;
+    }
+
+    .field { margin-bottom: 1rem; }
+
+    .field label {
+      display: block;
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-bottom: 0.35rem;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #e2e8f0;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    .field input:focus { border-color: #00d4aa; }
+
+    .submit {
+      width: 100%;
+      padding: 0.85rem;
+      margin-top: 0.5rem;
+      border: none;
+      border-radius: 8px;
+      background: #00d4aa;
+      color: #080a0e;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px #00d4aa33;
+      animation: submitGlow 0.4s ease;
+    }
+
+    @keyframes submitGlow {
+      50% { box-shadow: 0 8px 32px #00d4aa55; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .prompt { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <form class="terminal" id="login">
+    <div class="term-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+    <div class="term-body">
+      <div class="prompt">auth@nexus ~ login</div>
+      <h1>Sign in</h1>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="you@company.com" required>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="submit">Authenticate →</button>
+    </div>
+  </form>
+
+  <script>
+    document.getElementById('login').addEventListener('submit', (e) => e.preventDefault());
+  </script>
+</body>
+</html>

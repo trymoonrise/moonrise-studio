@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1091
+    slug: pricing-three-tier-01
+    title: Stacked Ladder Pricing
+    category: pricing
+    tags: pricing, ladder, tiers
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1091 — Stacked Ladder Pricing</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700&family=Outfit:wght@400;500;600&display=swap');
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0a0b0f;padding:2rem;font-family:Outfit,sans-serif;color:#e8e8ea}
+.ladder{width:min(420px,100%);display:flex;flex-direction:column;gap:.65rem}
+.tier{display:grid;grid-template-columns:1fr auto;gap:1rem;align-items:center;padding:1.15rem 1.35rem;border-radius:16px;border:1px solid #22232c;background:#12131a;cursor:pointer;transition:border-color .3s,transform .35s,background .3s}
+.tier:hover{transform:translateX(6px)}
+.tier.on{border-color:#7ee0c3;background:#0f1a16;box-shadow:0 0 0 1px rgba(126,224,195,.2)}
+.name{font-family:Syne,sans-serif;font-weight:700;font-size:1.05rem;margin:0 0 .2rem}
+.desc{margin:0;font-size:.8rem;color:#7a8090}
+.price{font-family:Syne,sans-serif;font-size:1.5rem;font-weight:700;color:#7ee0c3}
+.price small{font-size:.7rem;color:#5a6068;font-weight:500}
+.cta{margin-top:.75rem;width:100%;padding:.85rem;border:none;border-radius:12px;background:#7ee0c3;color:#08140f;font:600 .9rem Outfit,sans-serif;cursor:pointer;opacity:0;height:0;padding:0;overflow:hidden;transition:opacity .3s,height .35s,padding .35s,margin .35s}
+.tier.on .cta{opacity:1;height:auto;padding:.85rem;margin-top:.75rem}
+.tier.on{grid-template-columns:1fr;align-items:stretch}
+.tier.on .price{margin-top:.35rem}
+  </style>
+</head>
+<body>
+<div class="ladder">
+  <div class="tier"><div><h3 class="name">Starter</h3><p class="desc">Solo makers shipping MVPs</p></div><div class="price">$12<small>/mo</small></div><button class="cta">Choose Starter</button></div>
+  <div class="tier on"><div><h3 class="name">Studio</h3><p class="desc">Teams up to 8 seats</p></div><div class="price">$39<small>/mo</small></div><button class="cta">Choose Studio</button></div>
+  <div class="tier"><div><h3 class="name">Scale</h3><p class="desc">Unlimited seats + SSO</p></div><div class="price">$99<small>/mo</small></div><button class="cta">Choose Scale</button></div>
+</div>
+<script>document.querySelectorAll('.tier').forEach(t=>t.onclick=()=>{document.querySelectorAll('.tier').forEach(x=>x.classList.remove('on'));t.classList.add('on')});</script>
+</body>
+</html>

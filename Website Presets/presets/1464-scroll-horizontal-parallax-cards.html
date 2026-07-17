@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1464
+    slug: scroll-horizontal-parallax-cards
+    title: Parallax Card Rail
+    category: scroll-horizontal
+    tags: horizontal, parallax, cards
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1464 — Parallax Card Rail</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#f0f0f0;overflow-x:auto;overflow-y:hidden}.rail{display:flex;align-items:center;gap:2rem;padding:25vh 15vw;width:max-content;min-height:100vh}.card{flex:0 0 260px;border-radius:20px;padding:2rem;background:#fff;box-shadow:0 8px 32px rgba(0,0,0,.08);will-change:transform}.card h3{font-size:1.3rem;margin-bottom:.5rem}.card p{color:#666;font-size:.9rem;line-height:1.5}.card:nth-child(odd){background:#6c8cff;color:#fff}.card:nth-child(odd) p{color:rgba(255,255,255,.8)}
+  </style>
+</head>
+<body>
+<div class="rail"><div class="card"><h3>Velocity</h3><p>Parallax speed varies per card on horizontal scroll.</p></div><div class="card"><h3>Momentum</h3><p>Parallax speed varies per card on horizontal scroll.</p></div><div class="card"><h3>Depth</h3><p>Parallax speed varies per card on horizontal scroll.</p></div><div class="card"><h3>Rhythm</h3><p>Parallax speed varies per card on horizontal scroll.</p></div><div class="card"><h3>Flow</h3><p>Parallax speed varies per card on horizontal scroll.</p></div><div class="card"><h3>Pulse</h3><p>Parallax speed varies per card on horizontal scroll.</p></div></div>
+<script>const cards=[...document.querySelectorAll('.card')];function u(){const x=window.scrollX||document.documentElement.scrollLeft;cards.forEach((c,i)=>{const speed=.08+(i%3)*.06;c.style.transform='translateY('+Math.sin(x*speed)*20+'px)';});}addEventListener('scroll',u,{passive:true});document.documentElement.style.overflowX='auto';document.documentElement.style.overflowY='hidden';u();</script>
+</body>
+</html>

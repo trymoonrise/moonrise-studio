@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0610
+    slug: sidebars-collapsible-01
+    title: Collapsible 01
+    category: sidebars
+    tags: sidebars, collapsible
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0610 — Collapsible 01</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:100vh;display:flex;background:#100c18}.sb{width:200px;background:#1a1424;color:#ede8ff;padding:1.5rem 1rem;border-right:1px solid #9080b033}.sb a{display:block;padding:10px;color:#9080b0;text-decoration:none;font-size:.9rem;border-radius:6px}.sb a:hover,.sb a.on{background:#a78bfa22;color:#a78bfa}.main{flex:1;padding:2rem;color:#ede8ff}
+  </style>
+</head>
+<body>
+<aside class="sb"><a href="#" class="on">Dashboard</a><a href="#" class="">Projects</a><a href="#" class="">Settings</a><a href="#" class="">Help</a></aside><main class="main"><h2 style="color:#a78bfa">Collapsible 215</h2></main>
+<script>document.querySelectorAll('.sb a').forEach(a=>a.onclick=e=>{e.preventDefault();document.querySelectorAll('.sb a').forEach(x=>x.classList.remove('on'));a.classList.add('on');});</script>
+</body>
+</html>

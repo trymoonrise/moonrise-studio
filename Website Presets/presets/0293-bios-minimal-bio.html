@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0293
+    slug: bios-minimal-bio
+    title: Minimal Bio Line
+    category: bios
+    tags: bios, minimal, experimental, shapes
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0293 — Minimal Bio Line</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&family=DM+Mono:wght@400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fafafa;font-family:'DM Mono',monospace;overflow:hidden}
+    .line{display:flex;align-items:center;gap:1rem;width:min(520px,90vw);animation:in .7s cubic-bezier(.22,1,.36,1) both}
+    .node{position:relative;width:14px;height:14px;flex-shrink:0}
+    .node::before{content:'';position:absolute;inset:0;background:#111;border-radius:50%;animation:pulse 2.6s ease-in-out infinite}
+    .node::after{content:'';position:absolute;inset:-6px;border:1px solid rgba(0,0,0,.25);border-radius:50%;animation:ring 2.6s ease-out infinite}
+    .rail{flex:1;height:1px;background:linear-gradient(90deg,#111,rgba(0,0,0,.15));transform-origin:left;animation:draw 1.2s cubic-bezier(.22,1,.36,1) .2s both}
+    .text{display:flex;align-items:baseline;gap:.75rem;white-space:nowrap}
+    .name{font-family:'Instrument Serif',serif;font-style:italic;font-size:1.35rem;color:#111}
+    .role{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(0,0,0,.4)}
+    @keyframes draw{from{transform:scaleX(0)}}
+    @keyframes pulse{50%{transform:scale(1.15)}}
+    @keyframes ring{to{transform:scale(1.8);opacity:0}}
+    @keyframes in{from{opacity:0;transform:translateX(-12px)}}
+    @media (prefers-reduced-motion:reduce){.rail,.node::before,.node::after,.line{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="line">
+    <span class="node" aria-hidden="true"></span>
+    <span class="rail" aria-hidden="true"></span>
+    <div class="text"><span class="name">Mira Sol</span><span class="role">Writer</span></div>
+  </div>
+</body>
+</html>

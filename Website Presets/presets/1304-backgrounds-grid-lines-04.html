@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1304
+    slug: backgrounds-grid-lines-04
+    title: Blueprint Grid Scan
+    category: backgrounds
+    tags: backgrounds, grid
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1304 — Blueprint Grid Scan</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#080810;color:#c8d0e0;font-family:Outfit,sans-serif;overflow:hidden}
+    .blueprint{position:fixed;inset:0;background-image:linear-gradient(rgba(100,140,200,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(100,140,200,.08) 1px,transparent 1px);background-size:40px 40px}
+    .scanline{position:fixed;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(0,200,150,.6),transparent);animation:scan 4s ease-in-out infinite;z-index:1}
+    .vignette{position:fixed;inset:0;background:radial-gradient(circle at center,transparent 30%,#080810 80%);pointer-events:none}
+    .panel{position:relative;z-index:2;padding:32px;border:1px solid rgba(100,140,200,.2);background:rgba(8,8,16,.9);max-width:420px}
+    .panel span{font:500 .6rem Outfit,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:rgba(0,200,150,.7)}
+    .panel h2{font-family:Syne,sans-serif;font-size:1.6rem;margin:8px 0 10px;letter-spacing:-.03em;color:#e8ecf4}
+    .panel p{margin:0;font-size:.85rem;color:rgba(200,208,224,.45);line-height:1.55}
+    .coords{position:fixed;bottom:16px;right:16px;font:500 .65rem Outfit,monospace;color:rgba(100,140,200,.4);letter-spacing:.1em;z-index:2;animation:blink 2s step-end infinite}
+    @keyframes scan{0%,100%{top:10%;opacity:0}10%,90%{opacity:1}50%{top:85%}}
+    @keyframes blink{50%{opacity:.3}}
+    @media(prefers-reduced-motion:reduce){.scanline,.coords{animation:none}}
+  </style>
+</head>
+<body>
+<div class="blueprint"></div>
+<div class="scanline" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+<article class="panel">
+  <span>Blueprint</span>
+  <h2>Grid scan</h2>
+  <p>Technical grid lines with a sweeping scan beam — editorial tech aesthetic.</p>
+</article>
+<p class="coords">X:042 Y:018</p>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1801
+    slug: staggered-grid-quantum-blink
+    title: Quantum Blink Grid
+    category: animation
+    tags: grid, stagger, quantum, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1801 — Quantum Blink Grid</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');*{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#030303;color:#fff;font-family:"DM Sans",system-ui,sans-serif;padding:2rem;display:grid;place-items:center}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.tile,.cell,.brick,.module,.card,.panel{opacity:1!important;transform:none!important;clip-path:none!important;filter:none!important}}
+    .wrap{width:min(880px,100%)}
+    h1{margin:0 0 .5rem;font-family:"Syne",system-ui,sans-serif;font-size:clamp(2.2rem,6vw,4.2rem);font-weight:800;letter-spacing:-.06em}
+    p{margin:0 0 1.75rem;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:#444}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+    .q{aspect-ratio:1;background:#101010;border:1px solid #1a1a1a;display:grid;place-items:center;font-family:"Syne",system-ui,sans-serif;font-weight:800;font-size:clamp(1rem,2.5vw,1.6rem);opacity:0;filter:brightness(3);transform:scale(1.4);
+      animation:blink .15s steps(1) calc(var(--i)*90ms) 3,hold .01s calc(var(--i)*90ms + .5s) forwards}
+    @keyframes blink{0%{opacity:0}50%{opacity:1}100%{opacity:0}}
+    @keyframes hold{to{opacity:1;filter:none;transform:none}}
+    @media(max-width:560px){.grid{grid-template-columns:repeat(2,1fr)}}
+  </style>
+</head>
+<body>
+<main class="wrap"><h1>Quantum blink</h1><p>Teleport into existence</p>
+    <section class="grid">
+      <div class="q" style="--i:1">Ψ</div><div class="q" style="--i:2">φ</div><div class="q" style="--i:3">λ</div><div class="q" style="--i:4">Ω</div><div class="q" style="--i:5">Δ</div><div class="q" style="--i:6">Σ</div><div class="q" style="--i:7">π</div><div class="q" style="--i:8">θ</div><div class="q" style="--i:9">μ</div><div class="q" style="--i:10">ρ</div><div class="q" style="--i:11">τ</div><div class="q" style="--i:12">ξ</div>
+    </section></main>
+
+</body>
+</html>

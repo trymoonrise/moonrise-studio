@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0400
+    slug: cursor-trails-ribbon-trail-05
+    title: Ribbon Trail 05
+    category: cursor-trails
+    tags: cursor-trails, ribbon
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0400 — Ribbon Trail 05</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #f4f4f5;
+      cursor: crosshair;
+      overflow: hidden;
+    }
+
+    canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .hint {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: #3b5ccc;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      opacity: 0.38;
+      pointer-events: none;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+  <p class="hint" id="hint">Move your cursor</p>
+  <canvas id="c" aria-hidden="true"></canvas>
+
+  <script>
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+    const hint = document.getElementById('hint');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const points = [];
+    let mx = innerWidth / 2;
+    let my = innerHeight / 2;
+    let cx = mx;
+    let cy = my;
+    let moved = false;
+
+    function resize() {
+      canvas.width = innerWidth;
+      canvas.height = innerHeight;
+    }
+
+    resize();
+    addEventListener('resize', resize);
+
+    if (!reduced) {
+      addEventListener('mousemove', (e) => {
+        mx = e.clientX;
+        my = e.clientY;
+        if (!moved) {
+          moved = true;
+          hint.style.opacity = '0';
+        }
+      });
+
+      function ribbonPath(pts) {
+        if (pts.length < 2) return;
+
+        const left = [];
+        const right = [];
+
+        for (let i = 0; i < pts.length; i += 1) {
+          const p = pts[i];
+          const prev = pts[i - 1] || p;
+          const next = pts[i + 1] || p;
+          const angle = Math.atan2(next.y - prev.y, next.x - prev.x);
+          const t = i / (pts.length - 1);
+          const width = 3 + t * 18;
+          const sin = Math.sin(angle);
+          const cos = Math.cos(angle);
+
+          left.push({ x: p.x + sin * width, y: p.y - cos * width });
+          right.push({ x: p.x - sin * width, y: p.y + cos * width });
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(left[0].x, left[0].y);
+
+        for (let i = 1; i < left.length; i += 1) {
+          ctx.lineTo(left[i].x, left[i].y);
+        }
+
+        for (let i = right.length - 1; i >= 0; i -= 1) {
+          ctx.lineTo(right[i].x, right[i].y);
+        }
+
+        ctx.closePath();
+
+        const head = pts[pts.length - 1];
+        const tail = pts[0];
+        const grad = ctx.createLinearGradient(tail.x, tail.y, head.x, head.y);
+        grad.addColorStop(0, 'rgba(59, 92, 204, 0.04)');
+        grad.addColorStop(0.55, 'rgba(59, 92, 204, 0.28)');
+        grad.addColorStop(1, 'rgba(59, 92, 204, 0.82)');
+
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(left[0].x, left[0].y);
+        for (let i = 1; i < left.length; i += 1) ctx.lineTo(left[i].x, left[i].y);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+      }
+
+      function frame() {
+        cx += (mx - cx) * 0.22;
+        cy += (my - cy) * 0.22;
+        points.push({ x: cx, y: cy });
+        if (points.length > 36) points.shift();
+
+        ctx.fillStyle = 'rgba(244, 244, 245, 0.28)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ribbonPath(points);
+
+        requestAnimationFrame(frame);
+      }
+
+      frame();
+    }
+  </script>
+</body>
+</html>

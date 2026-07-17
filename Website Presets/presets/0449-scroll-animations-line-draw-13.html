@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0449
+    slug: scroll-animations-line-draw-13
+    title: Line Draw 13
+    category: scroll-animations
+    tags: scroll-animations, line
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0449 — Line Draw 13</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#060d14;color:#d8eeff;font-family:system-ui}.track{height:220vh}.sticky{position:sticky;top:0;height:100vh;display:grid;place-items:center}svg{width:min(92vw,760px);height:auto}path{fill:none;stroke:#38bdf8;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 12px 40px rgba(56,189,248,.25))}.cap{position:fixed;left:22px;top:18px;color:rgba(216,238,255,.6);letter-spacing:.14em;text-transform:uppercase;font-size:.78rem}
+  </style>
+</head>
+<body>
+<div class="cap">Line draw</div><div class="track" id="t"><div class="sticky"><svg viewBox="0 0 800 300" aria-hidden="true"><path id="p" d="M70 220 C 180 40, 320 40, 430 220 S 680 400, 730 120"></path></svg></div></div>
+<script>const _el=document.querySelector('#t');function prog(){const r=_el.getBoundingClientRect();return Math.min(1,Math.max(0,-r.top/(r.height-innerHeight)));}const pth=document.getElementById('p');const len=pth.getTotalLength();pth.style.strokeDasharray=len;pth.style.strokeDashoffset=len;addEventListener('scroll',()=>{const p=prog();pth.style.strokeDashoffset=String((1-p)*len);},{passive:true});</script>
+</body>
+</html>

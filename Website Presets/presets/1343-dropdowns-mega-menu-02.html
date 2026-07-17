@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1343
+    slug: dropdowns-mega-menu-02
+    title: Panel Cascade Mega Menu
+    category: dropdowns
+    tags: dropdowns, mega
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1343 — Panel Cascade Mega Menu</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#0a0a0e;color:#ececf2;font-family:Outfit,sans-serif;padding:32px 24px}
+    button,a{font:inherit;border:0;cursor:pointer;background:transparent;color:inherit;text-decoration:none}
+    .nav{display:flex;align-items:center;gap:24px;max-width:800px;margin:0 auto 0;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.08)}
+    .logo{font-family:Syne,sans-serif;font-weight:800;font-size:1rem;letter-spacing:-.02em}
+    .nav-item{position:relative}
+    .nav-item>button{font:500 .78rem Outfit,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:rgba(236,236,242,.6);padding:8px 0;transition:color .25s}
+    .nav-item:hover>button,.nav-item.open>button{color:#fff}
+    .mega{position:absolute;top:calc(100% + 12px);left:-20px;width:520px;background:#111118;border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:24px;display:grid;grid-template-columns:repeat(3,1fr);gap:20px;opacity:0;transform:translateY(-10px);pointer-events:none;transition:opacity .3s,transform .3s}
+    .nav-item.open .mega{opacity:1;transform:none;pointer-events:auto}
+    .col h4{font-family:Syne,sans-serif;font-size:.85rem;margin:0 0 12px;letter-spacing:-.01em;color:#00c896}
+    .col a{display:block;font-size:.78rem;color:rgba(236,236,242,.5);padding:6px 0;transition:color .2s,transform .2s}
+    .col a:hover{color:#fff;transform:translateX(4px)}
+    .col a:nth-child(2){transition-delay:.03s}.col a:nth-child(3){transition-delay:.06s}.col a:nth-child(4){transition-delay:.09s}
+    .hint{text-align:center;margin-top:120px;font-size:.75rem;color:rgba(236,236,242,.25);letter-spacing:.15em;text-transform:uppercase}
+    @media(max-width:600px){.mega{width:90vw;grid-template-columns:1fr;left:0}}
+    @media(prefers-reduced-motion:reduce){.mega,.col a{transition:none}}
+  </style>
+</head>
+<body>
+<nav class="nav">
+  <span class="logo">Nexus</span>
+  <div class="nav-item" id="products">
+    <button type="button">Products</button>
+    <div class="mega">
+      <div class="col"><h4>Platform</h4><a href="#">Compute</a><a href="#">Storage</a><a href="#">Network</a></div>
+      <div class="col"><h4>Tools</h4><a href="#">CLI</a><a href="#">API</a><a href="#">SDK</a></div>
+      <div class="col"><h4>Resources</h4><a href="#">Docs</a><a href="#">Guides</a><a href="#">Status</a></div>
+    </div>
+  </div>
+  <div class="nav-item"><button type="button">Pricing</button></div>
+</nav>
+<p class="hint">Click Products to open mega menu</p>
+<script>
+const item=document.getElementById('products');
+item.querySelector('button').onclick=e=>{e.stopPropagation();item.classList.toggle('open');};
+document.addEventListener('click',()=>item.classList.remove('open'));
+</script>
+</body>
+</html>

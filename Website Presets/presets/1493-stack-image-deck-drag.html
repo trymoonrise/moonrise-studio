@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1493
+    slug: stack-image-deck-drag
+    title: Image Deck Drag Spread
+    category: stack-gallery
+    tags: stack, deck, drag, images
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1493 — Image Deck Drag Spread</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#1a1a2e;padding:2rem;overflow:hidden}.deck{position:relative;width:min(260px,75vw);aspect-ratio:4/5;touch-action:none}.card{position:absolute;inset:0;border-radius:16px;overflow:hidden;cursor:grab;box-shadow:0 16px 40px rgba(0,0,0,.35);transition:transform .35s cubic-bezier(.22,.61,.36,1)}.card:active{cursor:grabbing}.card img{width:100%;height:100%;object-fit:cover}.card.top{transition:transform .4s cubic-bezier(.22,.61,.36,1)}
+  </style>
+</head>
+<body>
+<div class="deck" id="d"><div class="card"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt="Photo 1"></div><div class="card"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt="Photo 2"></div><div class="card"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt="Photo 3"></div><div class="card"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt="Photo 4"></div><div class="card"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt="Photo 5"></div></div><p style="position:fixed;bottom:1.5rem;left:0;right:0;text-align:center;color:#666;font-size:.8rem">Drag top card to spread</p>
+<script>const d=document.getElementById('d');let cards=[...d.children].reverse();function layout(){cards.forEach((c,i)=>{c.style.zIndex=i;c.classList.toggle('top',i===cards.length-1);if(i<cards.length-1)c.style.transform='translateY('+(cards.length-1-i)*6+'px) scale('+(1-(cards.length-1-i)*.03)+')';else c.style.transform='';});bind();}let drag=false,sx=0,active=null;function bind(){const top=cards[cards.length-1];top.onpointerdown=e=>{drag=true;active=top;sx=e.clientX;top.setPointerCapture(e.pointerId);};top.onpointermove=e=>{if(!drag||active!==top)return;const dx=e.clientX-sx;top.style.transform='translateX('+dx+'px) rotate('+(dx*.05)+'deg)';};top.onpointerup=e=>{if(!drag||active!==top)return;drag=false;const dx=e.clientX-sx;if(Math.abs(dx)>80){top.style.transform='translateX('+(dx>0?400:-400)+'px) rotate('+(dx*.15)+'deg)';setTimeout(()=>{cards=[top,...cards.filter(c=>c!==top)];cards.forEach(c=>c.style.transform='');layout();},300);}else top.style.transform='';active=null;};}layout();</script>
+</body>
+</html>

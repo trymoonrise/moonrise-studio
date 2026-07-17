@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0831
+    slug: modals-fade-modal-01
+    title: Fade Overlay Modal
+    category: modals
+    tags: modals, fade
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0831 — Fade Overlay Modal</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #0a0c10;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+      padding: 1.5rem;
+    }
+
+    .page-content { text-align: center; }
+
+    .page-content h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+    }
+
+    .page-content p { color: #64748b; margin-bottom: 1.25rem; font-size: 0.9rem; }
+
+    .open-btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      background: #e2e8f0;
+      color: #080a0e;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .open-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(226, 232, 240, 0.15);
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 10, 14, 0);
+      display: grid;
+      place-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease, background 0.4s ease;
+      z-index: 50;
+      padding: 1rem;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+      background: rgba(8, 10, 14, 0.85);
+      animation: overlayFade 0.4s ease;
+    }
+
+    @keyframes overlayFade {
+      from { background: rgba(8, 10, 14, 0); }
+      to { background: rgba(8, 10, 14, 0.85); }
+    }
+
+    .modal {
+      width: min(420px, 94vw);
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 2rem;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.4s ease 0.1s, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1) 0.1s;
+    }
+
+    .modal-overlay.open .modal {
+      opacity: 1;
+      transform: translateY(0);
+      animation: modalFadeUp 0.5s ease 0.1s backwards;
+    }
+
+    @keyframes modalFadeUp {
+      from { opacity: 0; transform: translateY(24px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-icon {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 1rem;
+      border-radius: 50%;
+      background: #00d4aa18;
+      display: grid;
+      place-items: center;
+      animation: iconFloat 3s ease-in-out infinite;
+    }
+
+    @keyframes iconFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    .modal h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+    }
+
+    .modal p {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      line-height: 1.55;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-actions { display: flex; gap: 0.75rem; justify-content: center; }
+
+    .modal-actions button {
+      padding: 0.65rem 1.25rem;
+      border-radius: 8px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      border: none;
+      transition: transform 0.2s;
+    }
+
+    .modal-actions button:hover { transform: translateY(-1px); }
+
+    .secondary { background: #1e293b; color: #cbd5e1; }
+    .primary { background: #00d4aa; color: #080a0e; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .modal-overlay.open, .modal-overlay.open .modal { animation: none; }
+      .modal-icon { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-content">
+    <h1>Dashboard</h1>
+    <p>Modal fades in over a dimmed overlay with staggered content animation.</p>
+    <button type="button" class="open-btn" id="open">Show modal</button>
+  </div>
+
+  <div class="modal-overlay" id="overlay" hidden>
+    <div class="modal" role="dialog" aria-labelledby="modal-title">
+      <div class="modal-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+      </div>
+      <h2 id="modal-title">Deployment successful</h2>
+      <p>Your latest build is live at production. All health checks passed in 12 seconds.</p>
+      <div class="modal-actions">
+        <button type="button" class="secondary" id="close">Dismiss</button>
+        <button type="button" class="primary">View logs</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const overlay = document.getElementById('overlay');
+    const open = () => { overlay.hidden = false; requestAnimationFrame(() => overlay.classList.add('open')); };
+    const close = () => {
+      overlay.classList.remove('open');
+      setTimeout(() => { overlay.hidden = true; }, 450);
+    };
+
+    document.getElementById('open').onclick = open;
+    document.getElementById('close').onclick = close;
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+  </script>
+</body>
+</html>

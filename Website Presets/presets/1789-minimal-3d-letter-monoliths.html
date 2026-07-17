@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1789
+    slug: minimal-3d-letter-monoliths
+    title: Letter Monoliths
+    category: 3d-effects
+    tags: 3d, minimal, type, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1789 — Letter Monoliths</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Outfit:wght@300&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0e0e0e;perspective:900px;overflow:hidden;font-family:Syne,sans-serif;color:#fff}
+    .row{display:flex;gap:1.2rem;transform-style:preserve-3d;transform:rotateX(8deg)}
+    .letter{width:70px;height:160px;display:grid;place-items:center;font-size:2.4rem;font-weight:800;letter-spacing:-.06em;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.03);transform:translateZ(var(--z,0px)) rotateY(var(--ry,0deg));transition:border-color .3s}
+    .label{position:fixed;bottom:1.5rem;font-family:Outfit,sans-serif;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;opacity:.35;font-weight:300}
+  </style>
+</head>
+<body>
+  <div class="row" id="row" aria-label="FORM"></div>
+  <div class="label">Letters rise to cursor</div>
+  <script>
+    const word='FORM',row=document.getElementById('row');
+    const letters=[...word].map((ch,i)=>{const el=document.createElement('div');el.className='letter';el.textContent=ch;row.appendChild(el);return {el,i,z:0,ry:0}});
+    let mx=.5;
+    addEventListener('pointermove',e=>{mx=e.clientX/innerWidth});
+    (function loop(){
+      letters.forEach(L=>{
+        const c=(L.i+.5)/letters.length;const d=Math.abs(c-mx);
+        const tz=Math.max(0,70-d*200),try_=(c-mx)*-28;
+        L.z+=(tz-L.z)*.14;L.ry+=(try_-L.ry)*.12;
+        L.el.style.setProperty('--z',L.z+'px');L.el.style.setProperty('--ry',L.ry+'deg');
+        L.el.style.borderColor=`rgba(255,255,255,${.15+L.z*.008})`;
+      });
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>

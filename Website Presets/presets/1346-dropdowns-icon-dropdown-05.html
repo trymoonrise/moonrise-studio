@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1346
+    slug: dropdowns-icon-dropdown-05
+    title: Icon Dropdown 05
+    category: dropdowns
+    tags: dropdowns, icon
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1346 — Icon Dropdown 05</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#0b1210}.dd{position:relative}.btn{padding:10px 20px;border:1px solid #7a9a88;border-radius:8px;background:#121a16;color:#e0f0e8;cursor:pointer}.menu{position:absolute;top:calc(100% + 4px);left:0;min-width:160px;background:#121a16;border:1px solid #7a9a8844;border-radius:8px;display:none;overflow:hidden;z-index:5}.menu.open{display:block}.opt{padding:10px 16px;color:#e0f0e8;cursor:pointer;font-size:.9rem}.opt:hover{background:#6cffb822}
+  </style>
+</head>
+<body>
+<div class="dd"><button class="btn" id="b">Icon Dropdown 955 ▾</button><div class="menu" id="m"><div class="opt">One</div><div class="opt">Two</div><div class="opt">Three</div></div></div>
+<script>const b=document.getElementById('b'),m=document.getElementById('m');b.onclick=e=>{e.stopPropagation();m.classList.toggle('open');};document.onclick=()=>m.classList.remove('open');</script>
+</body>
+</html>

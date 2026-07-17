@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0716
+    slug: textareas-bordered-minimal-03
+    title: Bordered Minimal 03
+    category: textareas
+    tags: textareas, modern, experimental, exaggerated
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0716 — Bordered Minimal 03</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#eafaf4;font-family:Inter,system-ui,sans-serif;overflow:hidden;padding:24px;color:#111}
+    textarea{font:inherit;border:0;outline:0;resize:none;background:transparent;color:inherit;width:100%}
+    button{font:inherit;border:0;cursor:pointer}
+    .scene{position:relative;width:min(520px,92vw)}
+    .box{position:relative;padding:26px;border-radius:0 42px 42px 42px;background:#eafaf4;border:2px solid #0f3d2e}.box::before,.box::after{content:'';position:absolute;width:24px;height:24px;border:2px solid #0f3d2e}.box::before{top:-10px;left:-10px;border-right:0;border-bottom:0}.box::after{right:-10px;bottom:-10px;border-left:0;border-top:0}.label{font:800 10px 'JetBrains Mono';letter-spacing:.26em;text-transform:uppercase;color:#0f3d2e;margin-bottom:16px}.area{min-height:170px;font-size:23px;line-height:1.32;font-weight:600;color:#0f3d2e}.area::placeholder{color:rgba(15,61,46,.35)}.box:focus-within{box-shadow:12px 12px 0 #b8f3d6}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <div class="scene"><section class="box"><p class="label">Quiet border</p><textarea class="area" placeholder="Sharp corners, smooth words.">Minimal does not mean invisible.</textarea></section></div>
+</body>
+</html>

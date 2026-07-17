@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Website Presets Gallery</title>
+  <link rel="stylesheet" href="shared/viewer.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="nav-sidebar" id="navSidebar">
+      <div class="nav-sidebar__brand">
+        <div class="nav-sidebar__mark" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        </div>
+        <div class="nav-sidebar__brand-text">
+          <h1 class="nav-sidebar__title">Website Presets</h1>
+          <p class="nav-sidebar__subtitle">Component gallery</p>
+        </div>
+        <button type="button" class="nav-sidebar__close" id="sidebarClose" aria-label="Close menu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="nav-sidebar__search">
+        <label class="search-field">
+          <svg class="search-field__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3"/></svg>
+          <input type="search" id="searchInput" placeholder="Search presets…" autocomplete="off">
+          <kbd class="search-field__hint" aria-hidden="true">/</kbd>
+        </label>
+      </div>
+      <nav class="category-nav scroll-area" id="categoryNav" aria-label="Preset categories"></nav>
+      <div class="nav-sidebar__footer">
+        <span class="nav-sidebar__stat" id="navStat"></span>
+      </div>
+    </aside>
+
+    <main class="main-panel">
+      <header class="main-header">
+        <button type="button" class="menu-btn" id="menuBtn" aria-label="Open menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div class="breadcrumb" id="breadcrumb">All Presets</div>
+        <div class="main-header__right">
+          <span class="result-count" id="resultCount"></span>
+          <select class="sort-select" id="sortSelect" aria-label="Sort presets">
+            <option value="id">Newest</option>
+            <option value="title">A–Z</option>
+          </select>
+        </div>
+      </header>
+      <div class="preview-grid scroll-area" id="previewGrid"></div>
+    </main>
+  </div>
+
+  <div class="modal" id="modal" hidden>
+    <div class="modal__backdrop" id="modalBackdrop"></div>
+    <div class="modal__panel">
+      <header class="modal__header">
+        <div class="modal__meta">
+          <span class="modal__id" id="modalId"></span>
+          <h2 class="modal__title" id="modalTitle"></h2>
+          <span class="modal__cat" id="modalCat"></span>
+        </div>
+        <div class="modal__actions">
+          <button type="button" class="modal__restart" id="modalRestart" aria-label="Restart preview" title="Restart preview">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+          </button>
+          <a class="modal__open" id="modalOpen" href="#" target="_blank" rel="noopener">Open ↗</a>
+          <button type="button" class="modal__close" id="modalClose" aria-label="Close">×</button>
+        </div>
+      </header>
+      <div class="modal__body">
+        <button type="button" class="modal__arrow modal__arrow--left" id="modalPrev" aria-label="Previous">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <iframe class="modal__iframe" id="modalFrame" title="Preset preview"></iframe>
+        <button type="button" class="modal__arrow modal__arrow--right" id="modalNext" aria-label="Next">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+      <footer class="modal__footer" id="modalFooter"></footer>
+    </div>
+  </div>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <script src="shared/viewer.js"></script>
+</body>
+</html>

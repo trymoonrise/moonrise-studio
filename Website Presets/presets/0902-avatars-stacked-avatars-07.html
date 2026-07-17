@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0902
+    slug: avatars-stacked-avatars-07
+    title: Stacked Avatars 07
+    category: avatars
+    tags: avatars, stacked, marquee, minimal
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0902 — Stacked Avatars 07</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif&family=DM+Mono:wght@400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#0c0c0c;overflow:hidden;font-family:'DM Mono',monospace}
+    .stage{min-height:100vh;display:grid;place-items:center;grid-template-columns:auto 1fr;gap:2rem;padding:0 8%;max-width:720px;margin:0 auto}
+    .stack{display:flex;flex-direction:column}
+    .av{width:52px;height:52px;border-radius:50%;border:1px solid rgba(255,255,255,.4);margin-top:-14px;display:grid;place-items:center;color:#eee;font-family:'Instrument Serif',serif;font-size:1rem;background:#0c0c0c;position:relative}
+    .av:first-child{margin-top:0;z-index:3}
+    .av:nth-child(2){z-index:2}
+    .av:nth-child(3){z-index:1}
+    .side{overflow:hidden;height:140px;border-left:1px solid rgba(255,255,255,.12);padding-left:1.25rem;display:flex;align-items:center}
+    .track{display:flex;flex-direction:column;width:max-content;animation:run 18s linear infinite;font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.35);gap:1.2rem;white-space:nowrap}
+    @keyframes run{to{transform:translateY(-50%)}}
+    @media (max-width:520px){.stage{grid-template-columns:1fr;justify-items:center;text-align:center}.side{border-left:none;border-top:1px solid rgba(255,255,255,.12);padding:1rem 0 0;height:auto;width:min(260px,80vw)}.track{flex-direction:row;animation-name:runx}}
+    @keyframes runx{to{transform:translateX(-50%)}}
+    @media (prefers-reduced-motion:reduce){.track{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="stack">
+      <div class="av">1</div>
+      <div class="av">2</div>
+      <div class="av">3</div>
+    </div>
+    <div class="side" aria-hidden="true">
+      <div class="track">
+        <span>Stack · Depth · Stack · Depth ·</span>
+        <span>Layer · Overlap · Layer · Overlap ·</span>
+        <span>Stack · Depth · Stack · Depth ·</span>
+        <span>Layer · Overlap · Layer · Overlap ·</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

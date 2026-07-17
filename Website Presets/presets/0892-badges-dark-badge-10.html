@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0892
+    slug: badges-dark-badge-10
+    title: Dark Badge 10
+    category: badges
+    tags: badges, dark
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0892 — Dark Badge 10</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@500;700&display=swap');
+
+    * { box-sizing: border-box; }
+    body {
+      display: grid; place-items: center; min-height: 100vh;
+      background: #000; font-family: Outfit, sans-serif; overflow: hidden;
+    }
+
+    .space {
+      position: fixed; inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 20% 30%, #fff, transparent),
+        radial-gradient(1px 1px at 70% 60%, rgba(255,255,255,0.7), transparent),
+        radial-gradient(1.5px 1.5px at 40% 80%, #fff, transparent),
+        radial-gradient(1px 1px at 85% 20%, rgba(255,255,255,0.5), transparent);
+      animation: twinkle 5s ease-in-out infinite alternate;
+      opacity: 0.6;
+    }
+
+    .badge {
+      position: relative;
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      padding: 0.7rem 1.3rem;
+      border-radius: 999px;
+      background: rgba(10, 10, 16, 0.75);
+      border: 1px solid rgba(160, 170, 255, 0.25);
+      color: #e8e8f5;
+      font-size: 0.85rem; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 0 40px rgba(100, 120, 255, 0.2);
+    }
+
+    .moon {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 32% 30%, #fff, #a8b0ff);
+      box-shadow: 0 0 16px rgba(160, 170, 255, 0.8);
+      animation: glow 2.8s ease-in-out infinite;
+    }
+
+    @keyframes twinkle { to { opacity: 0.35; } }
+    @keyframes glow { 50% { box-shadow: 0 0 28px rgba(160, 170, 255, 1); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .space, .moon { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="space" aria-hidden="true"></div>
+  <span class="badge"><i class="moon" aria-hidden="true"></i>Night Mode</span>
+</body>
+</html>

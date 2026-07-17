@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0606
+    slug: docks-gradient-dock-10
+    title: Gradient Dock 10
+    category: docks
+    tags: docks, gradient
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0606 — Gradient Dock 10</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0a0a12}
+    .shell{position:relative;padding:2px;border-radius:22px;background:conic-gradient(from var(--a,0deg),#6c8cff,#7ee0c3,#ffd16c,#ff6bcb,#6c8cff);animation:spin 6s linear infinite}
+    .dock{display:flex;gap:6px;padding:8px;background:#0a0a12;border-radius:20px}
+    .btn{width:46px;height:46px;border:none;border-radius:14px;background:rgba(255,255,255,.06);color:#fff;cursor:pointer;display:grid;place-items:center;transition:transform .35s cubic-bezier(.22,1,.36,1),background .3s}
+    .btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8}
+    .btn:hover{transform:translateY(-4px);background:rgba(255,255,255,.12)}
+    .btn.active{background:#fff;color:#111}
+    @property --a{syntax:'<angle>';inherits:false;initial-value:0deg}
+    @keyframes spin{to{--a:360deg}}
+    @media(prefers-reduced-motion:reduce){.shell{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <nav class="dock" aria-label="Gradient dock">
+      <button class="btn active" aria-label="Home"><svg viewBox="0 0 24 24"><path d="M4 10.5L12 4l8 6.5V20h-5v-5H9v5H4z"/></svg></button>
+      <button class="btn" aria-label="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3"/></svg></button>
+      <button class="btn" aria-label="Heart"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg></button>
+      <button class="btn" aria-label="User"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg></button>
+    </nav>
+  </div>
+  <script>
+    const btns=[...document.querySelectorAll('.btn')];
+    btns.forEach(b=>b.addEventListener('click',()=>{btns.forEach(x=>x.classList.remove('active'));b.classList.add('active')}));
+  </script>
+</body>
+</html>

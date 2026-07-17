@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0719
+    slug: textareas-code-area-06
+    title: Code Area 06
+    category: textareas
+    tags: textareas, modern, experimental, exaggerated
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0719 — Code Area 06</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#05070b;font-family:Inter,system-ui,sans-serif;overflow:hidden;padding:24px;color:#dbeafe}
+    textarea{font:inherit;border:0;outline:0;resize:none;background:transparent;color:inherit;width:100%}
+    button{font:inherit;border:0;cursor:pointer}
+    .scene{position:relative;width:min(620px,92vw)}
+    .term{border-radius:24px;background:#0b1020;border:1px solid rgba(96,165,250,.2);box-shadow:0 28px 80px rgba(0,0,0,.5),0 0 60px rgba(59,130,246,.12);overflow:hidden}.chrome{height:44px;display:flex;align-items:center;gap:8px;padding:0 16px;background:#0f172a;border-bottom:1px solid rgba(255,255,255,.06)}.dot{width:11px;height:11px;border-radius:50%;background:#ef4444}.dot:nth-child(2){background:#f59e0b}.dot:nth-child(3){background:#22c55e}.name{margin-left:auto;font:700 11px 'JetBrains Mono';letter-spacing:.18em;text-transform:uppercase;color:#64748b}.code{min-height:240px;padding:22px;font:500 14px/1.7 'JetBrains Mono';color:#bfdbfe;tab-size:2}.scan{height:2px;background:linear-gradient(90deg,transparent,#60a5fa,transparent);animation:sweep 2.4s ease-in-out infinite}@keyframes sweep{0%,100%{transform:translateX(-100%)}50%{transform:translateX(100%)}}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <div class="scene"><section class="term"><div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="name">code area</span></div><div class="scan"></div><textarea class="code" spellcheck="false">function textareaMood(value) {
+  return value.trim() ? 'alive' : 'waiting';
+}</textarea></section></div>
+</body>
+</html>

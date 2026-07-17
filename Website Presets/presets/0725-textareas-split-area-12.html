@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0725
+    slug: textareas-split-area-12
+    title: Split Area 12
+    category: textareas
+    tags: textareas, modern, experimental, exaggerated
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0725 — Split Area 12</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#ecfeff;font-family:Inter,system-ui,sans-serif;overflow:hidden;padding:24px;color:#111}
+    textarea{font:inherit;border:0;outline:0;resize:none;background:transparent;color:inherit;width:100%}
+    button{font:inherit;border:0;cursor:pointer}
+    .scene{position:relative;width:min(680px,92vw)}
+    .split{display:grid;grid-template-columns:1fr 1fr;border-radius:34px;overflow:hidden;background:#fff;border:1px solid rgba(8,145,178,.16);box-shadow:0 28px 80px rgba(8,145,178,.16)}.pane{padding:24px}.pane:first-child{border-right:1px solid rgba(8,145,178,.12)}.label{font:800 11px 'JetBrains Mono';letter-spacing:.24em;text-transform:uppercase;color:#0891b2;margin-bottom:16px}.area{min-height:220px;font-size:18px;line-height:1.45;color:#164e63}.preview{min-height:220px;border-radius:24px;background:#083344;color:#cffafe;padding:20px;font-size:24px;line-height:1.1;font-weight:800;letter-spacing:-.05em;display:flex;align-items:flex-end}@media(max-width:680px){.split{grid-template-columns:1fr}.pane:first-child{border-right:0;border-bottom:1px solid rgba(8,145,178,.12)}}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <div class="scene"><section class="split"><div class="pane"><p class="label">Input</p><textarea class="area" id="ta">Split thinking into writing and impact.</textarea></div><div class="pane"><p class="label">Preview</p><div class="preview" id="preview"></div></div></section></div>
+  <script>const ta=document.getElementById('ta'),preview=document.getElementById('preview');function sync(){preview.textContent=ta.value||'Preview';}ta.addEventListener('input',sync);sync();</script>
+</body>
+</html>

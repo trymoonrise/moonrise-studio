@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0307
+    slug: maps-marker-card
+    title: Map Marker Card
+    category: maps
+    tags: maps, marker
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0307 — Map Marker Card</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;margin:0;padding:2rem;background:#f4f5f8;font-family:system-ui,-apple-system,sans-serif}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}.embed{position:relative;width:100%;overflow:hidden;background:#0a0a0c}.embed iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block} .embed--16x9{aspect-ratio:16/9} .embed--9x16{aspect-ratio:9/16} .embed--4x5{aspect-ratio:4/5} .map-embed{position:absolute;inset:0;width:100%;height:100%;max-width:none;border:0;display:block}.wrap{position:relative;width:min(100%,380px);height:280px;border-radius:18px;overflow:hidden;background:#e5e7eb;border:1px solid #e5e7eb;box-shadow:0 20px 50px rgba(15,23,42,.12)}.shade{position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(15,23,42,.42));pointer-events:none;z-index:1}.card{position:absolute;left:.85rem;right:.85rem;bottom:.85rem;display:flex;align-items:center;gap:.75rem;padding:.85rem .95rem;border-radius:14px;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.8);box-shadow:0 10px 30px rgba(15,23,42,.14);z-index:2}.card h4{font-size:.92rem;font-weight:700;color:#111827}.card p{font-size:.8rem;color:#6b7280}
+  </style>
+</head>
+<body>
+<div class="wrap"><iframe class="map-embed" src="https://www.google.com/maps?q=123%20Main%20Street%2C%20New%20York%2C%20NY%2010001&hl=en&z=15&output=embed" title="Office HQ" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe><div class="shade" aria-hidden="true"></div><div class="card"><div><h4>Office HQ</h4><p>123 Main St, New York, NY</p></div></div></div>
+
+</body>
+</html>

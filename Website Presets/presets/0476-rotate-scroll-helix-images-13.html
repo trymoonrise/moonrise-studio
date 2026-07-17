@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0476
+    slug: rotate-scroll-helix-images-13
+    title: Helix Images 13
+    category: rotate-scroll
+    tags: rotate-scroll, helix
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0476 — Helix Images 13</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#020617;color:#fff;font-family:system-ui;perspective:1000px}.track{height:320vh}.sticky{position:sticky;top:0;height:100vh;display:grid;place-items:center;overflow:hidden}.helix{position:relative;width:100%;height:500px;transform-style:preserve-3d}.img-wrap{position:absolute;left:50%;width:120px;height:80px;margin-left:-60px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.15);transform:translateY(var(--y,0)) rotateY(var(--ry,0deg)) translateZ(var(--z,0));box-shadow:0 12px 40px rgba(0,0,0,.5)}.img-wrap img{width:100%;height:100%;object-fit:cover}
+  </style>
+</head>
+<body>
+<div class="track" id="t"><div class="sticky"><div class="helix" id="hx"><div class="img-wrap" data-i="0"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div><div class="img-wrap" data-i="1"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div><div class="img-wrap" data-i="2"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div><div class="img-wrap" data-i="3"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div><div class="img-wrap" data-i="4"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div><div class="img-wrap" data-i="5"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div><div class="img-wrap" data-i="6"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div><div class="img-wrap" data-i="7"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div><div class="img-wrap" data-i="8"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div><div class="img-wrap" data-i="9"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div></div></div></div>
+<script>const _el=document.querySelector('#t');function prog(){const r=_el.getBoundingClientRect();return Math.min(1,Math.max(0,-r.top/(r.height-innerHeight)));}const wraps=[...document.querySelectorAll('.img-wrap')];addEventListener('scroll',()=>{const p=prog();wraps.forEach((w,i)=>{const ang=p*1080+i*36;const y=Math.sin(ang*Math.PI/180)*180;const z=Math.cos(ang*Math.PI/180)*100;w.style.setProperty('--y',y+'px');w.style.setProperty('--ry',ang+'deg');w.style.setProperty('--z',z+'px');});},{passive:true});</script>
+</body>
+</html>

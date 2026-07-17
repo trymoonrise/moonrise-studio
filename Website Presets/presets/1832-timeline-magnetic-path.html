@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1832
+    slug: timeline-magnetic-path
+    title: Magnetic Path Timeline
+    category: timeline
+    tags: timeline, magnetic, interactive, insane
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1832 — Magnetic Path Timeline</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700&family=Outfit:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#0a0c12;color:#fff;font-family:Outfit,sans-serif;overflow:hidden;cursor:none}
+    .field{position:fixed;inset:0}
+    svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+    .node{position:absolute;width:64px;height:64px;margin:-32px;border-radius:50%;border:2px solid rgba(255,255,255,.2);background:rgba(20,24,40,.9);display:grid;place-items:center;font-family:Syne,sans-serif;font-size:.7rem;font-weight:700;cursor:pointer;transition:border-color .3s,box-shadow .3s,color .3s;z-index:2;pointer-events:auto}
+    .node:hover,.node.on{border-color:#ff9f43;color:#ff9f43;box-shadow:0 0 40px rgba(255,159,67,.4)}
+    .cursor{position:fixed;width:18px;height:18px;border-radius:50%;border:2px solid #ff9f43;pointer-events:none;z-index:10;translate:-50% -50%;mix-blend-mode:difference}
+    .panel{position:fixed;bottom:8%;left:50%;translate:-50% 0;text-align:center;width:min(360px,90vw);z-index:5;pointer-events:none}
+    .panel h3{font-family:Syne,sans-serif;margin:0 0 .35rem;font-size:1.35rem}
+    .panel p{margin:0;color:#889;font-size:.9rem}
+  </style>
+</head>
+<body>
+  <div class="field" id="field"></div>
+  <svg id="svg"><path id="path" fill="none" stroke="rgba(255,159,67,.35)" stroke-width="2"/></svg>
+  <div class="cursor" id="cur"></div>
+  <div class="panel" id="panel"><h3>Pull a node</h3><p>Mouse warps the timeline path</p></div>
+  <script>
+    const pts=[
+      {t:'Pull',d:'Force enters the field.',x:.15,y:.55},
+      {t:'Bend',d:'Trajectory curves under influence.',x:.35,y:.3},
+      {t:'Snap',d:'Alignment locks momentarily.',x:.55,y:.65},
+      {t:'Orbit',d:'Stable loop around product-market.',x:.75,y:.35},
+      {t:'Escape',d:'Velocity exceeds gravity.',x:.9,y:.55}
+    ];
+    const field=document.getElementById('field'),path=document.getElementById('path'),panel=document.getElementById('panel'),cur=document.getElementById('cur');
+    let mx=.5,my=.5,nodes=[];
+    pts.forEach((p,i)=>{
+      const n=document.createElement('button');
+      n.className='node';
+      n.textContent=String(i+1).padStart(2,'0');
+      n.onclick=()=>{document.querySelectorAll('.node').forEach(x=>x.classList.remove('on'));n.classList.add('on');panel.innerHTML=`<h3>${p.t}</h3><p>${p.d}</p>`};
+      field.appendChild(n);
+      nodes.push({el:n,...p,cx:0,cy:0});
+    });
+    function layout(){
+      nodes.forEach(n=>{
+        n.bx=innerWidth*n.x;n.by=innerHeight*n.y;
+        n.cx+=(n.bx-n.cx)*.12;n.cy+=(n.by-n.cy)*.12;
+        const dx=mx*innerWidth-n.cx,dy=my*innerHeight-n.cy,d=Math.hypot(dx,dy)||1;
+        const pull=Math.min(50,12000/d);
+        n.cx+=dx/d*pull*.08;n.cy+=dy/d*pull*.08;
+        n.el.style.left=n.cx+'px';n.el.style.top=n.cy+'px';
+      });
+      let d=`M ${nodes[0].cx} ${nodes[0].cy}`;
+      for(let i=1;i<nodes.length;i++){
+        const a=nodes[i-1],b=nodes[i];
+        const cx=(a.cx+b.cx)/2+(my-.5)*80,cy=(a.cy+b.cy)/2+(mx-.5)*80;
+        d+=` Q ${cx} ${cy} ${b.cx} ${b.cy}`;
+      }
+      path.setAttribute('d',d);
+      requestAnimationFrame(layout);
+    }
+    addEventListener('pointermove',e=>{mx=e.clientX/innerWidth;my=e.clientY/innerHeight;cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px'});
+    layout();
+  </script>
+</body>
+</html>

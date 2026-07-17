@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1852
+    slug: hero-video-kinetic-type
+    title: Kinetic Type Video Hero
+    category: hero
+    tags: hero, video, interactive, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1852 — Kinetic Type Video Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;overflow:hidden;background:#050505;color:#fff;font-family:Syne,sans-serif}
+    video{display:block}
+    button{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit}
+    .stage{position:relative;min-height:100vh;overflow:hidden}
+video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.4)}
+.rail{position:absolute;left:-10%;right:-10%;overflow:hidden;z-index:2;white-space:nowrap}
+.rail.top{top:18%;transform:rotate(-6deg)}
+.rail.bot{bottom:22%;transform:rotate(4deg)}
+.track{display:inline-flex;gap:2rem;animation:run 18s linear infinite;font-size:clamp(3rem,12vw,8rem);font-weight:800;letter-spacing:-.07em;text-transform:uppercase}
+.rail.bot .track{animation-direction:reverse;animation-duration:22s;color:transparent;-webkit-text-stroke:2px rgba(255,255,255,.7)}
+.center{position:relative;z-index:3;min-height:100vh;display:grid;place-items:center}
+.btn{padding:.9rem 1.5rem;border-radius:999px;background:#fff;color:#111;font-weight:800;pointer-events:auto}
+@keyframes run{to{transform:translateX(-50%)}}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="stage"><video src="../stock/media/16-9 Aspect Ratio(video).mp4" autoplay muted loop playsinline></video>
+<div class="rail top"><div class="track"><span>MOTION · FORCE · MOTION · FORCE · </span><span>MOTION · FORCE · MOTION · FORCE · </span></div></div>
+<div class="rail bot"><div class="track"><span>VIDEO HERO · VIDEO HERO · </span><span>VIDEO HERO · VIDEO HERO · </span></div></div>
+<div class="center"><button class="btn">Enter scene</button></div></div>
+
+</body>
+</html>

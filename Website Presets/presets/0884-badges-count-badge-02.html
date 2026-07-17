@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0884
+    slug: badges-count-badge-02
+    title: Odometer Count Badge
+    category: badges
+    tags: badges, count
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0884 — Odometer Count Badge</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #0c0e12;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .label {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(232, 234, 239, 0.5);
+    }
+
+    .badge {
+      display: inline-flex;
+      overflow: hidden;
+      height: 2rem;
+      padding: 0 0.5rem;
+      background: #161922;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+    }
+
+    .digit-col {
+      width: 1.1rem;
+      overflow: hidden;
+    }
+
+    .digit-strip {
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .digit-strip span {
+      height: 2rem;
+      display: grid;
+      place-items: center;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #f472b6;
+    }
+
+    .trigger {
+      margin-top: 1.5rem;
+      padding: 0.5rem 1rem;
+      border: 1px solid rgba(244, 114, 182, 0.3);
+      border-radius: 6px;
+      background: transparent;
+      color: #f472b6;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .digit-strip { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <div class="wrap">
+      <span class="label">Inbox</span>
+      <span class="badge" id="badge" aria-label="12 unread messages">
+        <span class="digit-col"><span class="digit-strip" data-digit="1"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span>
+        <span class="digit-col"><span class="digit-strip" data-digit="2"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span>
+      </span>
+    </div>
+    <button class="trigger" id="btn" type="button">New message</button>
+  </div>
+
+  <script>
+    const btn = document.getElementById('btn');
+    const strips = document.querySelectorAll('.digit-strip');
+    let count = 12;
+
+    function render(n) {
+      const s = String(n).padStart(2, '0');
+      strips.forEach((strip, i) => {
+        strip.style.transform = `translateY(-${parseInt(s[i], 10) * 2}rem)`;
+      });
+      document.getElementById('badge').setAttribute('aria-label', n + ' unread messages');
+    }
+
+    render(count);
+
+    btn.addEventListener('click', () => {
+      count = Math.min(count + 1, 99);
+      render(count);
+    });
+  </script>
+</body>
+</html>

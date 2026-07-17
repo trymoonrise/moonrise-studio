@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0690
+    slug: radio-groups-segmented-radio-03
+    title: Sliding Pill Segmented Control
+    category: radio-groups
+    tags: radio-groups, segmented
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0690 — Sliding Pill Segmented Control</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #080a0e;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+      padding: 1.5rem;
+    }
+
+    .wrap { text-align: center; }
+
+    .label {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 1rem;
+    }
+
+    .segmented {
+      position: relative;
+      display: inline-flex;
+      padding: 4px;
+      background: #111827;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+    }
+
+    .thumb {
+      position: absolute;
+      top: 4px;
+      bottom: 4px;
+      left: 4px;
+      width: calc(33.333% - 2.67px);
+      background: #00d4aa;
+      border-radius: 7px;
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 0;
+      animation: thumbGlow 3s ease-in-out infinite;
+    }
+
+    @keyframes thumbGlow {
+      0%, 100% { box-shadow: 0 0 0 0 #00d4aa44; }
+      50% { box-shadow: 0 0 16px 2px #00d4aa33; }
+    }
+
+    .segmented input {
+      position: absolute;
+      opacity: 0;
+    }
+
+    .segmented label {
+      position: relative;
+      z-index: 1;
+      padding: 0.65rem 1.25rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: color 0.25s;
+      min-width: 90px;
+      text-align: center;
+    }
+
+    .segmented input:checked + label { color: #080a0e; font-weight: 600; }
+
+    .output {
+      margin-top: 1.5rem;
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #00d4aa;
+      animation: outputFade 0.35s ease;
+    }
+
+    @keyframes outputFade {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .thumb { animation: none; transition: transform 0.2s; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="label">View mode</div>
+    <div class="segmented" role="radiogroup" aria-label="View mode">
+      <span class="thumb" id="thumb"></span>
+      <input type="radio" name="view" id="v1" value="List" checked>
+      <label for="v1">List</label>
+      <input type="radio" name="view" id="v2" value="Grid">
+      <label for="v2">Grid</label>
+      <input type="radio" name="view" id="v3" value="Board">
+      <label for="v3">Board</label>
+    </div>
+    <div class="output" id="output">List</div>
+  </div>
+
+  <script>
+    const inputs = document.querySelectorAll('.segmented input');
+    const thumb = document.getElementById('thumb');
+    const output = document.getElementById('output');
+
+    function update() {
+      const idx = [...inputs].findIndex((i) => i.checked);
+      thumb.style.transform = `translateX(${idx * 100}%)`;
+      output.textContent = inputs[idx].value;
+      output.style.animation = 'none';
+      output.offsetHeight;
+      output.style.animation = '';
+    }
+
+    inputs.forEach((i) => i.addEventListener('change', update));
+    update();
+  </script>
+</body>
+</html>

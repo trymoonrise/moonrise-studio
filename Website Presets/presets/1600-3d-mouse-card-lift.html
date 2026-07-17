@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1600
+    slug: 3d-mouse-card-lift
+    title: 3D Card Lift to Cursor
+    category: 3d-mouse
+    tags: 3d, mouse, card
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1600 — 3D Card Lift to Cursor</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Outfit:wght@400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0a0b12;perspective:900px;font-family:Outfit,sans-serif;padding:2rem}
+    .card{width:min(300px,88vw);height:400px;border-radius:24px;position:relative;transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateZ(var(--z,0px));background:linear-gradient(160deg,#161a2c,#0d101c);border:1px solid rgba(255,255,255,.12);overflow:hidden;box-shadow:0 30px 60px rgba(0,0,0,.45);color:#fff}
+    .shine{position:absolute;inset:0;background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.28),transparent 42%);mix-blend-mode:soft-light;pointer-events:none;z-index:3}
+    .blob{position:absolute;width:160px;height:160px;border-radius:50%;background:#6c8cff;top:-20%;right:-10%;opacity:.5;filter:blur(2px);transform:translateZ(30px)}
+    .blob2{position:absolute;width:100px;height:100px;border-radius:50%;background:#ff6bcb;bottom:20%;left:-5%;opacity:.4;transform:translateZ(55px)}
+    .body{position:relative;z-index:2;height:100%;padding:1.75rem;display:flex;flex-direction:column;justify-content:flex-end;transform:translateZ(40px)}
+    .eyebrow{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;opacity:.55;margin:0 0 .4rem}
+    h2{margin:0;font-family:Syne,sans-serif;font-size:2rem;letter-spacing:-.03em}
+    p{margin:.5rem 0 0;opacity:.75;font-size:.9rem;line-height:1.5}
+  </style>
+</head>
+<body>
+  <div class="card" id="card">
+    <div class="blob" aria-hidden="true"></div>
+    <div class="blob2" aria-hidden="true"></div>
+    <div class="shine"></div>
+    <div class="body"><p class="eyebrow">Magnetic lift</p><h2>Pull closer</h2><p>The card rises toward your cursor and tilts with a live specular.</p></div>
+  </div>
+  <script>
+    const card=document.getElementById('card');
+    let rx=0,ry=0,z=0,trx=0,try_=0,tz=0,mx=50,my=50,cmx=50,cmy=50;
+    card.addEventListener('pointermove',e=>{
+      const r=card.getBoundingClientRect();
+      const x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;
+      try_=(x-.5)*28;trx=(.5-y)*22;tz=40;mx=x*100;my=y*100;
+    });
+    card.addEventListener('pointerleave',()=>{trx=0;try_=0;tz=0});
+    (function loop(){rx+=(trx-rx)*.12;ry+=(try_-ry)*.12;z+=(tz-z)*.12;cmx+=(mx-cmx)*.1;cmy+=(my-cmy)*.1;
+      card.style.setProperty('--rx',rx+'deg');card.style.setProperty('--ry',ry+'deg');card.style.setProperty('--z',z+'px');
+      card.style.setProperty('--mx',cmx+'%');card.style.setProperty('--my',cmy+'%');requestAnimationFrame(loop)})();
+  </script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1833
+    slug: animation-mask-morph
+    title: Morphing Mask Reveal
+    category: animation
+    tags: animation, mask, morph, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1833 — Morphing Mask Reveal</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');*{box-sizing:border-box}
+      body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f2f2f2;color:#111;font-family:"DM Sans",system-ui,-apple-system,sans-serif;padding:2rem}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+      .frame{position:relative;width:min(90vw,420px);aspect-ratio:1;background:#111;overflow:hidden}
+      .inner{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-family:"Syne",system-ui,sans-serif;font-size:clamp(2rem,6vw,3.2rem);font-weight:800;letter-spacing:-.05em;clip-path:circle(0% at 50% 50%);animation:morph 4.5s cubic-bezier(.22,1,.36,1) infinite}
+      @keyframes morph{0%{clip-path:circle(0% at 50% 50%)}35%{clip-path:circle(72% at 50% 50%)}55%{clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%)}75%{clip-path:inset(8% 8% 8% 8%)}100%{clip-path:circle(0% at 70% 30%)}}
+      .cap{margin-top:1.25rem;text-align:center;font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;color:#888}
+  </style>
+</head>
+<body>
+<div><div class="frame"><div class="inner">MORPH</div></div><p class="cap">Clip-path language</p></div>
+
+</body>
+</html>

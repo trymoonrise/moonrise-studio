@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1111
+    slug: bios-quote-bio-08
+    title: Quote Bio 08
+    category: bios
+    tags: bios, quote, experimental, shapes
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1111 — Quote Bio 08</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f4f0e8;font-family:'DM Sans',sans-serif;overflow:hidden;padding:2rem}
+    .quote{position:relative;width:min(400px,90vw);padding:2.5rem 2rem 2rem;animation:in .9s cubic-bezier(.22,1,.36,1) both}
+    .mark{position:absolute;top:.5rem;left:.5rem;width:48px;height:48px;font-family:'Instrument Serif',serif;font-size:5rem;line-height:.7;color:rgba(26,26,26,.08);animation:bob 5s ease-in-out infinite;user-select:none}
+    .shape-l{position:absolute;left:0;top:0;width:24px;height:24px;border-left:2px solid #1a1a1a;border-top:2px solid #1a1a1a;animation:corner 3s ease-in-out infinite}
+    .shape-r{position:absolute;right:0;bottom:0;width:24px;height:24px;border-right:2px solid #1a1a1a;border-bottom:2px solid #1a1a1a;animation:corner 3s ease-in-out infinite reverse}
+    blockquote{margin:0;font-family:'Instrument Serif',serif;font-style:italic;font-size:clamp(1.25rem,3.5vw,1.6rem);line-height:1.35;color:#1a1a1a;letter-spacing:-.01em}
+    .who{display:flex;align-items:center;gap:.75rem;margin-top:1.5rem}
+    .dot{width:28px;height:28px;background:#1a1a1a;color:#f4f0e8;display:grid;place-items:center;font-size:.55rem;letter-spacing:.04em;clip-path:circle(50% at 50% 50%);animation:pulse 2.8s ease-in-out infinite}
+    .who span{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(26,26,26,.5)}
+    @keyframes bob{50%{transform:translateY(-6px) rotate(-4deg)}}
+    @keyframes corner{50%{transform:scale(1.2)}}
+    @keyframes pulse{50%{transform:scale(1.1)}}
+    @keyframes in{from{opacity:0;transform:translateY(14px)}}
+    @media (prefers-reduced-motion:reduce){.mark,.shape-l,.shape-r,.dot,.quote{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="quote">
+    <span class="mark" aria-hidden="true">“</span>
+    <span class="shape-l" aria-hidden="true"></span>
+    <span class="shape-r" aria-hidden="true"></span>
+    <blockquote>Design is the quiet argument between form and feeling.</blockquote>
+    <div class="who"><span class="dot">OW</span><span>Owen Wynn · Critic</span></div>
+  </div>
+</body>
+</html>

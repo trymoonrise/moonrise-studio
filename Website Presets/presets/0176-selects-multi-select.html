@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0176
+    slug: selects-multi-select
+    title: Multi Select Tags
+    category: selects
+    tags: selects, multi
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0176 — Multi Select Tags</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #f4f5f8;
+      padding: 2rem;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    .wrap {
+      width: min(400px, 100%);
+      display: grid;
+      gap: 0.65rem;
+    }
+
+    .wrap label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #3d4255;
+    }
+
+    .box {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      padding: 0.65rem 0.75rem;
+      border: 1px solid #d4d8e0;
+      border-radius: 14px;
+      min-height: 52px;
+      align-items: center;
+      background: #fff;
+      transition:
+        border-color 0.3s cubic-bezier(0.22, 0.61, 0.36, 1),
+        box-shadow 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    .box:focus-within {
+      border-color: #4f6ef7;
+      box-shadow: 0 0 0 3px rgba(79, 110, 247, 0.14);
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.55rem 0.35rem 0.7rem;
+      background: linear-gradient(145deg, #eef2ff, #e4e9ff);
+      color: #3b52c4;
+      border: 1px solid rgba(79, 110, 247, 0.18);
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      transform-origin: left center;
+      animation: tagIn 0.45s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+    }
+
+    .tag.is-leaving {
+      animation: tagOut 0.32s cubic-bezier(0.55, 0.06, 0.68, 0.19) forwards;
+      pointer-events: none;
+    }
+
+    .tag__remove {
+      display: grid;
+      place-items: center;
+      width: 18px;
+      height: 18px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(59, 82, 196, 0.1);
+      color: #3b52c4;
+      font-size: 0.95rem;
+      line-height: 1;
+      cursor: pointer;
+      transition:
+        background 0.2s,
+        transform 0.25s cubic-bezier(0.22, 0.61, 0.36, 1),
+        color 0.2s;
+    }
+
+    .tag__remove:hover {
+      background: rgba(59, 82, 196, 0.2);
+      color: #1e2f8a;
+      transform: scale(1.12) rotate(90deg);
+    }
+
+    .box input {
+      border: none;
+      outline: none;
+      flex: 1;
+      min-width: 100px;
+      font-size: 0.92rem;
+      font-family: inherit;
+      color: #111318;
+      padding: 0.25rem 0.15rem;
+      background: transparent;
+    }
+
+    .box input::placeholder {
+      color: #a0a5b8;
+      transition: opacity 0.25s;
+    }
+
+    .box:focus-within input::placeholder {
+      opacity: 0.55;
+    }
+
+    .hint {
+      font-size: 0.78rem;
+      color: #8b8fa3;
+    }
+
+    @keyframes tagIn {
+      from {
+        opacity: 0;
+        transform: scale(0.65) translateY(6px);
+      }
+      70% {
+        transform: scale(1.04) translateY(-1px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    @keyframes tagOut {
+      to {
+        opacity: 0;
+        transform: scale(0.7);
+        filter: blur(1px);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .tag,
+      .tag.is-leaving,
+      .box,
+      .tag__remove {
+        animation: none;
+        transition: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <label for="tag-input">Skills</label>
+    <div class="box" id="box">
+      <div class="tag">React<button class="tag__remove" type="button" aria-label="Remove React">×</button></div>
+      <div class="tag" style="animation-delay: 0.06s">TypeScript<button class="tag__remove" type="button" aria-label="Remove TypeScript">×</button></div>
+      <input id="tag-input" placeholder="Add tag and press Enter…" autocomplete="off">
+    </div>
+    <span class="hint">Press Enter to add · click × to remove</span>
+  </div>
+
+  <script>
+    const box = document.getElementById('box');
+    const inp = box.querySelector('input');
+
+    function bindRemove(tag) {
+      const btn = tag.querySelector('.tag__remove');
+      btn.addEventListener('click', () => removeTag(tag));
+    }
+
+    function removeTag(tag) {
+      tag.classList.add('is-leaving');
+      tag.addEventListener('animationend', () => tag.remove(), { once: true });
+    }
+
+    function addTag(text) {
+      const tag = document.createElement('div');
+      tag.className = 'tag';
+      tag.innerHTML = text + '<button class="tag__remove" type="button" aria-label="Remove ' + text + '">×</button>';
+      box.insertBefore(tag, inp);
+      bindRemove(tag);
+    }
+
+    inp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && inp.value.trim()) {
+        e.preventDefault();
+        addTag(inp.value.trim());
+        inp.value = '';
+      }
+      if (e.key === 'Backspace' && !inp.value) {
+        const tags = [...box.querySelectorAll('.tag')];
+        const last = tags[tags.length - 1];
+        if (last) removeTag(last);
+      }
+    });
+
+    box.querySelectorAll('.tag').forEach(bindRemove);
+  </script>
+</body>
+</html>

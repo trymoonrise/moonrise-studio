@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0492
+    slug: split-screens-hover-reveal-03
+    title: Hover Reveal 03
+    category: split-screens
+    tags: split-screens, experimental, mask, shapes
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0492 — Hover Reveal 03</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;overflow:hidden;font-family:Syne,sans-serif;background:#f7f5f0;color:#111}
+    .stage{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;cursor:crosshair}
+.side{position:relative;overflow:hidden;display:grid;place-items:center;padding:2rem;transition:flex .5s}
+.side.l{background:#111;color:#f7f5f0}
+.side.r{background:#f7f5f0;color:#111}
+.mask{position:absolute;inset:0;background:url('../stock/media/16-9 Aspect Ratio(image).png') center/cover;clip-path:inset(50% 50% 50% 50%);transition:clip-path .7s cubic-bezier(.22,1,.36,1);filter:grayscale(1)}
+.side:hover .mask{clip-path:inset(8% 8% 8% 8%);filter:grayscale(0)}
+.side h1{position:relative;z-index:1;font-size:clamp(2rem,6vw,4rem);font-weight:800;letter-spacing:-.05em;margin:0;mix-blend-mode:exclusion}
+.side:hover h1{color:transparent;-webkit-text-stroke:1.5px #fff}
+.side.r:hover h1{-webkit-text-stroke:1.5px #111}
+@media(max-width:700px){.stage{grid-template-columns:1fr}}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="stage"><div class="side l"><div class="mask"></div><h1>Inside</h1></div><div class="side r"><div class="mask" style="filter:hue-rotate(80deg) grayscale(1)"></div><h1>Outside</h1></div></div>
+
+</body>
+</html>

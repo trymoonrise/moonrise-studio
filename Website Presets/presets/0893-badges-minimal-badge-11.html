@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0893
+    slug: badges-minimal-badge-11
+    title: Minimal Badge 11
+    category: badges
+    tags: badges, minimal
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0893 — Minimal Badge 11</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@500&display=swap');
+
+    * { box-sizing: border-box; }
+    body {
+      display: grid; place-items: center; min-height: 100vh;
+      background: #f2f0ea; font-family: 'DM Mono', monospace;
+    }
+
+    .badge {
+      position: relative;
+      display: inline-block;
+      padding: 0.4rem 0;
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: #111;
+    }
+
+    .badge::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      height: 2px;
+      background: #111;
+      transform: scaleX(0);
+      transform-origin: left;
+      animation: draw 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards 0.3s,
+                 pulse-line 2s ease-in-out infinite 1.5s;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 0.55ch; height: 1em;
+      margin-left: 0.15rem;
+      background: #111;
+      vertical-align: -0.1em;
+      animation: blink 0.9s steps(1) infinite;
+    }
+
+    @keyframes draw { to { transform: scaleX(1); } }
+    @keyframes pulse-line {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.25; }
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .badge::after { transform: scaleX(1); animation: none; }
+      .cursor { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <span class="badge">Verified<span class="cursor" aria-hidden="true"></span></span>
+</body>
+</html>

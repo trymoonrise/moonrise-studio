@@ -10,6 +10,12 @@ accesstokens.env
 **/secrets/
 **/*credentials*
 
+# Heavy media — keep HTML/CSS presets, skip stock video/binaries
+Website Presets/stock/
+**/*.mp4
+**/*.webm
+**/*.mov
+
 # OS / editor
 .DS_Store
 Thumbs.db
@@ -21,3 +27,4 @@ worker/node_modules/
 **/node_modules/
 dist/
 .cache/
+supabase/.temp/

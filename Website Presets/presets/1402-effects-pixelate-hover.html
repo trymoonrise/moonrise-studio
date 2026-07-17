@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1402
+    slug: effects-pixelate-hover
+    title: Pixelate on Hover
+    category: effects
+    tags: effects, pixel, hover
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1402 — Pixelate on Hover</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#fafafa;padding:2rem}.box{width:240px;height:160px;border-radius:12px;overflow:hidden;cursor:pointer}img{width:100%;height:100%;object-fit:cover;transition:filter .3s,transform .3s}.box:hover img{filter:pixelate(8);transform:scale(1.05)}@supports not (filter:pixelate(8)){.box:hover img{filter:blur(2px) contrast(1.4);image-rendering:pixelated}}
+  </style>
+</head>
+<body>
+<div class="box"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div>
+
+</body>
+</html>

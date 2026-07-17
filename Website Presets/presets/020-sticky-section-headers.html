@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 020
+    slug: sticky-section-headers
+    title: Sticky Section Headers
+    category: scroll
+    tags: sticky, headers
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>020 — Sticky Section Headers</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap');
+
+    :root {
+      --bg: #f7f7f5;
+      --ink: #111;
+      --muted: #6a6a66;
+      --line: #e4e4e0;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Instrument Sans', sans-serif;
+    }
+
+    .intro {
+      min-height: 50vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 clamp(1.5rem, 5vw, 4rem) 3rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .intro p {
+      margin: 0;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .intro h1 {
+      margin: 0.85rem 0 0;
+      max-width: 12ch;
+      font-size: clamp(2rem, 5vw, 3.25rem);
+      font-weight: 600;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+    }
+
+    .section {
+      display: grid;
+      grid-template-columns: minmax(140px, 1fr) minmax(0, 2fr);
+      gap: clamp(1.5rem, 4vw, 3.5rem);
+      min-height: 90vh;
+      padding: 0 clamp(1.5rem, 5vw, 4rem);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .sticky {
+      position: sticky;
+      top: 2rem;
+      align-self: start;
+      padding: 4rem 0 2rem;
+    }
+
+    .num {
+      display: block;
+      margin: 0 0 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .sticky h2 {
+      margin: 0;
+      font-size: clamp(1.5rem, 3vw, 2.25rem);
+      font-weight: 600;
+      letter-spacing: -0.035em;
+      line-height: 1.1;
+    }
+
+    .content {
+      padding: 4.5rem 0 4rem;
+      max-width: 38ch;
+    }
+
+    .content p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1.02rem;
+      font-weight: 400;
+      line-height: 1.75;
+    }
+
+    .content p + p {
+      margin-top: 1.25rem;
+    }
+
+    .content strong {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .outro {
+      min-height: 30vh;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 720px) {
+      .section {
+        grid-template-columns: 1fr;
+        min-height: auto;
+      }
+
+      .sticky {
+        padding: 2.5rem 0 0.25rem;
+      }
+
+      .content {
+        padding: 1rem 0 3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="intro">
+    <p>Process</p>
+    <h1>Sticky section headers</h1>
+  </header>
+
+  <section class="section">
+    <div class="sticky">
+      <span class="num">01</span>
+      <h2>Design</h2>
+    </div>
+    <div class="content">
+      <p><strong>Shape the story first.</strong> Typography, rhythm, and hierarchy set the tone before a single component ships.</p>
+      <p>Sticky headers keep each chapter labeled while the body scrolls past.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="sticky">
+      <span class="num">02</span>
+      <h2>Develop</h2>
+    </div>
+    <div class="content">
+      <p><strong>Build with restraint.</strong> Motion and layout should feel intentional — never decorative for its own sake.</p>
+      <p>Each label stays put until the next section takes its place.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="sticky">
+      <span class="num">03</span>
+      <h2>Deploy</h2>
+    </div>
+    <div class="content">
+      <p><strong>Ship polish, not noise.</strong> The last mile is spacing, performance, and quiet details.</p>
+      <p>Scroll back up — headers return without any script.</p>
+    </div>
+  </section>
+
+  <footer class="outro">End</footer>
+</body>
+</html>

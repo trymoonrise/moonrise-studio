@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 018
+    slug: scroll-snap-gallery
+    title: Scroll Snap Gallery
+    category: scroll
+    tags: snap, gallery
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>018 — Scroll Snap Gallery</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    
+    body{margin:0;height:100vh;overflow-y:scroll;scroll-snap-type:y mandatory;background:#000}
+    .slide{height:100vh;scroll-snap-align:start;display:grid;place-items:center;font-size:3rem;font-weight:800;color:#fff}
+    .slide:nth-child(1){background:linear-gradient(135deg,#6c8cff,#3a5ccc)}
+    .slide:nth-child(2){background:linear-gradient(135deg,#ff6cb0,#cc3a7a)}
+    .slide:nth-child(3){background:linear-gradient(135deg,#6cffb8,#3acc8a)}
+  
+  </style>
+</head>
+<body>
+<section class="slide">One</section><section class="slide">Two</section><section class="slide">Three</section>
+
+</body>
+</html>

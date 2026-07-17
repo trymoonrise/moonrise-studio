@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 022
+    slug: clip-path-reveal
+    title: Clip Path Reveal
+    category: image
+    tags: clip-path, reveal
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>022 — Clip Path Reveal</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    
+    body{display:grid;place-items:center;min-height:100vh;background:#0d0d0f;padding:2rem}
+    .img{width:min(80vw,400px);aspect-ratio:4/5;border-radius:8px;overflow:hidden}
+    .img img{width:100%;height:100%;object-fit:cover;clip-path:inset(50% 0 50% 0);transform:scale(1.12);animation:reveal 2.4s cubic-bezier(.22,.61,.36,1) forwards}
+    @keyframes reveal{to{clip-path:inset(0);transform:scale(1)}}
+    @media (prefers-reduced-motion:reduce){.img img{clip-path:inset(0);transform:none;animation:none}}
+    
+  </style>
+</head>
+<body>
+<div class="img"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt="4:5"></div>
+
+</body>
+</html>

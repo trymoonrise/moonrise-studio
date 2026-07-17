@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1638
+    slug: ease-in-stat-counters
+    title: Stat Counter Ease
+    category: ease-in
+    tags: ease-in, stats, counter, professional
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1638 — Stat Counter Ease</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#fff;padding:2rem;font-family:system-ui,sans-serif}.stats{display:flex;gap:clamp(2rem,6vw,4rem)}.stat{text-align:center;opacity:0;transform:translateY(20px);animation:up .75s cubic-bezier(.22,.61,.36,1) forwards}.stat:nth-child(1){animation-delay:.1s}.stat:nth-child(2){animation-delay:.22s}.stat:nth-child(3){animation-delay:.34s}.num{font-size:2.5rem;font-weight:800;color:#111;font-variant-numeric:tabular-nums}.label{font-size:.8rem;color:#888;margin-top:.25rem;text-transform:uppercase;letter-spacing:.08em}@keyframes up{to{opacity:1;transform:none}}
+  </style>
+</head>
+<body>
+<div class="stats"><div class="stat"><div class="num" data-v="98">0</div><div class="label">Satisfaction</div></div><div class="stat"><div class="num" data-v="240">0</div><div class="label">Projects</div></div><div class="stat"><div class="num" data-v="12">0</div><div class="label">Years</div></div></div>
+<script>document.querySelectorAll('.num').forEach((el,i)=>{const target=+el.dataset.v;setTimeout(()=>{const t0=performance.now();(function tick(now){const p=Math.min((now-t0)/1200,1);const ease=1-Math.pow(1-p,3);el.textContent=Math.round(ease*target)+(target===98?'%':'');if(p<1)requestAnimationFrame(tick);else el.textContent=target+(target===98?'%':'');})(t0);},200+i*120);});</script>
+</body>
+</html>

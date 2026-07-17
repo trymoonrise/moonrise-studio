@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1473
+    slug: scroll-spy-sidebar
+    title: Scroll Spy Sidebar
+    category: scroll-sections
+    tags: scroll, spy, navigation
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1473 — Scroll Spy Sidebar</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#fff;color:#111;display:grid;grid-template-columns:200px 1fr;min-height:100vh}.nav{position:sticky;top:0;height:100vh;padding:2rem 1rem;border-right:1px solid #eee}.nav a{display:block;padding:.6rem 0;font-size:.85rem;color:#999;text-decoration:none;border-left:2px solid transparent;padding-left:1rem;transition:color .2s,border-color .2s}.nav a.on{color:#6c8cff;border-color:#6c8cff;font-weight:600}.main section{min-height:100vh;padding:4rem 3rem;display:flex;align-items:center}.main h2{font-size:2.5rem;font-weight:800}
+  </style>
+</head>
+<body>
+<nav class="nav" id="nav"><a href="#s0" data-i="0">Intro</a><a href="#s1" data-i="1">Features</a><a href="#s2" data-i="2">Pricing</a><a href="#s3" data-i="3">Contact</a></nav><main class="main"><section id="s0"><h2>Introduction</h2></section><section id="s1"><h2>Features</h2></section><section id="s2"><h2>Pricing</h2></section><section id="s3"><h2>Contact</h2></section></main>
+<script>const links=[...document.querySelectorAll('.nav a')];const secs=[...document.querySelectorAll('.main section')];const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.toggle('on',l.dataset.i==e.target.id.slice(1)));}}),{rootMargin:'-40% 0px -40% 0px'});secs.forEach(s=>obs.observe(s));</script>
+</body>
+</html>

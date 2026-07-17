@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 050
+    slug: page-fade-transition
+    title: Page Fade Transition
+    category: transitions
+    tags: fade, page
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>050 — Page Fade Transition</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap');
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;overflow:hidden;background:#111;color:#111;font-family:'DM Mono',monospace}.stage{position:relative;height:100vh;isolation:isolate;overflow:hidden}.page{--base:#efe9df;--accent:#ef6840;position:absolute;inset:0;display:grid;place-items:center;padding:2rem 2rem 8rem;text-align:center;background:radial-gradient(circle at 20% 20%,color-mix(in srgb,var(--accent),transparent 70%),transparent 34%),var(--base);visibility:hidden;opacity:0;pointer-events:none;transform:scale(1.025);filter:blur(8px);will-change:opacity,transform,filter}.page:nth-child(2){--base:#dceae5;--accent:#168a72}.page:nth-child(3){--base:#e6e0f2;--accent:#7152d9}.page.active{visibility:visible;opacity:1;pointer-events:auto;transform:none;filter:none;z-index:2}.page.enter{visibility:visible;z-index:3;animation:fade-in .72s cubic-bezier(.16,1,.3,1) both}.page.exit{visibility:visible;z-index:1;animation:fade-out .72s cubic-bezier(.16,1,.3,1) both}.inner{width:min(42rem,100%)}.idx{margin:0 0 1rem;font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;opacity:.48}.title{margin:0;font-family:'Instrument Serif',serif;font-size:clamp(4rem,14vw,9rem);font-weight:400;font-style:italic;line-height:.78;letter-spacing:-.055em}.copy{max-width:32ch;margin:1.5rem auto 0;font-size:.78rem;line-height:1.7;opacity:.55}.enter .idx,.enter .title,.enter .copy{animation:copy .62s cubic-bezier(.16,1,.3,1) both}.enter .title{animation-delay:.08s}.enter .copy{animation-delay:.14s}.controls{position:fixed;left:50%;bottom:max(2rem,env(safe-area-inset-bottom));z-index:20;display:flex;align-items:center;gap:.45rem;width:min(34rem,calc(100% - 1.5rem));padding:.5rem;transform:translateX(-50%);border:1px solid rgba(20,20,20,.12);border-radius:999px;background:rgba(255,255,255,.72);box-shadow:0 16px 50px rgba(20,20,20,.12);backdrop-filter:blur(18px)}button{font:500 .64rem 'DM Mono',monospace;cursor:pointer}.nav{flex:0 0 auto;width:2.6rem;height:2.6rem;border:0;border-radius:50%;background:#151515;color:#fff;font-size:1rem}.tabs{display:grid;grid-template-columns:repeat(3,1fr);flex:1;gap:.25rem}.tab{border:0;border-radius:999px;padding:.68rem .3rem;background:transparent;color:rgba(20,20,20,.45);letter-spacing:.08em;text-transform:uppercase}.tab[aria-current=true]{background:#151515;color:#fff}@keyframes fade-in{from{opacity:0;transform:scale(1.025);filter:blur(8px)}to{opacity:1;transform:none;filter:none}}@keyframes fade-out{from{opacity:1;transform:none;filter:none}to{opacity:0;transform:scale(.985);filter:blur(5px)}}@keyframes copy{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}@media(prefers-reduced-motion:reduce){.page,.inner>*{animation:none!important;filter:none}.page.exit{opacity:0}.page.enter{opacity:1;transform:none}}
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <section class="page active" data-page><div class="inner"><p class="idx">01 / Ember</p><h1 class="title">Soft fire.</h1><p class="copy">A clean crossfade with restrained scale, blur, and staggered typography.</p></div></section>
+    <section class="page" data-page><div class="inner"><p class="idx">02 / Signal</p><h2 class="title">Deep current.</h2><p class="copy">Both scenes overlap for one frame-synchronized dissolve with no flashing or layout shift.</p></div></section>
+    <section class="page" data-page><div class="inner"><p class="idx">03 / Orbit</p><h2 class="title">Violet air.</h2><p class="copy">Transitions lock while active, preventing repeated clicks from interrupting the sequence.</p></div></section>
+  </main>
+  <nav class="controls" aria-label="Page controls"><button class="nav" id="prev" type="button" aria-label="Previous">←</button><div class="tabs" id="tabs"></div><button class="nav" id="next" type="button" aria-label="Next">→</button></nav>
+  <script>
+    const pages=[...document.querySelectorAll('[data-page]')],tabs=document.getElementById('tabs'),names=['Ember','Signal','Orbit'];
+    const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let current=0,locked=false;
+    names.forEach((name,i)=>{const b=document.createElement('button');b.type='button';b.className='tab';b.textContent=name;b.setAttribute('aria-current',i===0?'true':'false');b.onclick=()=>go(i);tabs.appendChild(b)});
+    const buttons=[...tabs.children];
+    function go(next){if(locked||next===current)return;locked=true;const out=pages[current],inc=pages[next];out.classList.remove('active');out.classList.add('exit');inc.classList.add('enter');buttons[current].setAttribute('aria-current','false');buttons[next].setAttribute('aria-current','true');let finished=false;const done=()=>{if(finished)return;finished=true;inc.removeEventListener('animationend',onEnd);out.classList.remove('exit');inc.classList.remove('enter');inc.classList.add('active');current=next;locked=false};const onEnd=(e)=>{if(e.target===inc)done()};if(reduced)done();else{inc.addEventListener('animationend',onEnd);setTimeout(done,900)}}
+    document.getElementById('next').onclick=()=>go((current+1)%pages.length);
+    document.getElementById('prev').onclick=()=>go((current-1+pages.length)%pages.length);
+  </script>
+</body>
+</html>

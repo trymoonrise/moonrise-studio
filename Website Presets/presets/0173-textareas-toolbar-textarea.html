@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0173
+    slug: textareas-toolbar-textarea
+    title: Toolbar Textarea
+    category: textareas
+    tags: textareas, modern, experimental, exaggerated
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0173 — Toolbar Textarea</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#eff4ff;font-family:Inter,system-ui,sans-serif;overflow:hidden;padding:24px;color:#111}
+    textarea{font:inherit;border:0;outline:0;resize:none;background:transparent;color:inherit;width:100%}
+    button{font:inherit;border:0;cursor:pointer}
+    .scene{position:relative;width:min(520px,92vw)}
+    .card{background:#fff;border:1px solid rgba(20,40,80,.12);border-radius:30px;box-shadow:0 24px 70px rgba(56,83,145,.18);overflow:hidden}.tools{display:flex;gap:8px;padding:12px;background:linear-gradient(90deg,#f8fbff,#edf3ff);border-bottom:1px solid rgba(20,40,80,.08)}.tools button{width:34px;height:34px;border-radius:12px;background:#fff;color:#1c2a44;font:800 13px 'JetBrains Mono';box-shadow:0 6px 18px rgba(31,64,120,.08);transition:transform .2s,background .2s}.tools button:hover{transform:translateY(-2px);background:#1c2a44;color:#fff}.write{min-height:180px;padding:22px;font-size:21px;line-height:1.4;letter-spacing:-.03em}.status{padding:12px 16px;font:600 11px 'JetBrains Mono';letter-spacing:.16em;text-transform:uppercase;color:#678;border-top:1px solid rgba(20,40,80,.08)}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <div class="scene"><section class="card"><div class="tools"><button data-wrap="**">B</button><button data-wrap="_">I</button><button data-prefix="- ">List</button><button data-prefix="> ">Quote</button></div><textarea class="write" id="ta">Select text, then press a tool. This one feels like a tiny writing machine.</textarea><div class="status" id="status">Toolbar ready</div></section></div>
+  <script>const ta=document.getElementById('ta'),status=document.getElementById('status');document.querySelectorAll('button').forEach(b=>b.onclick=()=>{const s=ta.selectionStart,e=ta.selectionEnd,v=ta.value,sel=v.slice(s,e)||'text';let out;if(b.dataset.wrap){out=b.dataset.wrap+sel+b.dataset.wrap;ta.value=v.slice(0,s)+out+v.slice(e);ta.setSelectionRange(s+b.dataset.wrap.length,s+b.dataset.wrap.length+sel.length);}else{out=b.dataset.prefix+sel;ta.value=v.slice(0,s)+out+v.slice(e);ta.setSelectionRange(s+2,s+out.length);}ta.focus();status.textContent='Applied '+b.textContent;});</script>
+</body>
+</html>

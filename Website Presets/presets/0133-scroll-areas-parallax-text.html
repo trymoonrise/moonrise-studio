@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0133
+    slug: scroll-areas-parallax-text
+    title: Parallax Text Blocks
+    category: scroll-areas
+    tags: scroll-areas, parallax
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0133 — Parallax Text Blocks</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:100vh;background:#111;color:#fff}.block{height:80vh;display:grid;place-items:center;font-size:clamp(2rem,5vw,4rem);font-weight:900;transform:translateY(var(--y,0))}
+  </style>
+</head>
+<body>
+<div class="block" data-sp="0.3">Block 1</div><div class="block" data-sp="0.6">Block 2</div><div class="block" data-sp="0.8999999999999999">Block 3</div>
+<script>document.querySelectorAll('.block').forEach(b=>{new IntersectionObserver(es=>es.forEach(e=>{const y=(1-e.intersectionRatio)*50*parseFloat(e.target.dataset.sp);e.target.style.setProperty('--y',y+'px');})).observe(b);});</script>
+</body>
+</html>

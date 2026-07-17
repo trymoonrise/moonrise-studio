@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1318
+    slug: buttons-loading-button-04
+    title: Liquid Fill Loader
+    category: buttons
+    tags: buttons, liquid, loading
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1318 — Liquid Fill Loader</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700&family=Outfit:wght@400;500;600&display=swap');
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:#060d14;font-family:Outfit,sans-serif}
+.btn{position:relative;width:180px;height:52px;border:none;border-radius:999px;background:#0e1a24;color:#7dd3fc;font:600 .95rem Outfit,sans-serif;cursor:pointer;overflow:hidden;isolation:isolate}
+.fill{position:absolute;inset:0;background:linear-gradient(90deg,#38bdf8,#22d3ee);transform:translateX(-100%);transition:none;z-index:0}
+.btn.loading .fill{animation:fill 1.6s cubic-bezier(.22,1,.36,1) forwards}
+.label{position:relative;z-index:1;transition:color .3s}
+.btn.loading .label{color:#061018}
+.btn.done{background:#22d3ee;color:#061018}
+@keyframes fill{to{transform:translateX(0)}}
+  </style>
+</head>
+<body>
+<button class="btn" id="b"><span class="fill"></span><span class="label">Submit</span></button>
+<script>const b=document.getElementById('b');
+b.onclick=()=>{if(b.classList.contains('loading')||b.classList.contains('done'))return;b.classList.add('loading');b.querySelector('.label').textContent='Uploading…';setTimeout(()=>{b.classList.remove('loading');b.classList.add('done');b.querySelector('.label').textContent='Done';b.querySelector('.fill').style.transform='none'},1600)};</script>
+</body>
+</html>

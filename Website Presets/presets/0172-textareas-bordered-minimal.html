@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0172
+    slug: textareas-bordered-minimal
+    title: Minimal Bordered
+    category: textareas
+    tags: textareas, modern, experimental, exaggerated
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0172 — Minimal Bordered</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fbfbf8;font-family:Inter,system-ui,sans-serif;overflow:hidden;padding:24px;color:#111}
+    textarea{font:inherit;border:0;outline:0;resize:none;background:transparent;color:inherit;width:100%}
+    button{font:inherit;border:0;cursor:pointer}
+    .scene{position:relative;width:min(520px,92vw)}
+    .wrap{position:relative}.outline{position:absolute;inset:-10px;border:1px solid #111;border-radius:30px;transform:rotate(-1.5deg);transition:transform .35s cubic-bezier(.22,1,.36,1)}.field{position:relative;border:1px solid #111;border-radius:26px;background:#fbfbf8;padding:22px 22px 18px}.field:focus-within+.outline{transform:rotate(1deg) scale(1.02)}.tag{display:inline-block;font:700 10px 'JetBrains Mono';letter-spacing:.24em;text-transform:uppercase;border:1px solid #111;border-radius:99px;padding:7px 10px;margin-bottom:20px}.minimal{min-height:150px;font-size:20px;line-height:1.35;letter-spacing:-.025em}.minimal::placeholder{color:#b8b8b0}.dash{height:1px;background:#111;margin-top:18px;transform-origin:left;animation:draw 1s cubic-bezier(.22,1,.36,1)}@keyframes draw{from{transform:scaleX(0)}}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <div class="scene wrap"><section class="field"><span class="tag">Bordered</span><textarea class="minimal" placeholder="Minimal, but not boring.">A single line can behave like an object.</textarea><div class="dash"></div></section><div class="outline" aria-hidden="true"></div></div>
+</body>
+</html>

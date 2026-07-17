@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1182
+    slug: timers-stopwatch-01
+    title: Lap Split Stopwatch
+    category: timers
+    tags: timers, stopwatch, lap, split
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1182 — Lap Split Stopwatch</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#080a0e;color:#e8ebf0;font-family:Outfit,sans-serif;padding:2rem}
+    .sw{width:min(360px,100%);text-align:center}
+    .display{font-family:Syne,sans-serif;font-size:clamp(3rem,10vw,4.5rem);font-weight:800;letter-spacing:-.04em;font-variant-numeric:tabular-nums;line-height:1;margin-bottom:.5rem}
+    .display .ms{font-size:.4em;color:rgba(232,235,240,.35);vertical-align:super}
+    .laps{max-height:120px;overflow-y:auto;margin:1.5rem 0;text-align:left;font-size:.8rem;border-top:1px solid rgba(255,255,255,.06)}
+    .lap{display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid rgba(255,255,255,.04);color:rgba(232,235,240,.5);animation:lap-in .3s ease}
+    .lap span:last-child{font-family:monospace;color:#38bdf8}
+    .controls{display:flex;gap:.75rem;justify-content:center}
+    .btn{padding:.75rem 1.5rem;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:transparent;color:inherit;font-family:Syne,sans-serif;font-weight:700;font-size:.85rem;cursor:pointer;transition:background .3s,border-color .3s,transform .3s}
+    .btn.primary{background:#38bdf8;border-color:#38bdf8;color:#080a0e}
+    .btn:hover{transform:translateY(-2px)}
+    .btn.primary:hover{background:#0ea5e9}
+    .btn.running{animation:btn-pulse 1.5s ease infinite}
+    @keyframes lap-in{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+    @keyframes btn-pulse{0%,100%{box-shadow:0 0 0 0 rgba(56,189,248,.4)}50%{box-shadow:0 0 0 8px rgba(56,189,248,0)}}
+    @media(prefers-reduced-motion:reduce){.btn.running,.lap{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="sw">
+    <div class="display" id="disp">00:00<span class="ms">.00</span></div>
+    <div class="laps" id="laps"></div>
+    <div class="controls">
+      <button class="btn primary" id="toggle">Start</button>
+      <button class="btn" id="lap">Lap</button>
+      <button class="btn" id="reset">Reset</button>
+    </div>
+  </div>
+  <script>
+    let t=0,running=false,iv,laps=[],lapStart=0;
+    const disp=document.getElementById('disp'),lapsEl=document.getElementById('laps'),toggle=document.getElementById('toggle');
+    function fmt(ms){const s=Math.floor(ms/1000),m=Math.floor(s/60),ss=s%60,cs=Math.floor((ms%1000)/10);return `${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}<span class="ms">.${String(cs).padStart(2,'0')}</span>`}
+    toggle.onclick=()=>{running=!running;toggle.textContent=running?'Stop':'Start';toggle.classList.toggle('running',running);if(running){lapStart=t;iv=setInterval(()=>{t+=10;disp.innerHTML=fmt(t)},10)}else clearInterval(iv)};
+    document.getElementById('lap').onclick=()=>{if(!running)return;const lap=t-lapStart;laps.unshift(lap);lapStart=t;lapsEl.innerHTML=laps.map((l,i)=>`<div class="lap"><span>Lap ${laps.length-i}</span><span>${fmt(l).replace(/<[^>]+>/g,'')}</span></div>`).join('')};
+    document.getElementById('reset').onclick=()=>{running=false;clearInterval(iv);t=0;laps=[];lapStart=0;disp.innerHTML=fmt(0);lapsEl.innerHTML='';toggle.textContent='Start';toggle.classList.remove('running')};
+  </script>
+</body>
+</html>

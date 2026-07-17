@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0164
+    slug: radio-groups-segmented-radio
+    title: Segmented Radio
+    category: radio-groups
+    tags: radio-groups, segmented
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0164 — Segmented Radio</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: radial-gradient(ellipse at 50% 25%, #1a1a2e 0%, #0d0d0f 62%);
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      padding: 2rem;
+      color: #fff;
+    }
+
+    .wrap {
+      display: grid;
+      gap: 1rem;
+      text-align: center;
+    }
+
+    .eyebrow {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.38);
+    }
+
+    .seg {
+      position: relative;
+      display: inline-flex;
+      gap: 4px;
+      padding: 5px;
+      background: rgba(26, 26, 46, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      box-shadow: 0 16px 45px rgba(0, 0, 0, 0.35);
+    }
+
+    .indicator {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      height: calc(100% - 10px);
+      width: var(--w, 72px);
+      border-radius: 8px;
+      background: linear-gradient(135deg, #6c8cff, #9b6cff);
+      box-shadow: 0 6px 20px rgba(108, 140, 255, 0.35);
+      transform: translateX(var(--x, 0));
+      transition:
+        transform 0.48s cubic-bezier(0.22, 0.61, 0.36, 1),
+        width 0.48s cubic-bezier(0.22, 0.61, 0.36, 1);
+      pointer-events: none;
+    }
+
+    .seg label {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+    }
+
+    .seg input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .opt {
+      display: block;
+      padding: 0.6rem 1.25rem;
+      border-radius: 8px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.45);
+      font-size: 0.86rem;
+      font-weight: 600;
+      white-space: nowrap;
+      transition:
+        color 0.35s cubic-bezier(0.22, 0.61, 0.36, 1),
+        transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    .seg label:hover .opt {
+      color: rgba(255, 255, 255, 0.78);
+    }
+
+    .seg input:checked + .opt {
+      color: #fff;
+      transform: translateY(-0.5px);
+    }
+
+  .hint {
+      font-size: 0.88rem;
+      color: rgba(255, 255, 255, 0.5);
+      min-height: 1.3em;
+      transition: opacity 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .indicator,
+      .opt,
+      .hint {
+        transition: none;
+      }
+
+      .seg input:checked + .opt {
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <span class="eyebrow">View mode</span>
+    <div class="seg" id="seg" role="radiogroup" aria-label="View mode">
+      <span class="indicator" id="indicator"></span>
+      <label>
+        <input type="radio" name="v" value="list" checked>
+        <span class="opt">List</span>
+      </label>
+      <label>
+        <input type="radio" name="v" value="grid">
+        <span class="opt">Grid</span>
+      </label>
+      <label>
+        <input type="radio" name="v" value="board">
+        <span class="opt">Board</span>
+      </label>
+    </div>
+    <p class="hint" id="hint">List view</p>
+  </div>
+
+  <script>
+    const seg = document.getElementById('seg');
+    const indicator = document.getElementById('indicator');
+    const hint = document.getElementById('hint');
+    const radios = [...document.querySelectorAll('input[name="v"]')];
+    const labels = { list: 'List view', grid: 'Grid view', board: 'Board view' };
+
+    function moveIndicator() {
+      const checked = document.querySelector('input[name="v"]:checked');
+      const label = checked.closest('label');
+      const g = seg.getBoundingClientRect();
+      const r = label.getBoundingClientRect();
+      indicator.style.setProperty('--x', (r.left - g.left - 5) + 'px');
+      indicator.style.setProperty('--w', r.width + 'px');
+      hint.textContent = labels[checked.value];
+    }
+
+    radios.forEach((radio) => {
+      radio.addEventListener('change', moveIndicator);
+    });
+
+    addEventListener('resize', moveIndicator, { passive: true });
+    moveIndicator();
+  </script>
+</body>
+</html>

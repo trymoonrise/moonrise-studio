@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0965
+    slug: errors-network-error-05
+    title: Network Error 05
+    category: errors
+    tags: errors, network
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0965 — Network Error 05</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#06080c;color:#9ae6b4;font-family:'IBM Plex Mono',monospace;overflow:hidden}
+    .term{width:min(520px,92vw);padding:2rem;border:1px solid #1a3a28;background:#0a100e;border-radius:8px;box-shadow:0 0 80px rgba(0,255,100,.06)}
+    .bars{display:flex;align-items:end;gap:4px;height:32px;margin-bottom:1.5rem}
+    .bar{width:8px;background:#9ae6b4;border-radius:2px;animation:signal 1.2s ease-in-out infinite}
+    .bar:nth-child(1){height:20%;animation-delay:0s}
+    .bar:nth-child(2){height:40%;animation-delay:.1s}
+    .bar:nth-child(3){height:70%;animation-delay:.2s}
+    .bar:nth-child(4){height:100%;animation-delay:.3s}
+    .bars.dead .bar{background:#ff4444;animation:die .8s ease-in forwards}
+    .cable{height:3px;background:linear-gradient(90deg,#9ae6b4,transparent);margin:1.5rem 0;position:relative;animation:pulse-cable 1s linear infinite}
+    .cable::after{content:'✂';position:absolute;right:30%;top:50%;transform:translateY(-50%);font-size:1.2rem;animation:cut 2s ease-in-out infinite}
+    h1{margin:0 0 .75rem;font-size:1.1rem;color:#ff6b6b}
+    .log{font-size:.75rem;line-height:1.9;opacity:.7;min-height:6em}
+    .log .line{overflow:hidden;white-space:nowrap;animation:type .05s steps(1) both}
+    button{margin-top:1.5rem;appearance:none;border:1px solid #9ae6b4;background:transparent;color:#9ae6b4;padding:.7rem 1.2rem;font:600 .75rem 'IBM Plex Mono',monospace;cursor:pointer}
+    button:hover{background:#9ae6b4;color:#06080c}
+    @keyframes signal{0%,100%{opacity:1;transform:scaleY(1)}50%{opacity:.3;transform:scaleY(.4)}}
+    @keyframes die{to{height:4px!important;opacity:.3}}
+    @keyframes pulse-cable{0%{opacity:1;background-position:0}50%{opacity:.3}100%{opacity:0;width:40%}}
+    @keyframes cut{0%,40%{opacity:0;transform:translateY(-50%) rotate(0)}50%{opacity:1;transform:translateY(-50%) rotate(-20deg)}100%{opacity:1;transform:translateY(-50%) translateX(20px) rotate(0)}}
+    @media (prefers-reduced-motion:reduce){.bar,.cable,.cable::after{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="term" role="alert">
+    <div class="bars dead" aria-hidden="true">
+      <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+    </div>
+    <h1>CONNECTION SEVERED</h1>
+    <div class="cable" aria-hidden="true"></div>
+    <div class="log" id="log"></div>
+    <button type="button" id="retry">ping 8.8.8.8</button>
+  </div>
+  <script>
+    const lines=[
+      '> GET /api/data HTTP/1.1',
+      '> Host: production.internal',
+      '> ...',
+      '✗ ERR_NETWORK_CHANGED',
+      '✗ ETIMEDOUT after 30000ms',
+      '✗ Cable integrity: 0%',
+      '✗ Packets lost: ALL OF THEM',
+      '✗ Suggestion: yell at the router'
+    ];
+    const log=document.getElementById('log');
+    let i=0;
+    function next(){
+      if(i>=lines.length)return;
+      const d=document.createElement('div');
+      d.className='line';
+      d.textContent=lines[i++];
+      if(lines[i-1].startsWith('✗'))d.style.color='#ff6b6b';
+      log.appendChild(d);
+      setTimeout(next,280);
+    }
+    next();
+    document.getElementById('retry').onclick=()=>{
+      log.innerHTML='';i=0;next();
+    };
+  </script>
+</body>
+</html>

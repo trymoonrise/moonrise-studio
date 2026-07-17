@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0447
+    slug: scroll-animations-skew-scroll-11
+    title: Skew Scroll 11
+    category: scroll-animations
+    tags: scroll-animations, skew
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0447 — Skew Scroll 11</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#0a0a0c;color:#fff;font-family:system-ui}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}section{min-height:100vh;display:grid;place-items:center;transform:skewY(var(--sk,0deg))}.a{background:linear-gradient(135deg,#111118,#0a0a0c)}.b{background:linear-gradient(135deg,#1c0f18,#0a0a0c)}.c{background:linear-gradient(135deg,#0c1824,#0a0a0c)}h1{font-size:clamp(2.2rem,7vw,4.8rem);letter-spacing:-.05em}
+  </style>
+</head>
+<body>
+<section class="a"><h1>Skew</h1></section><section class="b"><h1>by Velocity</h1></section><section class="c"><h1>Not Position</h1></section>
+<script>let last=scrollY,v=0;function tick(){const now=scrollY;const dv=now-last;last=now;v=v*.85+dv*.15;const sk=matchMedia('(prefers-reduced-motion:reduce)').matches?0:Math.max(-14,Math.min(14,-v*.06));document.documentElement.style.setProperty('--sk',sk+'deg');requestAnimationFrame(tick);}tick();</script>
+</body>
+</html>

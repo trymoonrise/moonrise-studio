@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0754
+    slug: date-pickers-calendar-grid-02
+    title: Matrix Calendar Grid
+    category: date-pickers
+    tags: date-pickers, calendar
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0754 — Matrix Calendar Grid</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #0a0c10;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+      padding: 1.5rem;
+    }
+
+    .cal {
+      width: min(340px, 92vw);
+      background: #111827;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+
+    .cal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .cal-head h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .nav-btn {
+      width: 32px;
+      height: 32px;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      background: transparent;
+      color: #94a3b8;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .nav-btn:hover { border-color: #00d4aa; color: #00d4aa; }
+
+    .weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      margin-bottom: 0.5rem;
+    }
+
+    .weekdays span {
+      text-align: center;
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+
+    .day {
+      aspect-ratio: 1;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: #cbd5e1;
+      font-size: 0.85rem;
+      transition: background 0.2s, color 0.2s, transform 0.2s;
+    }
+
+    .day:hover:not(:disabled) {
+      background: #1e293b;
+      transform: scale(1.08);
+    }
+
+    .day.other { color: #334155; }
+    .day.today { border: 1px solid #38bdf8; color: #38bdf8; }
+
+    .day.selected {
+      background: #00d4aa;
+      color: #080a0e;
+      font-weight: 600;
+      animation: daySelect 0.35s ease;
+    }
+
+    @keyframes daySelect {
+      0% { transform: scale(0.85); }
+      60% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    .selected-label {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #1e293b;
+      font-size: 0.8rem;
+      color: #64748b;
+      animation: labelFade 0.3s ease;
+    }
+
+    @keyframes labelFade {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .day.selected { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="cal">
+    <div class="cal-head">
+      <button type="button" class="nav-btn" id="prev" aria-label="Previous month">‹</button>
+      <h2 id="month">July 2026</h2>
+      <button type="button" class="nav-btn" id="next" aria-label="Next month">›</button>
+    </div>
+    <div class="weekdays">
+      <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="selected-label" id="sel">Selected: July 16, 2026</div>
+  </div>
+
+  <script>
+    let view = new Date(2026, 6, 1);
+    let selected = new Date(2026, 6, 16);
+    const grid = document.getElementById('grid');
+    const monthEl = document.getElementById('month');
+    const selEl = document.getElementById('sel');
+
+    function render() {
+      monthEl.textContent = view.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      grid.innerHTML = '';
+      const first = new Date(view.getFullYear(), view.getMonth(), 1);
+      const start = first.getDay();
+      const days = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
+      const today = new Date();
+
+      for (let i = 0; i < start; i++) {
+        const b = document.createElement('button');
+        b.className = 'day other';
+        b.disabled = true;
+        grid.appendChild(b);
+      }
+
+      for (let d = 1; d <= days; d++) {
+        const b = document.createElement('button');
+        b.className = 'day';
+        b.textContent = d;
+        const dt = new Date(view.getFullYear(), view.getMonth(), d);
+        if (dt.toDateString() === today.toDateString()) b.classList.add('today');
+        if (dt.toDateString() === selected.toDateString()) b.classList.add('selected');
+        b.addEventListener('click', () => {
+          selected = dt;
+          selEl.textContent = 'Selected: ' + dt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+          render();
+        });
+        grid.appendChild(b);
+      }
+    }
+
+    document.getElementById('prev').onclick = () => { view.setMonth(view.getMonth() - 1); render(); };
+    document.getElementById('next').onclick = () => { view.setMonth(view.getMonth() + 1); render(); };
+    render();
+  </script>
+</body>
+</html>

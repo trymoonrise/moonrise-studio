@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0461
+    slug: image-scroll-card-flip-scroll-11
+    title: Card Flip Scroll 11
+    category: image-scroll
+    tags: image-scroll, card
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0461 — Card Flip Scroll 11</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:linear-gradient(160deg,#1e1b4b,#312e81);color:#fff;font-family:system-ui;perspective:1200px}.track{height:280vh}.sticky{position:sticky;top:0;height:100vh;display:grid;place-items:center}.card{width:min(80vw,340px);aspect-ratio:3/4;position:relative;transform-style:preserve-3d;transform:rotateY(var(--ry,0deg))}.face{position:absolute;inset:0;border-radius:20px;backface-visibility:hidden;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.45)}.face img{width:100%;height:100%;object-fit:cover}.back{transform:rotateY(180deg);background:linear-gradient(135deg,#6366f1,#a855f7);display:grid;place-items:center;padding:2rem;text-align:center}.back h2{font-size:1.5rem;font-weight:800}
+  </style>
+</head>
+<body>
+<div class="track" id="t"><div class="sticky"><div class="card" id="c"><div class="face front"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div><div class="face back"><h2>Behind<br>the frame</h2></div></div></div></div>
+<script>const _el=document.querySelector('#t');function prog(){const r=_el.getBoundingClientRect();return Math.min(1,Math.max(0,-r.top/(r.height-innerHeight)));}const c=document.getElementById('c');addEventListener('scroll',()=>c.style.setProperty('--ry',prog()*180+'deg'),{passive:true});</script>
+</body>
+</html>

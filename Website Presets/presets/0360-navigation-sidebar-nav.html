@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0360
+    slug: navigation-sidebar-nav
+    title: Sidebar Navigation
+    category: navigation
+    tags: navigation, sidebar
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0360 — Sidebar Navigation</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;grid-template-columns:auto 1fr;background:#fafafa;color:#111;font-family:Outfit,sans-serif}
+    aside{position:sticky;top:0;height:100vh;padding:2.5rem 2rem;display:flex;flex-direction:column;gap:3rem;border-right:1px solid #ececec;width:200px}
+    .logo{font-family:Syne,sans-serif;font-weight:800;letter-spacing:-.04em;writing-mode:vertical-rl;transform:rotate(180deg);font-size:1.1rem}
+    nav{display:flex;flex-direction:column;gap:1.25rem;margin-top:auto}
+    nav a{color:#111;text-decoration:none;font-size:.75rem;font-weight:300;letter-spacing:.16em;text-transform:uppercase;opacity:.35;transition:opacity .3s,transform .35s cubic-bezier(.22,1,.36,1)}
+    nav a:hover,nav a.active{opacity:1;transform:translateX(4px)}
+    main{padding:4rem clamp(2rem,6vw,5rem);display:grid;align-content:center;min-height:100vh}
+    h1{margin:0;font-family:Syne,sans-serif;font-size:clamp(2.5rem,7vw,4.5rem);letter-spacing:-.05em;line-height:.95;font-weight:800}
+    p{margin:1.5rem 0 0;max-width:32ch;font-weight:300;color:#888;line-height:1.7}
+    @media(max-width:700px){body{grid-template-columns:1fr}aside{height:auto;width:auto;flex-direction:row;align-items:center;border-right:none;border-bottom:1px solid #ececec;padding:1.25rem}.logo{writing-mode:horizontal-tb;transform:none}nav{margin:0 0 0 auto;flex-direction:row;gap:1.25rem}}
+  </style>
+</head>
+<body>
+  <aside>
+    <div class="logo">LINE</div>
+    <nav>
+      <a class="active" href="#">Index</a>
+      <a href="#">Projects</a>
+      <a href="#">Notes</a>
+      <a href="#">Info</a>
+    </nav>
+  </aside>
+  <main>
+    <h1>Quiet<br>rail</h1>
+    <p>A vertical spine of type. Nothing else claims the edge.</p>
+  </main>
+</body>
+</html>

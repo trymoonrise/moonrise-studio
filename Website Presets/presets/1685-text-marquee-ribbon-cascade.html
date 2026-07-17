@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1685
+    slug: text-marquee-ribbon-cascade
+    title: Ribbon Cascade Marquee
+    category: text
+    tags: marquee, ribbon, diagonal, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1685 — Ribbon Cascade Marquee</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:wght@500;600&display=swap');
+
+    :root {
+      --night: #0c0a12;
+      --cream: #f6f1e4;
+      --violet: #8b5cff;
+      --pink: #ff4fa3;
+      --lime: #c8ff3d;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow: hidden;
+      background: var(--night);
+      color: var(--cream);
+      font-family: Anton, sans-serif;
+    }
+
+    .field {
+      position: fixed;
+      inset: -20vmax;
+      display: grid;
+      place-items: center;
+      transform: rotate(-18deg);
+    }
+
+    .ribbon {
+      position: absolute;
+      left: -10%;
+      width: 120%;
+      overflow: hidden;
+      mix-blend-mode: screen;
+      border-block: 2px solid rgba(246, 241, 228, 0.15);
+      background: color-mix(in srgb, var(--tint) 18%, transparent);
+      box-shadow: 0 0 40px color-mix(in srgb, var(--tint) 25%, transparent);
+    }
+
+    .ribbon:nth-child(1) { top: 12%; --tint: var(--violet); --spd: 14s; }
+    .ribbon:nth-child(2) { top: 28%; --tint: var(--pink); --spd: 19s; animation-direction: reverse; }
+    .ribbon:nth-child(3) { top: 44%; --tint: var(--lime); --spd: 11s; z-index: 3; }
+    .ribbon:nth-child(4) { top: 60%; --tint: #4ecbff; --spd: 23s; }
+    .ribbon:nth-child(5) { top: 76%; --tint: #ff8a3d; --spd: 16s; }
+
+    .ribbon:nth-child(even) .track { animation-direction: reverse; }
+
+    .ribbon:nth-child(3) {
+      background: var(--lime);
+      color: #111;
+      mix-blend-mode: normal;
+      border-color: #111;
+    }
+
+    .track {
+      display: flex;
+      width: max-content;
+      white-space: nowrap;
+      animation: rush var(--spd) linear infinite;
+    }
+
+    .word {
+      padding: 0.35em 0.7em;
+      font-size: clamp(2.4rem, 7vw, 5.5rem);
+      line-height: 0.9;
+      letter-spacing: 0.01em;
+      text-transform: uppercase;
+    }
+
+    .sep {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.4em;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      opacity: 0.7;
+    }
+
+    .ribbon:nth-child(3) .sep { color: #111; opacity: 1; }
+
+    .stamp {
+      position: fixed;
+      right: 1.4rem;
+      bottom: 1.2rem;
+      z-index: 8;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(246, 241, 228, 0.45);
+      writing-mode: vertical-rl;
+    }
+
+    .title {
+      position: fixed;
+      left: 1.4rem;
+      top: 1.3rem;
+      z-index: 8;
+      max-width: 12rem;
+    }
+
+    .title p {
+      margin: 0;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: rgba(246, 241, 228, 0.4);
+    }
+
+    .title h1 {
+      margin: 0.45rem 0 0;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      letter-spacing: 0.02em;
+      line-height: 0.95;
+    }
+
+    .noise {
+      position: fixed;
+      inset: 0;
+      z-index: 6;
+      pointer-events: none;
+      opacity: 0.05;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    @keyframes rush { to { transform: translateX(-50%); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .track { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="title">
+    <p>Kinetic ribbons</p>
+    <h1>Cascade</h1>
+  </div>
+
+  <div class="field" id="field">
+    <div class="ribbon"><div class="track" data-line="VELOCITY / CUT THROUGH /"></div></div>
+    <div class="ribbon"><div class="track" data-line="NO STRAIGHT LINES /"></div></div>
+    <div class="ribbon"><div class="track" data-line="RIBBON / RUSH / REPEAT /"></div></div>
+    <div class="ribbon"><div class="track" data-line="ANGLE OF ATTACK /"></div></div>
+    <div class="ribbon"><div class="track" data-line="ALWAYS OFF AXIS /"></div></div>
+  </div>
+
+  <p class="stamp">Experimental type · 1685</p>
+  <div class="noise" aria-hidden="true"></div>
+
+  <script>
+    document.querySelectorAll('[data-line]').forEach((track) => {
+      const parts = track.dataset.line.split('/').map((s) => s.trim()).filter(Boolean);
+      const html = parts.map((w) =>
+        '<span class="word">' + w + '</span><span class="sep" aria-hidden="true">◆</span>'
+      ).join('');
+      track.innerHTML = html + html;
+    });
+
+    const field = document.getElementById('field');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    addEventListener('pointermove', (e) => {
+      if (reduced) return;
+      const x = (e.clientX / innerWidth - 0.5) * 4;
+      const y = (e.clientY / innerHeight - 0.5) * 4;
+      field.style.transform = 'rotate(-18deg) translate(' + x + '%, ' + y + '%)';
+    }, { passive: true });
+  </script>
+</body>
+</html>

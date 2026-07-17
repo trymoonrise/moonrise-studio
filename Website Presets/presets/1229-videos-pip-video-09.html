@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1229
+    slug: videos-pip-video-09
+    title: Pip Video 09
+    category: videos
+    tags: videos, pip
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1229 — Pip Video 09</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Mono:wght@400;500&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      overflow: hidden;
+      background: #f1f0eb;
+      color: #0b0b0b;
+      font-family: 'DM Mono', monospace;
+    }
+
+    .page {
+      position: relative;
+      min-height: 100vh;
+      padding: clamp(1.25rem, 3vw, 2.5rem);
+    }
+
+    .topline {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 0.8rem;
+      border-bottom: 1px solid #0b0b0b;
+      font-size: 0.66rem;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .status::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #ff3b30;
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+
+    h1 {
+      position: absolute;
+      left: clamp(1.25rem, 3vw, 2.5rem);
+      bottom: clamp(1rem, 2vw, 2rem);
+      margin: 0;
+      font-family: 'Archivo Black', sans-serif;
+      font-size: clamp(5rem, 22vw, 18rem);
+      font-weight: 400;
+      line-height: 0.72;
+      letter-spacing: -0.075em;
+      text-transform: uppercase;
+    }
+
+    .index {
+      position: absolute;
+      right: clamp(1.25rem, 3vw, 2.5rem);
+      top: 50%;
+      margin: 0;
+      transform: translateY(-50%) rotate(90deg);
+      transform-origin: center;
+      font-size: 0.68rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .pip {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      z-index: 10;
+      width: min(30vw, 300px);
+      min-width: 210px;
+      padding: 7px;
+      background: #0b0b0b;
+      transform: translate(-50%, -58%) rotate(-2deg);
+      box-shadow: 14px 14px 0 #ff3b30;
+      transition:
+        transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .pip:hover {
+      transform: translate(-50%, -58%) rotate(0deg) scale(1.06);
+      box-shadow: 7px 7px 0 #ff3b30;
+    }
+
+    .embed {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      background: #0a0a0c;
+    }
+
+    .embed--16x9 { aspect-ratio: 16 / 9; }
+
+    .embed iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+    }
+
+    .pip__caption {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.55rem 0.2rem 0.05rem;
+      color: #fff;
+      font-size: 0.58rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    @keyframes pulse {
+      50% { opacity: 0.25; transform: scale(0.7); }
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: clamp(4.25rem, 25vw, 8rem); }
+      .pip { width: min(68vw, 280px); }
+      .index { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+<main class="page">
+  <header class="topline">
+    <span>Picture in picture</span>
+    <span class="status">Playing</span>
+  </header>
+  <h1>Watch</h1>
+  <p class="index">Video study / 09</p>
+</main>
+<div class="pip">
+  <div class="embed embed--16x9">
+    <iframe class="embed__frame" src="https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ?rel=0&modestbranding=1&playsinline=1&mute=1" title="Floating player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+  </div>
+  <div class="pip__caption"><span>Now viewing</span><span>16:9</span></div>
+</div>
+
+</body>
+</html>

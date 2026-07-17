@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0116
+    slug: features-bento-grid
+    title: Bento Feature Grid
+    category: features
+    tags: features, bento
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0116 — Bento Feature Grid</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0d0e14;color:#fff;font-family:Outfit,sans-serif;padding:2rem}
+    .wrap{width:min(860px,100%)}
+    h1{margin:0 0 1.5rem;font-family:Syne,sans-serif;font-size:clamp(1.8rem,4vw,2.8rem);letter-spacing:-.04em;font-weight:800}
+    .bento{display:grid;grid-template-columns:1.4fr 1fr 1fr;grid-template-rows:180px 140px 140px;gap:12px}
+    .cell{border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:1.25rem;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;transition:transform .4s cubic-bezier(.22,1,.36,1),border-color .3s}
+    .cell:hover{transform:translateY(-4px);border-color:rgba(255,255,255,.25)}
+    .a{grid-row:1/3;background:linear-gradient(160deg,#1a2240,#0d0e14)}
+    .b{background:linear-gradient(160deg,#1f3a32,#0d0e14)}
+    .c{background:linear-gradient(160deg,#3a1a28,#0d0e14)}
+    .d{grid-column:2/4;background:linear-gradient(160deg,#2a2418,#0d0e14)}
+    .e{background:#12141c}.f{background:#12141c}
+    .orb{position:absolute;width:120px;height:120px;border-radius:50%;filter:blur(30px);opacity:.35;top:-20%;right:-10%}
+    .a .orb{background:#6c8cff}.b .orb{background:#7ee0c3}.c .orb{background:#ff6bcb}.d .orb{background:#ffd16c}
+    .tag{font-size:.65rem;letter-spacing:.16em;text-transform:uppercase;opacity:.4;margin:0 0 .35rem;font-weight:300}
+    h3{margin:0;font-family:Syne,sans-serif;font-size:1.15rem;letter-spacing:-.02em}
+    p{margin:.35rem 0 0;font-size:.8rem;opacity:.5;font-weight:300;line-height:1.45}
+    @media(max-width:700px){.bento{grid-template-columns:1fr;grid-template-rows:auto}.a,.d{grid-row:auto;grid-column:auto}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Bento brain</h1>
+    <div class="bento">
+      <div class="cell a"><div class="orb"></div><p class="tag">Hero</p><h3>Command center</h3><p>The big idea owns the tall space.</p></div>
+      <div class="cell b"><div class="orb"></div><p class="tag">Live</p><h3>Sync</h3><p>Always on.</p></div>
+      <div class="cell c"><div class="orb"></div><p class="tag">Soft</p><h3>Pulse</h3><p>Quiet power.</p></div>
+      <div class="cell d"><div class="orb"></div><p class="tag">Wide</p><h3>Span across the fold</h3><p>One statement, full width, no apology.</p></div>
+      <div class="cell e"><p class="tag">Micro</p><h3>Fast</h3></div>
+      <div class="cell f"><p class="tag">Micro</p><h3>Clear</h3></div>
+    </div>
+  </div>
+</body>
+</html>

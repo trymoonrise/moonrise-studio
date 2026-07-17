@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0889
+    slug: badges-outline-badge-07
+    title: Neon Trace Badge
+    category: badges
+    tags: badges, outline
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0889 — Neon Trace Badge</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #080a0e;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .badge {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      padding: 0.7rem 1.4rem;
+      background: transparent;
+    }
+
+    .trace {
+      position: absolute;
+      inset: -1px;
+      border-radius: 6px;
+      pointer-events: none;
+    }
+
+    .trace svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .trace rect {
+      fill: none;
+      stroke: #a78bfa;
+      stroke-width: 1.5;
+      stroke-dasharray: 240;
+      stroke-dashoffset: 240;
+      animation: trace 2.5s ease-in-out infinite;
+    }
+
+    @keyframes trace {
+      0% { stroke-dashoffset: 240; opacity: 0.3; }
+      50% { stroke-dashoffset: 0; opacity: 1; }
+      100% { stroke-dashoffset: -240; opacity: 0.3; }
+    }
+
+    .label {
+      position: relative;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #c4b5fd;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .trace rect { animation: none; stroke-dashoffset: 0; opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <span class="badge" role="status">
+    <span class="trace" aria-hidden="true">
+      <svg preserveAspectRatio="none" viewBox="0 0 140 36">
+        <rect x="1" y="1" width="138" height="34" rx="6" pathLength="240"/>
+      </svg>
+    </span>
+    <span class="label">Beta Access</span>
+  </span>
+</body>
+</html>

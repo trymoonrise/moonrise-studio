@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1461
+    slug: scroll-horizontal-drag-gallery
+    title: Drag Gallery Scroll
+    category: scroll-horizontal
+    tags: horizontal, drag, gallery
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1461 — Drag Gallery Scroll</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#fafafa;overflow:hidden;height:100vh}.viewport{overflow-x:auto;overflow-y:hidden;height:100vh;cursor:grab;scrollbar-width:none}.viewport::-webkit-scrollbar{display:none}.viewport:active{cursor:grabbing}.rail{display:flex;gap:20px;padding:20vh 10vw;width:max-content}.card{flex:0 0 280px;height:380px;border-radius:20px;background:var(--bg);display:grid;place-items:center;font-size:1.5rem;font-weight:800;color:#fff;box-shadow:0 12px 40px rgba(0,0,0,.1)}.card:nth-child(1){--bg:#6c8cff}.card:nth-child(2){--bg:#ff6cb0}.card:nth-child(3){--bg:#6cffb8;color:#111}.card:nth-child(4){--bg:#764ba2}.card:nth-child(5){--bg:#f59e0b;color:#111}.card:nth-child(6){--bg:#111}.hint{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);font-size:.85rem;color:#999;pointer-events:none}
+  </style>
+</head>
+<body>
+<div class="viewport" id="vp"><div class="rail"><div class="card">Alpha</div><div class="card">Beta</div><div class="card">Gamma</div><div class="card">Delta</div><div class="card">Epsilon</div><div class="card">Zeta</div></div></div><p class="hint">Drag to scroll →</p>
+<script>const vp=document.getElementById('vp');let down=false,sx=0,sl=0;const px=e=>e.touches?e.touches[0].pageX:e.pageX;vp.addEventListener('mousedown',e=>{down=true;sx=px(e);sl=vp.scrollLeft;});addEventListener('mousemove',e=>{if(!down)return;vp.scrollLeft=sl+(sx-px(e));});addEventListener('mouseup',()=>down=false);vp.addEventListener('touchstart',e=>{sx=px(e);sl=vp.scrollLeft;},{passive:true});vp.addEventListener('touchmove',e=>{vp.scrollLeft=sl+(sx-px(e));},{passive:true});</script>
+</body>
+</html>

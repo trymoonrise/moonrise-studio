@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1104
+    slug: bios-short-bio-01
+    title: Short Bio 01
+    category: bios
+    tags: bios, short, experimental, shapes
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1104 — Short Bio 01</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700&family=DM+Sans:wght@400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#111318;font-family:'DM Sans',sans-serif;overflow:hidden}
+    .orbit{position:relative;width:180px;height:180px;display:grid;place-items:center;animation:in .8s cubic-bezier(.22,1,.36,1) both}
+    .arc{position:absolute;inset:0;border:1.5px solid transparent;border-top-color:#6ee7b7;border-right-color:rgba(110,231,183,.35);border-radius:50%;animation:spin 9s linear infinite}
+    .arc2{position:absolute;inset:18px;border:1px dashed rgba(255,255,255,.15);border-radius:50%;animation:spin 14s linear infinite reverse}
+    .core{width:72px;height:72px;border-radius:50%;background:#1a1f28;border:1px solid rgba(255,255,255,.12);display:grid;place-items:center;z-index:1}
+    .core span{font-family:Syne,sans-serif;font-weight:700;font-size:1.1rem;color:#f5f5f5}
+    .label{position:absolute;bottom:-2.2rem;left:50%;transform:translateX(-50%);text-align:center;white-space:nowrap}
+    .label strong{display:block;font-family:Syne,sans-serif;font-size:.9rem;color:#f5f5f5;font-weight:700}
+    .label em{font-style:normal;font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(245,245,245,.4)}
+    .sat{position:absolute;width:8px;height:8px;background:#6ee7b7;border-radius:50%;top:8px;left:50%;margin-left:-4px;animation:spin 9s linear infinite;transform-origin:4px 82px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes in{from{opacity:0;transform:scale(.9)}}
+    @media (prefers-reduced-motion:reduce){.arc,.arc2,.sat,.orbit{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="orbit">
+    <span class="arc" aria-hidden="true"></span>
+    <span class="arc2" aria-hidden="true"></span>
+    <span class="sat" aria-hidden="true"></span>
+    <div class="core"><span>EO</span></div>
+    <div class="label"><strong>Eli Okada</strong><em>Engineer</em></div>
+  </div>
+</body>
+</html>

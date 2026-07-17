@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1596
+    slug: 3d-spinning-donut
+    title: 3D Spinning Donut
+    category: 3d-effects
+    tags: 3d, donut, spin
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1596 — 3D Spinning Donut</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;700&family=Syne:wght@800&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#030406;color:#7ee0c3;font-family:'IBM Plex Mono',monospace;overflow:hidden;perspective:900px}
+    .wrap{position:relative;text-align:center;transform-style:preserve-3d}
+    .torus{position:relative;width:min(340px,80vw);aspect-ratio:1;transform-style:preserve-3d;animation:spin-torus 8s linear infinite, tip 5s ease-in-out infinite}
+    .ring{position:absolute;inset:18%;border-radius:50%;border:28px solid transparent;border-top-color:var(--c);border-bottom-color:var(--c);filter:drop-shadow(0 0 12px var(--c));transform:rotateX(var(--rx)) rotateY(var(--ry));opacity:.85}
+    .ring:nth-child(1){--c:#7ee0c3;--rx:70deg;--ry:0deg}
+    .ring:nth-child(2){--c:#6c8cff;--rx:70deg;--ry:60deg;inset:22%}
+    .ring:nth-child(3){--c:#ff6bcb;--rx:70deg;--ry:120deg;inset:26%}
+    .ring:nth-child(4){--c:#ffd16c;--rx:20deg;--ry:30deg;inset:14%;border-width:18px;animation:counter 6s linear infinite}
+    .ascii{margin-top:2rem;font-size:clamp(.55rem,1.6vw,.75rem);line-height:1.15;letter-spacing:.02em;white-space:pre;color:#7ee0c3;text-shadow:0 0 20px rgba(126,224,195,.4);transform:translateZ(80px);min-height:9em}
+    .title{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) translateZ(60px);font-family:Syne,sans-serif;font-size:clamp(1.8rem,6vw,2.8rem);letter-spacing:-.05em;color:#fff;text-shadow:0 0 30px rgba(126,224,195,.5);pointer-events:none}
+    .hint{margin-top:1.5rem;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;opacity:.4;color:#fff}
+    @keyframes spin-torus{to{transform:rotateY(360deg) rotateZ(360deg)}}
+    @keyframes tip{0%,100%{transform:rotateX(20deg) rotateY(0)}50%{transform:rotateX(-10deg) rotateY(180deg)}}
+    @keyframes counter{to{transform:rotateX(20deg) rotateY(calc(30deg - 360deg))}}
+    @media(prefers-reduced-motion:reduce){.torus,.ring:nth-child(4){animation:none}.torus{transform:rotateX(25deg) rotateY(-20deg)}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="torus" aria-hidden="true">
+      <div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="ring"></div>
+      <div class="title">TORUS</div>
+    </div>
+    <pre class="ascii" id="ascii"></pre>
+    <p class="hint">Neon torus · ASCII echo spinning beneath</p>
+  </div>
+  <script>
+    const frames=[
+`        @@@@@
+     @@@@@@@@@
+   @@@       @@@
+  @@           @@
+ @@             @@
+ @@             @@
+  @@           @@
+   @@@       @@@
+     @@@@@@@@@
+        @@@@@`,
+`       @@@@@@@
+    @@@@     @@@@
+  @@@           @@@
+ @@               @@
+@@                 @@
+ @@               @@
+  @@@           @@@
+    @@@@     @@@@
+       @@@@@@@`,
+`      @@@@@@@@@
+   @@@@       @@@@
+  @@             @@
+ @@               @@
+@@                 @@
+ @@               @@
+  @@             @@
+   @@@@       @@@@
+      @@@@@@@@@`,
+`       @@@@@@@
+    @@@@     @@@@
+  @@@           @@@
+ @@               @@
+@@                 @@
+ @@               @@
+  @@@           @@@
+    @@@@     @@@@
+       @@@@@@@`
+    ];
+    const el=document.getElementById('ascii');
+    let i=0;
+    const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    el.textContent=frames[0];
+    if(!reduced)setInterval(()=>{i=(i+1)%frames.length;el.textContent=frames[i]},180);
+  </script>
+</body>
+</html>

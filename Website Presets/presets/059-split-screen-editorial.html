@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 059
+    slug: split-screen-editorial
+    title: Split Screen Editorial
+    category: experimental
+    tags: split, editorial
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>059 — Split Screen Editorial</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    
+    body{margin:0;min-height:100vh;display:grid;grid-template-columns:1fr 1fr}
+    .left{background:#0d0d0f;display:grid;place-items:center;padding:3rem}
+    .left h1{font-size:clamp(2rem,4vw,3.5rem);font-weight:900;color:#fff;line-height:1.1}
+    .right{background:url('../stock/media/4-5 Aspect Ratio(image).png') center/cover;min-height:100vh}
+    @media(max-width:768px){body{grid-template-columns:1fr}.right{min-height:50vh}}
+    
+  </style>
+</head>
+<body>
+<div class="left"><h1>Editorial<br>Split Layout</h1></div><div class="right"></div>
+
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1609
+    slug: 3d-mouse-tile-ripple
+    title: 3D Tile Ripple Mouse
+    category: 3d-mouse
+    tags: 3d, mouse, tile, ripple
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1609 — 3D Tile Ripple Mouse</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#08090e;perspective:900px;overflow:hidden}
+    .board{display:grid;grid-template-columns:repeat(8,42px);gap:6px;transform:rotateX(42deg);transform-style:preserve-3d}
+    .tile{width:42px;height:42px;border-radius:8px;background:#1a1f35;border:1px solid rgba(255,255,255,.1);transform:translateZ(0) rotateX(0deg)}
+    .hint{position:fixed;bottom:1.4rem;font:700 .7rem Syne,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.35)}
+    @media(max-width:480px){.board{grid-template-columns:repeat(6,32px)}.tile{width:32px;height:32px}}
+  </style>
+</head>
+<body>
+  <div class="board" id="board"></div>
+  <div class="hint">Ripple across tiles</div>
+  <script>
+    const board=document.getElementById('board');
+    const cols=matchMedia('(max-width:480px)').matches?6:8,rows=6;
+    const tiles=[];
+    for(let i=0;i<cols*rows;i++){const t=document.createElement('div');t.className='tile';board.appendChild(t);tiles.push({el:t,x:i%cols,y:Math.floor(i/cols),z:0,tz:0,rx:0,trx:0})}
+    let mx=cols/2,my=rows/2;
+    board.addEventListener('pointermove',e=>{const r=board.getBoundingClientRect();mx=((e.clientX-r.left)/r.width)*cols;my=((e.clientY-r.top)/r.height)*rows});
+    (function loop(){
+      tiles.forEach(t=>{
+        const d=Math.hypot(t.x+.5-mx,t.y+.5-my);
+        const wave=Math.cos(d*.9)*Math.max(0,1-d/5);
+        t.tz=wave*55;t.trx=wave*-35;
+        t.z+=(t.tz-t.z)*.2;t.rx+=(t.trx-t.rx)*.2;
+        t.el.style.transform=`translateZ(${t.z}px) rotateX(${t.rx}deg)`;
+        t.el.style.background=`linear-gradient(145deg,hsl(${200+t.z*2} 85% ${35+t.z*.4}%),#12162a)`;
+      });
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>

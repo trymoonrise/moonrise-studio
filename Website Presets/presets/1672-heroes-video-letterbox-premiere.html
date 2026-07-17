@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1672
+    slug: heroes-video-letterbox-premiere
+    title: Letterbox Premiere Video Hero
+    category: heroes
+    tags: heroes, landing, video, cinematic
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1672 — Letterbox Premiere Video Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    
+    body{margin:0;min-height:100vh;background:#000;color:#fff;font-family:system-ui,-apple-system,sans-serif;display:grid;place-items:center;padding:2rem}
+    .frame{width:min(100%,920px);position:relative}
+    .bars::before,.bars::after{content:'';display:block;height:clamp(28px,6vh,56px);background:#000}
+    .screen{position:relative;overflow:hidden;border-radius:4px;background:#111}
+    .screen video{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
+    .meta{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-top:1rem;font-size:.78rem;color:rgba(255,255,255,.55);letter-spacing:.08em;text-transform:uppercase}
+    h1{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;letter-spacing:.18em;text-transform:uppercase;text-align:center;pointer-events:none;text-shadow:0 8px 32px rgba(0,0,0,.65)}
+    @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}video{animation:none!important}}
+  </style>
+</head>
+<body>
+<div class="frame"><div class="bars"><div class="screen"><video src="../stock/media/heroes/ocean-archive.mp4" autoplay muted loop playsinline aria-label="Premiere film"></video><h1>World premiere</h1></div></div><div class="meta"><span>Now streaming</span><span>4K · 24fps</span></div></div>
+
+</body>
+</html>

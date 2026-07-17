@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0768
+    slug: file-uploads-preview-upload-03
+    title: Image Preview Dropzone
+    category: file-uploads
+    tags: file-uploads, preview
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0768 — Image Preview Dropzone</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #080a0e;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+      padding: 1.5rem;
+    }
+
+    .dropzone {
+      width: min(360px, 92vw);
+      aspect-ratio: 4/3;
+      border: 2px dashed #334155;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.3s, background 0.3s;
+    }
+
+    .dropzone.dragover {
+      border-color: #38bdf8;
+      background: #38bdf808;
+      animation: dragPulse 0.6s ease infinite;
+    }
+
+    @keyframes dragPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.01); }
+    }
+
+    .dropzone.has-image { border-style: solid; border-color: #1e293b; }
+
+    .placeholder { text-align: center; padding: 1rem; }
+
+    .placeholder svg { color: #475569; margin-bottom: 0.5rem; }
+
+    .placeholder p {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+
+    .preview {
+      position: absolute;
+      inset: 0;
+      object-fit: cover;
+      opacity: 0;
+      transform: scale(1.05);
+      transition: opacity 0.4s, transform 0.4s;
+    }
+
+    .dropzone.has-image .preview {
+      opacity: 1;
+      transform: scale(1);
+      animation: previewReveal 0.5s ease;
+    }
+
+    @keyframes previewReveal {
+      from { clip-path: circle(0% at 50% 50%); }
+      to { clip-path: circle(100% at 50% 50%); }
+    }
+
+    .dropzone.has-image .placeholder { display: none; }
+
+    input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .dropzone.dragover { animation: none; }
+      .dropzone.has-image .preview { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <label class="dropzone" id="zone">
+    <div class="placeholder">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+      <p>Drop image or click</p>
+    </div>
+    <img class="preview" id="preview" alt="Upload preview">
+    <input type="file" id="file" accept="image/*">
+  </label>
+
+  <script>
+    const zone = document.getElementById('zone');
+    const file = document.getElementById('file');
+    const preview = document.getElementById('preview');
+
+    function load(f) {
+      if (!f || !f.type.startsWith('image/')) return;
+      const url = URL.createObjectURL(f);
+      preview.src = url;
+      zone.classList.add('has-image');
+    }
+
+    file.addEventListener('change', () => load(file.files[0]));
+
+    zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+    zone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      zone.classList.remove('dragover');
+      load(e.dataTransfer.files[0]);
+    });
+  </script>
+</body>
+</html>

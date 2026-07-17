@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1418
+    slug: buttons-magnetic-pull
+    title: Magnetic Pull Button
+    category: buttons
+    tags: buttons, magnetic, mouse
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1418 — Magnetic Pull Button</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#fafafa}.btn{padding:14px 32px;border:none;border-radius:99px;background:#111;color:#fff;font-weight:600;font-size:.95rem;cursor:pointer;transition:transform .15s ease-out}
+  </style>
+</head>
+<body>
+<button class="btn" id="b">Magnetic</button>
+<script>const b=document.getElementById('b');document.addEventListener('mousemove',e=>{const r=b.getBoundingClientRect();const cx=r.left+r.width/2,cy=r.top+r.height/2;const dx=e.clientX-cx,dy=e.clientY-cy;const d=Math.hypot(dx,dy);if(d<120){b.style.transform='translate('+(dx*.2)+'px,'+(dy*.2)+'px)';}else b.style.transform='';});</script>
+</body>
+</html>

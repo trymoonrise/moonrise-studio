@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0658
+    slug: navigation-mobile-nav-10
+    title: Mobile Nav 10
+    category: navigation
+    tags: navigation, mobile
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0658 — Mobile Nav 10</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Outfit:wght@300&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#111;font-family:Outfit,sans-serif}
+    .phone{width:min(320px,90vw);height:580px;background:#0a0a0a;border:1px solid rgba(255,255,255,.12);border-radius:36px;position:relative;overflow:hidden;color:#fff;display:flex;flex-direction:column}
+    .notch{width:96px;height:22px;background:#111;border-radius:0 0 14px 14px;margin:0 auto;flex:none}
+    .content{flex:1;display:grid;place-items:center;padding:2rem;text-align:center}
+    .content h1{margin:0;font-family:Syne,sans-serif;font-size:2rem;letter-spacing:-.04em;font-weight:800}
+    .content p{margin:1rem 0 0;font-weight:300;opacity:.35;font-size:.85rem;line-height:1.5}
+    .tab{display:flex;justify-content:space-around;padding:1rem 1.25rem 1.5rem;border-top:1px solid rgba(255,255,255,.08)}
+    .tab a{text-decoration:none;color:rgba(255,255,255,.3);font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;font-weight:300;display:flex;flex-direction:column;align-items:center;gap:.45rem;transition:color .3s}
+    .tab a .dot{width:4px;height:4px;border-radius:50%;background:currentColor;opacity:0;transition:opacity .3s,transform .35s cubic-bezier(.22,1,.36,1);transform:scale(0)}
+    .tab a.active,.tab a:hover{color:#fff}
+    .tab a.active .dot{opacity:1;transform:scale(1)}
+  </style>
+</head>
+<body>
+  <div class="phone">
+    <div class="notch" aria-hidden="true"></div>
+    <div class="content"><div><h1>Bottom<br>line</h1><p>Four labels. One active dot. Nothing else.</p></div></div>
+    <nav class="tab" id="tab">
+      <a class="active" href="#"><i class="dot"></i>Home</a>
+      <a href="#"><i class="dot"></i>Search</a>
+      <a href="#"><i class="dot"></i>Saved</a>
+      <a href="#"><i class="dot"></i>You</a>
+    </nav>
+  </div>
+  <script>
+    const links=[...document.querySelectorAll('#tab a')];
+    links.forEach(a=>a.addEventListener('click',e=>{e.preventDefault();links.forEach(l=>l.classList.remove('active'));a.classList.add('active')}));
+  </script>
+</body>
+</html>

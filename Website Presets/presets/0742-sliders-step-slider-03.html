@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0742
+    slug: sliders-step-slider-03
+    title: Tick Step Slider
+    category: sliders
+    tags: sliders, step
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0742 — Tick Step Slider</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #0a0c10;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+      padding: 1.5rem;
+    }
+
+    .wrap { width: min(420px, 92vw); text-align: center; }
+
+    label {
+      display: block;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 0.5rem;
+    }
+
+    .level {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #38bdf8;
+      margin-bottom: 1.5rem;
+      transition: transform 0.3s;
+    }
+
+    .level.bump { animation: levelBump 0.35s ease; }
+
+    @keyframes levelBump {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.12); color: #fbbf24; }
+      100% { transform: scale(1); }
+    }
+
+    .track-area { position: relative; padding: 0 10px; }
+
+    .ticks {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+
+    .tick {
+      width: 2px;
+      height: 12px;
+      background: #334155;
+      transition: background 0.2s, height 0.2s;
+    }
+
+    .tick.active {
+      background: #38bdf8;
+      height: 18px;
+      animation: tickPulse 0.4s ease;
+    }
+
+    @keyframes tickPulse {
+      50% { box-shadow: 0 0 8px #38bdf8; }
+    }
+
+    input[type="range"] {
+      width: 100%;
+      appearance: none;
+      height: 6px;
+      background: #1e293b;
+      border-radius: 3px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      background: #38bdf8;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover { transform: rotate(45deg); }
+
+    .labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.75rem;
+      font-size: 0.75rem;
+      color: #475569;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .level.bump { animation: none; }
+      .tick.active { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <label for="steps">Volume level</label>
+    <div class="level" id="level">5</div>
+    <div class="track-area">
+      <div class="ticks" id="ticks"></div>
+      <input type="range" id="steps" min="0" max="10" step="1" value="5">
+    </div>
+    <div class="labels"><span>Muted</span><span>Max</span></div>
+  </div>
+
+  <script>
+    const slider = document.getElementById('steps');
+    const level = document.getElementById('level');
+    const ticks = document.getElementById('ticks');
+
+    for (let i = 0; i <= 10; i++) {
+      const t = document.createElement('span');
+      t.className = 'tick';
+      ticks.appendChild(t);
+    }
+
+    function update() {
+      const v = +slider.value;
+      level.textContent = v;
+      level.classList.remove('bump');
+      level.offsetHeight;
+      level.classList.add('bump');
+      ticks.querySelectorAll('.tick').forEach((t, i) => t.classList.toggle('active', i <= v));
+    }
+
+    slider.addEventListener('input', update);
+    update();
+  </script>
+</body>
+</html>

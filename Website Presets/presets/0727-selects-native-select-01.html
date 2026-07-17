@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0727
+    slug: selects-native-select-01
+    title: Styled Native Select
+    category: selects
+    tags: selects, native
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0727 — Styled Native Select</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #0a0c10;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+      padding: 1.5rem;
+    }
+
+    .field { width: min(320px, 92vw); }
+
+    label {
+      display: block;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 0.6rem;
+    }
+
+    .select-wrap {
+      position: relative;
+    }
+
+    select {
+      width: 100%;
+      appearance: none;
+      padding: 0.85rem 2.5rem 0.85rem 1rem;
+      background: #111827;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      color: #e2e8f0;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    select:hover { border-color: #334155; }
+
+    select:focus {
+      outline: none;
+      border-color: #00d4aa;
+      box-shadow: 0 0 0 3px #00d4aa22;
+      animation: selectFocus 0.35s ease;
+    }
+
+    @keyframes selectFocus {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.01); }
+      100% { transform: scale(1); }
+    }
+
+    .chev {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: #64748b;
+      transition: transform 0.3s, color 0.3s;
+    }
+
+    select:focus ~ .chev {
+      color: #00d4aa;
+      transform: translateY(-50%) rotate(180deg);
+    }
+
+    .preview {
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      background: #0f1419;
+      border-left: 3px solid #00d4aa;
+      font-size: 0.85rem;
+      color: #94a3b8;
+      animation: previewIn 0.3s ease;
+    }
+
+    @keyframes previewIn {
+      from { opacity: 0; transform: translateX(-8px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      select:focus { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="field">
+    <label for="region">Deployment region</label>
+    <div class="select-wrap">
+      <select id="region">
+        <option value="us-east">US East (Virginia)</option>
+        <option value="us-west">US West (Oregon)</option>
+        <option value="eu-west">EU West (Frankfurt)</option>
+        <option value="ap-south">AP South (Singapore)</option>
+      </select>
+      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="preview" id="preview">Selected: US East (Virginia)</div>
+  </div>
+
+  <script>
+    const sel = document.getElementById('region');
+    const preview = document.getElementById('preview');
+    sel.addEventListener('change', () => {
+      preview.textContent = 'Selected: ' + sel.options[sel.selectedIndex].text;
+      preview.style.animation = 'none';
+      preview.offsetHeight;
+      preview.style.animation = '';
+    });
+  </script>
+</body>
+</html>

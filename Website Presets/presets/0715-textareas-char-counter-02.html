@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0715
+    slug: textareas-char-counter-02
+    title: Char Counter 02
+    category: textareas
+    tags: textareas, modern, experimental, exaggerated
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0715 — Char Counter 02</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fff7ed;font-family:Inter,system-ui,sans-serif;overflow:hidden;padding:24px;color:#111}
+    textarea{font:inherit;border:0;outline:0;resize:none;background:transparent;color:inherit;width:100%}
+    button{font:inherit;border:0;cursor:pointer}
+    .scene{position:relative;width:min(520px,92vw)}
+    .shell{position:relative;background:#111;color:#fff;border-radius:34px;padding:24px;overflow:hidden}.blob{position:absolute;right:-50px;bottom:-60px;width:180px;height:180px;border-radius:45% 55% 60% 40%;background:#fb923c;opacity:.5;animation:morph 7s ease-in-out infinite}.head{position:relative;display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;font:700 11px 'JetBrains Mono';letter-spacing:.18em;text-transform:uppercase;color:#fed7aa}.num{font-size:30px;color:#fb923c}.field{position:relative;min-height:160px;font-size:22px;line-height:1.35;font-weight:700;letter-spacing:-.04em}.field::placeholder{color:#444}.rail{position:relative;height:8px;border-radius:99px;background:#2a2a2a;overflow:hidden;margin-top:18px}.fill{height:100%;width:0;background:#fb923c;border-radius:inherit;transition:width .2s}@keyframes morph{50%{border-radius:60% 40% 40% 60%;transform:translate(-12px,-8px)}}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <div class="scene"><section class="shell"><div class="blob"></div><div class="head"><span>Signal limit</span><span><b class="num" id="n">0</b>/180</span></div><textarea class="field" id="ta" maxlength="180">Count characters like a launch panel.</textarea><div class="rail"><div class="fill" id="fill"></div></div></section></div>
+  <script>const ta=document.getElementById('ta'),n=document.getElementById('n'),fill=document.getElementById('fill');function sync(){const v=ta.value.length;n.textContent=v;fill.style.width=Math.min(100,v/180*100)+'%';}ta.addEventListener('input',sync);sync();</script>
+</body>
+</html>

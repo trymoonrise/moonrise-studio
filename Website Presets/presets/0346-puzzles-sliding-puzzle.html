@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0346
+    slug: puzzles-sliding-puzzle
+    title: Sliding Puzzle
+    category: puzzles
+    tags: puzzles, sliding
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0346 — Sliding Puzzle</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 2rem;
+      background:
+        radial-gradient(circle at 20% 18%, rgba(108, 140, 255, 0.16), transparent 34%),
+        radial-gradient(circle at 82% 82%, rgba(108, 255, 184, 0.12), transparent 36%),
+        #0d0d0f;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: #fff;
+    }
+
+    .game {
+      width: min(100%, 320px);
+      padding: 1.25rem;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.38);
+      backdrop-filter: blur(18px);
+    }
+
+    .head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .eyebrow {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #6c8cff;
+      margin-bottom: 0.25rem;
+    }
+
+    h2 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .moves {
+      font-size: 0.78rem;
+      color: #9ca3af;
+      white-space: nowrap;
+    }
+
+    .board {
+      --tile: 72px;
+      --gap: 8px;
+      position: relative;
+      width: calc(var(--tile) * 3 + var(--gap) * 2);
+      height: calc(var(--tile) * 3 + var(--gap) * 2);
+      margin: 0 auto;
+      border-radius: 18px;
+      background: rgba(0, 0, 0, 0.22);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
+    .board::after {
+      content: '';
+      position: absolute;
+      width: var(--tile);
+      height: var(--tile);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.05);
+      transform: translate(
+        calc(var(--empty-x, 2) * (var(--tile) + var(--gap))),
+        calc(var(--empty-y, 2) * (var(--tile) + var(--gap)))
+      );
+      transition: transform 0.38s cubic-bezier(.22, .61, .36, 1);
+    }
+
+    .tile {
+      position: absolute;
+      width: var(--tile);
+      height: var(--tile);
+      border: 0;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(145deg, #7c96ff, #536df0);
+      color: #fff;
+      font-size: 1.35rem;
+      font-weight: 900;
+      font-family: inherit;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(79, 110, 247, 0.28);
+      transform: translate(
+        calc(var(--x) * (var(--tile) + var(--gap))),
+        calc(var(--y) * (var(--tile) + var(--gap)))
+      );
+      transition:
+        transform 0.38s cubic-bezier(.22, .61, .36, 1),
+        box-shadow 0.2s,
+        filter 0.2s;
+      z-index: 1;
+    }
+
+    .tile:hover {
+      filter: brightness(1.05);
+      box-shadow: 0 14px 30px rgba(79, 110, 247, 0.36);
+    }
+
+    .tile:focus-visible {
+      outline: 3px solid rgba(108, 255, 184, 0.7);
+      outline-offset: 3px;
+    }
+
+    .footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .status {
+      font-size: 0.78rem;
+      color: #9ca3af;
+    }
+
+    .shuffle {
+      padding: 0.55rem 0.85rem;
+      border: 0;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .shuffle:hover {
+      background: rgba(255, 255, 255, 0.16);
+    }
+  </style>
+</head>
+<body>
+  <div class="game">
+    <header class="head">
+      <div>
+        <div class="eyebrow">Puzzle</div>
+        <h2>Sliding Puzzle</h2>
+      </div>
+      <div class="moves" id="moves">0 moves</div>
+    </header>
+
+    <div class="board" id="board" aria-label="Sliding puzzle board">
+      <button class="tile" type="button" data-tile="1">1</button>
+      <button class="tile" type="button" data-tile="2">2</button>
+      <button class="tile" type="button" data-tile="3">3</button>
+      <button class="tile" type="button" data-tile="4">4</button>
+      <button class="tile" type="button" data-tile="5">5</button>
+      <button class="tile" type="button" data-tile="6">6</button>
+      <button class="tile" type="button" data-tile="7">7</button>
+      <button class="tile" type="button" data-tile="8">8</button>
+    </div>
+
+    <div class="footer">
+      <span class="status" id="status">Tap a tile next to the gap.</span>
+      <button class="shuffle" id="shuffle" type="button">Shuffle</button>
+    </div>
+  </div>
+
+  <script>
+    const SIZE = 3;
+    const solved = [1, 2, 3, 4, 5, 6, 7, 8, null];
+    let board = [...solved];
+    let moves = 0;
+
+    const boardEl = document.getElementById('board');
+    const movesEl = document.getElementById('moves');
+    const statusEl = document.getElementById('status');
+    const tiles = [...document.querySelectorAll('.tile')];
+
+    function coords(index) {
+      return { x: index % SIZE, y: Math.floor(index / SIZE) };
+    }
+
+    function isAdjacent(a, b) {
+      const ca = coords(a);
+      const cb = coords(b);
+      return Math.abs(ca.x - cb.x) + Math.abs(ca.y - cb.y) === 1;
+    }
+
+    function render() {
+      const emptyIndex = board.indexOf(null);
+      const empty = coords(emptyIndex);
+      boardEl.style.setProperty('--empty-x', empty.x);
+      boardEl.style.setProperty('--empty-y', empty.y);
+
+      tiles.forEach((tile) => {
+        const value = Number(tile.dataset.tile);
+        const position = board.indexOf(value);
+        const pos = coords(position);
+        tile.style.setProperty('--x', pos.x);
+        tile.style.setProperty('--y', pos.y);
+        tile.setAttribute('aria-label', `Tile ${value}`);
+      });
+
+      movesEl.textContent = `${moves} ${moves === 1 ? 'move' : 'moves'}`;
+    }
+
+    function moveTile(value, countMove = true) {
+      const tileIndex = board.indexOf(value);
+      const emptyIndex = board.indexOf(null);
+      if (!isAdjacent(tileIndex, emptyIndex)) return false;
+
+      [board[tileIndex], board[emptyIndex]] = [board[emptyIndex], board[tileIndex]];
+      if (countMove) moves += 1;
+      render();
+
+      if (countMove && board.every((value, index) => value === solved[index])) {
+        statusEl.textContent = 'Solved!';
+      } else if (countMove) {
+        statusEl.textContent = 'Nice move.';
+      }
+
+      return true;
+    }
+
+    function shuffleBoard() {
+      let lastEmpty = -1;
+      moves = 0;
+      board = [...solved];
+
+      for (let step = 0; step < 36; step += 1) {
+        const emptyIndex = board.indexOf(null);
+        const options = board
+          .map((value, index) => ({ value, index }))
+          .filter(({ value, index }) => value && isAdjacent(index, emptyIndex) && index !== lastEmpty);
+        const pick = options[Math.floor(Math.random() * options.length)];
+        lastEmpty = emptyIndex;
+        moveTile(pick.value, false);
+      }
+
+      statusEl.textContent = 'Tap a tile next to the gap.';
+      render();
+    }
+
+    tiles.forEach((tile) => {
+      tile.addEventListener('click', () => moveTile(Number(tile.dataset.tile)));
+    });
+
+    document.getElementById('shuffle').addEventListener('click', shuffleBoard);
+
+    render();
+    setTimeout(shuffleBoard, 250);
+  </script>
+</body>
+</html>

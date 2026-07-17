@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1360
+    slug: toggles-minimal-toggle-06
+    title: Minimal Toggle 06
+    category: toggles
+    tags: toggles, minimal
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1360 — Minimal Toggle 06</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#0a0a0c}.sw{position:relative;width:52px;height:30px;background:#a0a0b8;border-radius:99px;cursor:pointer;transition:background .3s}.sw.on{background:#ff6cb0}.knob{position:absolute;top:3px;left:3px;width:24px;height:24px;background:#fff;border-radius:50%;transition:transform .3s}.sw.on .knob{transform:translateX(22px)}label{color:#ffffff;margin-right:1rem}
+  </style>
+</head>
+<body>
+<label>Minimal Toggle 970</label><div class="sw" id="s"><div class="knob"></div></div>
+<script>document.getElementById('s').onclick=function(){this.classList.toggle('on');};</script>
+</body>
+</html>

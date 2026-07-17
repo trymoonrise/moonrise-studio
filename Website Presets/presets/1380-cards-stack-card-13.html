@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1380
+    slug: cards-stack-card-13
+    title: Layered Deck Card
+    category: cards
+    tags: cards, stack, deck
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1380 — Layered Deck Card</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700&family=Outfit:wght@400;500;600&display=swap');*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#121018;font-family:Outfit,sans-serif;color:#fff}.deck{position:relative;width:min(280px,85vw);height:180px}.layer{position:absolute;inset:0;border-radius:16px;border:1px solid #333;background:#1c1824;padding:1.25rem;transition:transform .4s cubic-bezier(.22,1,.36,1)}.layer:nth-child(1){transform:rotate(-4deg) translate(-6px,8px);opacity:.5}.layer:nth-child(2){transform:rotate(3deg) translate(8px,4px);opacity:.7}.layer:nth-child(3){transform:none;z-index:2;background:#221e2e}.deck:hover .layer:nth-child(1){transform:rotate(-8deg) translate(-18px,12px)}.deck:hover .layer:nth-child(2){transform:rotate(7deg) translate(20px,8px)}.deck h3{font-family:Syne,sans-serif;margin:0 0 .35rem}.deck p{margin:0;color:#9088a0;font-size:.85rem}
+  </style>
+</head>
+<body>
+<div class="deck" aria-label="Stacked cards"><div class="layer"></div><div class="layer"></div><div class="layer"><h3>Layered deck</h3><p>Hover fans the stack apart.</p></div></div>
+
+</body>
+</html>

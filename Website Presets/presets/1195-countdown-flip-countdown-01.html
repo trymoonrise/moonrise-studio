@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1195
+    slug: countdown-flip-countdown-01
+    title: Mechanical Flip Countdown
+    category: countdown
+    tags: countdown, flip, mechanical, digits
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1195 — Mechanical Flip Countdown</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0c0e12;color:#e8ebf0;font-family:Outfit,sans-serif;padding:2rem}
+    .cd{text-align:center}
+    .label{font-size:.65rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(232,235,240,.35);margin-bottom:1.5rem}
+    .digits{display:flex;gap:12px;justify-content:center;align-items:center}
+    .unit{text-align:center}
+    .flip{width:64px;height:80px;perspective:400px;position:relative}
+    .card{position:absolute;inset:0;background:#161a22;border:1px solid rgba(255,255,255,.1);border-radius:8px;display:grid;place-items:center;font-family:Syne,sans-serif;font-size:2.4rem;font-weight:800;backface-visibility:hidden;overflow:hidden}
+    .card.top{clip-path:inset(0 0 50% 0);border-bottom:none;border-radius:8px 8px 0 0}
+    .card.bottom{clip-path:inset(50% 0 0 0);border-top:none;border-radius:0 0 8px 8px;color:rgba(232,235,240,.5)}
+    .card.flip-anim{animation:flip .6s ease-in-out}
+    .sep{font-family:Syne,sans-serif;font-size:2rem;color:rgba(232,235,240,.2);margin:0 4px;padding-bottom:20px}
+    .unit-label{font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(232,235,240,.3);margin-top:.5rem}
+    @keyframes flip{0%{transform:rotateX(0)}50%{transform:rotateX(-90deg)}100%{transform:rotateX(0)}}
+    @media(prefers-reduced-motion:reduce){.card.flip-anim{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="cd">
+    <p class="label">Launch in</p>
+    <div class="digits" id="digits"></div>
+  </div>
+  <script>
+    const target=new Date(Date.now()+86400000*2+3600000*5+60000*42);
+    const labels=['Days','Hours','Min','Sec'];
+    function pad(n){return String(n).padStart(2,'0')}
+    function render(){
+      const d=Math.max(0,target-Date.now());
+      const vals=[Math.floor(d/86400000),Math.floor(d/3600000)%24,Math.floor(d/60000)%60,Math.floor(d/1000)%60];
+      document.getElementById('digits').innerHTML=vals.map((v,i)=>`<div class="unit"><div class="flip"><div class="card top">${pad(v)}</div><div class="card bottom">${pad(v)}</div></div><div class="unit-label">${labels[i]}</div></div>${i<3?'<span class="sep">:</span>':''}`).join('');
+    }
+    render();setInterval(render,1000);
+  </script>
+</body>
+</html>

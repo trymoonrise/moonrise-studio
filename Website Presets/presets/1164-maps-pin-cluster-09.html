@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1164
+    slug: maps-pin-cluster-09
+    title: Pin Cluster 09
+    category: maps
+    tags: maps, pin
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1164 — Pin Cluster 09</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;margin:0;padding:2rem;background:#0f1117;color:#f3f4f6;font-family:system-ui,-apple-system,sans-serif}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}.embed{position:relative;width:100%;overflow:hidden;background:#0a0a0c}.embed iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block} .embed--16x9{aspect-ratio:16/9} .embed--9x16{aspect-ratio:9/16} .embed--4x5{aspect-ratio:4/5} .map-embed{position:absolute;inset:0;width:100%;height:100%;max-width:none;border:0;display:block}.wrap{width:min(100%,540px)}.head{margin-bottom:1rem}.head h2{font-size:1.15rem;font-weight:800}.chips{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem}.chip{padding:.4rem .75rem;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#d1d5db;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit;transition:background .2s,border-color .2s,color .2s}.chip.is-active{background:rgba(108,255,184,.14);border-color:rgba(108,255,184,.35);color:#6cffb8}.map-stage{position:relative;height:280px;border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.08)}
+  </style>
+</head>
+<body>
+<div class="wrap"><header class="head"><h2>Regional offices</h2></header><div class="chips" id="chips"></div><div class="map-stage"><iframe class="map-embed" src="https://www.google.com/maps?q=United%20States&hl=en&z=4&output=embed" title="Regional map" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div></div>
+<script>function embedUrl(q,z){return 'https://www.google.com/maps?q='+encodeURIComponent(q)+'&hl=en&z='+z+'&output=embed';}function mapsUrl(q){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q);}const spots=[{label:'US',query:'United States',z:4},{label:'NYC',query:'New York, NY',z:10},{label:'LA',query:'Los Angeles, CA',z:10},{label:'Chicago',query:'Chicago, IL',z:10}];const chips=document.getElementById('chips'),map=document.querySelector('.map-embed');spots.forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.className='chip'+(i===0?' is-active':'');b.textContent=s.label;b.onclick=()=>{map.src=embedUrl(s.query,s.z);chips.querySelectorAll('.chip').forEach(c=>c.classList.remove('is-active'));b.classList.add('is-active');};chips.appendChild(b);});</script>
+</body>
+</html>

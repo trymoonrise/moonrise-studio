@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1757
+    slug: staggered-grid-command-center
+    title: Command Center Grid
+    category: animation
+    tags: grid, stagger, dashboard, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1757 — Command Center Grid</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');*{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#030303;color:#eaeaea;font-family:"DM Sans",system-ui,sans-serif;padding:clamp(1.25rem,3vw,2.5rem);display:grid;place-items:center}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.tile,.cell,.brick,.module,.card,.panel{opacity:1!important;transform:none!important;clip-path:none!important;filter:none!important}}
+    .dash{width:min(1100px,100%);position:relative}
+    .dash::before{content:'';position:absolute;inset:-1px;border:1px solid #1a1a1a;pointer-events:none;animation:frameIn .8s .2s both}
+    .bar{display:flex;justify-content:space-between;align-items:center;padding:.85rem 1rem;border-bottom:1px solid #1a1a1a;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:#555}
+    .bar .live{display:flex;align-items:center;gap:.4rem;color:#fff}
+    .bar .live i{width:6px;height:6px;border-radius:50%;background:#fff;animation:blink 1.2s steps(1) infinite}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);grid-auto-rows:78px;gap:8px;padding:1rem}
+    .module{grid-column:span var(--c);grid-row:span var(--r);background:#0c0c0c;border:1px solid #1c1c1c;padding:1rem 1.1rem;position:relative;overflow:hidden;opacity:0;transform:scale(.92) translateY(20px);animation:boot .55s cubic-bezier(.16,1,.3,1) forwards;animation-delay:calc(var(--i)*55ms)}
+    .module.hot{background:#111;border-color:#333}
+    .module b{display:block;font-family:"Syne",system-ui,sans-serif;font-size:clamp(1.2rem,3vw,2.2rem);font-weight:800;letter-spacing:-.05em}
+    .module span{display:block;margin-top:.3rem;color:#555;font-size:.72rem}
+    .meter{position:absolute;left:1rem;right:1rem;bottom:.85rem;height:2px;background:#1a1a1a;overflow:hidden}
+    .meter i{display:block;height:100%;width:0;background:#fff;animation:fill .9s cubic-bezier(.16,1,.3,1) forwards;animation-delay:calc(var(--i)*55ms + .35s)}
+    .scan{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#fff,transparent);opacity:.25;animation:scan 3s linear infinite;top:0;pointer-events:none}
+    @keyframes boot{to{opacity:1;transform:none}}
+    @keyframes fill{to{width:var(--w)}}
+    @keyframes scan{to{top:100%}}
+    @keyframes blink{50%{opacity:.2}}
+    @keyframes frameIn{from{opacity:0}to{opacity:1}}
+    @media(max-width:720px){.grid{grid-template-columns:1fr 1fr;grid-auto-rows:110px}.module{grid-column:span 1!important;grid-row:span 1!important}}
+  </style>
+</head>
+<body>
+<main class="dash"><div class="bar"><span>Command // GRID-07</span><span class="live"><i></i> Systems live</span></div>
+    <div class="scan" aria-hidden="true"></div>
+    <section class="grid">
+      <article class="module hot" style="--i:1;--c:5;--r:2;--w:82%"><b>Production</b><span>Global edge status</span><div class="meter"><i></i></div></article>
+      <article class="module" style="--i:2;--c:3;--r:1;--w:64%"><b>CPU</b><span>Load avg</span><div class="meter"><i></i></div></article>
+      <article class="module" style="--i:3;--c:4;--r:1;--w:91%"><b>Deploys</b><span>Pipeline</span><div class="meter"><i></i></div></article>
+      <article class="module" style="--i:4;--c:2;--r:2;--w:45%"><b>Cache</b><span>Hit ratio</span><div class="meter"><i></i></div></article>
+      <article class="module" style="--i:5;--c:5;--r:1;--w:76%"><b>Traffic</b><span>Normal curve</span><div class="meter"><i></i></div></article>
+      <article class="module" style="--i:6;--c:5;--r:1;--w:58%"><b>Regions</b><span>19 online</span><div class="meter"><i></i></div></article>
+      <article class="module hot" style="--i:7;--c:4;--r:1;--w:95%"><b>Latency</b><span>p99 · 42ms</span><div class="meter"><i></i></div></article>
+      <article class="module" style="--i:8;--c:4;--r:1;--w:33%"><b>Errors</b><span>0.02%</span><div class="meter"><i></i></div></article>
+    </section></main>
+
+</body>
+</html>

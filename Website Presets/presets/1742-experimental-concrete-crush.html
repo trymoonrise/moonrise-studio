@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1742
+    slug: experimental-concrete-crush
+    title: Concrete Crush Type
+    category: experimental
+    tags: experimental, concrete, crush, type
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1742 — Concrete Crush Type</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#2a2a2a;display:grid;place-items:center;overflow:hidden;font-family:'Bebas Neue',sans-serif;cursor:pointer}
+    .slab{position:relative;text-align:center;padding:2rem}
+    .word{margin:0;font-size:clamp(4rem,18vw,11rem);line-height:.8;letter-spacing:.02em;text-transform:uppercase;color:#c8c4bc;text-shadow:0 2px 0 #1a1a1a,0 8px 0 #111,0 18px 30px rgba(0,0,0,.5);animation:crush 3.2s cubic-bezier(.7,0,.3,1) infinite}
+    .cracks{position:absolute;inset:-10%;pointer-events:none;opacity:0;background:
+      linear-gradient(115deg,transparent 48%,rgba(0,0,0,.55) 49%,transparent 51%),
+      linear-gradient(70deg,transparent 45%,rgba(0,0,0,.4) 46%,transparent 48%),
+      linear-gradient(20deg,transparent 60%,rgba(0,0,0,.35) 61%,transparent 63%);
+      animation:crack 3.2s ease-in-out infinite}
+    .dust{position:absolute;left:10%;right:10%;bottom:-1rem;height:8px;background:radial-gradient(ellipse,rgba(200,196,188,.5),transparent 70%);filter:blur(4px);opacity:0;animation:dust 3.2s ease-in-out infinite}
+    .meta{position:fixed;bottom:1.2rem;font-family:monospace;font-size:.65rem;letter-spacing:.25em;text-transform:uppercase;color:rgba(200,196,188,.4)}
+    @keyframes crush{0%,20%{transform:scaleY(1) translateY(0)}45%{transform:scaleY(.35) translateY(18px)}55%{transform:scaleY(1.15) translateY(-4px)}70%,100%{transform:scaleY(1) translateY(0)}}
+    @keyframes crack{0%,40%{opacity:0}48%,70%{opacity:.9}100%{opacity:.2}}
+    @keyframes dust{0%,45%{opacity:0;transform:scaleX(.4)}55%{opacity:1;transform:scaleX(1.2)}100%{opacity:0;transform:scaleX(1)}}
+    @media (prefers-reduced-motion:reduce){.word,.cracks,.dust{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="slab">
+    <div class="cracks" aria-hidden="true"></div>
+    <h1 class="word">CRUSH</h1>
+    <div class="dust" aria-hidden="true"></div>
+  </div>
+  <p class="meta">1742 · Concrete</p>
+</body>
+</html>

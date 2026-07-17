@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0337
+    slug: carousels-3d-carousel
+    title: 3D Carousel
+    category: carousels
+    tags: carousels, animated, modern, interactive
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0337 — 3D Carousel</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0c0e14;font-family:'DM Sans',system-ui,sans-serif;color:#fff;overflow:hidden;padding:24px}
+    button{font:inherit;border:0;cursor:pointer;background:transparent;color:inherit}
+    .wrap{width:min(640px,94vw);perspective:1200px}.stage{height:320px;position:relative;transform-style:preserve-3d}.card{position:absolute;left:50%;top:50%;width:min(240px,56vw);height:280px;margin:-140px 0 0 -120px;border-radius:22px;overflow:hidden;background:#1a1f2e;border:1px solid rgba(255,255,255,.1);box-shadow:0 30px 60px rgba(0,0,0,.45);transition:transform .8s cubic-bezier(.22,1,.36,1),opacity .8s,filter .8s;transform-style:preserve-3d}.card img{width:100%;height:100%;object-fit:cover}.card span{position:absolute;left:14px;bottom:14px;font-family:Syne,sans-serif;font-weight:700;font-size:.9rem;padding:8px 12px;border-radius:999px;background:rgba(0,0,0,.55);backdrop-filter:blur(8px)}.controls{display:flex;justify-content:center;gap:12px;margin-top:28px}.controls button{width:48px;height:48px;border-radius:50%;border:1px solid rgba(255,255,255,.2);color:#fff;font-size:18px;transition:background .25s,transform .25s}.controls button:hover{background:rgba(255,255,255,.1);transform:scale(1.06)}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="wrap"><div class="stage" id="stage">
+<div class="card" data-i="0"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt=""><span>Orbit 01</span></div>
+<div class="card" data-i="1"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt="" style="filter:hue-rotate(50deg)"><span>Orbit 02</span></div>
+<div class="card" data-i="2"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt="" style="filter:hue-rotate(120deg)"><span>Orbit 03</span></div>
+<div class="card" data-i="3"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt="" style="filter:hue-rotate(200deg)"><span>Orbit 04</span></div>
+<div class="card" data-i="4"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt="" style="filter:hue-rotate(280deg)"><span>Orbit 05</span></div>
+</div><div class="controls"><button id="prev">←</button><button id="next">→</button></div></div>
+<script>
+const cards=[...document.querySelectorAll('.card')];let i=0;function layout(){cards.forEach((c,n)=>{let off=((n-i)%cards.length+cards.length)%cards.length;if(off>cards.length/2)off-=cards.length;const abs=Math.abs(off);c.style.transform='translateX('+(off*150)+'px) translateZ('+(-abs*140)+'px) rotateY('+(-off*32)+'deg) scale('+(1-abs*.12)+')';c.style.opacity=abs>2?0:1-abs*.28;c.style.filter=abs?'brightness(.55)':'none';c.style.zIndex=String(10-abs);});}document.getElementById('prev').onclick=()=>{i=(i-1+cards.length)%cards.length;layout()};document.getElementById('next').onclick=()=>{i=(i+1)%cards.length;layout()};layout();
+</script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1747
+    slug: experimental-fluorescent-flicker
+    title: Fluorescent Flicker Sign
+    category: experimental
+    tags: experimental, neon, flicker, sign
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1747 — Fluorescent Flicker Sign</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Monoton&family=DM+Mono:wght@500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#08060a;display:grid;place-items:center;overflow:hidden}
+    .sign{text-align:center;padding:2rem}
+    .neon{margin:0;font-family:Monoton,cursive;font-size:clamp(3rem,14vw,8rem);line-height:1;letter-spacing:.08em;color:#ff2bd6;text-shadow:0 0 8px #ff2bd6,0 0 24px #ff2bd6,0 0 60px #ff2bd6,0 0 100px #a00080;animation:flicker 4.5s linear infinite}
+    .sub{margin:1.2rem 0 0;font-family:'DM Mono',monospace;font-size:.7rem;letter-spacing:.35em;text-transform:uppercase;color:rgba(255,43,214,.45)}
+    .buzz{position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.15) 2px,rgba(0,0,0,.15) 4px);opacity:.5}
+    @keyframes flicker{
+      0%,18%,22%,25%,53%,57%,100%{opacity:1;text-shadow:0 0 8px #ff2bd6,0 0 24px #ff2bd6,0 0 60px #ff2bd6,0 0 100px #a00080}
+      20%,24%,55%{opacity:.4;text-shadow:none}
+      21%{opacity:.85}
+      54%{opacity:.15}
+    }
+    @media (prefers-reduced-motion:reduce){.neon{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="buzz" aria-hidden="true"></div>
+  <div class="sign">
+    <h1 class="neon">OPEN</h1>
+    <p class="sub">24hrs · maybe · 1747</p>
+  </div>
+</body>
+</html>

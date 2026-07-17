@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1593
+    slug: 3d-ribbon-banner
+    title: 3D Ribbon Banner
+    category: 3d-effects
+    tags: 3d, ribbon, banner
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1593 — 3D Ribbon Banner</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Outfit:wght@500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0a0b10;color:#fff;font-family:Outfit,sans-serif;perspective:1100px;overflow:hidden}
+    .wrap{position:relative;width:min(900px,95vw);height:220px;transform-style:preserve-3d}
+    .ribbon{position:absolute;inset:0;display:flex;align-items:center;transform-style:preserve-3d;animation:wave 5s ease-in-out infinite}
+    .seg{flex:1;height:100%;display:grid;place-items:center;background:linear-gradient(180deg,var(--c1),var(--c2));transform:rotateX(var(--rx)) translateZ(var(--z));box-shadow:0 20px 40px rgba(0,0,0,.35);border-right:1px solid rgba(0,0,0,.15);position:relative;overflow:hidden}
+    .seg:nth-child(1){--c1:#ff4d6d;--c2:#a01030;--rx:18deg;--z:40px;border-radius:18px 0 0 18px}
+    .seg:nth-child(2){--c1:#ff6b8a;--c2:#b01840;--rx:8deg;--z:70px}
+    .seg:nth-child(3){--c1:#ff8aa5;--c2:#c02050;--rx:-4deg;--z:90px}
+    .seg:nth-child(4){--c1:#ff6b8a;--c2:#b01840;--rx:-14deg;--z:60px}
+    .seg:nth-child(5){--c1:#ff4d6d;--c2:#a01030;--rx:-22deg;--z:20px;border-radius:0 18px 18px 0}
+    .text{position:absolute;inset:0;display:grid;place-items:center;z-index:5;pointer-events:none;transform:translateZ(100px)}
+    .text h1{margin:0;font-family:Syne,sans-serif;font-size:clamp(2.4rem,8vw,5rem);letter-spacing:-.06em;text-shadow:0 10px 40px rgba(0,0,0,.45)}
+    .tail{position:absolute;width:40px;height:40px;background:#7a0a20;transform-origin:top center}
+    .tail--l{left:0;bottom:-28px;clip-path:polygon(0 0,100% 0,0 100%);transform:rotateX(40deg)}
+    .tail--r{right:0;bottom:-28px;clip-path:polygon(0 0,100% 0,100% 100%);transform:rotateX(40deg)}
+    .hint{position:fixed;bottom:1.5rem;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;opacity:.4}
+    @keyframes wave{
+      0%,100%{transform:rotateY(-12deg) rotateX(8deg) translateY(0)}
+      50%{transform:rotateY(12deg) rotateX(4deg) translateY(-12px)}
+    }
+    @media(prefers-reduced-motion:reduce){.ribbon{animation:none;transform:rotateX(6deg)}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="ribbon" aria-hidden="true">
+      <div class="seg"></div><div class="seg"></div><div class="seg"></div><div class="seg"></div><div class="seg"></div>
+    </div>
+    <div class="text"><h1>RIBBON DROP</h1></div>
+    <div class="tail tail--l" aria-hidden="true"></div>
+    <div class="tail tail--r" aria-hidden="true"></div>
+  </div>
+  <p class="hint">Segmented 3D ribbon in perpetual undulation</p>
+</body>
+</html>

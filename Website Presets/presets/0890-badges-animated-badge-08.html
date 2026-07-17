@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0890
+    slug: badges-animated-badge-08
+    title: Animated Badge 08
+    category: badges
+    tags: badges, animated
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0890 — Animated Badge 08</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
+
+    * { box-sizing: border-box; }
+    body {
+      display: grid; place-items: center; min-height: 100vh;
+      background: #050505; font-family: Anton, sans-serif; overflow: hidden;
+      cursor: pointer;
+    }
+
+    .badge {
+      position: relative;
+      padding: 0.8rem 1.8rem;
+      font-size: clamp(1.6rem, 5vw, 2.6rem);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #f4f1ea;
+      background: #111;
+      border: 2px solid #f4f1ea;
+      animation: glitch-box 3s steps(1) infinite;
+    }
+
+    .badge::before,
+    .badge::after {
+      content: attr(data-text);
+      position: absolute; inset: 0;
+      display: grid; place-items: center;
+      padding: inherit;
+      pointer-events: none;
+    }
+    .badge::before {
+      color: #00f0ff;
+      animation: g1 2.5s steps(1) infinite;
+      mix-blend-mode: screen;
+    }
+    .badge::after {
+      color: #ff0040;
+      animation: g2 2.5s steps(1) infinite;
+      mix-blend-mode: screen;
+    }
+
+    .hint {
+      position: fixed; bottom: 1.5rem;
+      font-family: system-ui, sans-serif;
+      font-size: 0.65rem; letter-spacing: 0.24em; text-transform: uppercase;
+      color: rgba(244,241,234,0.3);
+    }
+
+    @keyframes glitch-box {
+      0%, 92%, 100% { transform: none; filter: none; }
+      93% { transform: translate(-4px, 2px) skewX(-3deg); filter: hue-rotate(90deg); }
+      94% { transform: translate(5px, -2px); filter: contrast(1.4); }
+      95% { transform: none; filter: none; }
+    }
+    @keyframes g1 {
+      0%, 88%, 100% { transform: none; opacity: 0; }
+      89% { transform: translate(-5px, 1px); opacity: 0.85; }
+      91% { opacity: 0; }
+    }
+    @keyframes g2 {
+      0%, 88%, 100% { transform: none; opacity: 0; }
+      89% { transform: translate(5px, -1px); opacity: 0.85; }
+      91% { opacity: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .badge, .badge::before, .badge::after { animation: none; }
+      .badge::before, .badge::after { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="badge" id="badge" data-text="GLITCH">GLITCH</div>
+  <p class="hint">Click to re-glitch</p>
+
+  <script>
+    const words = ['GLITCH', 'ERROR', 'NOISE', 'BREAK', 'STATIC'];
+    let i = 0;
+    addEventListener('click', () => {
+      i = (i + 1) % words.length;
+      const b = document.getElementById('badge');
+      b.textContent = words[i];
+      b.dataset.text = words[i];
+    });
+  </script>
+</body>
+</html>

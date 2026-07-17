@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0254
+    slug: icons-icon-grid
+    title: Icon Grid
+    category: icons
+    tags: icons, grid
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0254 — Icon Grid</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #f4f5f8;
+      padding: 2rem;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: #111827;
+    }
+
+    .app {
+      width: min(100%, 520px);
+      display: grid;
+      gap: 1.25rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem;
+    }
+
+    .ico {
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
+      cursor: pointer;
+      color: #4b5563;
+      transition:
+        transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1),
+        border-color 0.28s,
+        box-shadow 0.28s,
+        background 0.28s,
+        color 0.28s;
+    }
+
+    .ico svg {
+      width: 22px;
+      height: 22px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    .ico:hover {
+      transform: translateY(-2px);
+      border-color: #c7d2fe;
+      box-shadow: 0 10px 24px rgba(79, 110, 247, 0.12);
+      color: #4f6ef7;
+    }
+
+    .ico.is-active {
+      background: #4f6ef7;
+      border-color: #4f6ef7;
+      color: #fff;
+      box-shadow: 0 14px 30px rgba(79, 110, 247, 0.28);
+      transform: scale(0.96);
+    }
+
+    .ico.is-active svg {
+      transform: scale(1.08);
+    }
+
+    .window {
+      display: grid;
+      grid-template-rows: 0fr;
+      opacity: 0;
+      transform: translateY(-8px) scale(0.98);
+      transition:
+        grid-template-rows 0.5s cubic-bezier(0.22, 0.61, 0.36, 1),
+        opacity 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
+        transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+      pointer-events: none;
+    }
+
+    .window.is-open {
+      grid-template-rows: 1fr;
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+    }
+
+    .window__inner {
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .window__card {
+      border-radius: 18px;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 22px 50px rgba(15, 23, 42, 0.1);
+      overflow: hidden;
+    }
+
+    .window__bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 0.85rem;
+      background: #f8fafc;
+      border-bottom: 1px solid #eef2f7;
+    }
+
+    .window__dots {
+      display: flex;
+      gap: 0.35rem;
+    }
+
+    .window__dots span {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #d1d5db;
+    }
+
+    .window__dots span:nth-child(1) { background: #fca5a5; }
+    .window__dots span:nth-child(2) { background: #fcd34d; }
+    .window__dots span:nth-child(3) { background: #86efac; }
+
+    .window__close {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: #9ca3af;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .window__close:hover {
+      background: #eef2f7;
+      color: #4b5563;
+    }
+
+    .window__close svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      stroke-width: 2.25;
+      fill: none;
+      stroke-linecap: round;
+    }
+
+    .window__media {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      background: #e5e7eb;
+    }
+
+    .window__media img {
+      width: 100%;
+      height: 100%;
+      max-width: none;
+      object-fit: cover;
+      opacity: 0;
+      transform: scale(1.04);
+      transition:
+        opacity 0.45s cubic-bezier(0.22, 0.61, 0.36, 1) 0.08s,
+        transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) 0.08s;
+    }
+
+    .window.is-open .window__media img {
+      opacity: 1;
+      transform: none;
+    }
+
+    .window__copy {
+      padding: 1.1rem 1.15rem 1.2rem;
+      opacity: 0;
+      transform: translateY(10px);
+      transition:
+        opacity 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) 0.14s,
+        transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) 0.14s;
+    }
+
+    .window.is-open .window__copy {
+      opacity: 1;
+      transform: none;
+    }
+
+    .window__copy h3 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.35rem;
+    }
+
+    .window__copy p {
+      font-size: 0.9rem;
+      line-height: 1.55;
+      color: #6b7280;
+      margin: 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ico,
+      .window,
+      .window__media img,
+      .window__copy {
+        transition: none;
+      }
+
+      .window__media img,
+      .window__copy {
+        opacity: 1;
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="grid" id="grid">
+      <button class="ico" type="button" data-id="0" aria-label="Home" aria-expanded="false">
+        <svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+      </button>
+      <button class="ico" type="button" data-id="1" aria-label="Settings" aria-expanded="false">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      </button>
+      <button class="ico" type="button" data-id="2" aria-label="Mail" aria-expanded="false">
+        <svg viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 6-10 7L2 6"/></svg>
+      </button>
+      <button class="ico" type="button" data-id="3" aria-label="Notifications" aria-expanded="false">
+        <svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+      </button>
+      <button class="ico" type="button" data-id="4" aria-label="Files" aria-expanded="false">
+        <svg viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>
+      </button>
+      <button class="ico" type="button" data-id="5" aria-label="Search" aria-expanded="false">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </button>
+      <button class="ico" type="button" data-id="6" aria-label="Favorites" aria-expanded="false">
+        <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      </button>
+      <button class="ico" type="button" data-id="7" aria-label="Health" aria-expanded="false">
+        <svg viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+      </button>
+    </div>
+
+    <div class="window" id="window" aria-hidden="true">
+      <div class="window__inner">
+        <div class="window__card">
+          <div class="window__bar">
+            <div class="window__dots" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+            <button class="window__close" id="close" type="button" aria-label="Close window">
+              <svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+          </div>
+          <div class="window__media">
+            <img id="img" src="../stock/media/16-9 Aspect Ratio(image).png" alt="">
+          </div>
+          <div class="window__copy">
+            <h3 id="title">Home</h3>
+            <p id="msg">Your dashboard overview with quick access to recent activity.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const items = [
+      {
+        title: 'Home',
+        msg: 'Your dashboard overview with quick access to recent activity and pinned shortcuts.',
+        pos: '48% 28%'
+      },
+      {
+        title: 'Settings',
+        msg: 'Tune preferences, notifications, and workspace defaults in one place.',
+        pos: '62% 40%'
+      },
+      {
+        title: 'Mail',
+        msg: 'Catch up on conversations, drafts, and starred threads from your inbox.',
+        pos: '35% 50%'
+      },
+      {
+        title: 'Notifications',
+        msg: 'Stay on top of mentions, approvals, and system updates as they arrive.',
+        pos: '72% 35%'
+      },
+      {
+        title: 'Files',
+        msg: 'Browse shared folders, uploads, and version history without leaving the grid.',
+        pos: '28% 58%'
+      },
+      {
+        title: 'Search',
+        msg: 'Find people, documents, and projects instantly with smart suggestions.',
+        pos: '50% 72%'
+      },
+      {
+        title: 'Favorites',
+        msg: 'Open saved boards, reports, and links you reach for every day.',
+        pos: '80% 60%'
+      },
+      {
+        title: 'Health',
+        msg: 'Track team wellness goals and celebrate milestones together.',
+        pos: '40% 42%'
+      }
+    ];
+
+    const icons = [...document.querySelectorAll('.ico')];
+    const windowEl = document.getElementById('window');
+    const closeBtn = document.getElementById('close');
+    const img = document.getElementById('img');
+    const title = document.getElementById('title');
+    const msg = document.getElementById('msg');
+    let active = null;
+
+    function setContent(id) {
+      const item = items[id];
+      title.textContent = item.title;
+      msg.textContent = item.msg;
+      img.style.objectPosition = item.pos;
+      img.style.opacity = '0';
+      img.style.transform = 'scale(1.04)';
+      requestAnimationFrame(() => {
+        img.style.opacity = '';
+        img.style.transform = '';
+      });
+    }
+
+    function openItem(id) {
+      if (active === id) {
+        closeWindow();
+        return;
+      }
+
+      active = id;
+      icons.forEach((btn, i) => {
+        const on = i === id;
+        btn.classList.toggle('is-active', on);
+        btn.setAttribute('aria-expanded', on ? 'true' : 'false');
+      });
+
+      setContent(id);
+      windowEl.classList.add('is-open');
+      windowEl.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeWindow() {
+      active = null;
+      icons.forEach((btn) => {
+        btn.classList.remove('is-active');
+        btn.setAttribute('aria-expanded', 'false');
+      });
+      windowEl.classList.remove('is-open');
+      windowEl.setAttribute('aria-hidden', 'true');
+    }
+
+    icons.forEach((btn) => {
+      btn.addEventListener('click', () => openItem(Number(btn.dataset.id)));
+    });
+
+    closeBtn.addEventListener('click', closeWindow);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeWindow();
+    });
+  </script>
+</body>
+</html>

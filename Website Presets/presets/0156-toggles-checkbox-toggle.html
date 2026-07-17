@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0156
+    slug: toggles-checkbox-toggle
+    title: Checkbox Style Toggle
+    category: toggles
+    tags: toggles, checkbox
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0156 — Checkbox Style Toggle</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    :root {
+      --bg: #f4f5f8;
+      --surface: #ffffff;
+      --text: #111318;
+      --muted: #6b7085;
+      --border: #d8dbe3;
+      --accent: #4f6ef7;
+      --accent-soft: rgba(79, 110, 247, 0.12);
+    }
+
+    html.is-dark {
+      --bg: #0c0d12;
+      --surface: #14151c;
+      --text: #e7e8ee;
+      --muted: rgba(231, 232, 238, 0.58);
+      --border: rgba(255, 255, 255, 0.1);
+      --accent: #8aa0ff;
+      --accent-soft: rgba(138, 160, 255, 0.16);
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      padding: 2rem;
+      transition:
+        background-color 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
+        color 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    .card {
+      width: min(380px, 100%);
+      padding: 1.75rem;
+      border-radius: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06);
+      transition:
+        background-color 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
+        border-color 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
+        box-shadow 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    html.is-dark .card {
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+    }
+
+    .card h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+      letter-spacing: -0.02em;
+    }
+
+    .card p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.55;
+      margin-bottom: 1.35rem;
+      transition: color 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .box {
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      background: transparent;
+      transition:
+        background-color 0.3s cubic-bezier(0.22, 0.61, 0.36, 1),
+        border-color 0.3s cubic-bezier(0.22, 0.61, 0.36, 1),
+        transform 0.2s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    .row:hover .box {
+      border-color: var(--accent);
+    }
+
+    .row.on .box {
+      background: var(--accent);
+      border-color: var(--accent);
+      transform: scale(1.04);
+    }
+
+    .check {
+      width: 13px;
+      height: 13px;
+      stroke: #fff;
+      stroke-width: 2.5;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0;
+      transform: scale(0.6);
+      transition:
+        opacity 0.25s cubic-bezier(0.22, 0.61, 0.36, 1),
+        transform 0.25s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    .row.on .check {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .label {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: color 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    .status {
+      margin-top: 1rem;
+      padding: 0.65rem 0.85rem;
+      border-radius: 10px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.82rem;
+      font-weight: 600;
+      transition:
+        background-color 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
+        color 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body,
+      .card,
+      .card p,
+      .box,
+      .check,
+      .label,
+      .status {
+        transition: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Appearance</h2>
+    <p>Toggle dark mode to switch the full preview theme.</p>
+
+    <div class="row" id="row" role="checkbox" aria-checked="false" tabindex="0">
+      <div class="box" aria-hidden="true">
+        <svg class="check" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20 6 9 17l-5-5"/>
+        </svg>
+      </div>
+      <span class="label">Enable dark mode</span>
+    </div>
+
+    <p class="status" id="status">Light mode active</p>
+  </div>
+
+  <script>
+    const row = document.getElementById('row');
+    const status = document.getElementById('status');
+    const root = document.documentElement;
+
+    function setDark(on) {
+      row.classList.toggle('on', on);
+      root.classList.toggle('is-dark', on);
+      row.setAttribute('aria-checked', String(on));
+      status.textContent = on ? 'Dark mode active' : 'Light mode active';
+    }
+
+    function toggle() {
+      setDark(!row.classList.contains('on'));
+    }
+
+    row.addEventListener('click', toggle);
+    row.addEventListener('keydown', (e) => {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        toggle();
+      }
+    });
+  </script>
+</body>
+</html>

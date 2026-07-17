@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0387
+    slug: heroes-glitch-landing
+    title: Glitch Landing Hero
+    category: heroes
+    tags: heroes, landing, experimental, glitch
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0387 — Glitch Landing Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    
+    body{min-height:100vh;background:#000;color:#0f0;display:grid;place-items:center;padding:2rem;font-family:monospace;text-align:center}
+    h1{font-size:clamp(2.5rem,8vw,5rem);font-weight:900;text-transform:uppercase;position:relative;animation:glitch 3s infinite}
+    h1::before,h1::after{content:attr(data-text);position:absolute;inset:0}
+    h1::before{color:#f0f;clip-path:inset(20% 0 50% 0);animation:shift 2s infinite}
+    h1::after{color:#0ff;clip-path:inset(60% 0 10% 0);animation:shift 2.5s infinite reverse}
+    p{margin-top:1.5rem;color:#0a0;font-size:.9rem}
+    @keyframes shift{0%,100%{transform:translate(0)}33%{transform:translate(-3px,2px)}66%{transform:translate(3px,-2px)}}
+    @keyframes glitch{0%,90%,100%{transform:none}92%{transform:skewX(-2deg)}94%{transform:skewX(2deg)}}
+  </style>
+</head>
+<body>
+<div><h1 data-text="SYSTEM">SYSTEM</h1><p>// experimental landing hero</p></div>
+
+</body>
+</html>

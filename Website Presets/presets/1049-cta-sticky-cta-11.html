@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1049
+    slug: cta-sticky-cta-11
+    title: Sticky Cta 11
+    category: cta
+    tags: cta, sticky
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1049 — Sticky Cta 11</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');body{margin:0;min-height:220vh;background:#fafafa;font-family:"DM Sans",system-ui,-apple-system,sans-serif;color:#333}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+    .content{max-width:520px;margin:0 auto;padding:4rem 1.5rem 8rem}
+    .content h1{font-family:"Syne",system-ui,sans-serif;font-size:2rem;font-weight:800;letter-spacing:-.03em;color:#111;margin:0 0 1rem}
+    .content p{line-height:1.65;margin:0 0 1rem;color:#666}
+    .dock{position:fixed;left:50%;bottom:1.25rem;transform:translateX(-50%) translateY(120%);display:flex;align-items:center;gap:1rem;padding:.65rem .65rem .65rem 1.15rem;background:#111;color:#fff;border:1px solid #222;box-shadow:0 16px 40px rgba(0,0,0,.25);z-index:10;animation:dockIn .7s .6s cubic-bezier(.22,1,.36,1) forwards}
+    @keyframes dockIn{to{transform:translateX(-50%) translateY(0)}}
+    .dock span{font-size:.84rem;font-weight:500;white-space:nowrap}
+    .btn{padding:9px 18px;border:none;background:#fff;color:#111;font:inherit;font-size:.8rem;font-weight:700;cursor:pointer;transition:transform .2s}
+    .btn:hover{transform:scale(1.04)}
+  </style>
+</head>
+<body>
+<div class="content"><h1>Keep scrolling</h1><p>The call stays with you — a sticky dock that never shouts.</p><p>Minimal chrome. One action. Always in reach.</p><p>Scroll the page to feel the layout breathe while the CTA holds the bottom edge.</p></div><div class="dock" role="region" aria-label="Call to action"><span>Ship your next layout</span><button class="btn" type="button">Continue</button></div>
+
+</body>
+</html>

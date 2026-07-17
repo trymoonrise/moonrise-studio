@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0602
+    slug: docks-minimal-dock-06
+    title: Minimal Dock 06
+    category: docks
+    tags: docks, minimal
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0602 — Minimal Dock 06</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f7f7f5;font-family:Outfit,sans-serif}
+    .wrap{display:flex;flex-direction:column;align-items:center;gap:1.25rem}
+    .label{font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:#111;height:1em;opacity:0;transform:translateY(6px);transition:opacity .35s,transform .35s cubic-bezier(.22,1,.36,1)}
+    .label.on{opacity:1;transform:translateY(0)}
+    .dock{display:flex;gap:1.75rem;align-items:center;position:relative;padding:.5rem 0}
+    .dock::after{content:"";position:absolute;left:0;right:0;bottom:-10px;height:1px;background:linear-gradient(90deg,transparent,#ddd,transparent);transform:scaleX(.6);opacity:.7}
+    .dock a{width:8px;height:8px;border-radius:50%;background:#c8c8c4;text-indent:-999px;overflow:hidden;transition:transform .4s cubic-bezier(.22,1,.36,1),background .3s,box-shadow .3s;position:relative}
+    .dock a:hover{transform:scale(1.45);background:#888}
+    .dock a.active{background:#111;transform:scale(1.65);box-shadow:0 0 0 4px rgba(17,17,17,.08)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="label on" id="label">Home</div>
+    <nav class="dock" aria-label="Minimal dock">
+      <a class="active" href="#" data-label="Home" aria-label="Home">Home</a>
+      <a href="#" data-label="Search" aria-label="Search">Search</a>
+      <a href="#" data-label="Create" aria-label="Create">Create</a>
+      <a href="#" data-label="Saved" aria-label="Saved">Saved</a>
+      <a href="#" data-label="You" aria-label="You">You</a>
+    </nav>
+  </div>
+  <script>
+    const label=document.getElementById('label');
+    const links=[...document.querySelectorAll('.dock a')];
+    function setLabel(text){
+      label.classList.remove('on');
+      setTimeout(()=>{label.textContent=text;label.classList.add('on')},160);
+    }
+    links.forEach(a=>a.addEventListener('click',e=>{
+      e.preventDefault();
+      links.forEach(l=>l.classList.remove('active'));
+      a.classList.add('active');
+      setLabel(a.dataset.label);
+    }));
+  </script>
+</body>
+</html>

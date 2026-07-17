@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0304
+    slug: calendars-mini-calendar
+    title: Mini Calendar Widget
+    category: calendars
+    tags: calendars, mini
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0304 — Mini Calendar Widget</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 2rem;
+      background: #f4f5f8;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    .widget {
+      width: min(100%, 252px);
+      padding: 0.9rem 0.85rem 0.85rem;
+      border-radius: 16px;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+
+    .nav button {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      background: #fff;
+      color: #6b7280;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+    }
+
+    .nav button:hover {
+      background: #f0f4ff;
+      border-color: #c7d2fe;
+      color: #4f6ef7;
+    }
+
+    .nav button svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      stroke-width: 2.25;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    #month-label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #111827;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      text-align: center;
+    }
+
+    .dow {
+      padding: 0.2rem 0;
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #9ca3af;
+    }
+
+    .cell {
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border: none;
+      border-radius: 8px;
+      background: none;
+      font-size: 0.76rem;
+      font-family: inherit;
+      color: #374151;
+      cursor: pointer;
+      transition: background 0.16s, color 0.16s, transform 0.16s;
+    }
+
+    .cell:hover:not(:disabled) {
+      background: #f3f4f6;
+    }
+
+    .cell.is-today {
+      box-shadow: inset 0 0 0 1.5px #4f6ef7;
+      color: #4f6ef7;
+      font-weight: 700;
+    }
+
+    .cell.is-selected {
+      background: #4f6ef7;
+      color: #fff;
+      font-weight: 700;
+      transform: scale(1.06);
+    }
+
+    .cell.is-muted {
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .footer {
+      margin-top: 0.75rem;
+      padding-top: 0.7rem;
+      border-top: 1px solid #f0f2f5;
+      font-size: 0.74rem;
+      color: #6b7280;
+      text-align: center;
+    }
+
+    .footer strong {
+      color: #111827;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="widget" role="application" aria-label="Mini calendar">
+    <div class="nav">
+      <button type="button" id="prev" aria-label="Previous month">
+        <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <div id="month-label">July 2026</div>
+      <button type="button" id="next" aria-label="Next month">
+        <svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="footer" id="footer">Selected: <strong>—</strong></div>
+  </div>
+
+  <script>
+    const monthLabel = document.getElementById('month-label');
+    const grid = document.getElementById('grid');
+    const footer = document.getElementById('footer');
+
+    const today = new Date(2026, 6, 6);
+    let view = new Date(2026, 6, 1);
+    let selected = new Date(2026, 6, 6);
+
+    function sameDay(a, b) {
+      return a.getFullYear() === b.getFullYear() &&
+        a.getMonth() === b.getMonth() &&
+        a.getDate() === b.getDate();
+    }
+
+    function formatSelected(date) {
+      return date.toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+      });
+    }
+
+    function render() {
+      const y = view.getFullYear();
+      const m = view.getMonth();
+
+      monthLabel.textContent = view.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+
+      grid.innerHTML = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+        .map((d) => `<div class="dow">${d}</div>`)
+        .join('');
+
+      const first = new Date(y, m, 1).getDay();
+      const days = new Date(y, m + 1, 0).getDate();
+
+      for (let i = 0; i < first; i++) {
+        grid.insertAdjacentHTML('beforeend', '<div class="cell is-muted" aria-hidden="true"></div>');
+      }
+
+      for (let d = 1; d <= days; d++) {
+        const date = new Date(y, m, d);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'cell';
+        btn.textContent = d;
+        btn.setAttribute('aria-label', date.toLocaleDateString('en-US', {
+          weekday: 'long',
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric',
+        }));
+        btn.setAttribute('aria-pressed', sameDay(date, selected) ? 'true' : 'false');
+
+        if (sameDay(date, today)) btn.classList.add('is-today');
+        if (sameDay(date, selected)) btn.classList.add('is-selected');
+
+        btn.addEventListener('click', () => {
+          selected = date;
+          render();
+        });
+
+        grid.appendChild(btn);
+      }
+
+      footer.innerHTML = `Selected: <strong>${formatSelected(selected)}</strong>`;
+    }
+
+    document.getElementById('prev').addEventListener('click', () => {
+      view = new Date(view.getFullYear(), view.getMonth() - 1, 1);
+      render();
+    });
+
+    document.getElementById('next').addEventListener('click', () => {
+      view = new Date(view.getFullYear(), view.getMonth() + 1, 1);
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>

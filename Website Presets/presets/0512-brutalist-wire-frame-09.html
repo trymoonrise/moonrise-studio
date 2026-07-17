@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0512
+    slug: brutalist-wire-frame-09
+    title: Wire Frame 09
+    category: brutalist
+    tags: brutalist, wire
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0512 — Wire Frame 09</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@600&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#111;overflow:hidden;font-family:'IBM Plex Mono',monospace;perspective:900px;padding:2rem}
+    .scene{position:relative;width:min(420px,90vw);height:320px;transform-style:preserve-3d;transform:rotateX(18deg) rotateY(-24deg);animation:spin 14s linear infinite}
+    .wire{position:absolute;inset:0;border:3px solid #0ff;box-shadow:0 0 12px #0ff;transform-style:preserve-3d}
+    .wire::before,.wire::after{content:"";position:absolute;background:#0ff;box-shadow:0 0 8px #0ff}
+    .wire::before{left:0;right:0;top:50%;height:2px}
+    .wire::after{top:0;bottom:0;left:50%;width:2px}
+    .w1{transform:translateZ(70px)}.w2{transform:rotateY(90deg) translateZ(70px)}.w3{transform:rotateY(180deg) translateZ(70px)}.w4{transform:rotateY(-90deg) translateZ(70px)}
+    .w5{transform:rotateX(90deg) translateZ(70px)}.w6{transform:rotateX(-90deg) translateZ(70px)}
+    .label{position:fixed;left:50%;bottom:2rem;transform:translateX(-50%);color:#0ff;font-family:'Archivo Black',sans-serif;font-size:clamp(1.4rem,5vw,2.2rem);letter-spacing:.08em;text-transform:uppercase;text-shadow:0 0 12px #0ff;z-index:2}
+    .noise{position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 2px,rgba(0,255,255,.04) 2px 3px);animation:scroll 1s linear infinite}
+    @keyframes spin{to{transform:rotateX(18deg) rotateY(336deg)}}
+    @keyframes scroll{to{background-position:0 40px}}
+    @media(prefers-reduced-motion:reduce){.scene,.noise{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+  <div class="scene">
+    <div class="wire w1"></div><div class="wire w2"></div><div class="wire w3"></div>
+    <div class="wire w4"></div><div class="wire w5"></div><div class="wire w6"></div>
+  </div>
+  <div class="label">Wire Frame</div>
+</body>
+</html>

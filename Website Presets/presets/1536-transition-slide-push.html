@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1536
+    slug: transition-slide-push
+    title: Slide Push Transition
+    category: transitions
+    tags: transition, slide, push
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1536 — Slide Push Transition</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:100vh;overflow:hidden;background:#111}.track{display:flex;width:300%;height:100vh;transition:transform .65s cubic-bezier(.22,.61,.36,1)}.page{flex:0 0 33.333%;height:100vh;display:grid;place-items:center;color:#fff;font-size:2.5rem;font-weight:800}.page:nth-child(1){background:#6c8cff}.page:nth-child(2){background:#ff6cb0}.page:nth-child(3){background:#6cffb8;color:#111}.ctrl{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);z-index:5;display:flex;gap:.5rem}.ctrl button{padding:10px 20px;border:none;border-radius:8px;background:#fff;color:#111;font-weight:600;cursor:pointer}
+  </style>
+</head>
+<body>
+<div class="track" id="t"><div class="page">One</div><div class="page">Two</div><div class="page">Three</div></div><div class="ctrl"><button id="prev">←</button><button id="next">→</button></div>
+<script>let i=0;const t=document.getElementById('t');document.getElementById('next').onclick=()=>{i=Math.min(2,i+1);t.style.transform='translateX('+(-i*100/3)+'%)';};document.getElementById('prev').onclick=()=>{i=Math.max(0,i-1);t.style.transform='translateX('+(-i*100/3)+'%)';};</script>
+</body>
+</html>

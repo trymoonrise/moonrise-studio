@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1065
+    slug: testimonials-quote-card-01
+    title: Editorial Citation Quote
+    category: testimonials
+    tags: testimonials, quote, editorial, citation
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1065 — Editorial Citation Quote</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0e0e10;color:#eaeaec;font-family:Outfit,sans-serif;padding:2rem}
+    .card{width:min(520px,100%);position:relative;padding:2.5rem 2.5rem 2.5rem 3rem;border-left:3px solid #38bdf8;background:rgba(255,255,255,.02);border-radius:0 12px 12px 0}
+    .mark{position:absolute;top:1.5rem;left:1rem;font-family:Syne,sans-serif;font-size:4rem;line-height:1;color:rgba(56,189,248,.2);animation:mark-fade 4s ease infinite}
+    blockquote{font-family:Syne,sans-serif;font-size:clamp(1.2rem,3vw,1.5rem);font-weight:700;line-height:1.45;letter-spacing:-.02em;margin:0 0 2rem;position:relative}
+    blockquote em{font-style:normal;color:#38bdf8}
+    .cite{display:flex;align-items:center;gap:1rem}
+    .avatar{width:44px;height:44px;border-radius:50%;background:#1a1a1e;border:1px solid rgba(255,255,255,.1);overflow:hidden;flex-shrink:0}
+    .avatar img{width:100%;height:100%;object-fit:cover;filter:grayscale(.5)}
+    .info .name{font-family:Syne,sans-serif;font-weight:700;font-size:.95rem}
+    .info .role{font-size:.75rem;color:rgba(234,234,236,.45);margin-top:2px}
+    .ref{margin-left:auto;font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(234,234,236,.25);writing-mode:vertical-rl;transform:rotate(180deg);position:absolute;right:1rem;top:50%;translate:0 -50%}
+    @keyframes mark-fade{0%,100%{opacity:.2}50%{opacity:.5}}
+    @media(prefers-reduced-motion:reduce){.mark{animation:none}}
+  </style>
+</head>
+<body>
+  <figure class="card">
+    <span class="mark">&ldquo;</span>
+    <blockquote>The platform cut our deployment cycle from weeks to <em>hours</em>. It's the infrastructure layer we didn't know we needed.</blockquote>
+    <figcaption class="cite">
+      <div class="avatar"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div>
+      <div class="info"><div class="name">Marcus Chen</div><div class="role">CTO, Vertex Dynamics</div></div>
+    </figcaption>
+    <span class="ref">Ref. 1065</span>
+  </figure>
+</body>
+</html>

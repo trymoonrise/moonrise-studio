@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0280
+    slug: testimonials-carousel-quote
+    title: Testimonial Carousel
+    category: testimonials
+    tags: testimonials, carousel
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0280 — Testimonial Carousel</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#fff;padding:2rem}.wrap{max-width:400px;text-align:center}.quote{font-size:1.2rem;line-height:1.5;color:#333;min-height:80px;transition:opacity .3s}.dots{display:flex;gap:8px;justify-content:center;margin-top:1.5rem}.dot{width:8px;height:8px;border-radius:50%;background:#ddd;cursor:pointer}.dot.on{background:#6c8cff}
+  </style>
+</head>
+<body>
+<div class="wrap"><p class="quote" id="q">"Amazing product!"</p><div class="dots" id="d"></div></div>
+<script>const qs=['"Amazing product!"','"Changed our workflow."','"Worth every penny."'];let i=0;const d=document.getElementById('d');qs.forEach((_,j)=>{const dot=document.createElement('div');dot.className='dot'+(j===0?' on':'');dot.onclick=()=>{i=j;document.getElementById('q').textContent=qs[i];d.querySelectorAll('.dot').forEach((x,k)=>x.classList.toggle('on',k===i));};d.appendChild(dot);});setInterval(()=>{i=(i+1)%qs.length;document.getElementById('q').textContent=qs[i];d.querySelectorAll('.dot').forEach((x,k)=>x.classList.toggle('on',k===i));},4000);</script>
+</body>
+</html>

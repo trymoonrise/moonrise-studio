@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1583
+    slug: 3d-isometric-grid
+    title: 3D Isometric Grid
+    category: 3d-effects
+    tags: 3d, isometric, grid
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1583 — 3D Isometric Grid</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#1a1a2e;perspective:800px;padding:2rem}.grid{display:grid;grid-template-columns:repeat(4,50px);gap:8px;transform:rotateX(55deg) rotateZ(-45deg);transform-style:preserve-3d}.cell{width:50px;height:50px;background:linear-gradient(135deg,#6c8cff,#764ba2);border-radius:6px;animation:rise 2s ease-in-out infinite;box-shadow:0 8px 0 #4a5fd4,0 12px 20px rgba(0,0,0,.3)}.cell:nth-child(odd){animation-delay:.3s;background:linear-gradient(135deg,#ff6cb0,#d44a8a);box-shadow:0 8px 0 #b43a7a,0 12px 20px rgba(0,0,0,.3)}@keyframes rise{0%,100%{transform:translateZ(0)}50%{transform:translateZ(20px)}}
+  </style>
+</head>
+<body>
+<div class="grid"><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div></div>
+
+</body>
+</html>

@@ -1,0 +1,25 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0152
+    slug: accordions-bordered-stack
+    title: Bordered Stack Accordion
+    category: accordions
+    tags: accordions, bordered
+  -->
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>0152 — Bordered Stack Accordion</title>
+  <style>
+    @import url('../shared/preset-reset.css');@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap');*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:2rem;background:#f4f2ed;font-family:Inter,sans-serif}.stack{width:min(520px,100%)}.item{border:1px solid #171717;border-radius:18px;background:#fff;overflow:hidden;transform:translateX(calc(var(--n)*8px));margin-top:-1px}.item.open{background:#171717;color:#fff}.trigger{width:100%;padding:1rem 1.1rem;display:flex;align-items:center;justify-content:space-between;border:0;background:none;font:600 .95rem Inter,sans-serif;text-align:left;cursor:pointer;color:inherit}.mark{font-size:.76rem;letter-spacing:.18em;text-transform:uppercase;opacity:.48}.panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows .34s cubic-bezier(.22,1,.36,1)}.panel>div{overflow:hidden}.panel p{margin:0;padding:0 1.1rem 1rem;color:inherit;opacity:.7;line-height:1.65;font-size:.88rem}.item.open .panel{grid-template-rows:1fr}@media(prefers-reduced-motion:reduce){.panel{transition:none}}
+  </style>
+</head>
+<body>
+  <div class="stack">
+    <div class="item open" style="--n:0"><button class="trigger"><span>Layered border stack</span><span class="mark">01</span></button><div class="panel"><div><p>Each section is offset by a few pixels so the whole accordion reads like a precise paper stack.</p></div></div></div>
+    <div class="item" style="--n:1"><button class="trigger"><span>Minimal contrast</span><span class="mark">02</span></button><div class="panel"><div><p>Opening an item inverts the surface instead of adding heavy effects, keeping the interaction quiet and intentional.</p></div></div></div>
+    <div class="item" style="--n:2"><button class="trigger"><span>Compact narrative</span><span class="mark">03</span></button><div class="panel"><div><p>This pattern works well for process steps, case-study beats, or layered policy notes.</p></div></div></div>
+  </div>
+  <script>document.querySelectorAll('.item .trigger').forEach((button)=>button.addEventListener('click',()=>button.parentElement.classList.toggle('open')));</script>
+</body>
+</html>

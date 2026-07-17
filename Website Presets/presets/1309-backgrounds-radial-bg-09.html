@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1309
+    slug: backgrounds-radial-bg-09
+    title: Radial Bg 09
+    category: backgrounds
+    tags: backgrounds, radial
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1309 — Radial Bg 09</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');body{margin:0;min-height:100vh;display:grid;place-items:center;overflow:hidden;position:relative;background:#0a0a0a;color:#fff;font-family:"DM Sans",system-ui,-apple-system,sans-serif}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+    .rings{position:absolute;left:50%;top:50%;width:20px;height:20px;margin:-10px;border-radius:50%;border:1px solid rgba(255,255,255,.25);animation:expand 6s ease-out infinite}
+    .rings:nth-child(2){animation-delay:1.5s}.rings:nth-child(3){animation-delay:3s}.rings:nth-child(4){animation-delay:4.5s}
+    @keyframes expand{0%{transform:scale(1);opacity:.7}100%{transform:scale(40);opacity:0}}
+    .core{position:absolute;width:8px;height:8px;border-radius:50%;background:#fff;left:50%;top:50%;margin:-4px;opacity:.6}
+    
+.label{position:relative;z-index:2;text-align:center;padding:2rem;pointer-events:none}
+.kicker{margin:0 0 .75rem;font-size:.65rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;opacity:.45}
+h1{margin:0;font-family:"Syne",system-ui,sans-serif;font-size:clamp(1.85rem,5vw,2.85rem);font-weight:800;letter-spacing:-.045em;line-height:1.05}
+.sub{margin:.7rem 0 0;font-size:.9rem;opacity:.5;font-weight:400}
+  </style>
+</head>
+<body>
+<div class="rings" aria-hidden="true"></div><div class="rings" aria-hidden="true"></div><div class="rings" aria-hidden="true"></div><div class="rings" aria-hidden="true"></div><div class="core" aria-hidden="true"></div><div class="label"><p class="kicker">Background</p><h1>Radial pulse</h1><p class="sub">Ripples from center.</p></div>
+
+</body>
+</html>

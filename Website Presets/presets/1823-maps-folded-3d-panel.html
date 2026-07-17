@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1823
+    slug: maps-folded-3d-panel
+    title: Folded 3D Map Panel
+    category: maps
+    tags: maps, embed, experimental, widgets, motion
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1823 — Folded 3D Map Panel</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;padding:1.5rem;overflow:hidden;background:#efeae2;color:#111;font-family:Syne,sans-serif}
+    iframe{border:0;width:100%;height:100%;display:block}
+    button{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit}
+    .wrap{perspective:1200px;width:min(560px,94vw)}
+.book{display:grid;grid-template-columns:1fr 1fr;height:min(340px,55vh);transform-style:preserve-3d;transform:rotateX(12deg) rotateY(-8deg);transition:transform .5s}
+.wrap:hover .book{transform:rotateX(6deg) rotateY(0)}
+.leaf{position:relative;overflow:hidden;border:1px solid rgba(0,0,0,.1);background:#fff}
+.leaf.l{border-radius:18px 0 0 18px;box-shadow:inset -12px 0 24px rgba(0,0,0,.08)}
+.leaf.r{border-radius:0 18px 18px 0;box-shadow:12px 20px 40px rgba(0,0,0,.15)}
+.leaf iframe{width:200%;height:100%}
+.leaf.r iframe{margin-left:-100%}
+.spine{position:absolute;left:50%;top:0;bottom:0;width:2px;background:rgba(0,0,0,.12);transform:translateX(-50%);z-index:2;pointer-events:none}
+.meta{margin-top:1.2rem;text-align:center;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(0,0,0,.4)}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="wrap"><div class="book" style="position:relative">
+<div class="leaf l"><iframe src="https://www.google.com/maps?q=Florence%2C%20Italy&hl=en&z=13&output=embed" title="Fold left" loading="lazy"></iframe></div>
+<div class="leaf r"><iframe src="https://www.google.com/maps?q=Florence%2C%20Italy&hl=en&z=13&output=embed" title="Fold right" loading="lazy"></iframe></div>
+<div class="spine"></div>
+</div><p class="meta">Folded atlas panel</p></div>
+
+</body>
+</html>

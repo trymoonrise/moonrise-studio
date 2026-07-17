@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0314
+    slug: timers-stopwatch
+    title: Stopwatch
+    category: timers
+    tags: timers, stopwatch
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0314 — Stopwatch</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 2rem;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(108, 140, 255, 0.16), transparent 34%),
+        radial-gradient(circle at 80% 80%, rgba(108, 255, 184, 0.12), transparent 36%),
+        #0d0d0f;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: #fff;
+    }
+
+    .wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      width: min(100%, 360px);
+      padding: 2rem 1.75rem 1.75rem;
+      border-radius: 28px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.38);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      margin-bottom: 1.25rem;
+      padding: 0.35rem 0.7rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #aeb7c8;
+    }
+
+    .status__dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #6b7280;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+
+    .wrap.is-running .status__dot {
+      background: #6cffb8;
+      box-shadow: 0 0 0 4px rgba(108, 255, 184, 0.18);
+    }
+
+    .time {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      margin-bottom: 1.75rem;
+      font-family: ui-monospace, "Cascadia Code", "Segoe UI Mono", monospace;
+      font-size: clamp(2.8rem, 12vw, 3.6rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      font-variant-numeric: tabular-nums;
+      color: #fff;
+    }
+
+    .time__sep {
+      color: #6c8cff;
+      opacity: 0.7;
+      transform: translateY(-0.08em);
+    }
+
+    .btns {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .btn {
+      min-width: 108px;
+      padding: 0.8rem 1.2rem;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 700;
+      transition: transform 0.2s, background 0.2s, border-color 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn--start {
+      background: linear-gradient(135deg, #6c8cff, #5a74f0);
+      color: #fff;
+      box-shadow: 0 10px 28px rgba(108, 140, 255, 0.32);
+    }
+
+    .btn--reset {
+      background: transparent;
+      color: #d1d5db;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .btn--reset:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.22);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap" id="wrap">
+    <div class="status">
+      <span class="status__dot" aria-hidden="true"></span>
+      <span id="status">Ready</span>
+    </div>
+
+    <div class="time" id="t" aria-live="polite">
+      <span id="mm">00</span>
+      <span class="time__sep">:</span>
+      <span id="ss">00</span>
+      <span class="time__sep">:</span>
+      <span id="cs">00</span>
+    </div>
+
+    <div class="btns">
+      <button class="btn btn--start" id="s" type="button">Start</button>
+      <button class="btn btn--reset" id="r" type="button">Reset</button>
+    </div>
+  </div>
+
+  <script>
+    let ms = 0;
+    let iv = null;
+
+    const wrap = document.getElementById('wrap');
+    const status = document.getElementById('status');
+    const mm = document.getElementById('mm');
+    const ss = document.getElementById('ss');
+    const cs = document.getElementById('cs');
+    const startBtn = document.getElementById('s');
+    const resetBtn = document.getElementById('r');
+
+    function pad(n) {
+      return String(n).padStart(2, '0');
+    }
+
+    function render() {
+      const totalSec = Math.floor(ms / 1000);
+      const minutes = Math.floor(totalSec / 60);
+      const seconds = totalSec % 60;
+      const centis = Math.floor((ms % 1000) / 10);
+
+      mm.textContent = pad(minutes);
+      ss.textContent = pad(seconds);
+      cs.textContent = pad(centis);
+    }
+
+    function setRunning(running) {
+      wrap.classList.toggle('is-running', running);
+      status.textContent = running ? 'Running' : 'Ready';
+      startBtn.textContent = running ? 'Pause' : 'Start';
+    }
+
+    startBtn.addEventListener('click', () => {
+      if (iv) {
+        clearInterval(iv);
+        iv = null;
+        setRunning(false);
+        return;
+      }
+
+      iv = setInterval(() => {
+        ms += 10;
+        render();
+      }, 10);
+
+      setRunning(true);
+    });
+
+    resetBtn.addEventListener('click', () => {
+      clearInterval(iv);
+      iv = null;
+      ms = 0;
+      render();
+      setRunning(false);
+    });
+
+    render();
+  </script>
+</body>
+</html>

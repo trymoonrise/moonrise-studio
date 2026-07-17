@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1839
+    slug: animation-strobe-sequence
+    title: Strobe Type Sequence
+    category: animation
+    tags: animation, strobe, type, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1839 — Strobe Type Sequence</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');*{box-sizing:border-box}
+      body{margin:0;min-height:100vh;display:grid;place-items:center;background:#000;color:#fff;font-family:"DM Sans",system-ui,-apple-system,sans-serif;padding:2rem}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+      .frame{font-family:"Syne",system-ui,sans-serif;font-size:clamp(2.5rem,10vw,5.5rem);font-weight:800;letter-spacing:-.07em;min-height:1.1em;text-align:center}
+      .meta{margin-top:1.5rem;text-align:center;font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;color:#444}
+      .bar{width:120px;height:2px;background:#222;margin:1.25rem auto 0;overflow:hidden}
+      .bar i{display:block;height:100%;width:0;background:#fff;animation:load 2.4s linear infinite}
+      @keyframes load{to{width:100%}}
+  </style>
+</head>
+<body>
+<div><div class="frame" id="f">BUILD</div><div class="bar" aria-hidden="true"><i></i></div><p class="meta">Frame sequence</p></div>
+<script>const words=['BUILD','BREAK','REMAKE','SHIP','REPEAT'];let i=0;const f=document.getElementById('f');
+setInterval(()=>{i=(i+1)%words.length;f.style.opacity='0';setTimeout(()=>{f.textContent=words[i];f.style.opacity='1';},80);},800);</script>
+</body>
+</html>

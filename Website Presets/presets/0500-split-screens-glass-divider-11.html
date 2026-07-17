@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0500
+    slug: split-screens-glass-divider-11
+    title: Glass Divider 11
+    category: split-screens
+    tags: split-screens, experimental, mask, shapes
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0500 — Glass Divider 11</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;overflow:hidden;font-family:Syne,sans-serif;background:#0f172a;color:#fff}
+    .stage{min-height:100vh;display:grid;grid-template-columns:1fr auto 1fr;position:relative;overflow:hidden}
+.pane{display:grid;place-items:center;padding:2rem;position:relative}
+.pane.l{background:linear-gradient(160deg,#1e3a8a,#0f172a)}
+.pane.r{background:linear-gradient(200deg,#7c3aed,#0f172a)}
+.pane h1{font-size:clamp(2rem,6vw,4rem);font-weight:800;letter-spacing:-.05em;margin:0}
+.glass{
+  width:clamp(80px,12vw,140px);backdrop-filter:blur(18px);
+  background:rgba(255,255,255,.08);border-left:1px solid rgba(255,255,255,.2);border-right:1px solid rgba(255,255,255,.2);
+  display:grid;place-items:center;position:relative;z-index:2;
+  box-shadow:0 0 60px rgba(255,255,255,.05);
+}
+.glass span{writing-mode:vertical-rl;transform:rotate(180deg);font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.35em;text-transform:uppercase;opacity:.6}
+.orb{position:absolute;width:50vmax;height:50vmax;border-radius:50%;filter:blur(80px);opacity:.25;pointer-events:none;animation:drift 12s ease-in-out infinite alternate}
+.pane.l .orb{background:#38bdf8;left:-30%;top:-20%}
+.pane.r .orb{background:#c084fc;right:-30%;bottom:-20%;animation-direction:alternate-reverse}
+@keyframes drift{to{transform:translate(6%,8%) scale(1.1)}}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="stage"><div class="pane l"><div class="orb"></div><h1>Glass</h1></div><div class="glass"><span>Divider</span></div><div class="pane r"><div class="orb"></div><h1>Split</h1></div></div>
+
+</body>
+</html>

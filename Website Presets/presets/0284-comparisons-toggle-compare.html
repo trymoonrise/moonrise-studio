@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0284
+    slug: comparisons-toggle-compare
+    title: Toggle Compare View
+    category: comparisons
+    tags: comparisons, toggle
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0284 — Toggle Compare View</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 2rem;
+      background: #f4f5f8;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: #111827;
+    }
+
+    .compare {
+      width: min(100%, 640px);
+      display: grid;
+      gap: 1.25rem;
+    }
+
+    .head {
+      text-align: center;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #4f6ef7;
+      margin-bottom: 0.55rem;
+    }
+
+    .head h2 {
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .toggle {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.25rem;
+      padding: 0.3rem;
+      border-radius: 14px;
+      background: #e9ecf3;
+      border: 1px solid #dde2ec;
+      width: min(100%, 280px);
+      margin: 0 auto;
+    }
+
+    .indicator {
+      position: absolute;
+      top: 0.3rem;
+      bottom: 0.3rem;
+      left: 0.3rem;
+      width: var(--w, 50%);
+      border-radius: 11px;
+      background: #fff;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+      transform: translateX(var(--x, 0));
+      transition: transform 0.38s cubic-bezier(0.22, 0.61, 0.36, 1), width 0.38s cubic-bezier(0.22, 0.61, 0.36, 1);
+      pointer-events: none;
+    }
+
+    .opt {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.62rem 0.75rem;
+      border: none;
+      border-radius: 11px;
+      background: transparent;
+      color: #6b7280;
+      font-size: 0.86rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: color 0.25s;
+    }
+
+    .opt svg {
+      width: 15px;
+      height: 15px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .opt.on {
+      color: #111827;
+    }
+
+    .stage {
+      position: relative;
+      min-height: 380px;
+    }
+
+    .panel {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transform: translateY(10px) scale(0.98);
+      pointer-events: none;
+      transition:
+        opacity 0.42s cubic-bezier(0.22, 0.61, 0.36, 1),
+        transform 0.42s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    .panel.is-active {
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+    }
+
+    .preview {
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid var(--border, #e5e7eb);
+      background: var(--bg, #fff);
+      box-shadow: 0 22px 50px rgba(15, 23, 42, 0.1);
+    }
+
+    .panel--dark .preview {
+      --border: #2a3140;
+      --bg: #111827;
+      box-shadow: 0 22px 50px rgba(0, 0, 0, 0.28);
+    }
+
+    .chrome {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.7rem 0.85rem;
+      background: var(--chrome, #f8fafc);
+      border-bottom: 1px solid var(--border, #e5e7eb);
+    }
+
+    .panel--dark .chrome {
+      --chrome: #1f2937;
+    }
+
+    .chrome span {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #d1d5db;
+    }
+
+    .panel--dark .chrome span {
+      background: #4b5563;
+    }
+
+    .chrome span:nth-child(1) { background: #fca5a5; }
+    .chrome span:nth-child(2) { background: #fcd34d; }
+    .chrome span:nth-child(3) { background: #86efac; }
+
+    .preview img {
+      width: 100%;
+      max-width: none;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      display: block;
+    }
+
+    .panel--dark .preview img {
+      filter: brightness(0.72) saturate(0.9);
+    }
+
+    .meta {
+      padding: 1rem 1.1rem 1.15rem;
+    }
+
+    .meta h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+      color: var(--text, #111827);
+    }
+
+    .panel--dark .meta h3 {
+      --text: #f9fafb;
+    }
+
+    .meta p {
+      font-size: 0.88rem;
+      line-height: 1.55;
+      color: var(--muted, #6b7280);
+      margin-bottom: 0.75rem;
+    }
+
+    .panel--dark .meta p {
+      --muted: #9ca3af;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+    }
+
+    .tag {
+      padding: 0.28rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      background: var(--tag-bg, #eef2ff);
+      color: var(--tag-text, #4f6ef7);
+    }
+
+    .panel--dark .tag {
+      --tag-bg: rgba(79, 110, 247, 0.16);
+      --tag-text: #a5b4fc;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .indicator,
+      .panel {
+        transition: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <section class="compare">
+    <header class="head">
+      <span class="eyebrow">Compare</span>
+      <h2>See both experiences side by side</h2>
+    </header>
+
+    <div class="toggle" id="toggle" role="tablist" aria-label="Compare view">
+      <span class="indicator" id="indicator"></span>
+      <button class="opt on" type="button" role="tab" aria-selected="true" data-v="light" id="tab-light">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        Light
+      </button>
+      <button class="opt" type="button" role="tab" aria-selected="false" data-v="dark" id="tab-dark">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+        Dark
+      </button>
+    </div>
+
+    <div class="stage">
+      <article class="panel panel--light is-active" data-p="light" role="tabpanel" aria-labelledby="tab-light">
+        <div class="preview">
+          <div class="chrome" aria-hidden="true"><span></span><span></span><span></span></div>
+          <img src="../stock/media/16-9 Aspect Ratio(image).png" alt="">
+          <div class="meta">
+            <h3>Light interface</h3>
+            <p>Bright surfaces, crisp contrast, and a clean editorial feel for daytime work sessions.</p>
+            <div class="tags">
+              <span class="tag">High contrast</span>
+              <span class="tag">Print friendly</span>
+              <span class="tag">Day mode</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel panel--dark" data-p="dark" role="tabpanel" aria-labelledby="tab-dark" hidden>
+        <div class="preview">
+          <div class="chrome" aria-hidden="true"><span></span><span></span><span></span></div>
+          <img src="../stock/media/16-9 Aspect Ratio(image).png" alt="" style="object-position: 70% center;">
+          <div class="meta">
+            <h3>Dark interface</h3>
+            <p>Muted backgrounds and softened highlights reduce glare for late-night focus and long reviews.</p>
+            <div class="tags">
+              <span class="tag">Low glare</span>
+              <span class="tag">OLED friendly</span>
+              <span class="tag">Night mode</span>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <script>
+    const toggle = document.getElementById('toggle');
+    const indicator = document.getElementById('indicator');
+    const opts = [...document.querySelectorAll('.opt')];
+    const panels = [...document.querySelectorAll('.panel')];
+
+    function moveIndicator(opt) {
+      const g = toggle.getBoundingClientRect();
+      const r = opt.getBoundingClientRect();
+      indicator.style.setProperty('--x', (r.left - g.left - 4.8) + 'px');
+      indicator.style.setProperty('--w', r.width + 'px');
+    }
+
+    function show(view) {
+      opts.forEach((opt) => {
+        const on = opt.dataset.v === view;
+        opt.classList.toggle('on', on);
+        opt.setAttribute('aria-selected', on ? 'true' : 'false');
+        if (on) moveIndicator(opt);
+      });
+
+      panels.forEach((panel) => {
+        const on = panel.dataset.p === view;
+        panel.classList.toggle('is-active', on);
+        panel.hidden = !on;
+      });
+    }
+
+    opts.forEach((opt) => {
+      opt.addEventListener('click', () => show(opt.dataset.v));
+    });
+
+    addEventListener('resize', () => {
+      moveIndicator(document.querySelector('.opt.on'));
+    }, { passive: true });
+
+    moveIndicator(document.querySelector('.opt.on'));
+  </script>
+</body>
+</html>

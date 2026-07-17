@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0856
+    slug: toasts-info-toast-13
+    title: Info Toast 13
+    category: toasts
+    tags: toasts, info
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0856 — Info Toast 13</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#f4f4f5}.btn{padding:10px 24px;background:#3b5ccc;color:#f4f4f5;border:none;border-radius:8px;cursor:pointer}.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:#ffffff;color:#18181b;padding:12px 24px;border-radius:99px;border:1px solid #3b5ccc;opacity:0;transition:all .3s;z-index:10}.toast.show{transform:translateX(-50%);opacity:1}
+  </style>
+</head>
+<body>
+<button class="btn" id="b">Show Toast</button><div class="toast" id="t">Info Toast 473</div>
+<script>document.getElementById('b').onclick=()=>{const t=document.getElementById('t');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);};</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0081
+    slug: mouse-effects-background-warp
+    title: Background Warp on Mouse
+    category: mouse-effects
+    tags: mouse-effects, warp
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0081 — Background Warp on Mouse</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#0d0d0f} .grid{position:fixed;inset:0;background-image:linear-gradient(rgba(108,140,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(108,140,255,.08) 1px,transparent 1px);background-size:40px 40px;transition:transform .1s}
+  </style>
+</head>
+<body>
+<div class="grid" id="g"></div><h1 style="position:relative;z-index:1;color:#fff;font-size:2rem">Warp</h1>
+<script>const g=document.getElementById('g');addEventListener('mousemove',e=>{const x=(e.clientX/innerWidth-.5)*20;const y=(e.clientY/innerHeight-.5)*20;g.style.transform='perspective(600px) rotateX('+(-y)+'deg) rotateY('+x+'deg)';});</script>
+</body>
+</html>

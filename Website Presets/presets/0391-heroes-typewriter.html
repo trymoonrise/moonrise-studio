@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0391
+    slug: heroes-typewriter
+    title: Typewriter Hero
+    category: heroes
+    tags: heroes, landing, experimental, animation
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0391 — Typewriter Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    
+    body{min-height:100vh;background:#0c0c0c;color:#d4d4d4;display:grid;place-items:center;padding:2rem;font-family:ui-monospace,monospace}
+    .line{font-size:clamp(1.2rem,3vw,1.8rem)}.prompt{color:#6c8cff;margin-right:.5rem}
+    .cursor{display:inline-block;width:2px;height:1.1em;background:#6c8cff;margin-left:2px;animation:blink 1s step-end infinite;vertical-align:text-bottom}
+    @keyframes blink{50%{opacity:0}}
+  </style>
+</head>
+<body>
+<div class="line"><span class="prompt">&gt;</span><span id="t"></span><span class="cursor"></span></div>
+<script>const phrases=['Hello, world.','We ship fast.','Your idea, live.'];let pi=0,ci=0,del=false;const el=document.getElementById('t');function tick(){const p=phrases[pi];if(!del){el.textContent=p.slice(0,++ci);if(ci===p.length){del=true;setTimeout(tick,1800);return}}else{el.textContent=p.slice(0,--ci);if(ci===0){del=false;pi=(pi+1)%phrases.length}}setTimeout(tick,del?40:70)}tick();</script>
+</body>
+</html>

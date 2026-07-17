@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1199
+    slug: countdown-card-countdown-05
+    title: Card Countdown 05
+    category: countdown
+    tags: countdown, card
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1199 — Card Countdown 05</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');*{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#eee;color:#111;font-family:"DM Sans",system-ui,-apple-system,sans-serif;padding:2rem}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.marq-track{animation:none!important}}
+    .stack{display:flex;gap:12px}
+    .card{width:90px;background:#fff;border:1px solid #111;box-shadow:4px 4px 0 #111;padding:1rem .5rem;text-align:center;transition:transform .3s cubic-bezier(.22,1,.36,1)}
+    .card:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 #111}
+    .card .v{font-family:"Syne",system-ui,sans-serif;font-size:2rem;font-weight:800;letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+    .card .l{margin-top:.4rem;font-size:.55rem;letter-spacing:.16em;text-transform:uppercase;color:#888}
+    .head{text-align:center;margin-bottom:1.75rem}
+    .head h2{margin:0;font-family:"Syne",system-ui,sans-serif;font-size:1.5rem;font-weight:800;letter-spacing:-.04em}
+    .head p{margin:.4rem 0 0;font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;color:#999}
+  </style>
+</head>
+<body>
+<div><div class="head"><h2>Card stack</h2><p>Offset shadows · hard edges</p></div>
+    <div class="stack">
+      <div class="card"><div class="v" id="d">07</div><div class="l">Days</div></div>
+      <div class="card"><div class="v" id="h">12</div><div class="l">Hours</div></div>
+      <div class="card"><div class="v" id="m">30</div><div class="l">Min</div></div>
+      <div class="card"><div class="v" id="s">45</div><div class="l">Sec</div></div>
+    </div></div>
+<script>const end=Date.now()+7*864e5+12*36e5+34*6e4+56e3;const $=id=>document.getElementById(id);function tick(){let t=Math.max(0,end-Date.now());const D=String(Math.floor(t/864e5)).padStart(2,'0'),H=String(Math.floor(t/36e5%24)).padStart(2,'0'),M=String(Math.floor(t/6e4%60)).padStart(2,'0'),S=String(Math.floor(t/1e3%60)).padStart(2,'0');$('d')&&($('d').textContent=D);$('h')&&($('h').textContent=H);$('m')&&($('m').textContent=M);$('s')&&($('s').textContent=S);}tick();setInterval(tick,1000);</script>
+</body>
+</html>

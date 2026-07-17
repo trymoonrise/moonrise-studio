@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0471
+    slug: rotate-scroll-rotate-text-08
+    title: Rotate Text 08
+    category: rotate-scroll
+    tags: rotate-scroll, rotate
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0471 — Rotate Text 08</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#fafafa;color:#111;font-family:system-ui;overflow:hidden}.track{height:240vh}.sticky{position:sticky;top:0;height:100vh;display:grid;place-items:center}.ring-text{position:relative;width:min(85vw,500px);height:min(85vw,500px)}.letter{position:absolute;left:50%;top:0;font-size:clamp(1.2rem,3vw,1.8rem);font-weight:900;transform-origin:0 250px;transform:rotate(var(--a,0deg))}
+  </style>
+</head>
+<body>
+<div class="track" id="t"><div class="sticky"><div class="ring-text" id="rt"><span class="letter" data-i="0">C</span><span class="letter" data-i="1">I</span><span class="letter" data-i="2">R</span><span class="letter" data-i="3">C</span><span class="letter" data-i="4">U</span><span class="letter" data-i="5">L</span><span class="letter" data-i="6">A</span><span class="letter" data-i="7">R</span><span class="letter" data-i="8">&nbsp;</span><span class="letter" data-i="9">T</span><span class="letter" data-i="10">Y</span><span class="letter" data-i="11">P</span><span class="letter" data-i="12">E</span><span class="letter" data-i="13">&nbsp;</span><span class="letter" data-i="14">S</span><span class="letter" data-i="15">C</span><span class="letter" data-i="16">R</span><span class="letter" data-i="17">O</span><span class="letter" data-i="18">L</span><span class="letter" data-i="19">L</span></div></div></div>
+<script>const _el=document.querySelector('#t');function prog(){const r=_el.getBoundingClientRect();return Math.min(1,Math.max(0,-r.top/(r.height-innerHeight)));}const letters=[...document.querySelectorAll('.letter')];const step=360/letters.length;letters.forEach((l,i)=>l.style.setProperty('--a',i*step+'deg'));addEventListener('scroll',()=>{const rot=prog()*180;letters.forEach((l,i)=>l.style.setProperty('--a',i*step+rot+'deg'));},{passive:true});</script>
+</body>
+</html>

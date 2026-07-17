@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1385
+    slug: experimental-glitch-text-04
+    title: Fault Line Glitch
+    category: experimental
+    tags: experimental, glitch
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1385 — Fault Line Glitch</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#030305;color:#f0f0f4;font-family:Outfit,sans-serif;overflow:hidden}
+    .glitch{position:relative;font-family:Syne,sans-serif;font-size:clamp(2.5rem,8vw,5rem);font-weight:800;letter-spacing:-.04em;text-transform:uppercase;cursor:default}
+    .glitch::before,.glitch::after{content:attr(data-text);position:absolute;inset:0;opacity:.8}
+    .glitch::before{color:#00c896;clip-path:inset(0 0 55% 0);animation:fault1 2.5s infinite linear alternate-reverse}
+    .glitch::after{color:#ff4466;clip-path:inset(45% 0 0 0);animation:fault2 2s infinite linear alternate-reverse}
+    .glitch:hover{animation:shake .3s ease}
+    .sub{font-size:.75rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(240,240,244,.3);margin-top:20px;text-align:center}
+    .scan{position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(255,255,255,.012) 3px,rgba(255,255,255,.012) 4px);pointer-events:none;animation:scanDrift 6s linear infinite}
+    @keyframes fault1{0%,100%{transform:translate(0)}20%{transform:translate(-3px,1px)}40%{transform:translate(3px,-1px)}60%{transform:translate(-2px,2px)}80%{transform:translate(2px,-2px)}}
+    @keyframes fault2{0%,100%{transform:translate(0)}25%{transform:translate(3px,-2px)}50%{transform:translate(-3px,1px)}75%{transform:translate(2px,2px)}}
+    @keyframes shake{0%,100%{transform:translate(0)}25%{transform:translate(-2px,1px)}75%{transform:translate(2px,-1px)}}
+    @keyframes scanDrift{to{transform:translateY(20px)}}
+    @media(prefers-reduced-motion:reduce){.glitch::before,.glitch::after,.scan{animation:none}}
+  </style>
+</head>
+<body>
+<div class="scan" aria-hidden="true"></div>
+<div style="text-align:center">
+  <h1 class="glitch" data-text="Fault line">Fault line</h1>
+  <p class="sub">Experimental chromatic split</p>
+</div>
+</body>
+</html>

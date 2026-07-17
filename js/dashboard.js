@@ -5,11 +5,16 @@
   const DEFAULT_GOAL = 1000;
   const MIN_GOAL = 1;
   const MAX_GOAL = 1000000;
+  const COMMISSION_RATE = 0.4;
 
   let goalTarget = DEFAULT_GOAL;
   let goalUserId = "";
   let savingGoal = false;
   let salesCount = 0;
+  let commissionEarned = 0;
+  let allProjects = [];
+  let deleteProjectId = null;
+  const PREVIEW_LIMIT = 3;
 
   function escapeHtml(s) {
     return String(s || "")
@@ -32,7 +37,21 @@
   }
 
   function formatGoal(n) {
-    return Number(n).toLocaleString();
+    return "$" + Number(n).toLocaleString("en-US", { maximumFractionDigits: 0 });
+  }
+
+  function formatCommission(n) {
+    return "$" + Number(n).toLocaleString("en-US", { maximumFractionDigits: 0 });
+  }
+
+  function commissionFromProject(project) {
+    const cents = Number(project?.price_cents);
+    if (!Number.isFinite(cents) || cents <= 0) return 0;
+    return Math.round(cents * COMMISSION_RATE) / 100;
+  }
+
+  function calcCommission(sales) {
+    return (sales || []).reduce((sum, project) => sum + commissionFromProject(project), 0);
   }
 
   function parseGoal(raw) {
@@ -65,7 +84,29 @@
   function renderSalesProgress() {
     const el = document.getElementById("dash-sales-progress");
     if (!el) return;
-    el.textContent = formatGoal(salesCount);
+    el.textContent = String(salesCount);
+  }
+
+  function renderProgress() {
+    const pct = goalTarget > 0 ? Math.min(100, Math.round((commissionEarned / goalTarget) * 100)) : 0;
+    const pctEl = document.getElementById("stat-goal-pct");
+    const ringEl = document.getElementById("stat-goal-ring");
+    const commissionEl = document.getElementById("stat-commission");
+    const labelEl = document.getElementById("stat-goal-pct-label");
+
+    if (commissionEl) commissionEl.textContent = formatCommission(commissionEarned);
+    if (pctEl) pctEl.textContent = pct + "%";
+    if (labelEl) {
+      labelEl.textContent = "of goal";
+      labelEl.setAttribute(
+        "aria-label",
+        formatCommission(commissionEarned) + " earned, " + pct + " percent of " + formatGoal(goalTarget) + " goal"
+      );
+    }
+    if (ringEl) {
+      ringEl.style.strokeDasharray = "100";
+      ringEl.style.strokeDashoffset = String(100 - pct);
+    }
   }
 
   function renderGoal() {
@@ -75,28 +116,19 @@
       goalEl.textContent = formatGoal(goalTarget);
       goalEl.setAttribute(
         "aria-label",
-        "Sales goal " + formatGoal(goalTarget) + ", click to edit"
+        "Commission goal " + formatGoal(goalTarget) + ", click to edit"
       );
     }
     if (input) input.value = String(goalTarget);
     renderSalesProgress();
+    renderProgress();
   }
 
-  function setStats(total, published, sales) {
-    salesCount = sales;
-    const closeRate = total > 0 ? Math.round((sales / total) * 100) : 0;
-    const closeEl = document.getElementById("stat-close");
-    const ringEl = document.getElementById("stat-close-ring");
-    const publishedEl = document.getElementById("stat-published");
-
+  function setStats(salesProjects) {
+    const sales = (salesProjects || []).filter(isSale);
+    salesCount = sales.length;
+    commissionEarned = calcCommission(sales);
     renderGoal();
-    if (closeEl) closeEl.textContent = closeRate + "%";
-    if (ringEl) {
-      const clamped = Math.max(0, Math.min(100, closeRate));
-      ringEl.style.strokeDasharray = "100";
-      ringEl.style.strokeDashoffset = String(100 - clamped);
-    }
-    if (publishedEl) publishedEl.textContent = String(published);
   }
 
   async function persistGoal(value) {
@@ -244,49 +276,124 @@
     host.innerHTML = sales.slice(0, 6).map(saleRow).join("");
   }
 
-  function projectRow(p) {
+  function projectPreview(p) {
+    const name = p.business_name || "Untitled";
+    const hasHtml = !!(p.html && String(p.html).trim());
+    const shot = hasHtml
+      ? '<div class="ms-dash-preview-shot" aria-hidden="true">' +
+        '<iframe class="ms-dash-preview-iframe" data-preview-id="' +
+        escapeAttr(p.id) +
+        '" title="" tabindex="-1" loading="lazy" sandbox=""></iframe></div>'
+      : '<div class="ms-dash-preview-shot ms-dash-preview-shot--empty" aria-hidden="true">' +
+        '<span class="ms-dash-preview-placeholder">' +
+        escapeHtml(name.slice(0, 1).toUpperCase()) +
+        "</span></div>";
+
     return (
-      '<a class="ms-dash-row" href="builder.html?project_id=' +
+      '<article class="ms-dash-preview">' +
+      shot +
+      '<button type="button" class="ms-dash-preview-delete" data-project-delete="' +
+      escapeAttr(p.id) +
+      '" aria-label="Delete ' +
+      escapeAttr(name) +
+      '">×</button>' +
+      '<a class="ms-dash-preview-meta" href="builder.html?project_id=' +
       encodeURIComponent(p.id) +
       '">' +
-      '<div class="ms-dash-row-main">' +
-      '<span class="ms-dash-row-name">' +
-      escapeHtml(p.business_name || "Untitled") +
+      '<span class="ms-dash-preview-name">' +
+      escapeHtml(name) +
       "</span>" +
-      '<span class="ms-dash-row-date">' +
-      escapeHtml(formatDate(p.updated_at)) +
-      "</span>" +
-      "</div>" +
       '<span class="ms-dash-pill ms-dash-pill--' +
       statusTone(p) +
       '">' +
       escapeHtml(statusLabel(p)) +
       "</span>" +
-      "</a>"
+      "</a>" +
+      '<a class="ms-dash-preview-hit" href="builder.html?project_id=' +
+      encodeURIComponent(p.id) +
+      '" aria-label="Open ' +
+      escapeAttr(name) +
+      '"></a>' +
+      "</article>"
     );
   }
 
-  function renderProjects(list) {
+  function escapeAttr(s) {
+    return String(s || "")
+      .replace(/&/g, "&amp;")
+      .replace(/"/g, "&quot;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/'/g, "&#39;");
+  }
+
+  async function fetchPreviewHtml(projects) {
+    const slice = (projects || []).slice(0, PREVIEW_LIMIT);
+    if (!slice.length) return [];
+    const client = window.SiteSupabase?.getClient?.();
+    if (!client) return slice;
+    try {
+      const { data, error } = await window.StudioAuth.withTimeout(
+        client
+          .from("projects")
+          .select("id,html")
+          .in(
+            "id",
+            slice.map((p) => p.id)
+          ),
+        6000,
+        "Project previews"
+      );
+      if (error) throw error;
+      const map = Object.fromEntries((data || []).map((d) => [d.id, d.html || ""]));
+      return slice.map((p) => ({ ...p, html: map[p.id] || "" }));
+    } catch (e) {
+      console.warn("fetchPreviewHtml", e);
+      return slice;
+    }
+  }
+
+  function mountPreviewFrames(projects) {
+    const byId = Object.fromEntries((projects || []).map((p) => [p.id, p.html || ""]));
+    document.querySelectorAll(".ms-dash-preview-iframe[data-preview-id]").forEach((frame) => {
+      const id = frame.getAttribute("data-preview-id");
+      const html = byId[id];
+      if (html) frame.srcdoc = html;
+    });
+  }
+
+  async function renderProjects(list) {
     const host = document.getElementById("dash-projects-list");
     const countEl = document.getElementById("dash-projects-count");
+    const card = document.querySelector(".ms-dash-projects-card");
+    const btn = document.getElementById("dash-projects-toggle");
+    const panel = document.getElementById("dash-projects-panel");
     const projects = list || [];
+    allProjects = projects.slice();
     if (countEl) {
       countEl.textContent =
         projects.length + " " + plural(projects.length, "project", "projects");
     }
     if (!host) return;
+
     if (!projects.length) {
-      host.innerHTML =
-        '<div class="ms-dash-empty">' +
-        "<p>No projects yet</p>" +
-        '<div class="ms-dash-empty-actions">' +
-        '<a class="ms-btn ms-dash-btn" href="builder.html">Start a build</a>' +
-        '<a class="ms-btn ms-btn-secondary ms-dash-btn-ghost" href="leads.html">Find a lead</a>' +
-        "</div>" +
-        "</div>";
+      host.innerHTML = "";
+      card?.classList.add("is-empty");
+      card?.classList.remove("is-open");
+      if (btn) {
+        btn.setAttribute("aria-expanded", "false");
+        btn.disabled = true;
+      }
+      if (panel) panel.hidden = true;
       return;
     }
-    host.innerHTML = projects.map(projectRow).join("");
+
+    card?.classList.remove("is-empty");
+    if (btn) btn.disabled = false;
+    host.innerHTML = "";
+    const withHtml = await fetchPreviewHtml(projects);
+    host.innerHTML = withHtml.map(projectPreview).join("");
+    mountPreviewFrames(withHtml);
   }
 
   function bindProjectsToggle() {
@@ -294,10 +401,104 @@
     const panel = document.getElementById("dash-projects-panel");
     if (!btn || !panel) return;
     btn.addEventListener("click", () => {
+      if (btn.disabled || btn.closest(".ms-dash-projects-card")?.classList.contains("is-empty")) {
+        return;
+      }
       const open = btn.getAttribute("aria-expanded") === "true";
       btn.setAttribute("aria-expanded", open ? "false" : "true");
       panel.hidden = open;
       btn.closest(".ms-dash-island")?.classList.toggle("is-open", !open);
+    });
+  }
+
+  function openDeleteDialog(project) {
+    const dialog = document.getElementById("dash-project-delete-dialog");
+    const message = document.getElementById("dash-project-delete-message");
+    const error = document.getElementById("dash-project-delete-error");
+    if (!dialog || !project) return;
+    deleteProjectId = project.id;
+    if (error) {
+      error.hidden = true;
+      error.textContent = "";
+    }
+    if (message) {
+      message.textContent =
+        'Delete "' +
+        (project.business_name || "Untitled") +
+        '"? This cannot be undone.';
+    }
+    dialog.showModal();
+  }
+
+  function closeDeleteDialog() {
+    const dialog = document.getElementById("dash-project-delete-dialog");
+    deleteProjectId = null;
+    dialog?.close();
+  }
+
+  async function confirmDeleteProject() {
+    const error = document.getElementById("dash-project-delete-error");
+    const submit = document.getElementById("dash-project-delete-submit");
+    if (!deleteProjectId) return;
+    if (error) {
+      error.hidden = true;
+      error.textContent = "";
+    }
+    if (submit) submit.disabled = true;
+    try {
+      const user = await window.StudioAuth.getUser();
+      if (!user) throw new Error("Sign in required");
+      const client = window.SiteSupabase.getClient();
+      const { error: dbError } = await window.StudioAuth.withTimeout(
+        client.from("projects").delete().eq("id", deleteProjectId).eq("user_id", user.id),
+        6000,
+        "Delete project"
+      );
+      if (dbError) throw dbError;
+      allProjects = allProjects.filter((p) => p.id !== deleteProjectId);
+      const sales = allProjects.filter(isSale);
+      setStats(sales);
+      renderSales(allProjects);
+      await renderProjects(allProjects);
+      closeDeleteDialog();
+    } catch (e) {
+      if (error) {
+        error.hidden = false;
+        error.textContent = e.message || "Could not delete project.";
+      }
+    } finally {
+      if (submit) submit.disabled = false;
+    }
+  }
+
+  function bindProjectActions() {
+    document.getElementById("dash-projects-list")?.addEventListener("click", (e) => {
+      const deleteBtn = e.target.closest("[data-project-delete]");
+      if (deleteBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const id = deleteBtn.getAttribute("data-project-delete") || "";
+        const project = allProjects.find((p) => p.id === id);
+        if (project) openDeleteDialog(project);
+        return;
+      }
+    });
+
+    document.getElementById("dash-project-delete-cancel")?.addEventListener("click", () => {
+      closeDeleteDialog();
+    });
+
+    document.getElementById("dash-project-delete-submit")?.addEventListener("click", () => {
+      void confirmDeleteProject();
+    });
+
+    document.getElementById("dash-project-delete-dialog")?.addEventListener("cancel", (e) => {
+      e.preventDefault();
+      closeDeleteDialog();
+    });
+
+    document.getElementById("dash-project-delete-dialog")?.addEventListener("click", (e) => {
+      if (e.target === e.currentTarget) closeDeleteDialog();
     });
   }
 
@@ -307,9 +508,10 @@
       goalUserId = "";
       goalTarget = DEFAULT_GOAL;
       salesCount = 0;
-      setStats(0, 0, 0);
+      commissionEarned = 0;
+      setStats([]);
       renderSales([]);
-      renderProjects([]);
+      await renderProjects([]);
       return;
     }
 
@@ -320,7 +522,7 @@
     try {
       const query = client
         .from("projects")
-        .select("id,business_name,status,watermark_enabled,updated_at,vercel_url")
+        .select("id,business_name,status,watermark_enabled,updated_at,vercel_url,price_cents")
         .eq("user_id", user.id)
         .order("updated_at", { ascending: false })
         .limit(100);
@@ -333,7 +535,9 @@
       list = data || [];
     } catch (e) {
       console.warn(e);
-      setStats(0, 0, 0);
+      commissionEarned = 0;
+      salesCount = 0;
+      renderGoal();
       const host = document.getElementById("dash-sales-list");
       if (host) {
         host.innerHTML =
@@ -342,15 +546,14 @@
           '<a class="ms-btn ms-dash-btn" href="builder.html">Start a build</a>' +
           "</div></div>";
       }
-      renderProjects([]);
+      await renderProjects([]);
       return;
     }
 
-    const published = list.filter((p) => p.status === "published").length;
-    const sales = list.filter(isSale).length;
-    setStats(list.length, published, sales);
+    const sales = list.filter(isSale);
+    setStats(sales);
     renderSales(list);
-    renderProjects(list);
+    await renderProjects(list);
   }
 
   let started = false;
@@ -358,8 +561,9 @@
   function start() {
     if (started) return;
     started = true;
-    bindProjectsToggle();
     bindGoalEditor();
+    bindProjectsToggle();
+    bindProjectActions();
     load().catch((e) => console.warn(e));
   }
 

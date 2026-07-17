@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1020
+    slug: announcements-cta-banner-08
+    title: Ticker Announcement Strip
+    category: announcements
+    tags: announcements, ticker, banner, cta
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1020 — Ticker Announcement Strip</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0d0f14;color:#e8ebf0;font-family:Outfit,sans-serif;padding:2rem}
+    .banner{width:min(720px,100%);background:#141820;border:1px solid rgba(255,255,255,.08);border-radius:8px;overflow:hidden;display:grid;grid-template-columns:auto 1fr auto}
+    .badge{padding:1rem 1.25rem;background:#38bdf8;color:#0d0f14;font-family:Syne,sans-serif;font-weight:800;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;display:grid;place-items:center;animation:pulse-badge 2s ease infinite}
+    .ticker-wrap{overflow:hidden;padding:1rem 0;border-inline:1px solid rgba(255,255,255,.06)}
+    .ticker{display:flex;width:max-content;gap:3rem;animation:scroll 20s linear infinite;align-items:center}
+    .item{display:flex;align-items:center;gap:.75rem;white-space:nowrap;font-size:.85rem;color:rgba(232,235,240,.7)}
+    .item strong{color:#e8ebf0;font-weight:500}
+    .dot{width:4px;height:4px;border-radius:50%;background:rgba(56,189,248,.5)}
+    .cta{padding:1rem 1.5rem;display:grid;place-items:center}
+    .cta a{font-family:Syne,sans-serif;font-size:.8rem;font-weight:700;color:#38bdf8;text-decoration:none;letter-spacing:.05em;transition:opacity .3s}
+    .cta a:hover{opacity:.7}
+    @keyframes scroll{to{transform:translateX(-50%)}}
+    @keyframes pulse-badge{0%,100%{background:#38bdf8}50%{background:#0ea5e9}}
+    @media(prefers-reduced-motion:reduce){.ticker,.badge{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="banner">
+    <div class="badge">New</div>
+    <div class="ticker-wrap">
+      <div class="ticker">
+        <span class="item"><strong>v4.2 released</strong> — Real-time collaboration now live</span><span class="dot"></span>
+        <span class="item"><strong>Webinar</strong> — March 28, 2pm UTC</span><span class="dot"></span>
+        <span class="item"><strong>API update</strong> — GraphQL endpoints deprecated</span><span class="dot"></span>
+        <span class="item"><strong>v4.2 released</strong> — Real-time collaboration now live</span><span class="dot"></span>
+        <span class="item"><strong>Webinar</strong> — March 28, 2pm UTC</span><span class="dot"></span>
+        <span class="item"><strong>API update</strong> — GraphQL endpoints deprecated</span><span class="dot"></span>
+      </div>
+    </div>
+    <div class="cta"><a href="#">Learn more →</a></div>
+  </div>
+</body>
+</html>

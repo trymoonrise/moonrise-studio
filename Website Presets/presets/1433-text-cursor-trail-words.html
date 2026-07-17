@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1433
+    slug: text-cursor-trail-words
+    title: Cursor Trail Words
+    category: text
+    tags: text, cursor, trail
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1433 — Cursor Trail Words</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#0d0d0f;color:#fff;font-size:1.5rem;cursor:crosshair}
+  </style>
+</head>
+<body>
+<p>Move cursor to leave words</p>
+<script>const words=['design','build','ship','create'];document.addEventListener('mousemove',e=>{if(Math.random()>.92){const s=document.createElement('span');s.textContent=words[Math.floor(Math.random()*words.length)];s.style.cssText='position:fixed;left:'+e.clientX+'px;top:'+e.clientY+'px;color:#6c8cff;font-size:12px;font-weight:700;pointer-events:none;animation:fade 1s forwards';document.body.appendChild(s);setTimeout(()=>s.remove(),1000);}});const st=document.createElement('style');st.textContent='@keyframes fade{to{opacity:0;transform:translateY(-20px)}}';document.head.appendChild(st);</script>
+</body>
+</html>

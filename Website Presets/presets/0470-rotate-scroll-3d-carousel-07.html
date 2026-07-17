@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0470
+    slug: rotate-scroll-3d-carousel-07
+    title: Helix Carousel Drift
+    category: rotate-scroll
+    tags: rotate-scroll, 3d
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0470 — Helix Carousel Drift</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;background:#030306;color:#eaeaf0;font-family:Outfit,sans-serif}
+    .top,.bot{height:25vh}.scroll-zone{height:300vh}
+    .viewport{position:sticky;top:0;height:100vh;display:grid;place-items:center;perspective:1200px;overflow:hidden}
+    .helix{width:min(600px,95vw);height:360px;position:relative;transform-style:preserve-3d}
+    .panel{position:absolute;left:50%;top:50%;width:220px;height:280px;margin:-140px -110px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:#0e0e14;overflow:hidden;backface-visibility:hidden;transition:filter .3s}
+    .panel img{width:100%;height:140px;object-fit:cover;display:block;opacity:.85}
+    .panel figcaption{padding:16px}
+    .panel figcaption b{display:block;font-family:Syne,sans-serif;font-size:1.1rem;letter-spacing:-.02em}
+    .panel figcaption span{font-size:.75rem;color:rgba(255,255,255,.4)}
+    .panel.focus{filter:brightness(1.2);border-color:rgba(100,220,255,.4)}
+    .readout{position:absolute;bottom:10%;font:500 .65rem Outfit,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:rgba(100,220,255,.6)}
+  </style>
+</head>
+<body>
+<div class="top"></div>
+<div class="scroll-zone" id="zone">
+  <div class="viewport">
+    <div class="helix" id="helix"></div>
+    <p class="readout" id="readout">Panel 01 / 05</p>
+  </div>
+</div>
+<div class="bot"></div>
+<script>
+const helix=document.getElementById('helix'),readout=document.getElementById('readout');
+const items=[{t:'Neural',s:'Deep learning stack'},{t:'Vector',s:'Embedding pipeline'},{t:'Render',s:'GPU compute node'},{t:'Sync',s:'Distributed cache'},{t:'Edge',s:'Low-latency gateway'}];
+items.forEach(d=>{const f=document.createElement('figure');f.className='panel';f.innerHTML=`<img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""><figcaption><b>${d.t}</b><span>${d.s}</span></figcaption>`;helix.appendChild(f);});
+const panels=[...helix.querySelectorAll('.panel')],n=panels.length;
+function tick(){const r=document.getElementById('zone').getBoundingClientRect();const p=Math.min(1,Math.max(0,-r.top/(r.height-window.innerHeight)));const rot=p*360;panels.forEach((el,i)=>{const a=(i/n)*360+rot;const y=Math.sin(a*Math.PI/180)*40;el.style.transform=`rotateY(${a}deg) translateZ(260px) translateY(${y}px)`;el.classList.toggle('focus',Math.abs(((a%360)+360)%360)<25||Math.abs(((a%360)+360)%360)>335);});readout.textContent=`Panel ${String(Math.round(p*(n-1))+1).padStart(2,'0')} / ${String(n).padStart(2,'0')}`;}
+window.addEventListener('scroll',tick,{passive:true});tick();
+</script>
+</body>
+</html>

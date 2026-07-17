@@ -1,0 +1,30 @@
+﻿/* Shared enhancement layer for deliberately differentiated duplicate presets. */
+body[data-dx]{isolation:isolate}
+.dx-layer{position:fixed;inset:0;z-index:9990;pointer-events:none;overflow:hidden;perspective:900px;mix-blend-mode:normal}
+.dx-noise{position:absolute;inset:0;opacity:.045;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.92' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.dx-label{position:absolute;right:16px;bottom:14px;padding:7px 10px;border:1px solid color-mix(in srgb,currentColor 24%,transparent);border-radius:999px;background:color-mix(in srgb,Canvas 72%,transparent);backdrop-filter:blur(10px);font:500 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:color-mix(in srgb,CanvasText 60%,transparent)}
+.dx-shape{position:absolute;will-change:transform,opacity}
+body[data-dx="orbit"] .dx-shape{left:50%;top:50%;width:min(62vmin,520px);aspect-ratio:1;border:1px dashed color-mix(in srgb,#6c8cff 44%,transparent);border-radius:50%;animation:dx-spin 28s linear infinite}
+body[data-dx="orbit"] .dx-shape::before,body[data-dx="orbit"] .dx-shape::after{content:'';position:absolute;border-radius:50%;border:1px solid color-mix(in srgb,#ff6cb0 28%,transparent)}
+body[data-dx="orbit"] .dx-shape::before{inset:16%;animation:dx-spin 17s linear infinite reverse}
+body[data-dx="orbit"] .dx-shape::after{width:12px;height:12px;left:50%;top:-6px;background:#6c8cff;box-shadow:0 0 18px #6c8cff;border:0}
+body[data-dx="scan"] .dx-layer{background:repeating-linear-gradient(0deg,transparent 0 4px,rgba(80,255,180,.035) 4px 5px)}
+body[data-dx="scan"] .dx-shape{inset:-20%;background:linear-gradient(110deg,transparent 42%,rgba(80,255,180,.12) 50%,transparent 58%);animation:dx-sweep 5s ease-in-out infinite}
+body[data-dx="blob"] .dx-shape{width:48vmax;height:48vmax;right:-20vmax;top:-20vmax;background:linear-gradient(135deg,rgba(108,140,255,.18),rgba(255,108,176,.15));filter:blur(35px);border-radius:62% 38% 55% 45%/45% 60% 40% 55%;animation:dx-morph 10s ease-in-out infinite}
+body[data-dx="shards"] .dx-shape{inset:0;background:linear-gradient(135deg,transparent 0 43%,rgba(255,255,255,.08) 43% 43.5%,transparent 43.5% 100%);clip-path:polygon(0 0,100% 0,76% 100%,18% 100%);animation:dx-breathe 6s ease-in-out infinite}
+body[data-dx="dots"] .dx-layer{background-image:radial-gradient(circle,rgba(120,120,140,.18) 1px,transparent 1.5px);background-size:20px 20px;animation:dx-grid 18s linear infinite}
+body[data-dx="dots"] .dx-shape{width:130px;height:130px;left:8%;top:12%;border:1px solid rgba(255,108,176,.28);border-radius:50%;box-shadow:0 0 0 18px rgba(108,140,255,.04),0 0 0 36px rgba(108,140,255,.025);animation:dx-float 7s ease-in-out infinite}
+body[data-dx="frame"] .dx-shape{inset:14px;border:1px solid color-mix(in srgb,CanvasText 18%,transparent);clip-path:polygon(0 0,26% 0,26% 1px,74% 1px,74% 0,100% 0,100% 30%,calc(100% - 1px) 30%,calc(100% - 1px) 70%,100% 70%,100% 100%,74% 100%,74% calc(100% - 1px),26% calc(100% - 1px),26% 100%,0 100%,0 70%,1px 70%,1px 30%,0 30%);animation:dx-breathe 5s ease-in-out infinite}
+body[data-dx="marquee"] .dx-shape{left:-10%;right:-10%;top:12%;height:42px;border-block:1px solid rgba(120,120,140,.16);transform:rotate(-5deg);overflow:hidden}
+body[data-dx="marquee"] .dx-shape::after{content:attr(data-text)' · ' attr(data-text)' · ' attr(data-text)' · ' attr(data-text);display:block;width:max-content;white-space:nowrap;padding:10px;font:700 15px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:rgba(120,120,140,.22);animation:dx-marquee 18s linear infinite}
+body[data-dx="depth"] .dx-layer::before,body[data-dx="depth"] .dx-layer::after{content:'';position:absolute;left:50%;top:50%;width:58vmin;aspect-ratio:1;border:1px solid rgba(108,140,255,.22);transform:translate(-50%,-50%) rotateX(62deg) rotateZ(45deg);animation:dx-depth 8s ease-in-out infinite}
+body[data-dx="depth"] .dx-layer::after{width:38vmin;border-color:rgba(255,108,176,.2);animation-delay:-4s}
+@keyframes dx-spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes dx-sweep{0%,20%{transform:translateX(-70%)}80%,100%{transform:translateX(70%)}}
+@keyframes dx-morph{0%,100%{transform:translate(0,0) rotate(0);border-radius:62% 38% 55% 45%/45% 60% 40% 55%}50%{transform:translate(-8%,10%) rotate(24deg);border-radius:38% 62% 42% 58%/60% 40% 62% 38%}}
+@keyframes dx-breathe{50%{transform:scale(1.015);opacity:.65}}
+@keyframes dx-grid{to{background-position:20px 20px}}
+@keyframes dx-float{50%{transform:translate(16px,22px) rotate(18deg)}}
+@keyframes dx-marquee{to{transform:translateX(-50%)}}
+@keyframes dx-depth{0%,100%{transform:translate(-50%,-50%) rotateX(62deg) rotateZ(35deg) translateZ(0)}50%{transform:translate(-50%,-50%) rotateX(48deg) rotateZ(55deg) translateZ(80px)}}
+@media(prefers-reduced-motion:reduce){.dx-layer,.dx-layer *{animation:none!important}}

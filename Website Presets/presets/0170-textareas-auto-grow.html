@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0170
+    slug: textareas-auto-grow
+    title: Auto Grow Textarea
+    category: textareas
+    tags: textareas, modern, experimental, exaggerated
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0170 — Auto Grow Textarea</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f5f1ea;font-family:Inter,system-ui,sans-serif;overflow:hidden;padding:24px;color:#111}
+    textarea{font:inherit;border:0;outline:0;resize:none;background:transparent;color:inherit;width:100%}
+    button{font:inherit;border:0;cursor:pointer}
+    .scene{position:relative;width:min(520px,92vw)}
+    .halo{position:absolute;inset:-70px;background:radial-gradient(circle at 20% 10%,#ff8a65,transparent 35%),radial-gradient(circle at 90% 80%,#6c8cff,transparent 38%);filter:blur(34px);opacity:.38;animation:float 9s ease-in-out infinite alternate}.card{position:relative;background:rgba(255,255,255,.78);border:1px solid rgba(20,20,20,.12);border-radius:34px;padding:22px;box-shadow:0 30px 80px rgba(48,38,28,.16);backdrop-filter:blur(18px)}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.eyebrow{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#8b7c6a}.grow{min-height:96px;max-height:320px;font-size:32px;line-height:1.05;font-weight:800;letter-spacing:-.06em}.grow::placeholder{color:#c9beb1}.meter{height:5px;border-radius:99px;background:#ede3d8;overflow:hidden;margin-top:18px}.bar{height:100%;width:30%;background:#111;border-radius:inherit;transition:width .25s ease}@keyframes float{to{transform:translate(12px,-10px) scale(1.04)}}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <div class="scene"><div class="halo"></div><section class="card"><div class="top"><span class="eyebrow">Auto grow</span><span class="eyebrow" id="lines">1 line</span></div><textarea class="grow" id="ta" rows="1" placeholder="Write something huge">This textarea expands like a soft poster.</textarea><div class="meter"><div class="bar" id="bar"></div></div></section></div>
+  <script>const ta=document.getElementById('ta'),lines=document.getElementById('lines'),bar=document.getElementById('bar');function sync(){ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';const n=Math.max(1,Math.round(ta.scrollHeight/38));lines.textContent=n+' line'+(n>1?'s':'');bar.style.width=Math.min(100,20+n*12)+'%';}ta.addEventListener('input',sync);sync();</script>
+</body>
+</html>

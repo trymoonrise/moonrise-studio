@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1314
+    slug: backgrounds-gradient-mesh-bg-14
+    title: Gradient Mesh Bg 14
+    category: backgrounds
+    tags: backgrounds, gradient
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1314 — Gradient Mesh Bg 14</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');body{margin:0;min-height:100vh;display:grid;place-items:center;overflow:hidden;position:relative;background:#0d0d0d;color:#fff;font-family:"DM Sans",system-ui,-apple-system,sans-serif}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+    .layer{position:absolute;inset:-30%;background:
+      radial-gradient(circle at 20% 30%,rgba(255,255,255,.12),transparent 40%),
+      radial-gradient(circle at 80% 20%,rgba(255,255,255,.08),transparent 35%),
+      radial-gradient(circle at 60% 80%,rgba(255,255,255,.1),transparent 45%),
+      radial-gradient(circle at 10% 70%,rgba(255,255,255,.05),transparent 30%);
+      animation:sway 20s ease-in-out infinite alternate;filter:blur(40px)}
+    @keyframes sway{to{transform:rotate(8deg) scale(1.1)}}
+    
+.label{position:relative;z-index:2;text-align:center;padding:2rem;pointer-events:none}
+.kicker{margin:0 0 .75rem;font-size:.65rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;opacity:.45}
+h1{margin:0;font-family:"Syne",system-ui,sans-serif;font-size:clamp(1.85rem,5vw,2.85rem);font-weight:800;letter-spacing:-.045em;line-height:1.05}
+.sub{margin:.7rem 0 0;font-size:.9rem;opacity:.5;font-weight:400}
+  </style>
+</head>
+<body>
+<div class="layer" aria-hidden="true"></div><div class="label"><p class="kicker">Background</p><h1>Gradient mesh</h1><p class="sub">Layered light in sway.</p></div>
+
+</body>
+</html>

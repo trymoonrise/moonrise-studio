@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1203
+    slug: countdown-block-countdown-09
+    title: Block Countdown 09
+    category: countdown
+    tags: countdown, block
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1203 — Block Countdown 09</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');*{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#111;color:#fff;font-family:"DM Sans",system-ui,-apple-system,sans-serif;padding:2rem}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.marq-track{animation:none!important}}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:min(100%,480px)}
+    .block{aspect-ratio:1;border:2px solid #fff;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transform:translateY(20px);animation:up .6s cubic-bezier(.22,1,.36,1) forwards}
+    .block:nth-child(1){animation-delay:.05s}.block:nth-child(2){animation-delay:.12s}.block:nth-child(3){animation-delay:.19s}.block:nth-child(4){animation-delay:.26s}
+    .block:nth-child(odd){background:#fff;color:#111}
+    .block .v{font-family:"Syne",system-ui,sans-serif;font-size:clamp(1.8rem,5vw,2.8rem);font-weight:800;letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+    .block .l{font-size:.55rem;letter-spacing:.14em;text-transform:uppercase;margin-top:.25rem;opacity:.5}
+    @keyframes up{to{opacity:1;transform:none}}
+    .marq{margin-top:1.5rem;overflow:hidden;width:min(100%,480px)}
+    .marq-track{display:flex;gap:1.5rem;width:max-content;animation:scroll 16s linear infinite;font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:#444;font-weight:700}
+    @keyframes scroll{to{transform:translateX(-50%)}}
+  </style>
+</head>
+<body>
+<div><div class="grid">
+      <div class="block"><span class="v" id="d">02</span><span class="l">Days</span></div>
+      <div class="block"><span class="v" id="h">18</span><span class="l">Hrs</span></div>
+      <div class="block"><span class="v" id="m">44</span><span class="l">Min</span></div>
+      <div class="block"><span class="v" id="s">11</span><span class="l">Sec</span></div>
+    </div>
+    <div class="marq" aria-hidden="true"><div class="marq-track"><span>Block · Brutal · Grid · Block · Brutal · Grid · </span><span>Block · Brutal · Grid · Block · Brutal · Grid · </span></div></div></div>
+<script>const end=Date.now()+2*864e5+12*36e5+34*6e4+56e3;const $=id=>document.getElementById(id);function tick(){let t=Math.max(0,end-Date.now());const D=String(Math.floor(t/864e5)).padStart(2,'0'),H=String(Math.floor(t/36e5%24)).padStart(2,'0'),M=String(Math.floor(t/6e4%60)).padStart(2,'0'),S=String(Math.floor(t/1e3%60)).padStart(2,'0');$('d')&&($('d').textContent=D);$('h')&&($('h').textContent=H);$('m')&&($('m').textContent=M);$('s')&&($('s').textContent=S);}tick();setInterval(tick,1000);</script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1603
+    slug: 3d-mouse-magnetic-cube
+    title: 3D Magnetic Cube
+    category: 3d-mouse
+    tags: 3d, mouse, magnetic, cube
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1603 — 3D Magnetic Cube</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#06070c;perspective:900px;overflow:hidden;font-family:Syne,sans-serif}
+    .hint{position:fixed;bottom:1.4rem;font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.35)}
+    .field{position:relative;width:280px;height:280px;transform-style:preserve-3d}
+    .cube{position:absolute;left:50%;top:50%;width:90px;height:90px;margin:-45px;transform-style:preserve-3d;transform:translate3d(var(--x,0px),var(--y,0px),var(--z,0px)) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg))}
+    .face{position:absolute;inset:0;border:1px solid rgba(255,255,255,.25);display:grid;place-items:center;color:#fff;font-weight:800}
+    .a{background:linear-gradient(145deg,#6c8cff,#3147c8);transform:translateZ(45px)}
+    .b{background:linear-gradient(145deg,#ff6bcb,#a31f6e);transform:rotateY(90deg) translateZ(45px)}
+    .c{background:linear-gradient(145deg,#7ee0c3,#1f8a6e);transform:rotateY(180deg) translateZ(45px)}
+    .d{background:linear-gradient(145deg,#ffd16c,#b07a12);transform:rotateY(-90deg) translateZ(45px)}
+    .e{background:linear-gradient(145deg,#b06cff,#5520b8);transform:rotateX(90deg) translateZ(45px)}
+    .f{background:#111;transform:rotateX(-90deg) translateZ(45px)}
+    .magnet{position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 0 20px #6c8cff;left:var(--mx,50%);top:var(--my,50%);transform:translate(-50%,-50%);pointer-events:none;opacity:.7}
+  </style>
+</head>
+<body>
+  <div class="field" id="field">
+    <div class="magnet" id="magnet"></div>
+    <div class="cube" id="cube">
+      <div class="face a">N</div><div class="face b">E</div><div class="face c">S</div>
+      <div class="face d">W</div><div class="face e">+</div><div class="face f">−</div>
+    </div>
+  </div>
+  <div class="hint">Magnetic pull</div>
+  <script>
+    const field=document.getElementById('field'),cube=document.getElementById('cube'),magnet=document.getElementById('magnet');
+    let mx=.5,my=.5,x=0,y=0,z=0,rx=-20,ry=30,tx=0,ty=0,tz=0,trx=-20,try_=30;
+    field.addEventListener('pointermove',e=>{
+      const r=field.getBoundingClientRect();
+      mx=(e.clientX-r.left)/r.width;my=(e.clientY-r.top)/r.height;
+      tx=(mx-.5)*160;ty=(my-.5)*160;tz=40;trx=(.5-my)*40;try_=(mx-.5)*50;
+    });
+    field.addEventListener('pointerleave',()=>{tx=0;ty=0;tz=0;trx=-20;try_=30});
+    (function loop(){
+      x+=(tx-x)*.1;y+=(ty-y)*.1;z+=(tz-z)*.1;rx+=(trx-rx)*.1;ry+=(try_-ry)*.1;
+      cube.style.setProperty('--x',x+'px');cube.style.setProperty('--y',y+'px');cube.style.setProperty('--z',z+'px');
+      cube.style.setProperty('--rx',rx+'deg');cube.style.setProperty('--ry',ry+'deg');
+      magnet.style.setProperty('--mx',mx*100+'%');magnet.style.setProperty('--my',my*100+'%');
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>

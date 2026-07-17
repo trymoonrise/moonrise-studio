@@ -1,0 +1,31 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0150
+    slug: accordions-single-open
+    title: Single Open Accordion
+    category: accordions
+    tags: accordions, single
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0150 — Single Open Accordion</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap');
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f6f5f1;padding:2rem;font-family:Inter,sans-serif;color:#111}.acc{width:min(460px,100%);border-radius:24px;background:#fff;border:1px solid #e7e4db;overflow:hidden;box-shadow:0 18px 40px rgba(0,0,0,.05)}.item+.item{border-top:1px solid #ece8df}.trigger{width:100%;display:grid;grid-template-columns:1fr auto;gap:1rem;align-items:center;padding:1.15rem 1.2rem;background:none;border:0;font:600 .95rem Inter,sans-serif;text-align:left;color:#111;cursor:pointer}.meta{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:#8b877d}.icon{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:#f1efe9;transition:transform .35s ease,background .35s ease}.icon::before{content:'+'}.panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows .38s cubic-bezier(.22,1,.36,1)}.panel>div{overflow:hidden}.panel p{margin:0;padding:0 1.2rem 1.15rem;color:#666055;line-height:1.65;font-size:.88rem}.item.open .panel{grid-template-rows:1fr}.item.open .icon{transform:rotate(45deg);background:#111;color:#fff}@media(prefers-reduced-motion:reduce){.panel,.icon{transition:none}}
+  </style>
+</head>
+<body>
+  <div class="acc" id="acc">
+    <div class="item open"><button class="trigger"><span><span class="meta">Intro</span><br>Why one section at a time?</span><span class="icon"></span></button><div class="panel"><div><p>Single-open behavior keeps the layout calm. Expanding one answer quietly collapses the previous one.</p></div></div></div>
+    <div class="item"><button class="trigger"><span><span class="meta">Flow</span><br>What makes it feel experimental?</span><span class="icon"></span></button><div class="panel"><div><p>The interaction is minimal, but the expansion uses a soft grid-row reveal instead of a hard max-height jump.</p></div></div></div>
+    <div class="item"><button class="trigger"><span><span class="meta">Use</span><br>Where does this fit best?</span><span class="icon"></span></button><div class="panel"><div><p>FAQ blocks, feature explanations, pricing details, and any compact interface that needs quiet motion.</p></div></div></div>
+  </div>
+  <script>
+    document.querySelectorAll('.item .trigger').forEach((button)=>button.addEventListener('click',()=>{const item=button.parentElement;document.querySelectorAll('.item').forEach((el)=>el.classList.toggle('open',el===item?!el.classList.contains('open'):false));}));
+  </script>
+</body>
+</html>

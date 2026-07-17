@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1788
+    slug: minimal-3d-line-tunnel
+    title: Line Tunnel Steer
+    category: 3d-effects
+    tags: 3d, minimal, tunnel, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1788 — Line Tunnel Steer</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Outfit:wght@300&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#070707;perspective:800px;overflow:hidden;font-family:Outfit,sans-serif;color:#fff}
+    .tunnel{position:relative;width:240px;height:240px;transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg))}
+    .frame{position:absolute;inset:0;border:1px solid rgba(255,255,255,.35);transform:translateZ(calc(var(--i)*-70px)) scale(calc(1+var(--i)*.12));opacity:calc(1 - var(--i)*.07)}
+    .title{position:fixed;top:1.5rem;font-family:Syne,sans-serif;font-weight:800;letter-spacing:-.04em}
+    .label{position:fixed;bottom:1.5rem;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;opacity:.35;font-weight:300}
+  </style>
+</head>
+<body>
+  <div class="title">Line tunnel</div>
+  <div class="tunnel" id="tunnel"></div>
+  <div class="label">Steer depth</div>
+  <script>
+    const tunnel=document.getElementById('tunnel');
+    for(let i=0;i<12;i++){const f=document.createElement('div');f.className='frame';f.style.setProperty('--i',i);tunnel.appendChild(f)}
+    let rx=0,ry=0,trx=0,try_=0;
+    addEventListener('pointermove',e=>{const x=(e.clientX/innerWidth-.5)*2;const y=(e.clientY/innerHeight-.5)*2;try_=x*24;trx=y*-18});
+    (function loop(){rx+=(trx-rx)*.1;ry+=(try_-ry)*.1;tunnel.style.setProperty('--rx',rx+'deg');tunnel.style.setProperty('--ry',ry+'deg');requestAnimationFrame(loop)})();
+  </script>
+</body>
+</html>

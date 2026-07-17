@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1396
+    slug: effects-rgb-split
+    title: RGB Split Glitch
+    category: effects
+    tags: effects, glitch, rgb
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1396 — RGB Split Glitch</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#000;color:#fff}h1{font-size:clamp(3rem,10vw,6rem);font-weight:900;text-transform:uppercase;position:relative;animation:glitch 2.5s infinite}h1::before,h1::after{content:attr(data-t);position:absolute;inset:0}h1::before{color:#f0f;clip-path:inset(20% 0 55% 0);animation:shift 2s infinite}h1::after{color:#0ff;clip-path:inset(55% 0 15% 0);animation:shift 2.3s infinite reverse}@keyframes shift{33%{transform:translate(-4px,2px)}66%{transform:translate(4px,-2px)}}@keyframes glitch{0%,92%,100%{transform:none}94%{transform:skewX(-3deg)}96%{transform:skewX(3deg)}}
+  </style>
+</head>
+<body>
+<h1 data-t="GLITCH">GLITCH</h1>
+
+</body>
+</html>

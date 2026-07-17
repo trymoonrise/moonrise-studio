@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1172
+    slug: numbers-odometer-04
+    title: Odometer 04
+    category: numbers
+    tags: numbers, odometer
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1172 — Odometer 04</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#ffff00;color:#000000}.display{font-size:clamp(2.5rem,8vw,4rem);font-weight:900;color:#ff0000;font-variant-numeric:tabular-nums}.lbl{color:#333333;margin-top:.5rem;font-size:.9rem}.btn{margin-top:1.5rem;padding:10px 24px;border:none;border-radius:8px;background:#ff0000;color:#ffff00;cursor:pointer;font-weight:600}
+  </style>
+</head>
+<body>
+<div style="text-align:center"><div class="display" id="d">00:00</div><div class="lbl">Odometer 780</div><button class="btn" id="b">Run</button></div>
+<script>let t=0,iv;document.getElementById('b').onclick=()=>{if(iv){clearInterval(iv);iv=null;document.getElementById('b').textContent='Run';return;}document.getElementById('b').textContent='Stop';iv=setInterval(()=>{t++;const m=String(Math.floor(t/60)).padStart(2,'0'),s=String(t%60).padStart(2,'0');document.getElementById('d').textContent=m+':'+s;},1000);};</script>
+</body>
+</html>

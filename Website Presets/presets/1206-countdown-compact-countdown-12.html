@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1206
+    slug: countdown-compact-countdown-12
+    title: Compact Countdown 12
+    category: countdown
+    tags: countdown, compact
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1206 — Compact Countdown 12</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');*{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f0f0f0;color:#111;font-family:"DM Sans",system-ui,-apple-system,sans-serif;padding:2rem}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.marq-track{animation:none!important}}
+    .dock{display:inline-flex;align-items:center;gap:.75rem;padding:.55rem .55rem .55rem 1rem;background:#111;color:#fff;border:1px solid #222}
+    .dock .lbl{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:#888;white-space:nowrap}
+    .dock .time{font-family:"Syne",system-ui,sans-serif;font-size:1.1rem;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+    .dock .pill{padding:.45rem .85rem;background:#fff;color:#111;font-size:.72rem;font-weight:700;letter-spacing:.04em}
+  </style>
+</head>
+<body>
+<div class="dock"><span class="lbl">Ends in</span><span class="time" id="t">02:14:36</span><span class="pill">Live</span></div>
+<script>let s=2*3600+14*60+36;const el=document.getElementById('t');function draw(){const h=String(Math.floor(s/3600)).padStart(2,'0'),m=String(Math.floor(s%3600/60)).padStart(2,'0'),sec=String(s%60).padStart(2,'0');el.textContent=h+':'+m+':'+sec;}draw();setInterval(()=>{s=Math.max(0,s-1);draw();},1000);</script>
+</body>
+</html>

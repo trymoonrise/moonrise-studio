@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0659
+    slug: navigation-underline-nav-11
+    title: Underline Nav 11
+    category: navigation
+    tags: navigation, underline
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0659 — Underline Nav 11</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700&family=Outfit:wght@300&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fff;font-family:Outfit,sans-serif}
+    nav{position:relative;display:flex;gap:2.5rem}
+    nav a{position:relative;text-decoration:none;color:#111;font-size:.85rem;font-weight:300;letter-spacing:.08em;padding:.4rem 0;opacity:.35;transition:opacity .3s}
+    nav a:hover,nav a.active{opacity:1}
+    .ink{position:absolute;left:0;bottom:0;height:1px;width:var(--w,40px);background:#111;transform:translateX(var(--x,0px));transition:transform .45s cubic-bezier(.22,1,.36,1),width .45s cubic-bezier(.22,1,.36,1)}
+  </style>
+</head>
+<body>
+  <nav id="nav">
+    <div class="ink" id="ink" aria-hidden="true"></div>
+    <a class="active" href="#">Essence</a>
+    <a href="#">Form</a>
+    <a href="#">Space</a>
+    <a href="#">Time</a>
+  </nav>
+  <script>
+    const nav=document.getElementById('nav'),ink=document.getElementById('ink'),links=[...nav.querySelectorAll('a')];
+    function move(el){const r=nav.getBoundingClientRect(),a=el.getBoundingClientRect();ink.style.setProperty('--x',(a.left-r.left)+'px');ink.style.setProperty('--w',a.width+'px')}
+    move(links[0]);
+    links.forEach(a=>{
+      a.addEventListener('click',e=>{e.preventDefault();links.forEach(l=>l.classList.remove('active'));a.classList.add('active');move(a)});
+      a.addEventListener('pointerenter',()=>move(a));
+    });
+    nav.addEventListener('pointerleave',()=>move(nav.querySelector('.active')));
+  </script>
+</body>
+</html>

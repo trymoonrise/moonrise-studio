@@ -1,0 +1,26 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0151
+    slug: accordions-icon-accordion
+    title: Icon Accordion
+    category: accordions
+    tags: accordions, icon
+  -->
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0151 — Icon Accordion</title>
+  <style>
+    @import url('../shared/preset-reset.css');@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap');*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fbfbf8;padding:2rem;font-family:Inter,sans-serif}.acc{width:min(500px,100%);display:grid;gap:.7rem}.item{background:#fff;border:1px solid #ece7de;border-radius:20px;overflow:hidden;transition:transform .28s ease,box-shadow .28s ease}.item.open{transform:translateX(8px);box-shadow:0 14px 30px rgba(0,0,0,.05)}.trigger{width:100%;display:grid;grid-template-columns:auto 1fr auto;gap:.9rem;align-items:center;padding:1rem 1.1rem;border:0;background:none;cursor:pointer;text-align:left}.badge{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;background:#f2efe8;color:#111;font-size:1rem}.title{font-size:.95rem;font-weight:600;color:#111}.plus{font-size:1rem;color:#777;transition:transform .3s ease}.panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows .36s cubic-bezier(.22,1,.36,1)}.panel>div{overflow:hidden}.panel p{margin:0;padding:0 1.1rem 1rem 4.95rem;color:#6d665b;line-height:1.65;font-size:.88rem}.item.open .plus{transform:rotate(135deg);color:#111}.item.open .badge{background:#111;color:#fff}.item.open .panel{grid-template-rows:1fr}@media(prefers-reduced-motion:reduce){.item,.plus,.panel{transition:none}}
+  </style>
+</head>
+<body>
+  <div class="acc">
+    <div class="item open"><button class="trigger"><span class="badge">○</span><span class="title">System notes</span><span class="plus">+</span></button><div class="panel"><div><p>Each row gets a minimal icon badge that inverts when opened, making state changes obvious without noise.</p></div></div></div>
+    <div class="item"><button class="trigger"><span class="badge">△</span><span class="title">Motion language</span><span class="plus">+</span></button><div class="panel"><div><p>The stack shifts sideways a few pixels on open, adding a small experimental gesture while staying professional.</p></div></div></div>
+    <div class="item"><button class="trigger"><span class="badge">□</span><span class="title">Visual weight</span><span class="plus">+</span></button><div class="panel"><div><p>Soft corners, muted borders, and restrained shadows keep the design contemporary and easy to reuse.</p></div></div></div>
+  </div>
+  <script>document.querySelectorAll('.item .trigger').forEach((button)=>button.addEventListener('click',()=>button.parentElement.classList.toggle('open')));</script>
+</body>
+</html>

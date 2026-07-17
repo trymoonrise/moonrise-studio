@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1705
+    slug: animation-gravity-drop
+    title: Gravity Drop Type
+    category: animation
+    tags: animation, gravity, drop, type
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1695 — Gravity Drop Type</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@500&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: end center;
+      background:
+        linear-gradient(#0b0d12 0 70%, #151820 70% 100%);
+      overflow: hidden;
+      cursor: pointer;
+      font-family: 'Bebas Neue', sans-serif;
+      padding-bottom: 28vh;
+    }
+
+    .stage {
+      position: relative;
+      width: min(92vw, 720px);
+      text-align: center;
+    }
+
+    .word {
+      display: flex;
+      justify-content: center;
+      gap: 0.04em;
+      font-size: clamp(4rem, 14vw, 8rem);
+      line-height: 0.9;
+      letter-spacing: 0.02em;
+      color: #f4f1ea;
+      text-transform: uppercase;
+    }
+
+    .char {
+      display: inline-block;
+      transform: translateY(-110vh) rotate(var(--r, 0deg));
+      opacity: 0;
+    }
+
+    .char.fall {
+      animation: fall 0.9s cubic-bezier(0.55, 0.05, 0.8, 0.7) forwards;
+      animation-delay: var(--d, 0s);
+    }
+
+    .floor {
+      position: absolute;
+      left: 5%;
+      right: 5%;
+      bottom: -0.15em;
+      height: 3px;
+      background: #f4f1ea;
+      transform: scaleX(0);
+      transform-origin: center;
+    }
+
+    .floor.on { animation: floor-in 0.35s ease forwards 0.5s; }
+
+    .hint {
+      position: fixed;
+      bottom: 1.4rem;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: rgba(244, 241, 234, 0.35);
+    }
+
+    @keyframes fall {
+      0% { transform: translateY(-110vh) rotate(var(--r, 0deg)); opacity: 0; }
+      70% { opacity: 1; }
+      82% { transform: translateY(0.08em) rotate(calc(var(--r, 0deg) * 0.2)) scaleY(0.82) scaleX(1.08); }
+      90% { transform: translateY(-0.05em) scaleY(1.06) scaleX(0.96); }
+      100% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    }
+
+    @keyframes floor-in { to { transform: scaleX(1); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .char { transform: none; opacity: 1; animation: none; }
+      .floor { transform: scaleX(1); }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="word" id="word"></div>
+    <div class="floor" id="floor" aria-hidden="true"></div>
+  </div>
+  <p class="hint">Click to drop again</p>
+
+  <script>
+    const text = 'DROP';
+    const word = document.getElementById('word');
+    const floor = document.getElementById('floor');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function play() {
+      word.innerHTML = '';
+      floor.classList.remove('on');
+      void floor.offsetWidth;
+      [...text].forEach((ch, i) => {
+        const s = document.createElement('span');
+        s.className = 'char';
+        s.textContent = ch;
+        s.style.setProperty('--d', (i * 0.12) + 's');
+        s.style.setProperty('--r', ((Math.random() - 0.5) * 40).toFixed(1) + 'deg');
+        word.appendChild(s);
+        if (reduced) {
+          s.style.opacity = '1';
+          s.style.transform = 'none';
+        } else {
+          requestAnimationFrame(() => s.classList.add('fall'));
+        }
+      });
+      if (!reduced) floor.classList.add('on');
+    }
+
+    play();
+    addEventListener('click', play);
+  </script>
+</body>
+</html>

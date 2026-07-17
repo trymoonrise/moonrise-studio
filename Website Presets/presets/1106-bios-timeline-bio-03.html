@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1106
+    slug: bios-timeline-bio-03
+    title: Timeline Bio 03
+    category: bios
+    tags: bios, timeline, experimental, shapes
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1106 — Timeline Bio 03</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700&family=DM+Sans:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0c0e12;font-family:'DM Sans',sans-serif;padding:2rem;overflow:hidden}
+    .bio{width:min(360px,92vw);animation:in .8s cubic-bezier(.22,1,.36,1) both}
+    .head{display:flex;align-items:center;gap:1rem;margin-bottom:1.75rem}
+    .hex{width:48px;height:48px;background:linear-gradient(135deg,#7c9cff,#4cc9a0);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);display:grid;place-items:center;color:#0c0e12;font-family:Syne,sans-serif;font-weight:700;font-size:.8rem;animation:bob 4s ease-in-out infinite}
+    h1{margin:0;font-family:Syne,sans-serif;font-size:1.15rem;color:#f2f3f5;letter-spacing:-.02em}
+    .role{margin:.2rem 0 0;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(242,243,245,.4)}
+    .path{position:relative;padding-left:1.4rem}
+    .path::before{content:'';position:absolute;left:5px;top:4px;bottom:4px;width:2px;background:linear-gradient(#7c9cff,rgba(124,156,255,.15));transform-origin:top;animation:grow 1.4s cubic-bezier(.22,1,.36,1) .3s both}
+    .item{position:relative;padding:0 0 1.35rem;opacity:0;animation:slide .6s cubic-bezier(.22,1,.36,1) forwards}
+    .item:nth-child(1){animation-delay:.45s}
+    .item:nth-child(2){animation-delay:.65s}
+    .item:nth-child(3){animation-delay:.85s}
+    .item:last-child{padding-bottom:0}
+    .item::before{content:'';position:absolute;left:-1.4rem;top:.35rem;width:12px;height:12px;border-radius:50%;background:#0c0e12;border:2px solid #7c9cff;box-shadow:0 0 0 3px rgba(124,156,255,.15)}
+    .year{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:#7c9cff;margin:0 0 .25rem}
+    .item p{margin:0;font-size:.88rem;color:rgba(242,243,245,.75);line-height:1.4}
+    @keyframes bob{50%{transform:translateY(-4px) rotate(8deg)}}
+    @keyframes grow{from{transform:scaleY(0)}}
+    @keyframes slide{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+    @keyframes in{from{opacity:0;transform:translateY(14px)}}
+    @media (prefers-reduced-motion:reduce){.hex,.path::before,.item,.bio{animation:none;opacity:1}}
+  </style>
+</head>
+<body>
+  <div class="bio">
+    <div class="head">
+      <div class="hex">TV</div>
+      <div><h1>Theo Vale</h1><p class="role">Strategist</p></div>
+    </div>
+    <div class="path">
+      <div class="item"><p class="year">2024</p><p>Studio lead, North</p></div>
+      <div class="item"><p class="year">2021</p><p>Brand systems at Loom</p></div>
+      <div class="item"><p class="year">2018</p><p>Design ops, freelance</p></div>
+    </div>
+  </div>
+</body>
+</html>

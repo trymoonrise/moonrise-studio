@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0863
+    slug: alerts-card-alert-07
+    title: Card Alert 07
+    category: alerts
+    tags: alerts, card
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0863 — Card Alert 07</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      padding: 2rem;
+      background: radial-gradient(circle at 30% 20%, #241b3a, #0c0a16 70%);
+      font-family: 'Sora', sans-serif;
+      overflow: hidden;
+    }
+
+    .scene { perspective: 1200px; }
+
+    .card {
+      position: relative;
+      width: min(88vw, 360px);
+      padding: 2rem 1.8rem;
+      border-radius: 22px;
+      background: linear-gradient(150deg, rgba(140, 120, 255, 0.16), rgba(30, 25, 55, 0.7));
+      border: 1px solid rgba(160, 140, 255, 0.28);
+      color: #efeaff;
+      box-shadow: 0 40px 90px rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(14px);
+      transform-style: preserve-3d;
+      transition: transform 0.2s ease;
+    }
+
+    .layer { transform-style: preserve-3d; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.3rem 0.7rem;
+      border-radius: 999px;
+      background: rgba(160, 140, 255, 0.2);
+      font-size: 0.66rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      transform: translateZ(40px);
+    }
+
+    .glyph {
+      width: 60px; height: 60px;
+      margin: 1.2rem 0 1rem;
+      border-radius: 16px;
+      display: grid; place-items: center;
+      font-size: 1.8rem;
+      background: linear-gradient(145deg, #a78bfa, #7c5cff);
+      box-shadow: 0 12px 30px rgba(124, 92, 255, 0.5);
+      transform: translateZ(70px);
+    }
+
+    .title {
+      margin: 0;
+      font-size: 1.4rem;
+      font-weight: 700;
+      transform: translateZ(55px);
+    }
+
+    .msg {
+      margin: 0.5rem 0 1.4rem;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: rgba(239, 234, 255, 0.66);
+      transform: translateZ(35px);
+    }
+
+    .actions { display: flex; gap: 0.6rem; transform: translateZ(50px); }
+
+    .btn {
+      appearance: none;
+      border: 0;
+      border-radius: 10px;
+      padding: 0.6rem 1.1rem;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .btn:active { transform: scale(0.95); }
+    .btn--primary { background: #7c5cff; color: #fff; }
+    .btn--ghost { background: rgba(255, 255, 255, 0.08); color: #efeaff; }
+
+    .shine {
+      position: absolute;
+      inset: 0;
+      border-radius: 22px;
+      background: radial-gradient(circle at var(--mx, 50%) var(--my, 0%), rgba(255, 255, 255, 0.25), transparent 45%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .card:hover .shine { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div class="scene">
+    <div class="card" id="card" role="alert">
+      <div class="shine" aria-hidden="true"></div>
+      <div class="layer">
+        <span class="badge">✦ New</span>
+        <div class="glyph" aria-hidden="true">🚀</div>
+        <h2 class="title">You're on the list</h2>
+        <p class="msg">Early access to the beta unlocks in 48 hours. We'll ping you the moment it's live.</p>
+        <div class="actions">
+          <button class="btn btn--primary" type="button">Got it</button>
+          <button class="btn btn--ghost" type="button">Remind me</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const card = document.getElementById('card');
+    const shine = card.querySelector('.shine');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    card.addEventListener('pointermove', (e) => {
+      if (reduced) return;
+      const r = card.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width;
+      const y = (e.clientY - r.top) / r.height;
+      card.style.transform = 'rotateY(' + ((x - 0.5) * 22) + 'deg) rotateX(' + ((0.5 - y) * 22) + 'deg)';
+      shine.style.setProperty('--mx', x * 100 + '%');
+      shine.style.setProperty('--my', y * 100 + '%');
+    });
+    card.addEventListener('pointerleave', () => { card.style.transform = ''; });
+  </script>
+</body>
+</html>

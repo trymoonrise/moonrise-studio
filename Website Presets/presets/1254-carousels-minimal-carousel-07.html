@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1254
+    slug: carousels-minimal-carousel-07
+    title: Minimal Carousel 07
+    category: carousels
+    tags: carousels, animated, modern, interactive
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1254 — Minimal Carousel 07</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fafafa;font-family:'DM Sans',system-ui,sans-serif;color:#111;overflow:hidden;padding:24px}
+    button{font:inherit;border:0;cursor:pointer;background:transparent;color:inherit}
+    .wrap{width:min(440px,90vw)}.frame{overflow:hidden;border-bottom:1px solid #111}.track{display:flex;transition:transform .75s cubic-bezier(.22,1,.36,1)}.slide{min-width:100%;padding:28px 8px 36px;text-align:center}.num{font-family:Syne,sans-serif;font-size:clamp(4rem,18vw,7rem);font-weight:800;letter-spacing:-.08em;line-height:.9;color:#111}.label{margin-top:12px;font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:rgba(0,0,0,.4)}.line{height:2px;background:#eee;margin-top:20px;position:relative;overflow:hidden}.line i{position:absolute;left:0;top:0;height:100%;width:33.33%;background:#111;transition:transform .75s cubic-bezier(.22,1,.36,1)}.nav{display:flex;justify-content:space-between;margin-top:18px}.nav button{font-family:Syne,sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;padding:10px 0;transition:opacity .25s}.nav button:hover{opacity:.5}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="wrap"><div class="frame"><div class="track" id="track">
+<div class="slide"><div class="num">01</div><div class="label">Form</div></div>
+<div class="slide"><div class="num">02</div><div class="label">Space</div></div>
+<div class="slide"><div class="num">03</div><div class="label">Motion</div></div>
+</div></div><div class="line"><i id="ind"></i></div><div class="nav"><button id="prev">Prev</button><button id="next">Next</button></div></div>
+<script>
+const track=document.getElementById('track'),ind=document.getElementById('ind');let i=0,n=3;function go(x){i=(x+n)%n;track.style.transform='translateX('+(-i*100)+'%)';ind.style.transform='translateX('+(i*100)+'%)';}document.getElementById('prev').onclick=()=>go(i-1);document.getElementById('next').onclick=()=>go(i+1);
+</script>
+</body>
+</html>

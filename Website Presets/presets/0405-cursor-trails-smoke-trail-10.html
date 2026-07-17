@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0405
+    slug: cursor-trails-smoke-trail-10
+    title: Smoke Trail 10
+    category: cursor-trails
+    tags: cursor-trails, smoke
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0405 — Smoke Trail 10</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{
+      margin:0;
+      min-height:100vh;
+      background:#0b1210;
+      color:#e0f0e8;
+      cursor:crosshair;
+      overflow:hidden;
+    }
+
+    canvas{position:fixed;inset:0;pointer-events:none}
+
+    .hint{
+      position:fixed;
+      inset:0;
+      display:grid;
+      place-items:center;
+      color:#6cffb8;
+      font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+      font-size:.82rem;
+      font-weight:600;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      opacity:.38;
+      pointer-events:none;
+      user-select:none;
+    }
+  </style>
+</head>
+<body>
+  <p class="hint" id="hint">Move your cursor</p>
+  <canvas id="c" aria-hidden="true"></canvas>
+
+  <script>
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+    const hint = document.getElementById('hint');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const puffs = [];
+    let mx = innerWidth / 2;
+    let my = innerHeight / 2;
+    let pmx = mx;
+    let pmy = my;
+    let moved = false;
+
+    function resize() {
+      canvas.width = innerWidth;
+      canvas.height = innerHeight;
+    }
+    resize();
+    addEventListener('resize', resize);
+
+    function spawn(x, y, vx, vy) {
+      const speed = Math.min(50, Math.hypot(vx, vy));
+      const count = Math.min(6, Math.max(1, Math.floor(speed / 10)));
+      for (let i = 0; i < count; i += 1) {
+        const a = Math.random() * Math.PI * 2;
+        const s = (0.5 + Math.random() * 1.1) * (speed * 0.06 + 0.6);
+        puffs.push({
+          x,
+          y,
+          vx: vx * 0.02 + Math.cos(a) * s,
+          vy: vy * 0.02 + Math.sin(a) * s - (0.25 + Math.random() * 0.35),
+          r: 14 + Math.random() * 22,
+          life: 1,
+          rot: Math.random() * Math.PI * 2,
+          spin: (Math.random() - 0.5) * 0.12,
+        });
+      }
+      if (puffs.length > 220) puffs.splice(0, puffs.length - 220);
+    }
+
+    if (!reduced) {
+      addEventListener('mousemove', (e) => {
+        mx = e.clientX;
+        my = e.clientY;
+        if (!moved) {
+          moved = true;
+          hint.style.opacity = '0';
+        }
+        const vx = mx - pmx;
+        const vy = my - pmy;
+        pmx = mx;
+        pmy = my;
+        spawn(mx, my, vx, vy);
+      }, { passive: true });
+
+      function frame() {
+        // soft fade for lingering smoke
+        ctx.fillStyle = 'rgba(11, 18, 16, 0.14)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+
+        for (let i = puffs.length - 1; i >= 0; i -= 1) {
+          const p = puffs[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vx *= 0.97;
+          p.vy *= 0.975;
+          p.rot += p.spin;
+          p.life -= 0.015 + (1 - p.life) * 0.01;
+          p.r *= 1.008;
+
+          if (p.life <= 0.02) {
+            puffs.splice(i, 1);
+            continue;
+          }
+
+          const a = Math.max(0, Math.min(1, p.life));
+          const rx = p.r * (1.05 + Math.sin(p.rot) * 0.12);
+          const ry = p.r * (0.92 + Math.cos(p.rot) * 0.16);
+
+          const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, Math.max(rx, ry));
+          g.addColorStop(0, `rgba(108, 255, 184, ${0.08 * a})`);
+          g.addColorStop(0.35, `rgba(224, 240, 232, ${0.05 * a})`);
+          g.addColorStop(1, 'transparent');
+
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.ellipse(p.x, p.y, rx, ry, p.rot, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        ctx.restore();
+        requestAnimationFrame(frame);
+      }
+
+      frame();
+    }
+  </script>
+</body>
+</html>

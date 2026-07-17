@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0271
+    slug: cta-split-cta
+    title: Split CTA
+    category: cta
+    tags: cta, split
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0271 — Split CTA</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fff;color:#111;font-family:"DM Sans",system-ui,-apple-system,sans-serif;padding:2rem}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+    .cta{display:grid;grid-template-columns:1fr 1fr;width:min(100%,720px);min-height:280px;border:1px solid #111;overflow:hidden}
+    .copy{padding:2.25rem 2rem;display:flex;flex-direction:column;justify-content:center;gap:.85rem}
+    .copy h2{font-family:"Syne",system-ui,sans-serif;font-size:clamp(1.6rem,3.5vw,2.1rem);font-weight:800;letter-spacing:-.03em;line-height:1.1;margin:0}
+    .copy p{margin:0;color:#666;font-size:.92rem;line-height:1.5;max-width:28ch}
+    .btn{align-self:flex-start;margin-top:.35rem;padding:11px 22px;border:1.5px solid #111;background:transparent;color:#111;font:inherit;font-size:.84rem;font-weight:600;cursor:pointer;transition:background .3s,color .3s}
+    .btn:hover{background:#111;color:#fff}
+    .panel{position:relative;background:#111;overflow:hidden}
+    .panel::before,.panel::after{content:'';position:absolute;background:#fff}
+    .panel::before{width:2px;height:120%;left:50%;top:-10%;transform:translateX(-50%) rotate(18deg);animation:sweep 4.5s ease-in-out infinite}
+    .panel::after{height:2px;width:120%;top:50%;left:-10%;transform:translateY(-50%) rotate(-12deg);animation:sweep 5.5s ease-in-out infinite reverse}
+    @keyframes sweep{0%,100%{opacity:.15}50%{opacity:.55}}
+    .mark{position:absolute;inset:0;display:grid;place-items:center;font-family:"Syne",system-ui,sans-serif;font-size:clamp(3rem,8vw,5rem);font-weight:800;color:#fff;letter-spacing:-.06em;animation:pulse 3s ease-in-out infinite}
+    @keyframes pulse{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.04);opacity:1}}
+    @media(max-width:640px){.cta{grid-template-columns:1fr}.panel{min-height:160px}}
+  </style>
+</head>
+<body>
+<div class="cta"><div class="copy"><h2>Upgrade the work</h2><p>Clean tools. No noise. Just the next step.</p><button class="btn" type="button">Upgrade</button></div><div class="panel" aria-hidden="true"><span class="mark">02</span></div></div>
+
+</body>
+</html>

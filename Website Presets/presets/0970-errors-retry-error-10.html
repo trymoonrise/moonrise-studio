@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0970
+    slug: errors-retry-error-10
+    title: Retry Error 10
+    category: errors
+    tags: errors, retry
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0970 — Retry Error 10</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Manrope:wght@500;600&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;padding:2rem;background:#0c0e14;font-family:Manrope,sans-serif;color:#e8eaf0;text-align:center}
+    h1{font-family:Syne,sans-serif;font-size:clamp(1.5rem,4vw,2.2rem);font-weight:800;margin:0 0 .5rem}
+    p{opacity:.5;margin:0 0 2.5rem;font-size:.95rem}
+    .arena{position:relative;width:200px;height:200px;margin:0 auto}
+    .btn{
+      position:absolute;left:50%;top:50%;width:120px;height:120px;margin:-60px 0 0 -60px;
+      border:0;border-radius:50%;background:#ff3b5c;color:#fff;
+      font:800 .85rem Syne,sans-serif;letter-spacing:.04em;text-transform:uppercase;
+      cursor:pointer;z-index:2;
+      box-shadow:0 0 0 0 rgba(255,59,92,.4);
+      transition:transform .15s;
+    }
+    .btn.spinning{animation:defy 1.2s linear infinite, pulse-ring 1s ease-out infinite;pointer-events:none}
+    .btn.grown{width:180px;height:180px;margin:-90px 0 0 -90px;font-size:1rem;animation:defy .6s linear infinite}
+    .count{margin-top:2rem;font-family:Syne,sans-serif;font-size:3rem;font-weight:800;color:#ff3b5c}
+    .count span{font-size:.7rem;display:block;letter-spacing:.15em;text-transform:uppercase;opacity:.4;font-family:Manrope,sans-serif;margin-top:.25rem}
+    .taunt{margin-top:1rem;font-size:.8rem;color:#ff3b5c;min-height:1.2em;opacity:0;transition:opacity .3s}
+    .taunt.show{opacity:1}
+    @keyframes defy{to{transform:rotate(360deg)}}
+    @keyframes pulse-ring{0%{box-shadow:0 0 0 0 rgba(255,59,92,.5)}100%{box-shadow:0 0 0 40px rgba(255,59,92,0)}}
+    @media (prefers-reduced-motion:reduce){.btn.spinning,.btn.grown{animation:none}}
+  </style>
+</head>
+<body>
+  <div>
+    <h1>Something went wrong</h1>
+    <p>Hit retry. We dare you.</p>
+    <div class="arena">
+      <button class="btn" type="button" id="retry">Retry</button>
+    </div>
+    <div class="count" id="count">0<span>failed attempts</span></div>
+    <div class="taunt" id="taunt"></div>
+  </div>
+  <script>
+    const btn=document.getElementById('retry');
+    const count=document.getElementById('count');
+    const taunt=document.getElementById('taunt');
+    const lines=['Nice try.','Still broken.','The button is laughing.','Have you considered giving up?','Retry is a social construct.','ERROR: hope not found'];
+    let n=0;
+    btn.addEventListener('click',()=>{
+      n++;
+      count.childNodes[0].textContent=n;
+      btn.classList.add('spinning');
+      if(n>3)btn.classList.add('grown');
+      taunt.textContent=lines[Math.min(n-1,lines.length-1)];
+      taunt.classList.add('show');
+      setTimeout(()=>{
+        btn.classList.remove('spinning');
+        const a=btn.parentElement.getBoundingClientRect();
+        const x=(Math.random()-.5)*100;
+        const y=(Math.random()-.5)*100;
+        btn.style.transform=`translate(${x}px,${y}px)`;
+      },1200);
+    });
+  </script>
+</body>
+</html>

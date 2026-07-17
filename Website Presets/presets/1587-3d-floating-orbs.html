@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1587
+    slug: 3d-floating-orbs
+    title: 3D Floating Orbs
+    category: 3d-effects
+    tags: 3d, orbs, float
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1587 — 3D Floating Orbs</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#050508;perspective:800px;overflow:hidden}.field{position:relative;width:min(400px,90vw);height:min(400px,70vh);transform-style:preserve-3d;animation:tilt 6s ease-in-out infinite}@keyframes tilt{0%,100%{transform:rotateX(10deg) rotateY(-10deg)}50%{transform:rotateX(-5deg) rotateY(10deg)}}.orb{position:absolute;width:var(--s,60px);height:var(--s,60px);border-radius:50%;background:radial-gradient(circle at 30% 30%,var(--c),color-mix(in srgb,var(--c),#000 40%));box-shadow:0 10px 30px color-mix(in srgb,var(--c),transparent 60%);transform:translate3d(var(--x),var(--y),var(--z));animation:bob 3s ease-in-out infinite;animation-delay:var(--d)}@keyframes bob{0%,100%{transform:translate3d(var(--x),var(--y),var(--z))}50%{transform:translate3d(var(--x),calc(var(--y) - 15px),var(--z))}}
+  </style>
+</head>
+<body>
+<div class="field"><div class="orb" style="--x:10%;--y:20%;--z:40px;--s:70px;--c:#6c8cff;--d:0s"></div><div class="orb" style="--x:60%;--y:10%;--z:80px;--s:50px;--c:#ff6cb0;--d:.5s"></div><div class="orb" style="--x:30%;--y:55%;--z:20px;--s:90px;--c:#6cffb8;--d:1s"></div><div class="orb" style="--x:70%;--y:60%;--z:100px;--s:45px;--c:#f59e0b;--d:1.5s"></div></div>
+
+</body>
+</html>

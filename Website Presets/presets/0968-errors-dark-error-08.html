@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0968
+    slug: errors-dark-error-08
+    title: Dark Error 08
+    category: errors
+    tags: errors, dark
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0968 — Dark Error 08</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#000;color:#0f0;font-family:'Press Start 2P',monospace;text-align:center;overflow:hidden;animation:ambient-strobe 4s step-end infinite}
+    .scream{
+      font-size:clamp(1.5rem,6vw,3rem);line-height:1.4;margin:0;
+      text-shadow:0 0 10px #0f0,0 0 40px #0f0,0 0 80px #0f0;
+      animation:scream-pulse .8s ease-in-out infinite, glitch-shift .2s steps(2) infinite;
+    }
+    .sub{margin:2rem 0;font-size:.55rem;opacity:.5;letter-spacing:.1em;line-height:2}
+    .cursor::after{content:'█';animation:blink .5s step-end infinite}
+    button{appearance:none;border:2px solid #0f0;background:transparent;color:#0f0;padding:1rem 1.5rem;font:inherit;font-size:.55rem;cursor:pointer;margin-top:1rem;text-shadow:0 0 8px #0f0}
+    button:hover{background:#0f0;color:#000;text-shadow:none}
+    .scan{position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0,transparent 3px,rgba(0,255,0,.03) 3px,rgba(0,255,0,.03) 6px);animation:scan-move 8s linear infinite}
+    @keyframes scream-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+    @keyframes glitch-shift{0%,100%{transform:translate(0)}50%{transform:translate(3px,-2px)}}
+    @keyframes blink{50%{opacity:0}}
+    @keyframes ambient-strobe{0%,90%,100%{background:#000}91%{background:#001a00}92%{background:#000}95%{background:#000a00}}
+    @keyframes scan-move{to{background-position:0 100px}}
+    @media (prefers-reduced-motion:reduce){.scream,body,.scan,.cursor::after{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="scan" aria-hidden="true"></div>
+  <div>
+    <h1 class="scream" role="alert">FATAL<br>ERROR</h1>
+    <p class="sub cursor">SYSTEM HALTED · REALITY.EXE HAS STOPPED RESPONDING</p>
+    <button type="button">CTRL+ALT+DELETE</button>
+  </div>
+</body>
+</html>

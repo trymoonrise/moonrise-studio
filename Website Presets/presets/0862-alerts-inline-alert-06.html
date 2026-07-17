@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0862
+    slug: alerts-inline-alert-06
+    title: Inline Alert 06
+    category: alerts
+    tags: alerts, inline
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0862 — Inline Alert 06</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Fraunces:opsz,wght@9..144,400;9..144,600&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      padding: 2rem;
+      background: #f6f3ec;
+      font-family: 'Fraunces', serif;
+      color: #241f1a;
+    }
+
+    .sheet {
+      width: min(100%, 540px);
+      font-size: clamp(1.3rem, 3.5vw, 1.75rem);
+      line-height: 1.9;
+    }
+
+    .mark {
+      position: relative;
+      white-space: nowrap;
+      padding: 0 0.15em;
+      z-index: 0;
+    }
+
+    .mark::before {
+      content: '';
+      position: absolute;
+      left: -0.05em;
+      right: -0.05em;
+      top: 12%;
+      bottom: 8%;
+      z-index: -1;
+      background: var(--hl, #ffe066);
+      transform: scaleX(0);
+      transform-origin: left center;
+      border-radius: 4px 10px 6px 12px;
+      animation: highlight 0.7s cubic-bezier(0.65, 0, 0.35, 1) forwards var(--delay, 0.4s);
+    }
+
+    .mark--warn { --hl: #ffb3a7; }
+    .mark--ok { --hl: #a7e8bd; }
+
+    .note {
+      display: block;
+      margin-top: 1.5rem;
+      font-family: 'Caveat', cursive;
+      font-size: 1.4rem;
+      color: #b0765a;
+      opacity: 0;
+      transform: rotate(-3deg);
+      animation: scribble 0.6s ease forwards 1.6s;
+    }
+
+    @keyframes highlight { to { transform: scaleX(1); } }
+    @keyframes scribble { to { opacity: 1; } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .mark::before { transform: scaleX(1); animation: none; }
+      .note { opacity: 1; animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <p class="sheet">
+    Your draft was saved, but heads up —
+    <span class="mark mark--warn" style="--delay:0.6s">two required fields are still empty</span>
+    and your changes to the
+    <span class="mark" style="--delay:1.1s">billing section</span>
+    are
+    <span class="mark mark--ok" style="--delay:1.5s">already synced</span>.
+    <span class="note">— review before publishing ✎</span>
+  </p>
+</body>
+</html>

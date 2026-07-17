@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0475
+    slug: rotate-scroll-revolve-badge-12
+    title: Revolve Badge 12
+    category: rotate-scroll
+    tags: rotate-scroll, revolve
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0475 — Revolve Badge 12</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:240vh;background:#fef2f2;color:#991b1b;font-family:system-ui;display:grid;place-items:center}.badge-wrap{position:sticky;top:30vh;width:200px;height:200px}.badge{position:absolute;inset:0;border-radius:50%;border:3px solid #dc2626;display:grid;place-items:center;transform:rotate(var(--r,0deg));background:#fff;box-shadow:0 12px 40px rgba(220,38,38,.2)}.badge svg{width:70%;height:70%}.badge text{font-size:11px;font-weight:800;letter-spacing:.15em;fill:#991b1b}.trail{position:absolute;inset:-20px;border-radius:50%;border:1px dashed rgba(220,38,38,.25);transform:rotate(calc(var(--r,0deg)*-1))}
+  </style>
+</head>
+<body>
+<div id="t" style="height:240vh"><div class="badge-wrap"><div class="trail" id="trail"></div><div class="badge" id="badge"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="none" stroke="#dc2626" stroke-width="1"/><text x="50" y="54" text-anchor="middle">CERTIFIED</text></svg></div></div></div>
+<script>const _el=document.querySelector('#t');function prog(){const r=_el.getBoundingClientRect();return Math.min(1,Math.max(0,-r.top/(r.height-innerHeight)));}const b=document.getElementById('badge'),t=document.getElementById('trail');addEventListener('scroll',()=>{const r=prog()*360;b.style.setProperty('--r',r+'deg');t.style.setProperty('--r',r+'deg');},{passive:true});</script>
+</body>
+</html>

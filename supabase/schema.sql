@@ -11,6 +11,7 @@ create table if not exists public.profiles (
   avatar_url text,
   goal_target integer not null default 1000
     check (goal_target >= 1 and goal_target <= 1000000),
+  mvp_plus boolean not null default false,
   branding_defaults jsonb not null default '{}'::jsonb,
   payout_profile jsonb not null default '{}'::jsonb,
   notification_prefs jsonb not null default '{"email": true}'::jsonb,
@@ -31,6 +32,8 @@ create table if not exists public.projects (
   status text not null default 'draft'
     check (status in ('draft', 'preview', 'paid', 'published')),
   watermark_enabled boolean not null default true,
+  price_cents integer not null default 50000
+    check (price_cents >= 0 and price_cents <= 100000000),
   urgency_ends_at timestamptz,
   stripe_checkout_session_id text,
   vercel_url text,
@@ -39,6 +42,10 @@ create table if not exists public.projects (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+-- Backfill for databases created before price_cents existed.
+alter table public.projects
+  add column if not exists price_cents integer not null default 50000;
 
 create index if not exists projects_user_id_idx on public.projects (user_id);
 create index if not exists projects_updated_at_idx on public.projects (updated_at desc);
@@ -283,6 +290,31 @@ create table if not exists public.leads (
   category text,
   category_group text
 );
+
+create or replace function public.sync_lead_has_website()
+returns trigger
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+begin
+  new.has_website :=
+    new.website_url is not null
+    and btrim(new.website_url) ~* '^https?://'
+    and btrim(new.website_url) !~*
+      '^https?://([^/]*\.)?(google\.[^/]+/(maps|aclk|url)|gstatic\.com)(/|$)';
+  return new;
+end;
+$$;
+
+revoke all on function public.sync_lead_has_website() from public, anon, authenticated;
+
+drop trigger if exists leads_sync_has_website on public.leads;
+create trigger leads_sync_has_website
+before insert or update of website_url, has_website
+on public.leads
+for each row
+execute function public.sync_lead_has_website();
 
 alter table public.leads enable row level security;
 drop policy if exists studio_leads_read on public.leads;

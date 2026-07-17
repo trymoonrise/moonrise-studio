@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1521
+    slug: experimental-mouse-ripple
+    title: Mouse Ripple Canvas
+    category: experimental
+    tags: experimental, mouse, ripple
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1521 — Mouse Ripple Canvas</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:100vh;background:#0d0d0f;overflow:hidden}canvas{display:block}
+  </style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>const c=document.getElementById('c'),x=c.getContext('2d');let ripples=[];function r(){c.width=innerWidth;c.height=innerHeight;}r();addEventListener('resize',r);addEventListener('mousemove',e=>{if(Math.random()>.7)ripples.push({x:e.clientX,y:e.clientY,r:0,a:1});});function d(){x.fillStyle='rgba(13,13,15,.15)';x.fillRect(0,0,c.width,c.height);ripples=ripples.filter(rp=>rp.a>.01);ripples.forEach(rp=>{rp.r+=2;rp.a-=.015;x.strokeStyle='rgba(108,140,255,'+rp.a+')';x.lineWidth=2;x.beginPath();x.arc(rp.x,rp.y,rp.r,0,Math.PI*2);x.stroke();});requestAnimationFrame(d);}d();</script>
+</body>
+</html>

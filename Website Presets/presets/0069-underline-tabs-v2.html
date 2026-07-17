@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0069
+    slug: underline-tabs-v2
+    title: Underline Tabs V2
+    category: tabs
+    tags: underline
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0069 — Underline Tabs V2</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#fafafa} .tabs{display:flex;position:relative;border-bottom:2px solid #eee} .tab{padding:1rem 1.5rem;border:none;background:none;color:#888;cursor:pointer;font-size:1rem} .tab.active{color:#111;font-weight:600} .ind{position:absolute;bottom:-2px;height:2px;background:#6c8cff;transition:left .3s,width .3s}
+  </style>
+</head>
+<body>
+<div class="tabs" id="tabs"><button class="tab active">Home</button><button class="tab">Products</button><button class="tab">About</button><div class="ind" id="ind"></div></div>
+<script>const tabs=document.querySelectorAll('.tab'),ind=document.getElementById('ind');function m(t){const r=t.getBoundingClientRect(),p=t.parentElement.getBoundingClientRect();ind.style.left=(r.left-p.left)+'px';ind.style.width=r.width+'px';}m(tabs[0]);tabs.forEach(t=>t.onclick=()=>{tabs.forEach(x=>x.classList.remove('active'));t.classList.add('active');m(t);});</script>
+</body>
+</html>

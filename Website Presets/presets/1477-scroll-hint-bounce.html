@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1477
+    slug: scroll-hint-bounce
+    title: Bounce Scroll Hint
+    category: scroll-sections
+    tags: scroll, hint, bounce
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1477 — Bounce Scroll Hint</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:linear-gradient(180deg,#0d0d0f,#1a1a2e);color:#fff;min-height:200vh}.hero{height:100vh;display:grid;place-items:center;text-align:center}.hero h1{font-size:clamp(2rem,6vw,3.5rem);font-weight:900;margin-bottom:1rem}.hint{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;color:#666;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;transition:opacity .4s}.hint.hide{opacity:0;pointer-events:none}.arrow{width:24px;height:24px;border-right:2px solid #6c8cff;border-bottom:2px solid #6c8cff;transform:rotate(45deg);animation:bounce 1.5s ease-in-out infinite}@keyframes bounce{0%,100%{transform:rotate(45deg) translateY(0)}50%{transform:rotate(45deg) translateY(8px)}}.content{min-height:100vh;display:grid;place-items:center;font-size:1.5rem;color:#888}
+  </style>
+</head>
+<body>
+<div class="hero"><h1>Scroll Down</h1><p style="color:#666">Award-winning landing pattern</p></div><div class="hint" id="hint"><span>Scroll</span><div class="arrow"></div></div><div class="content">You made it</div>
+<script>const h=document.getElementById('hint');addEventListener('scroll',()=>{h.classList.toggle('hide',scrollY>80);},{passive:true});</script>
+</body>
+</html>

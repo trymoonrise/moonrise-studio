@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0389
+    slug: heroes-aurora-bg
+    title: Aurora Background Hero
+    category: heroes
+    tags: heroes, landing, experimental, gradient
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0389 — Aurora Background Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 2rem;
+      overflow: hidden;
+      background: #070911;
+      color: #fff;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      text-align: center;
+    }
+
+    .scene {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .orb {
+      position: absolute;
+      width: 42vmax;
+      aspect-ratio: 1;
+      border-radius: 999px;
+      filter: blur(44px);
+      opacity: 0.42;
+      mix-blend-mode: screen;
+      animation: drift 12s ease-in-out infinite alternate;
+    }
+
+    .orb:nth-child(1) {
+      left: -12vmax;
+      top: -10vmax;
+      background: #6c8cff;
+    }
+
+    .orb:nth-child(2) {
+      right: -14vmax;
+      top: 16vh;
+      background: #6cffb8;
+      animation-delay: -4s;
+    }
+
+    .orb:nth-child(3) {
+      left: 28%;
+      bottom: -22vmax;
+      background: #ff6cb0;
+      animation-delay: -8s;
+      opacity: 0.28;
+    }
+
+    .ring {
+      position: absolute;
+      inset: 18%;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 40% 60% 55% 45%;
+      transform: rotate(-8deg);
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      width: min(540px, 100%);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      margin-bottom: 1rem;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.58);
+    }
+
+    h1 {
+      font-size: clamp(2.2rem, 5.5vw, 3.7rem);
+      font-weight: 800;
+      line-height: 1.04;
+      letter-spacing: -0.04em;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      color: rgba(255, 255, 255, 0.68);
+      font-size: 1rem;
+      line-height: 1.6;
+      max-width: 36ch;
+      margin: 0 auto 1.65rem;
+    }
+
+    .btn {
+      padding: 0.7rem 1.2rem;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.86rem;
+      font-weight: 700;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      transition: transform 0.2s cubic-bezier(.22, .61, .36, 1), background 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    @keyframes drift {
+      from { transform: translate3d(0, 0, 0) scale(1); }
+      to { transform: translate3d(7vw, -5vh, 0) scale(1.12); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .orb { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="scene" aria-hidden="true">
+    <div class="orb"></div>
+    <div class="orb"></div>
+    <div class="orb"></div>
+    <div class="ring"></div>
+  </div>
+
+  <section class="content">
+    <span class="eyebrow">Abstract interface</span>
+    <h1>Built for the future</h1>
+    <p>Soft motion, luminous gradients, and clean typography create depth without visual noise.</p>
+    <button class="btn" type="button">Launch now</button>
+  </section>
+
+</body>
+</html>

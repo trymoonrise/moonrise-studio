@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1039
+    slug: cta-centered-cta-01
+    title: Radial Pulse Centered CTA
+    category: cta
+    tags: cta, centered, pulse, radial
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1039 — Radial Pulse Centered CTA</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0a0b0f;color:#eceef3;font-family:Outfit,sans-serif;padding:2rem;overflow:hidden}
+    .cta{position:relative;text-align:center;max-width:480px;padding:3rem 2rem}
+    .cta::before,.cta::after{content:'';position:absolute;border-radius:50%;border:1px solid rgba(56,189,248,.15);animation:ripple 3s ease-out infinite}
+    .cta::before{width:300px;height:300px;top:50%;left:50%;transform:translate(-50%,-50%)}
+    .cta::after{width:200px;height:200px;top:50%;left:50%;transform:translate(-50%,-50%);animation-delay:1s}
+    .inner{position:relative;z-index:1}
+    .eyebrow{font-size:.65rem;letter-spacing:.35em;text-transform:uppercase;color:rgba(236,238,243,.4);margin-bottom:1rem}
+    h1{font-family:Syne,sans-serif;font-size:clamp(2rem,5vw,2.8rem);letter-spacing:-.05em;line-height:1.1;margin-bottom:1rem}
+    p{font-size:.95rem;color:rgba(236,238,243,.55);line-height:1.6;margin-bottom:2rem}
+    .btn{display:inline-flex;padding:1rem 2.2rem;background:#38bdf8;color:#0a0b0f;border:none;border-radius:6px;font-family:Syne,sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;transition:transform .3s,box-shadow .3s;animation:btn-glow 2.5s ease infinite}
+    .btn:hover{transform:scale(1.04);box-shadow:0 8px 32px rgba(56,189,248,.3)}
+    @keyframes ripple{0%{transform:translate(-50%,-50%) scale(.8);opacity:.6}100%{transform:translate(-50%,-50%) scale(1.4);opacity:0}}
+    @keyframes btn-glow{0%,100%{box-shadow:0 0 0 0 rgba(56,189,248,.3)}50%{box-shadow:0 0 0 8px rgba(56,189,248,0)}}
+    @media(prefers-reduced-motion:reduce){.cta::before,.cta::after,.btn{animation:none}}
+  </style>
+</head>
+<body>
+  <section class="cta">
+    <div class="inner">
+      <p class="eyebrow">Early access</p>
+      <h1>Build faster with precision tools</h1>
+      <p>Join 2,400+ teams shipping production-ready interfaces in half the time.</p>
+      <button class="btn">Start free trial</button>
+    </div>
+  </section>
+</body>
+</html>

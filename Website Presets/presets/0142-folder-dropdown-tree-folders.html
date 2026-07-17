@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0142
+    slug: folder-dropdown-tree-folders
+    title: Tree Folder View
+    category: folder-dropdown
+    tags: folder-dropdown, tree
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0142 — Tree Folder View</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#fafafa;align-items:flex-start;padding:2rem}.tree{font-family:monospace;font-size:.9rem;min-width:220px}.item{padding:6px 8px;cursor:pointer;border-radius:4px}.item:hover{background:#eee}.children{padding-left:1.2rem;display:none}.open>.children{display:block}
+  </style>
+</head>
+<body>
+<div class="tree"><div class="item open" data-t>📁 Projects<div class="children"><div class="item">📄 index.html</div><div class="item">📄 style.css</div></div></div><div class="item">📁 Assets</div></div>
+<script>document.querySelectorAll('[data-t]').forEach(i=>i.onclick=e=>{e.stopPropagation();i.classList.toggle('open');});</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1552
+    slug: loader-dots-chase
+    title: Chasing Dots Loader
+    category: loading
+    tags: loading, dots, chase
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1552 — Chasing Dots Loader</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#0a0a0c}.dots{display:flex;gap:8px}.dot{width:10px;height:10px;border-radius:50%;background:#6c8cff;animation:chase .7s ease-in-out infinite alternate}.dot:nth-child(2){animation-delay:.15s;background:#ff6cb0}.dot:nth-child(3){animation-delay:.3s;background:#6cffb8}@keyframes chase{to{transform:translateY(-14px);opacity:.4}}
+  </style>
+</head>
+<body>
+<div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+
+</body>
+</html>

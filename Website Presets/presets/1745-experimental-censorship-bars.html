@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1745
+    slug: experimental-censorship-bars
+    title: Censorship Bar Kinetic
+    category: experimental
+    tags: experimental, censorship, bars, kinetic
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1745 — Censorship Bar Kinetic</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#e8e4dc;display:grid;place-items:center;padding:2rem;overflow:hidden;font-family:'Instrument Serif',serif;color:#111}
+    .page{max-width:34rem;width:100%;font-size:clamp(1.6rem,4.5vw,2.4rem);line-height:1.35}
+    .bar{display:inline-block;vertical-align:baseline;height:.85em;width:var(--w,4ch);background:#111;margin:0 .1em;transform-origin:left center;animation:redact 2.8s ease-in-out infinite;animation-delay:var(--d,0s);box-shadow:3px 3px 0 #ff0033}
+    .page em{font-style:italic}
+    .foot{margin-top:2rem;font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;opacity:.45}
+    @keyframes redact{0%,100%{transform:scaleX(1)}40%{transform:scaleX(.2)}55%{transform:scaleX(1.15)}70%{transform:scaleX(1)}}
+    @media (prefers-reduced-motion:reduce){.bar{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="page">
+    The public was told <span class="bar" style="--w:7ch;--d:0s"></span> while officials
+    <span class="bar" style="--w:5ch;--d:.4s"></span> the truth about
+    <em>everything that mattered</em>.
+    Documents confirm <span class="bar" style="--w:9ch;--d:.8s"></span> and
+    <span class="bar" style="--w:6ch;--d:1.2s"></span> never happened —
+    according to them.
+    <p class="foot">1745 · Redacted forever</p>
+  </div>
+</body>
+</html>

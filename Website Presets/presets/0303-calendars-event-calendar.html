@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0303
+    slug: calendars-event-calendar
+    title: Event Calendar
+    category: calendars
+    tags: calendars, events
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0303 — Event Calendar</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 2rem;
+      background: #f4f5f8;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: #111827;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 300px) minmax(0, 340px);
+      gap: 1rem;
+      width: min(100%, 680px);
+      align-items: start;
+    }
+
+    .panel {
+      border-radius: 20px;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+      overflow: hidden;
+    }
+
+    .cal {
+      padding: 1.15rem 1.1rem 1.2rem;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .nav button {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      background: #fff;
+      color: #4b5563;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+    }
+
+    .nav button:hover {
+      background: #f0f4ff;
+      border-color: #c7d2fe;
+      color: #4f6ef7;
+    }
+
+    .nav button svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      stroke-width: 2.25;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    #month-label {
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      text-align: center;
+    }
+
+    .dow {
+      padding: 0.3rem 0;
+      font-size: 0.66rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: #9ca3af;
+    }
+
+    .cell {
+      position: relative;
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border: none;
+      border-radius: 10px;
+      background: none;
+      font-size: 0.86rem;
+      font-family: inherit;
+      color: #374151;
+      cursor: pointer;
+      transition: background 0.18s, color 0.18s, transform 0.18s;
+    }
+
+    .cell:hover:not(:disabled) {
+      background: #f3f4f6;
+    }
+
+    .cell.is-today {
+      box-shadow: inset 0 0 0 2px #4f6ef7;
+      color: #4f6ef7;
+      font-weight: 700;
+    }
+
+    .cell.is-selected {
+      background: #4f6ef7;
+      color: #fff;
+      font-weight: 700;
+      transform: scale(1.04);
+      box-shadow: 0 4px 14px rgba(79, 110, 247, 0.32);
+    }
+
+    .cell.is-muted {
+      color: #d1d5db;
+      cursor: default;
+    }
+
+    .cell.has-event::after {
+      content: "";
+      position: absolute;
+      bottom: 5px;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #4f6ef7;
+    }
+
+    .cell.is-selected.has-event::after {
+      background: #fff;
+    }
+
+    .events-panel {
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+    }
+
+    .events-head {
+      padding: 1.1rem 1.15rem 0.9rem;
+      border-bottom: 1px solid #f0f2f5;
+    }
+
+    .events-head .eyebrow {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #4f6ef7;
+      margin-bottom: 0.3rem;
+    }
+
+    .events-head h2 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .events-list {
+      display: grid;
+      gap: 0.65rem;
+      padding: 1rem 1.15rem 1.15rem;
+      list-style: none;
+      margin: 0;
+      flex: 1;
+    }
+
+    .event {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.75rem;
+      padding: 0.85rem 0.9rem;
+      border-radius: 14px;
+      background: #f9fafb;
+      border: 1px solid #eef0f4;
+      opacity: 0;
+      transform: translateY(8px);
+      animation: event-in 0.42s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+    }
+
+    @keyframes event-in {
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .event__time {
+      min-width: 52px;
+      padding-top: 0.1rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #6b7280;
+      line-height: 1.35;
+    }
+
+    .event__body strong {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 0.2rem;
+    }
+
+    .event__meta {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.78rem;
+      color: #6b7280;
+    }
+
+    .event__dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .empty {
+      padding: 2rem 1.15rem;
+      text-align: center;
+      color: #9ca3af;
+      font-size: 0.88rem;
+    }
+
+    @media (max-width: 700px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .event {
+        animation: none;
+        opacity: 1;
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <section class="panel cal" aria-label="Calendar">
+      <div class="nav">
+        <button type="button" id="prev" aria-label="Previous month">
+          <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <div id="month-label">July 2026</div>
+        <button type="button" id="next" aria-label="Next month">
+          <svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </div>
+      <div class="grid" id="grid" aria-label="Days"></div>
+    </section>
+
+    <section class="panel events-panel">
+      <header class="events-head">
+        <div class="eyebrow">Upcoming</div>
+        <h2 id="events-title">Events</h2>
+      </header>
+      <ul class="events-list" id="events-list"></ul>
+    </section>
+  </div>
+
+  <script>
+    const events = [
+      { date: '2026-07-06', title: 'Design review', time: '3:30 PM', tag: 'Review', color: '#22c55e' },
+      { date: '2026-07-08', title: 'Client workshop', time: '11:00 AM', tag: 'Workshop', color: '#f59e0b' },
+      { date: '2026-07-12', title: 'Team standup', time: '10:00 AM', tag: 'Meeting', color: '#4f6ef7' },
+      { date: '2026-07-12', title: 'Sprint planning', time: '2:00 PM', tag: 'Planning', color: '#8b5cf6' },
+      { date: '2026-07-15', title: 'Product launch', time: '2:00 PM', tag: 'Launch', color: '#ec4899' },
+      { date: '2026-07-18', title: 'All-hands', time: '4:00 PM', tag: 'Company', color: '#06b6d4' },
+      { date: '2026-07-22', title: 'User testing', time: '1:30 PM', tag: 'Research', color: '#14b8a6' },
+    ];
+
+    const monthLabel = document.getElementById('month-label');
+    const grid = document.getElementById('grid');
+    const eventsList = document.getElementById('events-list');
+    const eventsTitle = document.getElementById('events-title');
+
+    const today = new Date(2026, 6, 6);
+    let view = new Date(2026, 6, 1);
+    let selected = new Date(2026, 6, 6);
+
+    const eventDays = new Set(events.map((e) => e.date));
+
+    function iso(y, m, d) {
+      return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    }
+
+    function sameDay(a, b) {
+      return a.getFullYear() === b.getFullYear() &&
+        a.getMonth() === b.getMonth() &&
+        a.getDate() === b.getDate();
+    }
+
+    function renderCalendar() {
+      const y = view.getFullYear();
+      const m = view.getMonth();
+      monthLabel.textContent = view.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+
+      grid.innerHTML = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+        .map((d) => `<div class="dow">${d}</div>`)
+        .join('');
+
+      const first = new Date(y, m, 1).getDay();
+      const days = new Date(y, m + 1, 0).getDate();
+
+      for (let i = 0; i < first; i++) {
+        grid.insertAdjacentHTML('beforeend', '<div class="cell is-muted" aria-hidden="true"></div>');
+      }
+
+      for (let d = 1; d <= days; d++) {
+        const date = new Date(y, m, d);
+        const key = iso(y, m, d);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'cell';
+        btn.textContent = d;
+        btn.setAttribute('aria-label', date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }));
+
+        if (sameDay(date, today)) btn.classList.add('is-today');
+        if (sameDay(date, selected)) btn.classList.add('is-selected');
+        if (eventDays.has(key)) btn.classList.add('has-event');
+
+        btn.addEventListener('click', () => {
+          selected = date;
+          renderCalendar();
+          renderEvents();
+        });
+
+        grid.appendChild(btn);
+      }
+    }
+
+    function renderEvents() {
+      const key = iso(selected.getFullYear(), selected.getMonth(), selected.getDate());
+      const dayEvents = events.filter((e) => e.date === key);
+
+      eventsTitle.textContent = selected.toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'short',
+        day: 'numeric',
+      });
+
+      if (!dayEvents.length) {
+        eventsList.innerHTML = '<li class="empty">No events scheduled for this day.</li>';
+        return;
+      }
+
+      eventsList.innerHTML = dayEvents.map((event, i) => `
+        <li class="event" style="animation-delay:${i * 0.07}s">
+          <div class="event__time">${event.time}</div>
+          <div class="event__body">
+            <strong>${event.title}</strong>
+            <div class="event__meta">
+              <span class="event__dot" style="background:${event.color}"></span>
+              ${event.tag}
+            </div>
+          </div>
+        </li>
+      `).join('');
+    }
+
+    document.getElementById('prev').addEventListener('click', () => {
+      view = new Date(view.getFullYear(), view.getMonth() - 1, 1);
+      renderCalendar();
+    });
+
+    document.getElementById('next').addEventListener('click', () => {
+      view = new Date(view.getFullYear(), view.getMonth() + 1, 1);
+      renderCalendar();
+    });
+
+    renderCalendar();
+    renderEvents();
+  </script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0849
+    slug: toasts-dark-toast-06
+    title: Glass Terminal Toast
+    category: toasts
+    tags: toasts, dark
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0849 — Glass Terminal Toast</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #06080c;
+      font-family: 'Outfit', sans-serif;
+      color: #c8d0dc;
+    }
+
+    .trigger {
+      padding: 0.85rem 1.6rem;
+      border: 1px solid rgba(200, 208, 220, 0.15);
+      border-radius: 6px;
+      background: rgba(200, 208, 220, 0.04);
+      color: #c8d0dc;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      width: min(calc(100% - 2rem), 440px);
+      background: rgba(10, 14, 22, 0.75);
+      border: 1px solid rgba(200, 208, 220, 0.1);
+      border-radius: 8px;
+      backdrop-filter: blur(20px);
+      overflow: hidden;
+      opacity: 0;
+      transform: translateX(-50%) translateY(60px);
+      transition: opacity 0.4s, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: 20;
+    }
+
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .toast::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(0deg, transparent 0 2px, rgba(0, 0, 0, 0.15) 2px 3px);
+      pointer-events: none;
+    }
+
+    .bar {
+      display: flex;
+      gap: 6px;
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid rgba(200, 208, 220, 0.06);
+      font-family: 'Syne', sans-serif;
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(200, 208, 220, 0.35);
+    }
+
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(200, 208, 220, 0.2); }
+
+    .screen {
+      padding: 1rem 1.1rem;
+      font-size: 0.82rem;
+      line-height: 1.7;
+    }
+
+    .prompt { color: rgba(94, 234, 212, 0.7); }
+    .out { color: #c8d0dc; }
+
+    .cursor {
+      display: inline-block;
+      width: 0.55ch;
+      height: 1em;
+      background: #5eead4;
+      vertical-align: -0.12em;
+      animation: blink 0.9s steps(1) infinite;
+    }
+
+    @keyframes blink { 50% { opacity: 0; } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .cursor { animation: none; }
+      .toast { transition: opacity 0.2s; transform: translateX(-50%); }
+    }
+  </style>
+</head>
+<body>
+  <button class="trigger" id="btn" type="button">Run command</button>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span> stdout</div>
+    <div class="screen">
+      <span class="prompt">→ </span><span class="out">cache invalidated · 12 keys purged</span><span class="cursor" aria-hidden="true"></span>
+    </div>
+  </div>
+
+  <script>
+    const btn = document.getElementById('btn');
+    const toast = document.getElementById('toast');
+    let timer;
+
+    btn.addEventListener('click', () => {
+      clearTimeout(timer);
+      toast.classList.add('show');
+      timer = setTimeout(() => toast.classList.remove('show'), 3000);
+    });
+  </script>
+</body>
+</html>

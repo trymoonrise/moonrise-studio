@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1815
+    slug: maps-zoom-ring-ui
+    title: Zoom Ring UI
+    category: maps
+    tags: maps, embed, experimental, widgets, motion
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1815 — Zoom Ring UI</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;padding:1.5rem;overflow:hidden;background:#0d1117;color:#fff;font-family:Syne,sans-serif}
+    iframe{border:0;width:100%;height:100%;display:block}
+    button{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit}
+    .wrap{width:min(480px,90vw);position:relative}
+.stage{aspect-ratio:1;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,.12);position:relative}
+.stage iframe{position:absolute;inset:-20%;width:140%;height:140%;transition:transform .5s cubic-bezier(.22,1,.36,1)}
+.rings{position:absolute;inset:0;pointer-events:none}
+.rings i{position:absolute;inset:var(--i);border:1px solid rgba(126,231,135,.2);border-radius:50%}
+.controls{display:flex;justify-content:center;gap:10px;margin-top:1.1rem}
+.controls button{width:48px;height:48px;border-radius:50%;border:1px solid rgba(126,231,135,.35);color:#7ee787;font-size:1.3rem;font-weight:700;transition:.25s}
+.controls button:hover{background:#7ee787;color:#0d1117}
+.meta{text-align:center;margin-top:.75rem;font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:#7ee787}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="wrap"><div class="stage"><iframe id="map" src="https://www.google.com/maps?q=Singapore&hl=en&z=12&output=embed" title="Zoom map" loading="lazy"></iframe>
+<div class="rings"><i style="--i:10%"></i><i style="--i:22%"></i><i style="--i:34%"></i></div></div>
+<div class="controls"><button id="out">−</button><button id="in">+</button></div><p class="meta" id="z">Zoom 12</p></div>
+<script>let z=12,scale=1;const map=document.getElementById('map'),label=document.getElementById('z');
+function apply(){map.style.transform='scale('+scale+')';map.src='https://www.google.com/maps?q='+encodeURIComponent('Singapore')+'&hl=en&z='+z+'&output=embed';label.textContent='Zoom '+z}
+document.getElementById('in').onclick=()=>{z=Math.min(18,z+1);scale=Math.min(1.35,scale+.08);apply()};
+document.getElementById('out').onclick=()=>{z=Math.max(8,z-1);scale=Math.max(.9,scale-.08);apply()};</script>
+</body>
+</html>

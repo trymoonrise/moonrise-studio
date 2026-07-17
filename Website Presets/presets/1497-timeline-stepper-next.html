@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1497
+    slug: timeline-stepper-next
+    title: Chapter Flip Stepper
+    category: timeline
+    tags: timeline, chapters, stepper
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1497 — Chapter Flip Stepper</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700&family=Outfit:wght@400;500;600&display=swap');
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:#14110e;display:grid;place-items:center;padding:2rem;font-family:Outfit,sans-serif;color:#f5ebe0}
+.book{width:min(400px,94vw);perspective:1000px}
+.page{background:#1e1a16;border:1px solid #3a3228;border-radius:4px 16px 16px 4px;padding:2rem 1.75rem;min-height:280px;box-shadow:12px 0 40px rgba(0,0,0,.4);transform-origin:left center;transition:transform .6s cubic-bezier(.22,1,.36,1);position:relative}
+.page.flip{transform:rotateY(-12deg)}
+.ch{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:#c4a574;margin-bottom:1rem}
+h3{font-family:Syne,sans-serif;font-size:1.5rem;margin:0 0 .75rem;letter-spacing:-.02em}
+p{margin:0;color:#a89888;line-height:1.65;font-size:.95rem}
+.spine{position:absolute;left:0;top:0;bottom:0;width:6px;background:linear-gradient(#c4a574,#8a7048)}
+.nav{display:flex;gap:.75rem;margin-top:1.25rem;justify-content:space-between}
+.nav button{padding:.65rem 1.2rem;border-radius:999px;border:1px solid #3a3228;background:#1e1a16;color:#f5ebe0;font:600 .85rem Outfit,sans-serif;cursor:pointer}
+.nav button:disabled{opacity:.35}
+  </style>
+</head>
+<body>
+<div class="book">
+  <div class="page" id="page"><div class="spine"></div><div class="ch" id="ch"></div><h3 id="t"></h3><p id="d"></p></div>
+  <div class="nav"><button id="back">← Prev</button><button id="next">Next →</button></div>
+</div>
+<script>const steps=[{c:'Chapter I',t:'Discovery',d:'Research user needs and define project scope.'},{c:'Chapter II',t:'Design',d:'Create wireframes, prototypes, and visual direction.'},{c:'Chapter III',t:'Development',d:'Build core features with performance in mind.'},{c:'Chapter IV',t:'Launch',d:'Ship to production and monitor key metrics.'}];
+let i=0;const page=document.getElementById('page');
+function render(){page.classList.add('flip');setTimeout(()=>{document.getElementById('ch').textContent=steps[i].c;document.getElementById('t').textContent=steps[i].t;document.getElementById('d').textContent=steps[i].d;page.classList.remove('flip');document.getElementById('back').disabled=i===0;document.getElementById('next').disabled=i===steps.length-1},200)}
+document.getElementById('next').onclick=()=>{if(i<steps.length-1){i++;render()}};
+document.getElementById('back').onclick=()=>{if(i>0){i--;render()}};
+document.getElementById('ch').textContent=steps[0].c;document.getElementById('t').textContent=steps[0].t;document.getElementById('d').textContent=steps[0].d;</script>
+</body>
+</html>

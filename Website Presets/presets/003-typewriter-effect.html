@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 003
+    slug: typewriter-effect
+    title: Typewriter Effect
+    category: text
+    tags: typewriter, animation
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>003 — Typewriter Effect</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+    :root {
+      --void: #050507;
+      --ink: #f4f1ea;
+      --acid: #d6ff3f;
+      --hot: #ff3d6e;
+      --ice: #4de1ff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      background: var(--void);
+      color: var(--ink);
+      font-family: Syne, sans-serif;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 70% 50% at 50% 40%, rgba(214, 255, 63, 0.08), transparent 60%),
+        radial-gradient(ellipse 50% 40% at 80% 80%, rgba(255, 61, 110, 0.1), transparent 55%),
+        radial-gradient(ellipse 40% 35% at 15% 70%, rgba(77, 225, 255, 0.08), transparent 50%);
+      z-index: 0;
+    }
+
+    /* CRT scan + noise */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      pointer-events: none;
+      opacity: 0.11;
+      background:
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 2px,
+          rgba(0, 0, 0, 0.35) 2px,
+          rgba(0, 0, 0, 0.35) 4px
+        );
+      animation: scan 7s linear infinite;
+    }
+
+    .grain {
+      position: fixed;
+      inset: 0;
+      z-index: 29;
+      pointer-events: none;
+      opacity: 0.07;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      animation: grain 0.18s steps(2) infinite;
+    }
+
+    .scene {
+      position: relative;
+      z-index: 2;
+      width: min(94vw, 920px);
+      padding: 2rem;
+    }
+
+    .hud {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(244, 241, 234, 0.35);
+    }
+
+    .hud strong {
+      color: var(--acid);
+      font-weight: 600;
+    }
+
+    .stage {
+      position: relative;
+      min-height: clamp(5.5rem, 18vw, 9rem);
+      display: flex;
+      align-items: center;
+    }
+
+    .line {
+      position: relative;
+      font-size: clamp(2.4rem, 9vw, 5.8rem);
+      font-weight: 800;
+      letter-spacing: -0.055em;
+      line-height: 0.95;
+      text-transform: none;
+    }
+
+    .line.slam {
+      animation: slam 0.18s cubic-bezier(0.2, 1.4, 0.3, 1);
+    }
+
+    .line.glitch {
+      animation: frame-glitch 0.28s steps(2);
+    }
+
+    .char {
+      display: inline-block;
+      position: relative;
+      animation: stamp-in 0.22s cubic-bezier(0.2, 1.6, 0.3, 1) both;
+    }
+
+    .char.is-space {
+      width: 0.32em;
+    }
+
+    .char::before,
+    .char::after {
+      content: attr(data-ch);
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .char.hot::before {
+      color: var(--ice);
+      animation: rgb-pop 0.28s ease-out;
+      mix-blend-mode: screen;
+    }
+
+    .char.hot::after {
+      color: var(--hot);
+      animation: rgb-pop-r 0.28s ease-out;
+      mix-blend-mode: screen;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 0.12em;
+      height: 0.92em;
+      margin-left: 0.08em;
+      vertical-align: -0.08em;
+      background: var(--acid);
+      box-shadow:
+        0 0 12px rgba(214, 255, 63, 0.8),
+        0 0 32px rgba(214, 255, 63, 0.35);
+      animation: blink 0.7s steps(1) infinite;
+    }
+
+    .line.typing .cursor {
+      animation: none;
+      opacity: 1;
+      transform: scaleY(1.08);
+    }
+
+    .sparks {
+      position: absolute;
+      inset: -20% -10%;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .spark {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--acid);
+      box-shadow: 0 0 10px var(--acid);
+      opacity: 0;
+      animation: spark 0.45s ease-out forwards;
+    }
+
+    .meta {
+      margin-top: 2.5rem;
+      display: grid;
+      gap: 0.85rem;
+    }
+
+    .bar {
+      height: 3px;
+      background: rgba(244, 241, 234, 0.08);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bar i {
+      display: block;
+      height: 100%;
+      width: var(--w, 0%);
+      background: linear-gradient(90deg, var(--hot), var(--acid), var(--ice));
+      background-size: 200% 100%;
+      animation: bar-flow 1.4s linear infinite;
+      transition: width 0.08s linear;
+      box-shadow: 0 0 16px rgba(214, 255, 63, 0.45);
+    }
+
+    .foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(244, 241, 234, 0.35);
+    }
+
+    .foot .idx {
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .foot .mode {
+      color: var(--hot);
+    }
+
+    .tear {
+      position: absolute;
+      left: -2%;
+      right: -2%;
+      height: 2px;
+      background: var(--ink);
+      mix-blend-mode: difference;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .tear.on {
+      animation: tear 0.35s steps(2);
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    @keyframes stamp-in {
+      0% {
+        transform: translateY(0.35em) scale(1.4) rotate(-6deg);
+        filter: blur(4px);
+        opacity: 0;
+      }
+      60% {
+        transform: translateY(-0.06em) scale(1.08) rotate(1deg);
+        filter: blur(0);
+        opacity: 1;
+      }
+      100% {
+        transform: none;
+        opacity: 1;
+      }
+    }
+
+    @keyframes rgb-pop {
+      0% { transform: translate(-6px, 2px); opacity: 0.9; }
+      100% { transform: translate(0, 0); opacity: 0; }
+    }
+
+    @keyframes rgb-pop-r {
+      0% { transform: translate(6px, -2px); opacity: 0.9; }
+      100% { transform: translate(0, 0); opacity: 0; }
+    }
+
+    @keyframes slam {
+      0% { transform: translateX(-4px) skewX(-3deg); filter: contrast(1.4); }
+      40% { transform: translateX(3px) skewX(2deg); }
+      100% { transform: none; filter: none; }
+    }
+
+    @keyframes frame-glitch {
+      0% { transform: none; filter: none; }
+      20% { transform: translate(-8px, 2px) skewX(-4deg); filter: hue-rotate(80deg); }
+      40% { transform: translate(10px, -3px); filter: hue-rotate(-60deg) saturate(2); }
+      60% { transform: translate(-3px, 1px) scaleY(1.05); }
+      100% { transform: none; filter: none; }
+    }
+
+    @keyframes tear {
+      0%, 100% { opacity: 0; transform: scaleX(0); }
+      30% { opacity: 1; transform: scaleX(1) translateX(-4%); top: 38%; }
+      55% { opacity: 0.8; transform: scaleX(1.05) translateX(6%); top: 62%; }
+    }
+
+    @keyframes spark {
+      0% { opacity: 1; transform: translate(0, 0) scale(1); }
+      100% { opacity: 0; transform: translate(var(--sx), var(--sy)) scale(0); }
+    }
+
+    @keyframes bar-flow {
+      to { background-position: 200% 0; }
+    }
+
+    @keyframes scan {
+      to { transform: translateY(4px); }
+    }
+
+    @keyframes grain {
+      50% { transform: translate(-1%, 1%); opacity: 0.1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .cursor, .char, .line, .bar i, body::after, .grain, .tear {
+        animation: none !important;
+      }
+      .char { opacity: 1; transform: none; filter: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+
+  <div class="scene">
+    <div class="hud">
+      <div>KEYSTRIKE // <strong id="mode">LIVE</strong></div>
+      <div id="clock">00:00:00</div>
+    </div>
+
+    <div class="stage">
+      <div class="sparks" id="sparks" aria-hidden="true"></div>
+      <div class="tear" id="tear" aria-hidden="true"></div>
+      <div class="line typing" id="line">
+        <span id="t"></span><span class="cursor" aria-hidden="true"></span>
+      </div>
+    </div>
+
+    <div class="meta">
+      <div class="bar"><i id="bar"></i></div>
+      <div class="foot">
+        <span class="mode" id="state">ENCODING</span>
+        <span class="idx" id="idx">01 / 04</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const phrases = [
+      'Type like it hurts.',
+      'Every key is a detonation.',
+      'Words arrive wrong first.',
+      'Then they land true.'
+    ];
+    const glyphs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ#%&*+/<>?!█▓▒░';
+
+    const el = document.getElementById('t');
+    const bar = document.getElementById('bar');
+    const idx = document.getElementById('idx');
+    const line = document.getElementById('line');
+    const sparks = document.getElementById('sparks');
+    const tear = document.getElementById('tear');
+    const state = document.getElementById('state');
+    const mode = document.getElementById('mode');
+    const clock = document.getElementById('clock');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let pi = 0;
+    let built = [];
+
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+    function render() {
+      el.innerHTML = built.map((ch) => {
+        if (ch === ' ') return '<span class="char is-space">&nbsp;</span>';
+        return '<span class="char hot" data-ch="' + ch + '">' + ch + '</span>';
+      }).join('');
+      // strip hot after paint so only newest pops hard
+      requestAnimationFrame(() => {
+        const chars = el.querySelectorAll('.char.hot');
+        chars.forEach((c, i) => {
+          if (i < chars.length - 1) c.classList.remove('hot');
+        });
+      });
+    }
+
+    function setProgress(n, total) {
+      bar.style.setProperty('--w', ((n / total) * 100) + '%');
+      idx.textContent =
+        String(pi + 1).padStart(2, '0') + ' / ' + String(phrases.length).padStart(2, '0');
+    }
+
+    function burst() {
+      for (let i = 0; i < 5; i++) {
+        const s = document.createElement('span');
+        s.className = 'spark';
+        s.style.left = (48 + Math.random() * 40) + '%';
+        s.style.top = (30 + Math.random() * 40) + '%';
+        s.style.setProperty('--sx', (Math.random() * 80 - 40) + 'px');
+        s.style.setProperty('--sy', (Math.random() * -60 - 10) + 'px');
+        sparks.appendChild(s);
+        setTimeout(() => s.remove(), 500);
+      }
+    }
+
+    function kick(kind) {
+      line.classList.remove('slam', 'glitch');
+      void line.offsetWidth;
+      line.classList.add(kind);
+      if (kind === 'glitch') {
+        tear.classList.remove('on');
+        void tear.offsetWidth;
+        tear.classList.add('on');
+      }
+    }
+
+    async function scrambleIn(ch) {
+      const steps = 3 + Math.floor(Math.random() * 3);
+      for (let i = 0; i < steps; i++) {
+        const fake = glyphs[Math.floor(Math.random() * glyphs.length)];
+        built[built.length - 1] = fake;
+        render();
+        await wait(18 + Math.random() * 22);
+      }
+      built[built.length - 1] = ch;
+      render();
+    }
+
+    async function typePhrase(phrase) {
+      built = [];
+      state.textContent = 'ENCODING';
+      mode.textContent = 'LIVE';
+      line.classList.add('typing');
+
+      for (let i = 0; i < phrase.length; i++) {
+        const ch = phrase[i];
+        built.push(ch === ' ' ? ' ' : glyphs[0]);
+        setProgress(i + 1, phrase.length);
+
+        if (ch !== ' ' && Math.random() > 0.35) {
+          await scrambleIn(ch);
+        } else {
+          built[built.length - 1] = ch;
+          render();
+        }
+
+        kick('slam');
+        if (Math.random() > 0.72) burst();
+        if (i > 0 && i % 7 === 0) kick('glitch');
+
+        let delay = 45 + Math.random() * 55;
+        if (ch === ' ') delay = 70 + Math.random() * 40;
+        if ('.!?'.includes(ch)) delay = 280 + Math.random() * 160;
+        if (','.includes(ch)) delay = 140 + Math.random() * 80;
+        await wait(delay);
+      }
+
+      line.classList.remove('typing');
+      state.textContent = 'LOCKED';
+      mode.textContent = 'HOLD';
+      await wait(1600);
+
+      state.textContent = 'ERASING';
+      mode.textContent = 'PURGE';
+      line.classList.add('typing');
+      kick('glitch');
+
+      while (built.length) {
+        built.pop();
+        render();
+        setProgress(built.length, phrase.length);
+        if (built.length % 3 === 0) kick('slam');
+        await wait(18 + Math.random() * 20);
+      }
+
+      await wait(280);
+    }
+
+    async function loop() {
+      if (reduced) {
+        el.textContent = phrases[0];
+        bar.style.setProperty('--w', '100%');
+        line.classList.remove('typing');
+        state.textContent = 'STATIC';
+        return;
+      }
+      while (true) {
+        await typePhrase(phrases[pi]);
+        pi = (pi + 1) % phrases.length;
+      }
+    }
+
+    function tickClock() {
+      const d = new Date();
+      clock.textContent = [d.getHours(), d.getMinutes(), d.getSeconds()]
+        .map((n) => String(n).padStart(2, '0')).join(':');
+      requestAnimationFrame(tickClock);
+    }
+
+    tickClock();
+    loop();
+  </script>
+</body>
+</html>

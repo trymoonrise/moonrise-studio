@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0505
+    slug: brutalist-offset-stack-02
+    title: Raw Offset Monolith
+    category: brutalist
+    tags: brutalist, offset
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0505 — Raw Offset Monolith</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f2f2f0;color:#0a0a0a;font-family:Outfit,sans-serif;padding:32px}
+    .stack{position:relative;width:min(380px,90vw)}
+    .block{position:relative;border:3px solid #0a0a0a;padding:28px 24px;background:#fff;transition:transform .35s cubic-bezier(.16,1,.3,1)}
+    .block:nth-child(1){transform:translate(-14px,-14px);z-index:1;background:#e8ff00}
+    .block:nth-child(2){transform:translate(0,0);z-index:2;margin-top:-80px}
+    .block:nth-child(3){transform:translate(14px,14px);z-index:3;margin-top:-80px;background:#0a0a0a;color:#fff}
+    .stack:hover .block:nth-child(1){transform:translate(-28px,-28px)}
+    .stack:hover .block:nth-child(3){transform:translate(28px,28px)}
+    .block h2{font-family:Syne,sans-serif;font-size:2rem;margin:0 0 8px;letter-spacing:-.04em;text-transform:uppercase}
+    .block p{margin:0;font-size:.85rem;line-height:1.5;opacity:.7}
+    .tag{font:700 .6rem Syne,sans-serif;letter-spacing:.2em;margin-bottom:12px;display:block}
+    @keyframes jitter{0%,100%{transform:translate(0)}50%{transform:translate(1px,-1px)}}
+    .stack:active .block:nth-child(2){animation:jitter .15s ease 2}
+    @media(prefers-reduced-motion:reduce){.block{transform:none!important;margin-top:12px!important}.stack:hover .block{transform:none}}
+  </style>
+</head>
+<body>
+<div class="stack">
+  <div class="block"><span class="tag">Layer A</span><h2>Offset</h2><p>Hard-edged displacement without apology.</p></div>
+  <div class="block"><span class="tag">Layer B</span><h2>Stack</h2><p>Brutalist hierarchy through raw geometry.</p></div>
+  <div class="block"><span class="tag">Layer C</span><h2>Monolith</h2><p>Hover to expand the fracture.</p></div>
+</div>
+</body>
+</html>

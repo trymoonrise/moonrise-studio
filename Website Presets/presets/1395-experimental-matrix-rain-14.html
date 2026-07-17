@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1395
+    slug: experimental-matrix-rain-14
+    title: Matrix Rain 14
+    category: experimental
+    tags: experimental, matrix
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1395 — Matrix Rain 14</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#000;overflow:hidden}canvas{display:block
+  </style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>const c=document.getElementById('c'),x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;const cols=Math.floor(c.width/14),y=Array(cols).fill(0);function d(){x.fillStyle='rgba(0,0,0,.05)';x.fillRect(0,0,c.width,c.height);x.fillStyle='#0f0';x.font='14px monospace';y.forEach((v,i)=>{x.fillText(String.fromCharCode(0x30A0+Math.random()*96),i*14,v);if(v>c.height&&Math.random()>.975)y[i]=0;y[i]+=14;});requestAnimationFrame(d);}d();</script>
+</body>
+</html>

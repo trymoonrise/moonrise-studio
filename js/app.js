@@ -6,18 +6,9 @@
     { id: "dashboard", href: "dashboard.html", label: "Dashboard", icon: "grid" },
     { id: "leads", href: "leads.html", label: "Business Finder", icon: "search" },
     { id: "builder", href: "builder.html", label: "Builder", icon: "hammer" },
-    { id: "projects", href: "projects.html", label: "Projects", icon: "folder" },
-    { id: "finance", href: "finance.html", label: "Finance", icon: "dollar" },
+    { id: "clients", href: "clients.html", label: "My clients", icon: "users" },
     { id: "store", href: "store.html", label: "Store", icon: "bag", soon: true },
   ];
-
-  const OWNER_MENU_ITEM = {
-    id: "clients",
-    href: "clients.html",
-    label: "My clients",
-    icon: "users",
-    after: "builder",
-  };
 
   const ACCOUNT = [
     { id: "settings", href: "settings.html", label: "Settings", icon: "gear" },
@@ -28,6 +19,13 @@
       href: (window.SITE_CONFIG && window.SITE_CONFIG.telegramUrl) || "https://t.me/c/3541685239/1",
       label: "Telegram",
       icon: "telegram",
+      external: true,
+    },
+    {
+      id: "discord",
+      href: (window.SITE_CONFIG && window.SITE_CONFIG.discordUrl) || "https://discord.gg/yFJajbBNj",
+      label: "Discord",
+      icon: "discord",
       external: true,
     },
   ];
@@ -42,13 +40,14 @@
     help: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>',
     gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
     telegram: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.5 4.3 3.7 11.1c-1.2.5-1.2 1.2-.2 1.5l4.6 1.4 1.8 5.4c.2.6.4.8 1 .8.5 0 .8-.2 1.1-.5l2.7-2.6 4.5 3.3c.8.5 1.4.2 1.6-.8L23 5.5c.3-1.2-.5-1.8-1.5-1.2zM9.4 14.5l9.7-6.1c.5-.3.9 0 .5.3l-7.9 7.1-.3 3.2-2-4.5z"/></svg>',
+    discord: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.37a19.8 19.8 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.3 18.3 0 0 0-5.487 0 12.6 12.6 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.7 19.7 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.08.08 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.1 13.1 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.8 19.8 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>',
     spark: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.2 6.3L19 10l-5.8 1.7L12 18l-1.2-6.3L5 10l5.8-1.7L12 2z"/></svg>',
     logout: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>',
     layers: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>',
-    folder: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>',
     user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
     users: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
     bag: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
+    external: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>',
   };
 
   const OWNER_NAV_KEY = "ms_owner_nav_v1";
@@ -155,13 +154,8 @@
 
   window.StudioOwner = { isSiteOwner, gateOwnerPage, ownerHandles };
 
-  function menuItems(includeOwner) {
-    if (!includeOwner) return MENU.slice();
-    const items = MENU.slice();
-    const idx = items.findIndex((item) => item.id === OWNER_MENU_ITEM.after);
-    const insertAt = idx >= 0 ? idx + 1 : items.length;
-    items.splice(insertAt, 0, OWNER_MENU_ITEM);
-    return items;
+  function menuItems() {
+    return MENU.slice();
   }
 
   function brandLogo() {
@@ -209,8 +203,14 @@
         '"'
       : "";
     const href = item.external ? "#" : item.href;
+    const externalMark = item.external
+      ? '<span class="ms-nav-external" aria-hidden="true" title="Opens externally">' +
+        ICONS.external +
+        "</span>"
+      : "";
     return (
       '<a class="ms-nav-link' +
+      (item.external ? " is-external" : "") +
       active +
       '" href="' +
       href +
@@ -224,7 +224,9 @@
       "</span>" +
       '<span class="ms-nav-label">' +
       item.label +
-      "</span></a>"
+      "</span>" +
+      externalMark +
+      "</a>"
     );
   }
 
@@ -255,7 +257,7 @@
   const SIDEBAR_LEGAL = [
     { id: "privacy", href: "privacy.html", label: "Privacy" },
     { id: "terms", href: "terms.html", label: "Terms" },
-    { id: "help", href: "help.html", label: "Help" },
+    { id: "finance", href: "finance.html", label: "Finance" },
   ];
 
   function sidebarLegal(page) {
@@ -290,8 +292,7 @@
     const shell = document.getElementById("shell");
     if (!shell) return;
 
-    const includeOwner = !!(opts && opts.includeOwner);
-    const menuHtml = menuItems(includeOwner)
+    const menuHtml = menuItems()
       .map((item) => navLink(item, page))
       .join("");
     const accountHtml = ACCOUNT.map((item) => navLink(item, page)).join("");
@@ -315,6 +316,8 @@
       sidebarLegal(page) +
       '<div class="ms-sidebar-foot">' +
       '<div class="ms-user-row">' +
+      '<a class="ms-user-profile" href="settings.html" aria-label="Open settings">' +
+      '<div class="ms-user-avatar-wrap">' +
       '<div class="ms-user-avatar is-loading" id="ms-user-avatar" aria-hidden="true">' +
       '<span class="ms-user-avatar-spin" id="ms-user-avatar-spin" aria-hidden="true"></span>' +
       '<span id="ms-user-avatar-initial" hidden>M</span>' +
@@ -322,9 +325,12 @@
       bootAvatar +
       '" alt="" width="38" height="38" decoding="async" fetchpriority="high">' +
       "</div>" +
+      '<span class="ms-user-status" title="Online" aria-hidden="true"></span>' +
+      "</div>" +
       '<div class="ms-user-meta">' +
       '<strong class="ms-user-name" id="ms-user-name">Loading…</strong>' +
       "</div>" +
+      "</a>" +
       '<button type="button" class="ms-user-logout" id="ms-signout" aria-label="Sign out">' +
       ICONS.logout +
       "</button>" +
@@ -401,49 +407,30 @@
     initSidebarResize();
   }
 
-  /** Insert My clients without rebuilding the whole sidebar (avoids channel flash). */
-  function ensureOwnerNavItem() {
-    if (document.querySelector('[data-nav="clients"]')) return;
-    const page = document.body?.dataset?.page || "";
-    const mainNav = document.querySelector('.ms-nav-group .ms-nav[aria-label="Main"]');
-    if (!mainNav) return;
-    const after = mainNav.querySelector('[data-nav="' + OWNER_MENU_ITEM.after + '"]');
-    const html = navLink(OWNER_MENU_ITEM, page);
-    const wrap = document.createElement("div");
-    wrap.innerHTML = html;
-    const link = wrap.firstElementChild;
-    if (!link) return;
-    // Avoid transition flash on late insert
-    link.style.transition = "none";
-    if (after && after.nextSibling) {
-      mainNav.insertBefore(link, after.nextSibling);
-    } else if (after) {
-      mainNav.appendChild(link);
-    } else {
-      mainNav.appendChild(link);
-    }
-    requestAnimationFrame(function () {
-      link.style.transition = "";
-    });
-  }
-
-  function removeOwnerNavItem() {
-    document.querySelectorAll('[data-nav="clients"]').forEach((el) => el.remove());
-  }
-
   const TELEGRAM_LOGO =
     '<svg class="ms-telegram-logo" viewBox="0 0 240 240" aria-hidden="true" focusable="false">' +
-    '<defs><linearGradient id="ms-tg-grad" x1="50%" y1="0%" x2="50%" y2="100%">' +
-    '<stop offset="0%" stop-color="#2AABEE"/><stop offset="100%" stop-color="#229ED9"/>' +
-    "</linearGradient></defs>" +
-    '<circle cx="120" cy="120" r="120" fill="url(#ms-tg-grad)"/>' +
-    '<path fill="#FFF" d="M81.229 129.86s38.688-16.426 58.802-24.65c7.762-3.07 33.252-13.775 33.252-13.775s11.878-4.613 10.91 6.531c-.323 4.603-2.91 20.652-4.847 38.07-2.91 24.65-6.456 51.652-6.456 51.652s-.485 11.13-10.263 12.938c-9.778 1.808-23.275-7.27-25.859-9.724-2.101-2.1-19.372-12.615-26.168-18.403-1.939-1.616-4.2-4.847.323-8.724 9.778-8.401 21.631-18.726 28.75-25.375 3.232-2.91 6.455-9.723-3.555-1.616-14.533 11.777-29.39 22.75-29.39 22.75s-6.778 4.2-19.372.323c-12.615-3.878-27.428-8.886-27.428-8.886s-10.101-6.294 7.116-12.777z"/>' +
+    '<circle cx="120" cy="120" r="120" fill="#2AABEE"/>' +
+    '<path fill="#FFF" d="M54.6 117.4c35.5-15.5 59.2-25.7 71-30.7 33.6-14 40.6-16.4 45.1-16.5 1 0 3.2.2 4.7 1.4 1.2 1 1.6 2.3 1.7 3.3.2 1 .4 3.3.2 5.1-1.9 20.1-10.1 68.9-14.3 91.4-1.8 9.5-5.3 12.7-8.7 13-7.4.6-13-4.9-20.2-9.6-11.2-7.3-17.5-11.9-28.4-19.1-12.6-8.3-4.4-12.8 2.8-20.3 1.9-1.9 34.4-31.5 35-33.4.1-.2.1-1.1-.4-1.5-.5-.4-1.2-.3-1.7-.2-.7.2-12.2 7.8-34.5 22.8-3.3 2.2-6.2 3.3-8.9 3.3-2.9 0-8.6-1.7-12.8-3.1-5.1-1.7-9.2-2.6-8.8-5.5.2-1.5 2.2-3.1 6.1-4.8z"/>' +
     "</svg>";
+
+  const DISCORD_LOGO =
+    '<svg class="ms-discord-logo" viewBox="0 0 240 240" aria-hidden="true" focusable="false">' +
+    '<circle cx="120" cy="120" r="120" fill="#5865F2"/>' +
+    '<g transform="translate(52.5 66) scale(1.06)">' +
+    '<path fill="#FFF" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.5 0A72.37 72.37 0 0 0 45.25 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.92-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.45-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/>' +
+    "</g></svg>";
 
   function telegramUrl() {
     return (
       (window.SITE_CONFIG && window.SITE_CONFIG.telegramUrl) ||
       "https://t.me/c/3541685239/1"
+    );
+  }
+
+  function discordUrl() {
+    return (
+      (window.SITE_CONFIG && window.SITE_CONFIG.discordUrl) ||
+      "https://discord.gg/yFJajbBNj"
     );
   }
 
@@ -458,7 +445,7 @@
     el.innerHTML =
       '<div class="ms-redirect-card" role="dialog" aria-modal="true" aria-labelledby="ms-redirect-title">' +
       '<header class="ms-redirect-head">' +
-      '<div class="ms-redirect-icon ms-redirect-icon--telegram" aria-hidden="true">' +
+      '<div class="ms-redirect-icon ms-redirect-icon--telegram" id="ms-redirect-icon" aria-hidden="true">' +
       TELEGRAM_LOGO +
       "</div>" +
       '<h2 id="ms-redirect-title">Open Telegram?</h2>' +
@@ -491,11 +478,19 @@
 
   function openRedirectConfirm(url, label) {
     ensureRedirectModal();
-    pendingRedirectUrl = String(url || telegramUrl()).trim() || telegramUrl();
+    const name = String(label || "Telegram").trim() || "Telegram";
+    const isDiscord = /discord/i.test(name) || /discord\.gg/i.test(String(url || ""));
+    pendingRedirectUrl =
+      String(url || "").trim() || (isDiscord ? discordUrl() : telegramUrl());
     const title = document.getElementById("ms-redirect-title");
     const copy = document.querySelector("#ms-redirect-modal .ms-redirect-copy");
     const goBtn = document.getElementById("ms-redirect-go");
-    const name = String(label || "Telegram").trim() || "Telegram";
+    const icon = document.getElementById("ms-redirect-icon");
+    if (icon) {
+      icon.className =
+        "ms-redirect-icon " + (isDiscord ? "ms-redirect-icon--discord" : "ms-redirect-icon--telegram");
+      icon.innerHTML = isDiscord ? DISCORD_LOGO : TELEGRAM_LOGO;
+    }
     if (title) title.textContent = "Open " + name + "?";
     if (copy) {
       copy.innerHTML =
@@ -832,36 +827,29 @@
   }
 
   async function boot() {
-    // Paint owner item on first frame when we already know (kills refresh glitch)
-    buildShell({ includeOwner: shouldIncludeOwnerNav() });
+    buildShell();
     document.body.classList.add("ms-ready");
     document.dispatchEvent(new Event("ms:shell-ready"));
 
     if (window.StudioAuth?.requireAuth) {
       try {
-        await window.StudioAuth.requireAuth();
+        const session = await window.StudioAuth.requireAuth();
+        if (session && window.StudioAuth.ensureFinanceOnboarding) {
+          const redirected = await window.StudioAuth.ensureFinanceOnboarding();
+          if (redirected === "redirect") return;
+        }
       } catch (e) {
         console.warn(e);
       }
     }
 
-    const identity = await hydrateUser().catch(() => ({ handle: "", avatarUrl: "" }));
-    const owner = await isSiteOwner(identity.handle);
-    writeOwnerNavCache(owner, identity.handle);
-    if (owner) ensureOwnerNavItem();
-    else removeOwnerNavItem();
+    await hydrateUser().catch(() => ({ handle: "", avatarUrl: "" }));
 
     document.addEventListener("ms:avatar-changed", (e) => {
       const nameEl = document.getElementById("ms-user-name");
       const handle = e.detail?.handle || nameEl?.textContent || "M";
       if (nameEl && e.detail?.handle) nameEl.textContent = e.detail.handle;
       setSidebarAvatar(e.detail?.url || "", handle);
-      // Keep owner nav cache in sync if handle changes
-      void isSiteOwner(handle).then((ok) => {
-        writeOwnerNavCache(ok, handle);
-        if (ok) ensureOwnerNavItem();
-        else removeOwnerNavItem();
-      });
     });
     document.body.dataset.msAuthFired = "1";
     document.dispatchEvent(new Event("ms:auth-ready"));

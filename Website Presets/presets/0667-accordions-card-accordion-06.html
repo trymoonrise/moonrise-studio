@@ -1,0 +1,13 @@
+﻿<!DOCTYPE html>
+<html lang="en"><head>
+  <!--
+    @preset
+    id: 0667
+    slug: accordions-card-accordion-06
+    title: Card Accordion 06
+    category: accordions
+    tags: accordions, card
+  -->
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>0667 — Card Accordion 06</title>
+  <style>@import url('../shared/preset-reset.css');@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap');*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f4f4f0;padding:2rem;font-family:Inter,sans-serif}.cards{width:min(500px,100%);display:grid;gap:.85rem}.item{background:#fff;border-radius:22px;border:1px solid #e9e6de;box-shadow:0 12px 28px rgba(0,0,0,.04);overflow:hidden}.trigger{width:100%;padding:1rem 1.1rem;border:0;background:none;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font:600 .94rem Inter,sans-serif;text-align:left}.chip{padding:.25rem .5rem;border-radius:999px;background:#f2efe8;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:#777}.panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s cubic-bezier(.22,1,.36,1)}.panel>div{overflow:hidden}.panel p{margin:0;padding:0 1.1rem 1rem;color:#696356;font-size:.88rem;line-height:1.68}.item.open .chip{background:#111;color:#fff}.item.open .panel{grid-template-rows:1fr}@media(prefers-reduced-motion:reduce){.panel{transition:none}}</style>
+</head><body><div class="cards"><div class="item open"><button class="trigger"><span>Card-based explanation</span><span class="chip">Open</span></button><div class="panel"><div><p>This version turns the accordion into a stack of soft cards, better suited for marketing or onboarding screens.</p></div></div></div><div class="item"><button class="trigger"><span>Minimal badge state</span><span class="chip">Info</span></button><div class="panel"><div><p>The badge provides just enough state without introducing heavy icons or chevrons.</p></div></div></div><div class="item"><button class="trigger"><span>Simple, modern spacing</span><span class="chip">More</span></button><div class="panel"><div><p>Rounded corners and subtle borders keep the style current while the animation remains very light.</p></div></div></div></div><script>document.querySelectorAll('.item .trigger').forEach((button)=>button.addEventListener('click',()=>button.parentElement.classList.toggle('open')));</script></body></html>

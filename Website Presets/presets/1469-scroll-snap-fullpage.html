@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1469
+    slug: scroll-snap-fullpage
+    title: Fullpage Snap Sections
+    category: scroll-sections
+    tags: scroll, snap, fullpage
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1469 — Fullpage Snap Sections</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    html{scroll-snap-type:y mandatory;scroll-behavior:smooth}body{margin:0}.page{min-height:100vh;scroll-snap-align:start;scroll-snap-stop:always;display:grid;place-items:center;font-size:clamp(2rem,6vw,4rem);font-weight:900;color:#fff}.page:nth-child(1){background:#6c8cff}.page:nth-child(2){background:#ff6cb0}.page:nth-child(3){background:#6cffb8;color:#111}.page:nth-child(4){background:#111}.page span{font-size:1rem;font-weight:400;opacity:.6;display:block;margin-top:.5rem}
+  </style>
+</head>
+<body>
+<section class="page">Welcome<span>1 / 4</span></section><section class="page">Explore<span>2 / 4</span></section><section class="page">Create<span>3 / 4</span></section><section class="page">Launch<span>4 / 4</span></section>
+
+</body>
+</html>

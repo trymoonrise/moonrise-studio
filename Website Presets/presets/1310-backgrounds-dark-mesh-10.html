@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1310
+    slug: backgrounds-dark-mesh-10
+    title: Dark Mesh 10
+    category: backgrounds
+    tags: backgrounds, dark
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1310 — Dark Mesh 10</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');body{margin:0;min-height:100vh;display:grid;place-items:center;overflow:hidden;position:relative;background:#050505;color:#fff;font-family:"DM Sans",system-ui,-apple-system,sans-serif}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+    .m{position:absolute;border-radius:50%;filter:blur(80px);animation:float 20s ease-in-out infinite}
+    .m--1{width:50vmax;height:50vmax;background:#2a2a2a;top:-15%;left:-10%}
+    .m--2{width:40vmax;height:40vmax;background:#141414;bottom:-20%;right:-5%;animation-duration:24s;animation-direction:reverse}
+    .m--3{width:30vmax;height:30vmax;background:#3d3d3d;top:40%;left:35%;opacity:.5;animation-duration:16s}
+    @keyframes float{0%,100%{transform:translate(0,0)}50%{transform:translate(5%,-8%)}}
+    .vignette{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 30%,#050505 85%);pointer-events:none}
+    
+.label{position:relative;z-index:2;text-align:center;padding:2rem;pointer-events:none}
+.kicker{margin:0 0 .75rem;font-size:.65rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;opacity:.45}
+h1{margin:0;font-family:"Syne",system-ui,sans-serif;font-size:clamp(1.85rem,5vw,2.85rem);font-weight:800;letter-spacing:-.045em;line-height:1.05}
+.sub{margin:.7rem 0 0;font-size:.9rem;opacity:.5;font-weight:400}
+  </style>
+</head>
+<body>
+<div class="m m--1" aria-hidden="true"></div><div class="m m--2" aria-hidden="true"></div><div class="m m--3" aria-hidden="true"></div><div class="vignette" aria-hidden="true"></div><div class="label"><p class="kicker">Background</p><h1>Dark mesh</h1><p class="sub">Depth without color.</p></div>
+
+</body>
+</html>

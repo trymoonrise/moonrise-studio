@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1198
+    slug: countdown-ring-countdown-04
+    title: Arc Ring Countdown
+    category: countdown
+    tags: countdown, ring, arc, svg
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1198 — Arc Ring Countdown</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0b0d12;color:#e4e8ef;font-family:Outfit,sans-serif;padding:2rem}
+    .ring-wrap{position:relative;width:240px;height:240px}
+    svg{width:100%;height:100%;transform:rotate(-90deg)}
+    .track{fill:none;stroke:rgba(255,255,255,.06);stroke-width:8}
+    .arc{fill:none;stroke:url(#grad);stroke-width:8;stroke-linecap:round;stroke-dasharray:628;transition:stroke-dashoffset 1s linear;filter:drop-shadow(0 0 8px rgba(56,189,248,.4))}
+    .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .num{font-family:Syne,sans-serif;font-size:3.5rem;font-weight:800;letter-spacing:-.06em;line-height:1}
+    .lbl{font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(228,232,239,.4);margin-top:.25rem}
+    .pct{font-size:.75rem;color:#38bdf8;margin-top:.5rem;animation:pct-pulse 2s ease infinite}
+    @keyframes pct-pulse{0%,100%{opacity:1}50%{opacity:.5}}
+    @media(prefers-reduced-motion:reduce){.pct{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="ring-wrap">
+    <svg viewBox="0 0 240 240">
+      <defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#0ea5e9"/><stop offset="100%" stop-color="#38bdf8"/></linearGradient></defs>
+      <circle class="track" cx="120" cy="120" r="100"/>
+      <circle class="arc" id="arc" cx="120" cy="120" r="100"/>
+    </svg>
+    <div class="center">
+      <div class="num" id="num">05:00</div>
+      <div class="lbl">Remaining</div>
+      <div class="pct" id="pct">100%</div>
+    </div>
+  </div>
+  <script>
+    const total=300;let sec=total;const arc=document.getElementById('arc'),num=document.getElementById('num'),pct=document.getElementById('pct');const circ=2*Math.PI*100;
+    arc.style.strokeDasharray=circ;
+    setInterval(()=>{sec=Math.max(0,sec-1);const m=Math.floor(sec/60),s=sec%60;num.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;arc.style.strokeDashoffset=circ*(1-sec/total);pct.textContent=Math.round(sec/total*100)+'%'},1000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1831
+    slug: animation-field-lines
+    title: Magnetic Field Lines
+    category: animation
+    tags: animation, cursor, svg, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1831 — Magnetic Field Lines</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');*{box-sizing:border-box}
+      body{margin:0;min-height:100vh;background:#0a0a0a;color:#fff;font-family:"DM Sans",system-ui,-apple-system,sans-serif;overflow:hidden;cursor:crosshair}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+      canvas{position:absolute;inset:0;width:100%;height:100%}
+      .label{position:relative;z-index:1;min-height:100vh;display:grid;place-items:center;pointer-events:none;text-align:center}
+      h1{margin:0;font-family:"Syne",system-ui,sans-serif;font-size:clamp(2rem,6vw,3.5rem);font-weight:800;letter-spacing:-.05em}
+      p{margin:.6rem 0 0;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:#555}
+  </style>
+</head>
+<body>
+<canvas id="c" aria-hidden="true"></canvas><div class="label"><div><h1>Field lines</h1><p>Move to bend space</p></div></div>
+<script>const c=document.getElementById('c'),x=c.getContext('2d');let mx=innerWidth/2,my=innerHeight/2,pts=[];
+function resize(){c.width=innerWidth;c.height=innerHeight;pts=[];const cols=14,rows=10;for(let i=0;i<=cols;i++)for(let j=0;j<=rows;j++)pts.push({x:i/cols*c.width,y:j/rows*c.height,ox:i/cols*c.width,oy:j/rows*c.height});}
+resize();addEventListener('resize',resize);addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+function frame(){x.clearRect(0,0,c.width,c.height);x.strokeStyle='rgba(255,255,255,.18)';x.lineWidth=1;
+pts.forEach(p=>{const dx=p.ox-mx,dy=p.oy-my,d=Math.hypot(dx,dy)||1,f=Math.min(80,1800/d);p.x=p.ox+dx/d*f*.15;p.y=p.oy+dy/d*f*.15;});
+for(let i=0;i<pts.length;i++){const p=pts[i];if(i%11!==10){const q=pts[i+1];if(q){x.beginPath();x.moveTo(p.x,p.y);x.lineTo(q.x,q.y);x.stroke();}}
+if(i+11<pts.length){const q=pts[i+11];x.beginPath();x.moveTo(p.x,p.y);x.lineTo(q.x,q.y);x.stroke();}}
+requestAnimationFrame(frame);}frame();</script>
+</body>
+</html>

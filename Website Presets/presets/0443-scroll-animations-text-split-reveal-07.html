@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0443
+    slug: scroll-animations-text-split-reveal-07
+    title: Text Split Reveal 07
+    category: scroll-animations
+    tags: scroll-animations, text
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0443 — Text Split Reveal 07</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#060d14;color:#d8eeff;font-family:system-ui}.track{height:220vh}.sticky{position:sticky;top:0;height:100vh;display:grid;place-items:center}.word{font-size:clamp(2.6rem,8vw,6rem);font-weight:950;letter-spacing:-.04em;line-height:1}.top,.bot{display:block;overflow:hidden}.top span{display:inline-block;transform:translateY(calc((1 - var(--p,0))*120%)) skewY(-8deg)}.bot span{display:inline-block;transform:translateY(calc((1 - var(--p,0))*-120%)) skewY(8deg)}.sub{margin-top:1rem;color:rgba(216,238,255,.65)}
+  </style>
+</head>
+<body>
+<div class="track" id="t"><div class="sticky"><div style="text-align:center"><div class="word" id="w"><span class="top"><span>SPLIT</span></span><span class="bot"><span>REVEAL</span></span></div><div class="sub">Two halves meet in the middle.</div></div></div></div>
+<script>const _el=document.querySelector('#t');function prog(){const r=_el.getBoundingClientRect();return Math.min(1,Math.max(0,-r.top/(r.height-innerHeight)));}const w=document.getElementById('w');addEventListener('scroll',()=>w.style.setProperty('--p',String(prog())),{passive:true});</script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1820
+    slug: maps-magnetic-pin-cluster
+    title: Magnetic Pin Cluster
+    category: maps
+    tags: maps, embed, experimental, widgets, motion
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1820 — Magnetic Pin Cluster</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;padding:1.5rem;overflow:hidden;background:#111827;color:#fff;font-family:Syne,sans-serif}
+    iframe{border:0;width:100%;height:100%;display:block}
+    button{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit}
+    .wrap{width:min(540px,94vw)}.stage{position:relative;aspect-ratio:16/10;border-radius:26px;overflow:hidden;border:1px solid rgba(255,255,255,.1)}
+.cluster{position:absolute;left:50%;top:45%;width:70px;height:70px;margin:-35px;transition:transform .5s cubic-bezier(.22,1,.36,1)}
+.pin{position:absolute;width:18px;height:18px;background:#f472b6;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 6px 16px rgba(0,0,0,.35);transition:transform .6s cubic-bezier(.34,1.4,.64,1)}
+.stage:hover .cluster{transform:scale(1.15)}
+.stage:hover .pin:nth-child(1){transform:rotate(-45deg) translate(-28px,-20px)}
+.stage:hover .pin:nth-child(2){transform:rotate(-45deg) translate(24px,-28px)}
+.stage:hover .pin:nth-child(3){transform:rotate(-45deg) translate(-18px,26px)}
+.stage:hover .pin:nth-child(4){transform:rotate(-45deg) translate(30px,18px)}
+.stage:hover .pin:nth-child(5){transform:rotate(-45deg) translate(0,-36px)}
+.hint{margin-top:.9rem;text-align:center;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:#f9a8d4}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="wrap"><div class="stage"><iframe src="https://www.google.com/maps?q=Montreal%2C%20Canada&hl=en&z=12&output=embed" title="Cluster map" loading="lazy"></iframe>
+<div class="cluster"><span class="pin"></span><span class="pin"></span><span class="pin"></span><span class="pin"></span><span class="pin"></span></div>
+</div><p class="hint">Hover to explode cluster</p></div>
+
+</body>
+</html>

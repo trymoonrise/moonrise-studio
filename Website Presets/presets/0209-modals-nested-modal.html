@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0209
+    slug: modals-nested-modal
+    title: Stacked Modal
+    category: modals
+    tags: modals, nested
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0209 — Stacked Modal</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#fafafa}.btn{padding:10px 20px;background:#111;color:#fff;border:none;border-radius:8px;cursor:pointer;margin:4px}.overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;place-items:center;z-index:10}.overlay.open{display:grid}.modal{background:#fff;border-radius:12px;padding:1.5rem;width:300px;box-shadow:0 8px 32px rgba(0,0,0,.15)}.modal.z2{z-index:20}
+  </style>
+</head>
+<body>
+<button class="btn" id="o1">Open First</button><div class="overlay" id="ov1"><div class="modal"><h3>First Modal</h3><button class="btn" id="o2" style="margin-top:1rem">Open Second</button></div></div><div class="overlay z2" id="ov2"><div class="modal"><h3>Second Modal</h3><button class="btn" id="c2" style="margin-top:1rem">Close</button></div></div>
+<script>document.getElementById('o1').onclick=()=>document.getElementById('ov1').classList.add('open');document.getElementById('o2').onclick=()=>document.getElementById('ov2').classList.add('open');document.getElementById('c2').onclick=()=>document.getElementById('ov2').classList.remove('open');</script>
+</body>
+</html>

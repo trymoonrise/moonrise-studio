@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1694
+    slug: scroll-reveal-typewriter-cascade
+    title: Typewriter Cascade Scroll
+    category: animation
+    tags: scroll, reveal, typewriter, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1694 — Typewriter Cascade Scroll</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Source+Sans+3:wght@400;600&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;background:#1a1814;color:#f0e6d2;font-family:'Source Sans 3',sans-serif}
+    .hero{min-height:100vh;display:grid;place-items:center;text-align:center;padding:2rem;background:radial-gradient(ellipse at 50% 40%,#2a241c,#1a1814 65%)}
+    .hero h1{font-family:'Special Elite',serif;font-size:clamp(2.5rem,10vw,5rem);margin:0}
+    .hero p{opacity:.5;margin-top:1rem;font-size:.9rem}
+    .rail{max-width:640px;margin:0 auto;padding:0 1.5rem 40vh;display:grid;gap:24vh}
+    .sheet{
+      --p:0;padding:2rem;background:#f4ead7;color:#1a1510;border-radius:4px;
+      box-shadow:0 24px 60px rgba(0,0,0,.35),inset 0 0 0 1px rgba(0,0,0,.06);
+      transform:rotate(calc((1 - var(--p))*-2deg)) translateY(calc((1 - var(--p))*40px));
+      opacity:calc(0.25 + var(--p)*.75);
+    }
+    .sheet h2{
+      font-family:'Special Elite',serif;font-size:clamp(1.4rem,3.5vw,1.9rem);margin:0 0 1rem;
+      border-bottom:2px solid #1a1510;padding-bottom:.75rem;
+    }
+    .typed{font-family:'Special Elite',serif;font-size:1.05rem;line-height:1.85;min-height:4.5em;white-space:pre-wrap}
+    .typed .ch{opacity:0}
+    .typed .ch.on{opacity:1}
+    .cursor{display:inline-block;width:10px;height:1.1em;background:#1a1510;margin-left:2px;vertical-align:text-bottom;animation:blink .6s step-end infinite;opacity:0}
+    .sheet.writing .cursor{opacity:1}
+    @keyframes blink{50%{opacity:0}}
+    @media (prefers-reduced-motion:reduce){.typed .ch{opacity:1}.cursor{display:none}.sheet{transform:none;opacity:1}}
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div>
+      <h1>TYPESCRIPT</h1>
+      <p>Scroll types the page like a possessed typewriter</p>
+    </div>
+  </header>
+  <main class="rail">
+    <article class="sheet" data-sheet data-text="The first draft arrives one keystroke at a time. Scroll is the finger on the keys — progress decides how much ink hits the page.">
+      <h2>Page one</h2>
+      <div class="typed"></div><span class="cursor" aria-hidden="true"></span>
+    </article>
+    <article class="sheet" data-sheet data-text="Nothing fades in politely. Letters stamp themselves into existence with mechanical certainty, then wait for the next line.">
+      <h2>Page two</h2>
+      <div class="typed"></div><span class="cursor" aria-hidden="true"></span>
+    </article>
+    <article class="sheet" data-sheet data-text="Scroll backward and the machine erases. Forward, and it writes again. The document is never finished — only paused.">
+      <h2>Page three</h2>
+      <div class="typed"></div><span class="cursor" aria-hidden="true"></span>
+    </article>
+  </main>
+  <script>
+    const sheets=[...document.querySelectorAll('[data-sheet]')];
+    const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    sheets.forEach(s=>{
+      const text=s.dataset.text||'';
+      const typed=s.querySelector('.typed');
+      typed.innerHTML=[...text].map(c=>`<span class="ch">${c===' '?'&nbsp;':c}</span>`).join('');
+    });
+
+    function clamp(n,a,b){return Math.min(b,Math.max(a,n))}
+    function tick(){
+      sheets.forEach(s=>{
+        const chars=[...s.querySelectorAll('.ch')];
+        if(reduced){
+          chars.forEach(c=>c.classList.add('on'));
+          s.style.setProperty('--p','1');
+          return;
+        }
+        const r=s.getBoundingClientRect(),vh=innerHeight;
+        const p=clamp((vh*.85-r.top)/(vh*.55),0,1);
+        s.style.setProperty('--p',p.toFixed(4));
+        const count=Math.floor(p*chars.length);
+        chars.forEach((c,i)=>c.classList.toggle('on',i<count));
+        s.classList.toggle('writing',p>0&&p<1);
+      });
+    }
+    tick();
+    addEventListener('scroll',tick,{passive:true});
+    addEventListener('resize',tick,{passive:true});
+  </script>
+</body>
+</html>

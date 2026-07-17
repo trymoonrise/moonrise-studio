@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0493
+    slug: split-screens-sticky-split-04
+    title: Sticky Split 04
+    category: split-screens
+    tags: split-screens, experimental, mask, shapes
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0493 — Sticky Split 04</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;overflow:hidden;font-family:Syne,sans-serif;background:#0e1016;color:#fff}
+    .pin{height:300vh}body{overflow:auto}
+.stage{position:sticky;top:0;height:100vh;display:grid;grid-template-columns:45% 55%}
+.fixed{background:#0e1016;display:flex;flex-direction:column;justify-content:center;padding:2.5rem;border-right:1px solid rgba(255,255,255,.1)}
+.fixed h1{font-family:'Instrument Serif',serif;font-weight:400;font-style:italic;font-size:clamp(2.2rem,5vw,3.5rem);margin:0 0 1rem}
+.fixed p{font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.4);margin:0}
+.scroll{overflow:hidden;position:relative}
+.strip{transition:transform .08s linear}
+.block{height:100vh;display:grid;place-items:center;font-size:clamp(3rem,10vw,6rem);font-weight:800;letter-spacing:-.07em}
+.block:nth-child(1){background:#22d3ee;color:#0e1016}
+.block:nth-child(2){background:#a78bfa;color:#0e1016}
+.block:nth-child(3){background:#fb7185;color:#0e1016}
+.block:nth-child(4){background:#fbbf24;color:#0e1016}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="pin"><div class="stage"><div class="fixed"><h1>Scroll the other half</h1><p>Sticky split 04</p></div><div class="scroll"><div class="strip" id="strip"><div class="block">A</div><div class="block">B</div><div class="block">C</div><div class="block">D</div></div></div></div></div>
+<script>const pin=document.querySelector('.pin'),strip=document.getElementById('strip');addEventListener('scroll',()=>{const r=pin.getBoundingClientRect();const pr=Math.min(1,Math.max(0,-r.top/(r.height-innerHeight)));strip.style.transform='translateY('+(-pr*300)+'vh)'}, {passive:true});</script>
+</body>
+</html>

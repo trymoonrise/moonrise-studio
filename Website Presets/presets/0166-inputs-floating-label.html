@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0166
+    slug: inputs-floating-label
+    title: Floating Label Input
+    category: inputs
+    tags: inputs, floating
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0166 — Floating Label Input</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #f4f5f8;
+      padding: 2rem;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    .field {
+      position: relative;
+      width: min(320px, 100%);
+    }
+
+    .field input {
+      width: 100%;
+      padding: 1.15rem 0.9rem 0.75rem;
+      border: 1px solid #d4d8e0;
+      border-radius: 12px;
+      background: #fff;
+      font-size: 1rem;
+      line-height: 1.45;
+      color: #111318;
+      outline: none;
+      transition:
+        border-color 0.25s cubic-bezier(0.22, 0.61, 0.36, 1),
+        box-shadow 0.25s cubic-bezier(0.22, 0.61, 0.36, 1),
+        padding 0.25s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    .field input::placeholder {
+      color: transparent;
+    }
+
+    .field label {
+      position: absolute;
+      left: 0.9rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #8b8fa3;
+      font-size: 1rem;
+      line-height: 1;
+      pointer-events: none;
+      transition:
+        top 0.25s cubic-bezier(0.22, 0.61, 0.36, 1),
+        transform 0.25s cubic-bezier(0.22, 0.61, 0.36, 1),
+        font-size 0.25s cubic-bezier(0.22, 0.61, 0.36, 1),
+        color 0.25s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    .field input:focus,
+    .field input:not(:placeholder-shown) {
+      padding-top: 1.95rem;
+      padding-bottom: 0.7rem;
+    }
+
+    .field input:focus + label,
+    .field input:not(:placeholder-shown) + label {
+      top: 0.7rem;
+      transform: none;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      color: #4f6ef7;
+    }
+
+    .field input:focus {
+      border-color: #4f6ef7;
+      box-shadow: 0 0 0 3px rgba(79, 110, 247, 0.14);
+    }
+
+    .field input:not(:placeholder-shown):not(:focus) + label {
+      color: #6b7085;
+    }
+  </style>
+</head>
+<body>
+  <div class="field">
+    <input type="email" placeholder=" " id="email" autocomplete="email">
+    <label for="email">Email address</label>
+  </div>
+</body>
+</html>

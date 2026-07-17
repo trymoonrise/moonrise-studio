@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0662
+    slug: accordions-single-open-01
+    title: Editorial Focus Accordion
+    category: accordions
+    tags: accordions, editorial, focus
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0662 — Editorial Focus Accordion</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700&family=Outfit:wght@400;500;600&display=swap');
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f3efe6;padding:2rem;font-family:Outfit,sans-serif;color:#1a1814}
+.acc{width:min(520px,100%)}
+.item{border-bottom:1px solid #d4cfc4;padding:.25rem 0}
+.trigger{width:100%;display:flex;align-items:baseline;gap:1rem;padding:1.1rem 0;border:0;background:none;cursor:pointer;text-align:left;font:inherit;color:inherit}
+.num{font-family:Syne,sans-serif;font-size:.75rem;color:#a89878;min-width:1.5rem}
+.trigger span:nth-child(2){font-family:Syne,sans-serif;font-size:1.15rem;font-weight:600;letter-spacing:-.02em;transition:color .3s}
+.item.open .trigger span:nth-child(2){color:#8a5a2b}
+.panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows .45s cubic-bezier(.22,1,.36,1)}
+.panel>div{overflow:hidden}
+.panel p{margin:0;padding:0 0 1.1rem 2.5rem;color:#6a6458;line-height:1.65;font-size:.92rem}
+.item.open .panel{grid-template-rows:1fr}
+  </style>
+</head>
+<body>
+<div class="acc">
+  <div class="item open"><button class="trigger"><span class="num">01</span><span>Only one idea open at a time</span></button><div class="panel"><div><p>Focus stays tight — opening a section gently closes the others.</p></div></div></div>
+  <div class="item"><button class="trigger"><span class="num">02</span><span>Quiet typographic state</span></button><div class="panel"><div><p>No chrome cards — just type, rules, and measured motion.</p></div></div></div>
+  <div class="item"><button class="trigger"><span class="num">03</span><span>Built for dense FAQ copy</span></button><div class="panel"><div><p>Editorial spacing keeps long answers readable without visual noise.</p></div></div></div>
+</div>
+<script>document.querySelectorAll('.trigger').forEach(b=>b.onclick=()=>{const item=b.parentElement;document.querySelectorAll('.item').forEach(el=>el.classList.toggle('open',el===item?!el.classList.contains('open'):false))});</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0681
+    slug: checkboxes-list-check-07
+    title: List Check 07
+    category: checkboxes
+    tags: checkboxes, list
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0681 — List Check 07</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#ffff00}.dd{position:relative}.btn{padding:10px 20px;border:1px solid #333333;border-radius:8px;background:#ffffff;color:#000000;cursor:pointer}.menu{position:absolute;top:calc(100% + 4px);left:0;min-width:160px;background:#ffffff;border:1px solid #33333344;border-radius:8px;display:none;overflow:hidden;z-index:5}.menu.open{display:block}.opt{padding:10px 16px;color:#000000;cursor:pointer;font-size:.9rem}.opt:hover{background:#ff000022}
+  </style>
+</head>
+<body>
+<div class="dd"><button class="btn" id="b">List Check 292 ▾</button><div class="menu" id="m"><div class="opt">One</div><div class="opt">Two</div><div class="opt">Three</div></div></div>
+<script>const b=document.getElementById('b'),m=document.getElementById('m');b.onclick=e=>{e.stopPropagation();m.classList.toggle('open');};document.onclick=()=>m.classList.remove('open');</script>
+</body>
+</html>

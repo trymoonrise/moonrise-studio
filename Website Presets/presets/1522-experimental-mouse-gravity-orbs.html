@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1522
+    slug: experimental-mouse-gravity-orbs
+    title: Gravity Orbs Mouse
+    category: experimental
+    tags: experimental, mouse, gravity, orbs
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1522 — Gravity Orbs Mouse</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:100vh;background:#050508;overflow:hidden}canvas{display:block}
+  </style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>const c=document.getElementById('c'),x=c.getContext('2d');let orbs=[],mx=0,my=0;function r(){c.width=innerWidth;c.height=innerHeight;orbs=Array.from({length:20},()=>({x:Math.random()*c.width,y:Math.random()*c.height,vx:0,vy:0,r:8+Math.random()*16,hue:200+Math.random()*80}));}r();addEventListener('resize',r);addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});function d(){x.fillStyle='rgba(5,5,8,.2)';x.fillRect(0,0,c.width,c.height);orbs.forEach(o=>{const dx=mx-o.x,dy=my-o.y,d=Math.hypot(dx,dy);if(d<200){o.vx+=dx/d*.8;o.vy+=dy/d*.8;}o.vx*=.94;o.vy*=.94;o.x+=o.vx;o.y+=o.vy;o.x=Math.max(o.r,Math.min(c.width-o.r,o.x));o.y=Math.max(o.r,Math.min(c.height-o.r,o.y));x.fillStyle='hsla('+o.hue+',80%,65%,.8)';x.beginPath();x.arc(o.x,o.y,o.r,0,Math.PI*2);x.fill();});requestAnimationFrame(d);}d();</script>
+</body>
+</html>

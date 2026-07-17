@@ -7,102 +7,481 @@
   <meta name="description" content="Moonrise Studio helps business owners and creators build digital presence and lasting wealth — without a development team.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/studio.css">
   <meta name="color-scheme" content="light">
 </head>
-<body data-page="home">
-  <div class="ms-home-field" aria-hidden="true">
-    <div class="ms-home-wash ms-home-wash-a"></div>
-    <div class="ms-home-wash ms-home-wash-b"></div>
+<body data-page="home" class="ms-home-booting">
+  <div class="ms-home-greet" id="ms-home-greet" aria-hidden="false">
+    <p class="ms-home-greet-word">moonrise.</p>
   </div>
 
-  <header class="ms-home-nav">
-    <a class="ms-home-brand" href="index.html">
-      <img src="doc/MoonriseLogo.png" alt="" width="40" height="40">
-      <strong>Moonrise Studio</strong>
-    </a>
-    <div class="ms-home-nav-actions">
-      <a class="ms-home-signin" href="apply.html">Sign in</a>
-      <a class="ms-home-apply" href="apply.html?mode=signup">Apply</a>
-    </div>
-  </header>
-
-  <main class="ms-home-hero">
-    <div class="ms-home-hero-copy">
-      <h1 class="ms-home-title">Moonrise Studio</h1>
-      <p class="ms-home-sub">Build digital presence that compounds into lasting wealth.</p>
-      <div class="ms-home-ctas">
-        <a class="ms-home-cta-primary" href="apply.html?mode=signup">Build Wealth</a>
-        <a class="ms-home-cta-secondary" href="#archive">Archive</a>
-      </div>
+  <div class="ms-home-shell">
+    <div class="ms-home-field" aria-hidden="true">
+      <div class="ms-home-wash ms-home-wash-a"></div>
+      <div class="ms-home-wash ms-home-wash-b"></div>
     </div>
 
-    <section class="ms-home-stats" aria-label="Who it’s for">
-      <div class="ms-home-stat">
-        <span class="ms-home-stat-label">Owners</span>
-        <span class="ms-home-stat-value">Sites that close</span>
+    <header class="ms-home-nav">
+      <a class="ms-home-brand" href="index.html">
+        <img src="doc/MoonriseLogo.png" alt="" width="40" height="40">
+        <strong>Moonrise Studio</strong>
+      </a>
+      <button type="button" class="ms-home-orb" id="ms-home-orb" aria-label="Open menu" aria-expanded="false" aria-controls="ms-home-bloom">
+        <i></i><i></i><i></i>
+      </button>
+    </header>
+
+    <div class="ms-home-bloom" id="ms-home-bloom" aria-hidden="true">
+      <nav class="ms-home-bloom-nav" aria-label="Primary">
+        <a href="apply.html">Start earning</a>
+        <a href="apply.html?intent=locate&amp;next=dashboard.html">Locate My Order</a>
+        <a href="#method">Method</a>
+        <a href="apply.html">Sign in</a>
+      </nav>
+    </div>
+
+    <main class="ms-home-hero">
+      <div class="ms-home-hero-stage">
+        <div class="ms-home-hero-copy">
+          <h1 class="ms-home-title">Build websites. <span class="ms-home-title-accent">Get paid.</span></h1>
+          <p class="ms-home-sub">Sell websites to local business owners, creators and more!</p>
+          <div class="ms-home-ctas">
+            <a class="ms-home-cta-primary" href="apply.html">Start earning</a>
+            <a class="ms-home-cta-secondary" href="apply.html?intent=locate&amp;next=dashboard.html">Locate My Order</a>
+          </div>
+        </div>
+
+        <div class="ms-home-cascade" id="gallery" aria-label="Gallery">
+          <div class="ms-home-tile" style="--i:1;--a:#2563eb;--b:#60a5fa">
+            <div class="ms-home-tile-inner">
+              <div class="ms-home-tile-face ms-home-tile-face--front">
+                <div class="ms-home-preset ms-home-preset--agency" aria-hidden="true">
+                  <span class="ms-home-preset-kicker">Agency</span>
+                  <strong>Launch faster</strong>
+                  <i></i><i></i><i></i>
+                </div>
+              </div>
+              <div class="ms-home-tile-face ms-home-tile-face--back">
+                <span>Agency</span>
+                <strong>Look premium, ship fast</strong>
+                <p>Polished studio sites that sell the work.</p>
+              </div>
+            </div>
+          </div>
+          <div class="ms-home-tile" style="--i:2;--a:#93c5fd;--b:#dbeafe">
+            <div class="ms-home-tile-inner">
+              <div class="ms-home-tile-face ms-home-tile-face--front">
+                <div class="ms-home-preset ms-home-preset--creator" aria-hidden="true">
+                  <strong>Bio</strong>
+                  <i></i><i></i>
+                </div>
+              </div>
+              <div class="ms-home-tile-face ms-home-tile-face--back">
+                <span>Bio</span>
+                <strong>Link in bio</strong>
+                <p>One clean page for all your links.</p>
+              </div>
+            </div>
+          </div>
+          <div class="ms-home-tile" style="--i:3;--a:#0f172a;--b:#334155">
+            <div class="ms-home-tile-inner">
+              <div class="ms-home-tile-face ms-home-tile-face--front">
+                <div class="ms-home-preset ms-home-preset--restaurant" aria-hidden="true">
+                  <span class="ms-home-preset-kicker">Menu</span>
+                  <strong>Reserve tonight</strong>
+                  <i></i><i></i><i></i>
+                </div>
+              </div>
+              <div class="ms-home-tile-face ms-home-tile-face--back">
+                <span>Restaurant</span>
+                <strong>Menu & reserve</strong>
+                <p>Hours, dishes, and booking in one place.</p>
+              </div>
+            </div>
+          </div>
+          <div class="ms-home-tile" style="--i:4;--a:#3b82f6;--b:#7dd3fc">
+            <div class="ms-home-tile-inner">
+              <div class="ms-home-tile-face ms-home-tile-face--front">
+                <div class="ms-home-preset ms-home-preset--booking" aria-hidden="true">
+                  <strong>Book</strong>
+                  <i></i><i></i>
+                </div>
+              </div>
+              <div class="ms-home-tile-face ms-home-tile-face--back">
+                <span>Booking</span>
+                <strong>Book a slot</strong>
+                <p>Appointment-ready pages that convert.</p>
+              </div>
+            </div>
+          </div>
+          <div class="ms-home-tile" style="--i:5;--a:#1d4ed8;--b:#38bdf8">
+            <div class="ms-home-tile-inner">
+              <div class="ms-home-tile-face ms-home-tile-face--front">
+                <div class="ms-home-preset ms-home-preset--portfolio" aria-hidden="true">
+                  <span class="ms-home-preset-kicker">Portfolio</span>
+                  <strong>Work that sells</strong>
+                  <i></i><i></i><i></i>
+                </div>
+              </div>
+              <div class="ms-home-tile-face ms-home-tile-face--back">
+                <span>Portfolio</span>
+                <strong>Show the work</strong>
+                <p>Case studies that win the next client.</p>
+              </div>
+            </div>
+          </div>
+          <div class="ms-home-tile" style="--i:6;--a:#e2e8f0;--b:#94a3b8">
+            <div class="ms-home-tile-inner">
+              <div class="ms-home-tile-face ms-home-tile-face--front">
+                <div class="ms-home-preset ms-home-preset--checkout" aria-hidden="true">
+                  <span class="ms-home-preset-kicker">Checkout</span>
+                  <strong>Pay & publish</strong>
+                  <i></i><i></i>
+                </div>
+              </div>
+              <div class="ms-home-tile-face ms-home-tile-face--back">
+                <span>Checkout</span>
+                <strong>Get paid</strong>
+                <p>Collect payment, then publish live.</p>
+              </div>
+            </div>
+          </div>
+          <div class="ms-home-tile" style="--i:7;--a:#1e3a8a;--b:#3b82f6">
+            <div class="ms-home-tile-inner">
+              <div class="ms-home-tile-face ms-home-tile-face--front">
+                <div class="ms-home-preset ms-home-preset--saas" aria-hidden="true">
+                  <span class="ms-home-preset-kicker">SaaS</span>
+                  <strong>Product page</strong>
+                  <i></i><i></i><i></i>
+                </div>
+              </div>
+              <div class="ms-home-tile-face ms-home-tile-face--back">
+                <span>SaaS</span>
+                <strong>Explain & convert</strong>
+                <p>Clear product pages that close the signup.</p>
+              </div>
+            </div>
+          </div>
+          <div class="ms-home-tile" style="--i:8;--a:#64748b;--b:#cbd5e1">
+            <div class="ms-home-tile-inner">
+              <div class="ms-home-tile-face ms-home-tile-face--front">
+                <div class="ms-home-preset ms-home-preset--local" aria-hidden="true">
+                  <strong>Local</strong>
+                  <i></i><i></i>
+                </div>
+              </div>
+              <div class="ms-home-tile-face ms-home-tile-face--back">
+                <span>Local</span>
+                <strong>Nearby shops</strong>
+                <p>Map, hours, and contact — done.</p>
+              </div>
+            </div>
+          </div>
+          <div class="ms-home-tile" style="--i:9;--a:#2563eb;--b:#93c5fd">
+            <div class="ms-home-tile-inner">
+              <div class="ms-home-tile-face ms-home-tile-face--front">
+                <div class="ms-home-preset ms-home-preset--shop" aria-hidden="true">
+                  <strong>Shop</strong>
+                  <i></i><i></i>
+                </div>
+              </div>
+              <div class="ms-home-tile-face ms-home-tile-face--back">
+                <span>Shop</span>
+                <strong>Sell products</strong>
+                <p>Simple grids ready for checkout.</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="ms-home-stat">
-        <span class="ms-home-stat-label">Creators</span>
-        <span class="ms-home-stat-value">Clarity, not clutter</span>
+    </main>
+
+    <section class="ms-home-section ms-home-method-section" id="method">
+      <div class="ms-home-method-head">
+        <p class="ms-home-method-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.8"/>
+          </svg>
+          Method
+        </p>
+        <h2>Find. Build. <span>Close.</span></h2>
+        <p class="ms-home-section-lead">
+          Surface the brief, shape the site, collect payment — without a development team.
+        </p>
       </div>
-      <div class="ms-home-stat">
-        <span class="ms-home-stat-label">Operators</span>
-        <span class="ms-home-stat-value">Ship, get paid, move on</span>
+
+      <div class="ms-home-method" id="ms-home-method">
+        <article class="ms-home-method-card is-tiltable">
+          <div class="ms-home-method-viz" aria-hidden="true">
+            <div class="ms-home-method-mock ms-home-method-mock--find">
+              <div class="ms-home-method-prompt">
+                <span>Find cafes nearby that need a site</span>
+                <i></i>
+              </div>
+              <div class="ms-home-method-chips">
+                <em>Leads</em>
+                <em>Map</em>
+              </div>
+            </div>
+          </div>
+          <div class="ms-home-method-body">
+            <span class="ms-home-method-num">01</span>
+            <strong>Find</strong>
+            <p>Surface businesses and briefs that need a real presence.</p>
+          </div>
+        </article>
+
+        <article class="ms-home-method-card is-tiltable">
+          <div class="ms-home-method-viz" aria-hidden="true">
+            <div class="ms-home-method-mock ms-home-method-mock--form">
+              <span class="ms-home-method-tag">Text Edit</span>
+              <div class="ms-home-method-select">Customize an<span></span></div>
+            </div>
+          </div>
+          <div class="ms-home-method-body">
+            <span class="ms-home-method-num">02</span>
+            <strong>Build</strong>
+            <p>Generate a clean page, refine until it feels inevitable.</p>
+          </div>
+        </article>
+
+        <article class="ms-home-method-card is-tiltable">
+          <div class="ms-home-method-viz" aria-hidden="true">
+            <div class="ms-home-method-mock ms-home-method-mock--close">
+              <div class="ms-home-method-payhead">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M3 7h18v12H3V7zm0 0l9 6 9-6" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+                </svg>
+                <b>Checkout</b>
+              </div>
+              <div class="ms-home-method-domain">
+                <span>studio.site</span>
+                <em>Ready</em>
+              </div>
+              <div class="ms-home-method-bar"></div>
+            </div>
+          </div>
+          <div class="ms-home-method-body">
+            <span class="ms-home-method-num">03</span>
+            <strong>Close</strong>
+            <p>Collect payment, publish, and archive the win.</p>
+          </div>
+        </article>
       </div>
+
+      <a class="ms-home-method-cta" href="apply.html">Start earning</a>
     </section>
-  </main>
 
-  <section class="ms-home-section" id="archive">
-    <h2>Archive</h2>
-    <p class="ms-home-section-lead">
-      Every build becomes a lasting record — client sites that stay live, owned, and ready to grow.
-    </p>
-  </section>
-
-  <section class="ms-home-section" id="method">
-    <h2>Method</h2>
-    <div class="ms-home-method">
-      <div class="ms-home-method-step">
-        <span class="ms-home-method-num">1</span>
-        <div>
-          <strong>Find</strong>
-          <p>Surface businesses and briefs that need a real presence.</p>
-        </div>
+    <footer class="ms-home-footer">
+      <div class="ms-home-footer-copy">
+        <a class="ms-home-brand" href="index.html">
+          <img src="doc/MoonriseLogo.png" alt="" width="32" height="32">
+          <strong>Moonrise Studio</strong>
+        </a>
+        <p>Ready to build and get paid? Create your account and start earning.</p>
       </div>
-      <div class="ms-home-method-step">
-        <span class="ms-home-method-num">2</span>
-        <div>
-          <strong>Form</strong>
-          <p>Generate a clean page, refine until it feels inevitable.</p>
-        </div>
+      <div class="ms-home-footer-actions">
+        <a class="ms-home-footer-signup" href="apply.html?mode=signup">Sign up</a>
+        <a class="ms-home-footer-signin" href="apply.html">Sign in</a>
       </div>
-      <div class="ms-home-method-step">
-        <span class="ms-home-method-num">3</span>
-        <div>
-          <strong>Close</strong>
-          <p>Collect payment, publish, archive the win.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <footer class="ms-home-footer">
-    <a class="ms-home-brand" href="index.html">
-      <img src="doc/MoonriseLogo.png" alt="" width="32" height="32">
-      <strong>Moonrise Studio</strong>
-    </a>
-    <a href="apply.html">Sign in</a>
-  </footer>
+    </footer>
+  </div>
 
   <script src="js/ui-motion.js"></script>
   <script src="js/toast.js"></script>
   <script>
-    (async function () {
+    (function () {
       if (new URLSearchParams(location.search).get("go") === "app") {
         location.replace("dashboard.html");
+        return;
       }
+
+      const body = document.body;
+      const greet = document.getElementById("ms-home-greet");
+      const word = greet?.querySelector(".ms-home-greet-word");
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      let revealed = false;
+      function revealHome() {
+        if (revealed) return;
+        revealed = true;
+        if (greet) {
+          greet.classList.add("is-done");
+          greet.setAttribute("aria-hidden", "true");
+          greet.addEventListener(
+            "transitionend",
+            () => {
+              greet.remove();
+            },
+            { once: true }
+          );
+          setTimeout(() => greet.remove(), 700);
+        }
+        body.classList.remove("ms-home-booting");
+        body.classList.add("is-home-ready");
+      }
+
+      if (!greet || !word || reduce) {
+        revealHome();
+      } else {
+        (async function playGreet() {
+          word.classList.remove("is-playing");
+          word.style.transform = "scale(1)";
+          word.style.opacity = "0.001";
+          try {
+            if (document.fonts?.ready) await document.fonts.ready;
+          } catch (_) {}
+
+          const rect = word.getBoundingClientRect();
+          const maxW = window.innerWidth * 0.92;
+          const maxH = window.innerHeight * 0.78;
+          const scale = Math.min(
+            maxW / Math.max(rect.width, 1),
+            maxH / Math.max(rect.height, 1)
+          );
+          word.style.setProperty("--ms-greet-max", String(Math.max(1.2, scale)));
+          word.style.removeProperty("transform");
+          word.style.removeProperty("opacity");
+
+          // Restart the pop/shrink with a device-fit peak scale
+          void word.offsetWidth;
+          word.classList.add("is-playing");
+
+          // Reveal the UI only once the word has visibly shrunk (near the end)
+          setTimeout(revealHome, 1500);
+          setTimeout(() => {
+            if (greet?.parentNode) greet.remove();
+          }, 2400);
+        })();
+      }
+
+      const orb = document.getElementById("ms-home-orb");
+      const bloom = document.getElementById("ms-home-bloom");
+      if (!orb || !bloom) return;
+
+      function setOpen(on) {
+        bloom.classList.toggle("is-open", on);
+        orb.classList.toggle("is-open", on);
+        orb.setAttribute("aria-expanded", String(on));
+        orb.setAttribute("aria-label", on ? "Close menu" : "Open menu");
+        bloom.setAttribute("aria-hidden", String(!on));
+        document.body.classList.toggle("ms-home-menu-open", on);
+      }
+
+      orb.addEventListener("click", () => setOpen(!bloom.classList.contains("is-open")));
+      bloom.querySelectorAll("a").forEach((link) => {
+        link.addEventListener("click", () => setOpen(false));
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && bloom.classList.contains("is-open")) setOpen(false);
+      });
+
+      function bindPointerTilt(selector, options) {
+        if (reduce || window.matchMedia("(pointer: coarse)").matches) return;
+        const nodes = document.querySelectorAll(selector);
+        const maxTilt = options.maxTilt || 10;
+        const waitAnim = !!options.waitAnim;
+        const mode = options.mode || "tilt";
+        if (mode === "none") return;
+
+        nodes.forEach((node) => {
+          let rect = null;
+          let raf = 0;
+          let pending = null;
+
+          const enableTilt = () => node.classList.add("is-tiltable");
+          if (waitAnim) {
+            node.addEventListener("animationend", enableTilt, { once: true });
+            setTimeout(enableTilt, 1200 + Number(node.style.getPropertyValue("--i") || 0) * 70);
+          } else {
+            enableTilt();
+          }
+
+          if (mode === "lift") {
+            node.addEventListener("pointerenter", () => {
+              node.classList.remove("is-settling");
+              node.style.setProperty("--lift", "1.015");
+            });
+            node.addEventListener("pointerleave", () => {
+              node.classList.add("is-settling");
+              node.style.setProperty("--lift", "1");
+            });
+            return;
+          }
+
+          const applyTilt = () => {
+            raf = 0;
+            if (!pending || !rect) return;
+            const x = (pending.x - rect.left) / Math.max(rect.width, 1);
+            const y = (pending.y - rect.top) / Math.max(rect.height, 1);
+            const nx = Math.min(1, Math.max(0, x));
+            const ny = Math.min(1, Math.max(0, y));
+            node.style.setProperty("--ry", ((nx - 0.5) * maxTilt * 2).toFixed(2) + "deg");
+            node.style.setProperty("--rx", ((0.5 - ny) * maxTilt * 2).toFixed(2) + "deg");
+            pending = null;
+          };
+
+          node.addEventListener("pointerenter", () => {
+            node.classList.remove("is-settling");
+            rect = node.getBoundingClientRect();
+          });
+
+          node.addEventListener("pointermove", (e) => {
+            if (!node.classList.contains("is-tiltable")) return;
+            if (!rect) rect = node.getBoundingClientRect();
+            pending = { x: e.clientX, y: e.clientY };
+            if (!raf) raf = requestAnimationFrame(applyTilt);
+          });
+
+          node.addEventListener("pointerleave", () => {
+            if (raf) cancelAnimationFrame(raf);
+            raf = 0;
+            pending = null;
+            rect = null;
+            node.classList.add("is-settling");
+            node.style.setProperty("--rx", "0deg");
+            node.style.setProperty("--ry", "0deg");
+          });
+        });
+      }
+
+      bindPointerTilt(".ms-home-tile", { mode: "none", waitAnim: true });
+      // Enable entrance completion class for gallery flips
+      (function readyGalleryTiles() {
+        document.querySelectorAll(".ms-home-tile").forEach((tile) => {
+          const ready = () => tile.classList.add("is-ready");
+          tile.addEventListener("animationend", ready, { once: true });
+          setTimeout(ready, 1200 + Number(tile.style.getPropertyValue("--i") || 0) * 70);
+        });
+      })();
+
+      // Touch: tap to flip (hover does not work on phones)
+      (function bindGalleryTapFlip() {
+        if (reduce) return;
+        const coarse = window.matchMedia("(pointer: coarse)").matches;
+        const noHover = window.matchMedia("(hover: none)").matches;
+        if (!coarse && !noHover) return;
+        const tiles = Array.from(document.querySelectorAll(".ms-home-tile"));
+        tiles.forEach((tile) => {
+          tile.setAttribute("tabindex", "0");
+          tile.setAttribute("role", "button");
+          tile.setAttribute("aria-label", "Flip gallery card");
+          tile.addEventListener("click", () => {
+            const open = tile.classList.contains("is-flipped");
+            tiles.forEach((t) => t.classList.remove("is-flipped"));
+            if (!open) tile.classList.add("is-flipped");
+          });
+          tile.addEventListener("keydown", (e) => {
+            if (e.key !== "Enter" && e.key !== " ") return;
+            e.preventDefault();
+            tile.click();
+          });
+        });
+      })();
+
+      bindPointerTilt(".ms-home-method-card", { maxTilt: 5, mode: "tilt", waitAnim: false });
     })();
   </script>
 </body>

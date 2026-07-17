@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1471
+    slug: scroll-snap-3d-wheel
+    title: 3D Snap Wheel
+    category: scroll-sections
+    tags: scroll, snap, 3d
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1471 — 3D Snap Wheel</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#000;color:#fff;overflow-x:auto;perspective:1200px;scrollbar-width:none}body::-webkit-scrollbar{display:none}.wheel{display:flex;gap:3rem;padding:30vh 50vw;width:max-content;transform-style:preserve-3d}.face{flex:0 0 280px;height:360px;scroll-snap-align:center;border-radius:20px;background:linear-gradient(135deg,#6c8cff,#764ba2);display:grid;place-items:center;font-size:3rem;font-weight:900;box-shadow:0 30px 80px rgba(108,140,255,.3)}
+  </style>
+</head>
+<body>
+<div class="wheel"><div class="face">01</div><div class="face">02</div><div class="face">03</div><div class="face">04</div><div class="face">05</div></div>
+<script>const faces=[...document.querySelectorAll('.face')];function u(){const cx=window.innerWidth/2;faces.forEach(f=>{const r=f.getBoundingClientRect();const d=(r.left+r.width/2-cx)/cx;f.style.transform='rotateY('+d*25+'deg) translateZ('+Math.abs(d)*-80+'px)';f.style.opacity=1-Math.abs(d)*.4;});}addEventListener('scroll',u,{passive:true});document.documentElement.style.scrollSnapType='x mandatory';u();</script>
+</body>
+</html>

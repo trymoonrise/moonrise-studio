@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1832
+    slug: animation-chromatic-type
+    title: Chromatic Split Type
+    category: animation
+    tags: animation, type, glitch, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1832 — Chromatic Split Type</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');*{box-sizing:border-box}
+      body{margin:0;min-height:100vh;display:grid;place-items:center;background:#000;color:#fff;font-family:"DM Sans",system-ui,-apple-system,sans-serif;padding:2rem;overflow:hidden}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+      .wrap{position:relative;text-align:center}
+      h1{margin:0;font-family:"Syne",system-ui,sans-serif;font-size:clamp(3rem,12vw,7rem);font-weight:800;letter-spacing:-.08em;line-height:.9;position:relative}
+      h1::before,h1::after{content:attr(data-t);position:absolute;inset:0;mix-blend-mode:screen}
+      h1::before{color:#fff;transform:translate(var(--rx,-2px),var(--ry,1px));opacity:.55;clip-path:inset(0 0 50% 0)}
+      h1::after{color:#aaa;transform:translate(calc(var(--rx,2px)*-1),calc(var(--ry,-1px)*-1));opacity:.4;clip-path:inset(50% 0 0 0)}
+      p{margin:1.25rem 0 0;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:#444}
+  </style>
+</head>
+<body>
+<div class="wrap"><h1 data-t="SPLIT" id="t">SPLIT</h1><p>Hover to shear channels</p></div>
+<script>const t=document.getElementById('t');addEventListener('mousemove',e=>{const x=(e.clientX/innerWidth-.5)*16,y=(e.clientY/innerHeight-.5)*10;t.style.setProperty('--rx',x+'px');t.style.setProperty('--ry',y+'px');});</script>
+</body>
+</html>

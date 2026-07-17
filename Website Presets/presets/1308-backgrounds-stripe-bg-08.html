@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1308
+    slug: backgrounds-stripe-bg-08
+    title: Stripe Bg 08
+    category: backgrounds
+    tags: backgrounds, stripe
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1308 — Stripe Bg 08</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');body{margin:0;min-height:100vh;display:grid;place-items:center;overflow:hidden;position:relative;background:#111;color:#fff;font-family:"DM Sans",system-ui,-apple-system,sans-serif}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+    .stripes{position:absolute;inset:-50%;background:repeating-linear-gradient(-18deg,#111 0 14px,#1c1c1c 14px 28px);animation:slide 18s linear infinite}
+    @keyframes slide{to{transform:translateX(56px) translateY(18px)}}
+    .veil{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,transparent 10%,#111 75%);pointer-events:none}
+    
+.label{position:relative;z-index:2;text-align:center;padding:2rem;pointer-events:none}
+.kicker{margin:0 0 .75rem;font-size:.65rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;opacity:.45}
+h1{margin:0;font-family:"Syne",system-ui,sans-serif;font-size:clamp(1.85rem,5vw,2.85rem);font-weight:800;letter-spacing:-.045em;line-height:1.05}
+.sub{margin:.7rem 0 0;font-size:.9rem;opacity:.5;font-weight:400}
+  </style>
+</head>
+<body>
+<div class="stripes" aria-hidden="true"></div><div class="veil" aria-hidden="true"></div><div class="label"><p class="kicker">Background</p><h1>Stripe field</h1><p class="sub">Diagonal bands in crawl.</p></div>
+
+</body>
+</html>

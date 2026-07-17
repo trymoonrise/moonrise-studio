@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1251
+    slug: carousels-3d-carousel-04
+    title: Depth Ring Carousel
+    category: carousels
+    tags: carousels, animated, modern, interactive
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1251 — Depth Ring Carousel</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#030305;color:#eee;font-family:Outfit,sans-serif;perspective:1000px;overflow:hidden}
+    button{font:inherit;border:0;cursor:pointer;background:transparent;color:inherit}
+    .stage{width:min(560px,95vw);text-align:center}
+    .ring-wrap{position:relative;height:320px;transform-style:preserve-3d;margin-bottom:24px}
+    .ring{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .85s cubic-bezier(.16,1,.3,1)}
+    .card{position:absolute;left:50%;top:50%;width:180px;height:240px;margin:-120px -90px;border-radius:6px;border:1px solid rgba(255,255,255,.12);background:#0d0d12;overflow:hidden;backface-visibility:hidden;transition:filter .4s,opacity .4s}
+    .card img{width:100%;height:120px;object-fit:cover;display:block}
+    .card figcaption{padding:14px;text-align:left}
+    .card figcaption b{font-family:Syne,sans-serif;font-size:1rem;display:block;letter-spacing:-.02em}
+    .card figcaption span{font-size:.72rem;color:rgba(255,255,255,.4)}
+    .card.dim{filter:brightness(.5);opacity:.6}
+    .ui{display:flex;align-items:center;justify-content:center;gap:16px}
+    .ui button{width:44px;height:44px;border:1px solid rgba(255,255,255,.15);border-radius:50%;transition:transform .25s,background .25s}
+    .ui button:hover{transform:scale(1.08);background:rgba(255,255,255,.06)}
+    .label{font-family:Syne,sans-serif;font-size:1.1rem;letter-spacing:-.02em;min-width:120px}
+    @media(prefers-reduced-motion:reduce){.ring{transition:none}}
+  </style>
+</head>
+<body>
+<div class="stage">
+  <div class="ring-wrap"><div class="ring" id="ring"></div></div>
+  <div class="ui">
+    <button id="prev" aria-label="Previous">←</button>
+    <span class="label" id="label">Alpha</span>
+    <button id="next" aria-label="Next">→</button>
+  </div>
+</div>
+<script>
+const ring=document.getElementById('ring'),label=document.getElementById('label');
+const data=[{t:'Alpha',s:'Primary node'},{t:'Beta',s:'Secondary node'},{t:'Gamma',s:'Tertiary node'},{t:'Delta',s:'Quaternary node'},{t:'Epsilon',s:'Extended node'}];
+const n=data.length,r=220;let idx=0;
+data.forEach((d,i)=>{const f=document.createElement('figure');f.className='card';f.innerHTML=`<img src="../stock/media/16-9 Aspect Ratio(image).png" alt="" style="filter:hue-rotate(${i*50}deg)"><figcaption><b>${d.t}</b><span>${d.s}</span></figcaption>`;ring.appendChild(f);});
+const cards=[...ring.children];
+function render(){const rot=-idx*(360/n);ring.style.transform=`rotateY(${rot}deg)`;cards.forEach((c,i)=>{const a=((i-idx+n)%n);c.style.transform=`rotateY(${i*(360/n)}deg) translateZ(${r}px)`;c.classList.toggle('dim',a>1&&a<n-1);});label.textContent=data[idx].t;}
+document.getElementById('prev').onclick=()=>{idx=(idx-1+n)%n;render();};
+document.getElementById('next').onclick=()=>{idx=(idx+1)%n;render();};
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1827
+    slug: timeline-film-strip
+    title: Film Strip Timeline
+    category: timeline
+    tags: timeline, film, scrubber, insane
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1827 — Film Strip Timeline</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700&family=Outfit:wght@400;500;600&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#111;color:#fff;font-family:Outfit,sans-serif;display:grid;place-items:center;padding:2rem;overflow:hidden}
+    .reel{width:min(720px,96vw)}
+    .hud{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:1rem}
+    .hud h2{font-family:Syne,sans-serif;font-size:1.2rem;margin:0;letter-spacing:-.02em}
+    .frame-n{font-variant-numeric:tabular-nums;color:#f59e0b;font-size:.85rem;font-weight:600}
+    .strip-wrap{overflow:hidden;border:3px solid #1a1a1a;border-radius:8px;background:#0a0a0a;position:relative;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+    .strip-wrap::before,.strip-wrap::after{content:"";position:absolute;top:0;bottom:0;width:18px;background:repeating-linear-gradient(#111 0 8px,#333 8px 14px,#111 14px 22px);z-index:2}
+    .strip-wrap::before{left:0}.strip-wrap::after{right:0}
+    .strip{display:flex;gap:10px;padding:16px 28px;will-change:transform;cursor:grab}
+    .strip:active{cursor:grabbing}
+    .frame{flex:0 0 160px;height:120px;border-radius:4px;background:linear-gradient(145deg,var(--a),var(--b));display:grid;place-items:end start;padding:.75rem;position:relative;border:2px solid transparent;transition:border-color .25s,transform .35s;transform:scale(.92);opacity:.55}
+    .frame.on{border-color:#f59e0b;transform:scale(1);opacity:1;box-shadow:0 0 30px rgba(245,158,11,.35)}
+    .frame span{font-family:Syne,sans-serif;font-size:.85rem;text-shadow:0 2px 8px #000}
+    .cap{margin-top:1.25rem;text-align:center;min-height:3.5rem}
+    .cap h3{font-family:Syne,sans-serif;margin:0 0 .35rem;font-size:1.25rem}
+    .cap p{margin:0;color:#888;font-size:.9rem}
+    .play{margin:1rem auto 0;display:block;padding:.55rem 1.4rem;border-radius:999px;border:1px solid #333;background:#1a1a1a;color:#f59e0b;font:600 .8rem Outfit,sans-serif;cursor:pointer;letter-spacing:.08em;text-transform:uppercase}
+  </style>
+</head>
+<body>
+  <div class="reel">
+    <div class="hud"><h2>Chrono reel</h2><div class="frame-n" id="fn">01 / 06</div></div>
+    <div class="strip-wrap"><div class="strip" id="strip"></div></div>
+    <div class="cap" id="cap"></div>
+    <button class="play" id="play">Auto scrub</button>
+  </div>
+  <script>
+    const shots=[
+      {t:'Cold open',d:'Silence before the cut.',a:'#1e3a5f',b:'#0c1a2e'},
+      {t:'Inciting',d:'The problem enters frame.',a:'#3d2a1e',b:'#1a1008'},
+      {t:'Rising',d:'Tension stacks cut to cut.',a:'#2a1e3d',b:'#120a1e'},
+      {t:'Climax',d:'Everything hits at once.',a:'#3d1e1e',b:'#1a0808'},
+      {t:'Falling',d:'Resolution begins to land.',a:'#1e3d2a',b:'#081a10'},
+      {t:'Credits',d:'Legacy fades up.',a:'#2a2a1e',b:'#121208'}
+    ];
+    const strip=document.getElementById('strip'),cap=document.getElementById('cap'),fn=document.getElementById('fn');
+    let i=0,playing=false,timer;
+    shots.forEach((s,idx)=>{
+      const f=document.createElement('button');
+      f.className='frame'+(idx===0?' on':'');
+      f.style.setProperty('--a',s.a);f.style.setProperty('--b',s.b);
+      f.innerHTML='<span>'+s.t+'</span>';
+      f.onclick=()=>go(idx);
+      strip.appendChild(f);
+    });
+    function go(n){
+      i=n;
+      [...strip.children].forEach((f,j)=>f.classList.toggle('on',j===i));
+      const s=shots[i];
+      cap.innerHTML=`<h3>${s.t}</h3><p>${s.d}</p>`;
+      fn.textContent=String(i+1).padStart(2,'0')+' / 0'+shots.length;
+      const fr=strip.children[i];
+      const mid=strip.parentElement.clientWidth/2;
+      strip.style.transition='transform .55s cubic-bezier(.22,1,.36,1)';
+      strip.style.transform=`translateX(${mid-fr.offsetLeft-fr.offsetWidth/2}px)`;
+    }
+    document.getElementById('play').onclick=()=>{
+      playing=!playing;
+      document.getElementById('play').textContent=playing?'Stop':'Auto scrub';
+      clearInterval(timer);
+      if(playing) timer=setInterval(()=>go((i+1)%shots.length),1600);
+    };
+    go(0);
+    addEventListener('resize',()=>go(i));
+  </script>
+</body>
+</html>

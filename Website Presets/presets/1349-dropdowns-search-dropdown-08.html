@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1349
+    slug: dropdowns-search-dropdown-08
+    title: Search Dropdown 08
+    category: dropdowns
+    tags: dropdowns, search
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1349 — Search Dropdown 08</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#f4f4f5}.dd{position:relative}.btn{padding:10px 20px;border:1px solid #71717a;border-radius:8px;background:#ffffff;color:#18181b;cursor:pointer}.menu{position:absolute;top:calc(100% + 4px);left:0;min-width:160px;background:#ffffff;border:1px solid #71717a44;border-radius:8px;display:none;overflow:hidden;z-index:5}.menu.open{display:block}.opt{padding:10px 16px;color:#18181b;cursor:pointer;font-size:.9rem}.opt:hover{background:#3b5ccc22}
+  </style>
+</head>
+<body>
+<div class="dd"><button class="btn" id="b">Search Dropdown 961 ▾</button><div class="menu" id="m"><div class="opt">One</div><div class="opt">Two</div><div class="opt">Three</div></div></div>
+<script>const b=document.getElementById('b'),m=document.getElementById('m');b.onclick=e=>{e.stopPropagation();m.classList.toggle('open');};document.onclick=()=>m.classList.remove('open');</script>
+</body>
+</html>

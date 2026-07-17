@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0518
+    slug: heroes-centered-cta-01
+    title: Void Signal Hero
+    category: heroes
+    tags: heroes, centered
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0518 — Void Signal Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#040406;color:#f4f4f8;font-family:Outfit,sans-serif;overflow:hidden}
+    .hero{text-align:center;padding:48px 24px;position:relative;max-width:720px}
+    .scan{position:absolute;inset:-50%;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,.015) 2px,rgba(255,255,255,.015) 4px);pointer-events:none;animation:drift 8s linear infinite}
+    .ring{position:absolute;top:50%;left:50%;width:420px;height:420px;margin:-210px;border:1px solid rgba(255,255,255,.06);border-radius:50%;animation:pulse 4s ease-in-out infinite}
+    .ring:nth-child(2){width:280px;height:280px;margin:-140px;animation-delay:-1.5s}
+    .eyebrow{font:500 .65rem Outfit,sans-serif;letter-spacing:.35em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:20px;position:relative}
+    h1{font-family:Syne,sans-serif;font-size:clamp(2.8rem,8vw,4.8rem);font-weight:800;line-height:.95;letter-spacing:-.05em;margin:0 0 20px;position:relative}
+    h1 em{font-style:normal;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.5)}
+    p{font-size:1.05rem;color:rgba(244,244,248,.5);max-width:38ch;margin:0 auto 32px;line-height:1.6;position:relative}
+    .cta{position:relative;display:inline-flex;align-items:center;gap:12px;padding:16px 32px;border:1px solid rgba(255,255,255,.2);background:transparent;color:#fff;font:600 .85rem Outfit,sans-serif;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;overflow:hidden;transition:border-color .3s}
+    .cta::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);transform:translateX(-100%);transition:transform .5s}
+    .cta:hover{border-color:rgba(255,255,255,.5)}.cta:hover::before{transform:translateX(100%)}
+    @keyframes drift{to{transform:translateY(40px)}}
+    @keyframes pulse{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:.8;transform:scale(1.04)}}
+    @media(prefers-reduced-motion:reduce){.scan,.ring{animation:none}.cta::before{display:none}}
+  </style>
+</head>
+<body>
+<section class="hero">
+  <div class="scan"></div>
+  <div class="ring"></div><div class="ring"></div>
+  <p class="eyebrow">Signal detected</p>
+  <h1>Build in<br><em>the void</em></h1>
+  <p>Centered editorial hero with scanline atmosphere and a restrained call to action.</p>
+  <button class="cta" type="button">Initialize →</button>
+</section>
+</body>
+</html>

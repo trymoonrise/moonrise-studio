@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0130
+    slug: scroll-areas-snap-sections
+    title: Snap Scroll Sections
+    category: scroll-areas
+    tags: scroll-areas, snap
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0130 — Snap Scroll Sections</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:100vh;scroll-snap-type:y mandatory;overflow-y:scroll;height:100vh}.s{height:100vh;scroll-snap-align:start;display:grid;place-items:center;font-size:3rem;font-weight:900;color:#fff}.s:nth-child(1){background:#6c8cff}.s:nth-child(2){background:#ff6cb0}.s:nth-child(3){background:#6cffb8;color:#111}
+  </style>
+</head>
+<body>
+<section class="s">1</section><section class="s">2</section><section class="s">3</section>
+
+</body>
+</html>

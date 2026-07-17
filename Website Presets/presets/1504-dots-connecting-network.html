@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1504
+    slug: dots-connecting-network
+    title: Connecting Dot Network
+    category: dots
+    tags: dots, network, canvas
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1504 — Connecting Dot Network</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:100vh;background:#0a0a0c;overflow:hidden}canvas{display:block}
+  </style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>const c=document.getElementById('c'),x=c.getContext('2d');let pts=[],mx=0,my=0;function r(){c.width=innerWidth;c.height=innerHeight;pts=Array.from({length:55},()=>({x:Math.random()*c.width,y:Math.random()*c.height,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4}));}r();addEventListener('resize',r);addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});function d(){x.clearRect(0,0,c.width,c.height);pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>c.width)p.vx*=-1;if(p.y<0||p.y>c.height)p.vy*=-1;const dx=p.x-mx,dy=p.y-my,d=Math.hypot(dx,dy);if(d<120){p.x+=dx/d*2;p.y+=dy/d*2;}});for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){const a=pts[i],b=pts[j],dist=Math.hypot(a.x-b.x,a.y-b.y);if(dist<130){x.strokeStyle='rgba(108,140,255,'+(1-dist/130)*.35+')';x.beginPath();x.moveTo(a.x,a.y);x.lineTo(b.x,b.y);x.stroke();}}pts.forEach(p=>{x.fillStyle='#6c8cff';x.beginPath();x.arc(p.x,p.y,2.5,0,Math.PI*2);x.fill();});requestAnimationFrame(d);}d();</script>
+</body>
+</html>

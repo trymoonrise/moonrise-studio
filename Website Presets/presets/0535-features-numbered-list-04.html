@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0535
+    slug: features-numbered-list-04
+    title: Numbered List 04
+    category: features
+    tags: features, numbered
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0535 — Numbered List 04</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Outfit:wght@300;400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0e0f14;color:#fff;font-family:Outfit,sans-serif;padding:2rem}
+    .wrap{width:min(560px,100%)}
+    h1{margin:0 0 2rem;font-family:Syne,sans-serif;font-size:clamp(2rem,5vw,3rem);letter-spacing:-.05em;font-weight:800}
+    .item{position:relative;padding:1.5rem 0 1.5rem 5rem;border-left:1px solid rgba(255,255,255,.12)}
+    .item::before{content:"";position:absolute;left:-4px;top:1.7rem;width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px #0e0f14;transition:transform .35s cubic-bezier(.22,1,.36,1)}
+    .item:hover::before{transform:scale(1.4)}
+    .num{position:absolute;left:1.1rem;top:1.35rem;font-family:Syne,sans-serif;font-size:.85rem;font-weight:800;opacity:.35;letter-spacing:-.02em}
+    h3{margin:0;font-family:Syne,sans-serif;font-size:1.2rem;letter-spacing:-.02em}
+    p{margin:.4rem 0 0;font-size:.88rem;opacity:.45;font-weight:300;line-height:1.55}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Steps</h1>
+    <div class="item"><span class="num">01</span><h3>Frame the problem</h3><p>Write the constraint before the solution.</p></div>
+    <div class="item"><span class="num">02</span><h3>Prototype the feel</h3><p>Motion first. Decoration later.</p></div>
+    <div class="item"><span class="num">03</span><h3>Ship the quiet version</h3><p>If it works without flourish, it's done.</p></div>
+  </div>
+</body>
+</html>

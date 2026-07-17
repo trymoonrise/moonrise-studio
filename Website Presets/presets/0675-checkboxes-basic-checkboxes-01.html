@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0675
+    slug: checkboxes-basic-checkboxes-01
+    title: Line Draw Checkboxes
+    category: checkboxes
+    tags: checkboxes, basic
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0675 — Line Draw Checkboxes</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #080a0e;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+      padding: 1.5rem;
+    }
+
+    .card {
+      width: min(360px, 92vw);
+      padding: 1.75rem;
+      background: #0f1419;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+    }
+
+    .card h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #00d4aa;
+      margin-bottom: 1.25rem;
+    }
+
+    .check {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      padding: 0.65rem 0;
+      cursor: pointer;
+    }
+
+    .check input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .box {
+      width: 22px;
+      height: 22px;
+      border: 2px solid #334155;
+      border-radius: 5px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      transition: border-color 0.25s, background 0.25s;
+    }
+
+    .check:hover .box { border-color: #64748b; }
+
+    .box svg {
+      width: 14px;
+      height: 14px;
+      stroke: #080a0e;
+      stroke-width: 3;
+      fill: none;
+      stroke-dasharray: 24;
+      stroke-dashoffset: 24;
+      transition: stroke-dashoffset 0.35s ease;
+    }
+
+    .check input:checked + .box {
+      background: #00d4aa;
+      border-color: #00d4aa;
+      animation: checkPop 0.3s ease;
+    }
+
+    .check input:checked + .box svg {
+      stroke-dashoffset: 0;
+    }
+
+    @keyframes checkPop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+
+    .label {
+      font-size: 0.95rem;
+      color: #cbd5e1;
+      transition: color 0.2s;
+    }
+
+    .check input:checked ~ .label { color: #e2e8f0; }
+
+    .count {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #1e293b;
+      font-size: 0.8rem;
+      color: #64748b;
+      animation: fadeCount 0.4s ease;
+    }
+
+    @keyframes fadeCount {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .check input:checked + .box { animation: none; }
+      .box svg { stroke-dashoffset: 0; transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <fieldset class="card">
+    <legend><h2>Task checklist</h2></legend>
+    <label class="check">
+      <input type="checkbox" checked>
+      <span class="box"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></span>
+      <span class="label">Review wireframes</span>
+    </label>
+    <label class="check">
+      <input type="checkbox">
+      <span class="box"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></span>
+      <span class="label">Update component docs</span>
+    </label>
+    <label class="check">
+      <input type="checkbox">
+      <span class="box"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></span>
+      <span class="label">Ship accessibility audit</span>
+    </label>
+    <label class="check">
+      <input type="checkbox" checked>
+      <span class="box"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></span>
+      <span class="label">Sync with design team</span>
+    </label>
+    <div class="count" id="count">2 of 4 completed</div>
+  </fieldset>
+
+  <script>
+    const inputs = document.querySelectorAll('.check input');
+    const count = document.getElementById('count');
+    function update() {
+      const n = [...inputs].filter((i) => i.checked).length;
+      count.textContent = `${n} of ${inputs.length} completed`;
+    }
+    inputs.forEach((i) => i.addEventListener('change', update));
+  </script>
+</body>
+</html>

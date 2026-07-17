@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0767
+    slug: file-uploads-button-upload-02
+    title: Ghost Button Upload
+    category: file-uploads
+    tags: file-uploads, button
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0767 — Ghost Button Upload</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #0a0c10;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+      padding: 1.5rem;
+    }
+
+    .upload-zone { text-align: center; }
+
+    input[type="file"] { position: absolute; opacity: 0; width: 0; height: 0; }
+
+    .btn-upload {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.85rem 1.5rem;
+      border: 1px dashed #334155;
+      border-radius: 10px;
+      background: transparent;
+      color: #94a3b8;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: border-color 0.3s, color 0.3s, background 0.3s;
+      animation: dashPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes dashPulse {
+      0%, 100% { border-color: #334155; }
+      50% { border-color: #00d4aa66; }
+    }
+
+    .btn-upload:hover {
+      border-color: #00d4aa;
+      color: #00d4aa;
+      background: #00d4aa0a;
+      animation: none;
+    }
+
+    .btn-upload.has-file {
+      border-style: solid;
+      border-color: #00d4aa;
+      color: #00d4aa;
+      animation: successPop 0.4s ease;
+    }
+
+    @keyframes successPop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.04); }
+      100% { transform: scale(1); }
+    }
+
+    .hint {
+      margin-top: 0.75rem;
+      font-size: 0.75rem;
+      color: #475569;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .btn-upload { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="upload-zone">
+    <label class="btn-upload" id="label" for="file">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span id="text">Choose file to upload</span>
+    </label>
+    <input type="file" id="file" accept=".pdf,.doc,.docx,.png,.jpg">
+    <p class="hint">PDF, DOC, or images up to 10 MB</p>
+  </div>
+
+  <script>
+    const file = document.getElementById('file');
+    const label = document.getElementById('label');
+    const text = document.getElementById('text');
+
+    file.addEventListener('change', () => {
+      if (file.files.length) {
+        text.textContent = file.files[0].name;
+        label.classList.add('has-file');
+      } else {
+        text.textContent = 'Choose file to upload';
+        label.classList.remove('has-file');
+      }
+    });
+  </script>
+</body>
+</html>

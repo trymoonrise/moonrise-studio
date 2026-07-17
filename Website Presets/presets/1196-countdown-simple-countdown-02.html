@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1196
+    slug: countdown-simple-countdown-02
+    title: Monolith Digit Countdown
+    category: countdown
+    tags: countdown, simple, monolith, digits
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1196 — Monolith Digit Countdown</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#060608;color:#f2f4f7;font-family:Outfit,sans-serif;padding:2rem;overflow:hidden}
+    body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(56,189,248,.06),transparent 70%);animation:breathe 6s ease-in-out infinite alternate}
+    .cd{position:relative;text-align:center;z-index:1}
+    .time{font-family:Syne,sans-serif;font-size:clamp(4rem,15vw,8rem);font-weight:800;letter-spacing:-.06em;line-height:1;font-variant-numeric:tabular-nums;animation:tick-glow 2s ease infinite}
+    .time span{color:rgba(242,244,247,.2);font-weight:400}
+    .sub{font-size:.75rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(242,244,247,.35);margin-top:1rem}
+    .bar{width:200px;height:2px;background:rgba(255,255,255,.08);margin:2rem auto 0;border-radius:1px;overflow:hidden}
+    .bar-fill{height:100%;background:#38bdf8;width:60%;animation:progress 60s linear infinite}
+    @keyframes breathe{to{opacity:.6;transform:scale(1.05)}}
+    @keyframes tick-glow{0%,100%{text-shadow:0 0 40px rgba(56,189,248,0)}50%{text-shadow:0 0 60px rgba(56,189,248,.15)}}
+    @keyframes progress{0%{width:100%}100%{width:0%}}
+    @media(prefers-reduced-motion:reduce){body::before,.time,.bar-fill{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="cd">
+    <div class="time" id="time">02:14:37</div>
+    <p class="sub">Until midnight UTC</p>
+    <div class="bar"><div class="bar-fill"></div></div>
+  </div>
+  <script>
+    function upd(){const n=new Date(),m=new Date(n);m.setUTCHours(24,0,0,0);const d=m-n;const h=Math.floor(d/3600000),mi=Math.floor(d/60000)%60,s=Math.floor(d/1000)%60;document.getElementById('time').innerHTML=`${String(h).padStart(2,'0')}<span>:</span>${String(mi).padStart(2,'0')}<span>:</span>${String(s).padStart(2,'0')}`}
+    upd();setInterval(upd,1000);
+  </script>
+</body>
+</html>

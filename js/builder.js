@@ -1,7 +1,9 @@
 /**
- * Builder — details → template → generate, then AI edit / publish.
+ * Builder — business details → generate with Website Presets, then AI edit / publish.
  */
 (function () {
+  const DEFAULT_TEMPLATE_ID = "local-service";
+
   const TEMPLATES = [
     { id: "coral-navy", name: "Coral", desc: "Scroll zoom", preview: "testtemplates/01-coral-navy/index.html" },
     { id: "lime-charcoal", name: "Volt", desc: "Split + video", preview: "testtemplates/02-lime-charcoal/index.html" },
@@ -74,14 +76,18 @@
   const state = {
     projectId: null,
     project: null,
-    templateId: "coral-navy",
+    templateId: DEFAULT_TEMPLATE_ID,
     mode: "preview",
     viewport: "desktop",
+    priceCents: 30000,
     html: "",
     profile: null,
     leadId: null,
+    fromFinder: false,
+    autoGeneratePending: false,
     aiImages: false,
     pro: false,
+    mvpPlus: false,
     onboardDone: false,
     onboardStep: 1,
     mapsReady: false,
@@ -92,6 +98,8 @@
       phone: "",
       address: "",
       mapsUrl: "",
+      website: "",
+      hours: "",
     },
     linkBusiness: {
       businessName: "",
@@ -99,6 +107,8 @@
       phone: "",
       address: "",
       mapsUrl: "",
+      website: "",
+      hours: "",
     },
   };
 
@@ -124,7 +134,35 @@
   }
 
   function workerUrl() {
-    return String(window.SITE_CONFIG?.workerUrl || "").replace(/\/$/, "");
+    const configured = String(window.SITE_CONFIG?.workerUrl || "").replace(/\/$/, "");
+    if (!configured) return "";
+    try {
+      const pageHost = location.hostname;
+      const worker = new URL(configured);
+      const pageIsLocal =
+        pageHost === "localhost" ||
+        pageHost === "127.0.0.1" ||
+        pageHost === "[::1]";
+      const workerIsLoopback =
+        worker.hostname === "localhost" ||
+        worker.hostname === "127.0.0.1" ||
+        worker.hostname === "[::1]";
+
+      // If Studio is opened via a LAN IP (phone / another device), talk to the
+      // worker on that same host instead of 127.0.0.1 (which would be the phone).
+      if (!pageIsLocal && workerIsLoopback && location.protocol.startsWith("http")) {
+        worker.hostname = pageHost;
+        return worker.origin;
+      }
+      // Prefer matching localhost <-> 127.0.0.1 to the page host to avoid CORS quirks.
+      if (pageIsLocal && workerIsLoopback && pageHost !== worker.hostname) {
+        worker.hostname = pageHost;
+        return worker.origin;
+      }
+    } catch (_) {
+      /* keep configured */
+    }
+    return configured;
   }
 
   function sb() {
@@ -137,7 +175,10 @@
 
   function setStatus(msg) {
     const el = document.getElementById("builder-status");
-    if (el) el.textContent = msg || "";
+    if (el) {
+      el.textContent = msg || "";
+      el.classList.toggle("is-error", false);
+    }
     const setupEl = document.getElementById("builder-setup-status");
     if (setupEl) {
       setupEl.hidden = !msg;
@@ -147,15 +188,33 @@
 
   function setError(msg) {
     const el = document.getElementById("builder-error");
+    const status = document.getElementById("builder-status");
     if (el) {
       el.hidden = true;
       el.textContent = "";
     }
     if (!msg) {
+      if (status) status.classList.remove("is-error");
       window.StudioToast?.clear?.();
       return;
     }
+    // Keep a persistent line above the ask bar — toast alone is easy to miss.
+    if (status) {
+      status.textContent = msg;
+      status.classList.add("is-error");
+    }
     window.StudioToast?.error?.(msg);
+  }
+
+  function setPromptBusy(busy, label) {
+    const status = document.getElementById("builder-status");
+    document.body.classList.toggle("ms-lb-generating", !!busy);
+    if (status && busy) status.textContent = label || "";
+    if (!busy) syncEmptyState();
+  }
+
+  function syncPromptActionUi() {
+    /* Ask AI bar removed — edits happen outside this UI. */
   }
 
   function setOnboardError(msg) {
@@ -271,8 +330,8 @@
         if (!src || !iframe) {
           frame.classList.remove("is-loading");
           frame.classList.add("is-ready");
-          return;
-        }
+      return;
+    }
 
         let settled = false;
         const finish = () => {
@@ -333,21 +392,21 @@
             previewUrl.replace(/"/g, "&quot;") +
             '"'
           : ' class="ms-lb-tpl-frame is-ready"';
-        return (
+      return (
           '<button type="button" class="ms-lb-tpl-card' +
           active +
           '" role="option" aria-selected="' +
           (t.id === state.templateId ? "true" : "false") +
           '" data-template-id="' +
-          t.id +
+        t.id +
           '">' +
           "<div" +
           frameAttrs +
-          ">" +
+        ">" +
           preview +
           "</div>" +
           '<div class="ms-lb-tpl-meta"><strong>' +
-          t.name +
+        t.name +
           "</strong></div>" +
           "</button>"
         );
@@ -426,20 +485,59 @@
     const phone = String(p.phone || "").trim();
     const address = String(p.address || "").trim();
     const maps = String(p.mapsUrl || p.maps || "").trim();
+    const website = String(p.website || p.websiteUrl || "").trim();
+    const hours = String(p.hours || "").trim();
     if (p.leadId && !state.leadId) state.leadId = String(p.leadId);
     if (name) setBusinessValue("businessName", name, !force);
     if (category) setBusinessValue("category", category, !force);
     if (phone) setBusinessValue("phone", phone, !force);
     if (address) setBusinessValue("address", address, !force);
+    if (website) setBusinessValue("website", website, !force);
+    if (hours) setBusinessValue("hours", hours, !force);
     if (maps) {
       setBusinessValue("mapsUrl", maps, !force);
       state.mapsReady = true;
     }
   }
 
+  function buildFinderPrompt() {
+    const name = businessValue("businessName") || "this business";
+    const category = businessValue("category");
+    const address = businessValue("address");
+    const phone = businessValue("phone");
+    const website = businessValue("website");
+    const hours = businessValue("hours");
+    const parts = [
+      "Build a clean, conversion-focused single-page website for " + name + ".",
+    ];
+    if (category) parts.push("Category: " + category + ".");
+    if (address) parts.push("Address: " + address + ".");
+    if (phone) parts.push("Phone: " + phone + ".");
+    if (website) parts.push("Existing website (reference only): " + website + ".");
+    if (hours) parts.push("Hours: " + hours + ".");
+    parts.push(
+      "Include hero, services, social proof, and a clear call-to-action with accurate contact details. Mobile-first."
+    );
+    return parts.join(" ");
+  }
+
   function intakeFromQuery() {
     const p = params();
+    if (!hasFreshLeadIntake(p)) {
+      // Plain builder open — never reuse a leftover Finder pick.
+      clearBuilderForNextVisit();
+      return false;
+    }
+
     state.leadId = p.get("lead_id") || p.get("lead") || null;
+    state.fromFinder = p.get("from_finder") === "1" || p.get("auto_generate") === "1";
+    try {
+      if (!state.fromFinder && sessionStorage.getItem("lpc_lead_pick_pending_v1") === "1") {
+        state.fromFinder = true;
+      }
+    } catch (_) {
+      /* ignore */
+    }
 
     applyPickFromStorageOrQuery(p);
 
@@ -450,6 +548,8 @@
         phone: p.get("phone") || "",
         address: p.get("address") || "",
         mapsUrl: p.get("maps") || "",
+        website: p.get("website") || "",
+        hours: p.get("hours") || "",
         leadId: state.leadId,
       },
       { force: false }
@@ -467,6 +567,14 @@
       if (maps && isLooseLink(maps)) state.mapsReady = true;
       if (isManualComplete() || isMapsPathReady()) {
         setScrapeStatus("Details loaded from Business Finder", "ok");
+      }
+    }
+
+    if (state.fromFinder && bizName) {
+      state.autoGeneratePending = p.get("auto_generate") !== "0";
+      const notesEl = document.getElementById("biz-notes");
+      if (notesEl && !String(notesEl.value || "").trim()) {
+        notesEl.value = buildFinderPrompt();
       }
     }
     return filled;
@@ -503,11 +611,14 @@
         phone: pick.phone,
         address: pick.address,
         mapsUrl: pick.mapsUrl || pick.maps,
+        website: pick.website || pick.websiteUrl,
+        hours: pick.hours,
       },
       { force: true }
     );
     try {
       sessionStorage.removeItem("lpc_lead_pick_pending_v1");
+      sessionStorage.removeItem("lpc_lead_pick_v1");
     } catch (_) {
       /* ignore */
     }
@@ -521,6 +632,7 @@
     if (workspace) workspace.hidden = isSetup;
     document.body.classList.toggle("ms-lb-setup", isSetup);
     document.body.classList.toggle("ms-lb-workspace", !isSetup);
+    syncPromptActionUi();
   }
 
   function setOnboardOpen(open) {
@@ -550,70 +662,89 @@
     location.href = target;
   }
 
+  /**
+   * Wipe everything the builder is holding so the page is a blank slate next
+   * time it's opened. Runs on leave (pagehide), on bfcache restore, and at the
+   * start of a fresh setup visit so the form is always ready for new paste-in.
+   */
+  function clearBuilderForNextVisit() {
+    Object.values(BUSINESS_FIELDS).forEach((id) => {
+      const input = document.getElementById(id);
+      if (input) input.value = "";
+    });
+    const notesEl = document.getElementById("biz-notes");
+    if (notesEl) notesEl.value = "";
+    const codeEl = document.getElementById("code-editor");
+    if (codeEl) codeEl.value = "";
+
+    state.projectId = null;
+    state.project = null;
+    state.html = "";
+    state.leadId = null;
+    state.fromFinder = false;
+    state.autoGeneratePending = false;
+    state.onboardDone = false;
+    state.onboardStep = 1;
+    state.mapsReady = false;
+    state.mapsScraping = false;
+    state.mode = "preview";
+    Object.keys(state.business).forEach((k) => (state.business[k] = ""));
+    Object.keys(state.linkBusiness).forEach((k) => (state.linkBusiness[k] = ""));
+
+    try {
+      sessionStorage.removeItem("lpc_lead_pick_v1");
+      sessionStorage.removeItem("lpc_lead_pick_pending_v1");
+    } catch (_) {
+      /* ignore */
+    }
+
+    try {
+      setScrapeStatus("");
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  /** True when the URL intentionally handed a lead into Builder (not a stale visit). */
+  function hasFreshLeadIntake(p) {
+    const q = p || params();
+    return !!(
+      q.get("from_finder") === "1" ||
+      q.get("auto_generate") === "1" ||
+      q.get("pick") ||
+      q.get("lead_id") ||
+      q.get("lead") ||
+      q.get("name") ||
+      q.get("maps") ||
+      q.get("phone") ||
+      q.get("address")
+    );
+  }
+
   /** Keep incomplete setup on the survey page — cannot skip to the workspace. */
   function ensureOnboardSurvey() {
     if (state.onboardDone) return false;
     setBuilderPhase("setup");
-    showOnboardStep(state.onboardStep === 2 ? 2 : 1);
+    showOnboardStep(1);
     updateOnboardContinue();
     return true;
   }
 
-  function syncSetupStepIndicators(step) {
-    document.querySelectorAll("[data-step-indicator]").forEach((el) => {
-      const n = Number(el.getAttribute("data-step-indicator") || "0");
-      el.classList.toggle("is-active", n === step);
-      el.classList.toggle("is-done", n < step);
-    });
+  function syncSetupStepIndicators() {
+    /* single-step setup — no progress indicators */
   }
 
   function dismissOnboard() {
-    if (state.onboardDone) return false;
-    if (state.onboardStep === 2) {
-      setOnboardError("");
-      showOnboardStep(1);
-      updateOnboardContinue();
-      return true;
-    }
     return false;
   }
 
   function showOnboardStep(step) {
-    state.onboardStep = step;
+    state.onboardStep = 1;
     const s1 = document.getElementById("onboard-step-1");
-    const s2 = document.getElementById("onboard-step-2");
-    const card = document.getElementById("builder-setup-card");
-    const reduce = window.StudioMotion?.prefersReducedMotion?.();
-    const steps = [s1, s2];
-
-    if (card) card.classList.toggle("is-templates", step === 2);
-    syncSetupStepIndicators(step);
-
-    steps.forEach((el, index) => {
-      if (!el) return;
-      const active = step === index + 1;
-      el.classList.remove("is-entering");
-      if (active) {
-        el.hidden = false;
-        el.classList.add("is-active");
-        if (!reduce) {
-          void el.offsetWidth;
-          el.classList.add("is-entering");
-          window.setTimeout(() => el.classList.remove("is-entering"), 520);
-        }
-      } else {
-        el.hidden = true;
-        el.classList.remove("is-active");
-      }
-    });
-
-    if (step === 2) {
-      renderOnboardTemplates();
-      const gen = document.getElementById("onboard-generate");
-      if (gen) gen.disabled = !state.templateId;
-      const body = s2?.querySelector(".ms-lb-onboard-body");
-      if (body) body.scrollTop = 0;
-    }
+    if (!s1) return;
+    s1.hidden = false;
+    s1.classList.add("is-active");
+    updateOnboardContinue();
   }
 
   function isLooseLink(url) {
@@ -686,7 +817,7 @@
   }
 
   function updateOnboardContinue() {
-    const btn = document.getElementById("onboard-next");
+    const btn = document.getElementById("onboard-generate");
     if (btn) btn.disabled = !canContinueOnboard();
   }
 
@@ -962,19 +1093,72 @@
     const empty = document.getElementById("preview-empty");
     const copy = empty?.querySelector("p");
     if (!copy) return;
-    const name = businessValue("businessName");
-    if (!state.onboardDone) {
-      copy.textContent = "Complete business details and pick a template to generate your site";
-    } else if (fromFinder && name) {
-      copy.textContent = "Ready for " + name + " — generate or ask AI to refine";
-    } else {
-      copy.textContent = "Ask AI below to refine the page, or regenerate from Details";
+    if (state.html && state.html.trim()) {
+      syncEmptyState();
+      return;
     }
+    const name = businessValue("businessName");
+    if (fromFinder && name && !state.onboardDone) {
+      copy.textContent = "Generating a site for " + name + "…";
+    } else if (!state.onboardDone) {
+      copy.textContent = "Add a Google link or manual details, then generate your site";
+    } else if (fromFinder && name) {
+      copy.textContent = "Website ready for " + name;
+    } else {
+      copy.textContent = "Your website is ready";
+    }
+    syncEmptyState();
+  }
+
+  function hasMvpPlus() {
+    if (state.mvpPlus || state.pro) return true;
+    const handle = String(state.profile?.handle || "")
+      .toLowerCase()
+      .replace(/^@/, "");
+    const owners = window.SITE_CONFIG?.ownerHandles || [];
+    return owners.some((h) => String(h || "").toLowerCase() === handle);
+  }
+
+  function requireMvpPlus() {
+    if (hasMvpPlus()) return true;
+    location.href = "store.html#mvp-plus";
+    return false;
+  }
+
+  function syncMvpAccessUi() {
+    const locked = !hasMvpPlus();
+    const codeBtn = document.querySelector('.is-mode[data-mode="code"]');
+    const downloadBtn = document.getElementById("btn-download-html");
+    if (codeBtn) {
+      codeBtn.classList.toggle("is-mvp-locked", locked);
+      codeBtn.title = locked ? "MVP+ required — View Code" : "Code";
+      codeBtn.setAttribute("aria-label", locked ? "View Code (MVP+ required)" : "Code");
+    }
+    if (downloadBtn) {
+      downloadBtn.classList.toggle("is-mvp-locked", locked);
+      downloadBtn.title = locked ? "MVP+ required — Download HTML" : "Download HTML";
+      downloadBtn.setAttribute(
+        "aria-label",
+        locked ? "Download HTML (MVP+ required)" : "Download HTML"
+      );
+    }
+  }
+
+  function syncMvpFromProfile(profile) {
+    const branding =
+      profile?.branding_defaults &&
+      typeof profile.branding_defaults === "object" &&
+      !Array.isArray(profile.branding_defaults)
+        ? profile.branding_defaults
+        : {};
+    state.mvpPlus = !!(profile?.mvp_plus || branding.mvp_plus);
+    state.pro = state.mvpPlus;
+    syncMvpAccessUi();
   }
 
   function readIntake() {
     captureOnboardDetails();
-    const notes = sanitizeClientText(document.getElementById("biz-notes").value, 2000);
+    const notes = sanitizeClientText(document.getElementById("biz-notes")?.value || "", 2000);
     const mapsUrl = sanitizeClientText(businessValue("mapsUrl"), 500);
     const businessName =
       sanitizeClientText(businessValue("businessName"), 120) ||
@@ -987,11 +1171,15 @@
       phone: sanitizeClientText(businessValue("phone"), 40),
       address: sanitizeClientText(businessValue("address"), 200),
       mapsUrl,
+      website: sanitizeClientText(businessValue("website"), 500),
+      hours: sanitizeClientText(businessValue("hours"), 200),
       notes,
       leadId: state.leadId,
-      templateId: state.templateId,
+      templateId: state.templateId || DEFAULT_TEMPLATE_ID || "local-service",
+      usePresets: true,
+      fromFinder: !!state.fromFinder,
       aiImages: state.aiImages,
-      pro: state.pro,
+      pro: hasMvpPlus(),
     };
   }
 
@@ -1088,17 +1276,81 @@
     if (btn) btn.disabled = !ready;
   }
 
+  const PRICE_CHAPTERS = [300, 500, 700, 1000, 1500];
+
+  function formatPriceLabel(dollars) {
+    return "$" + Number(dollars).toLocaleString("en-US");
+  }
+
+  function priceIndexFromCents(cents) {
+    const dollars = Math.round(Number(cents) / 100);
+    const idx = PRICE_CHAPTERS.indexOf(dollars);
+    return idx >= 0 ? idx : 0;
+  }
+
+  function setPriceFromIndex(index, { persist = false } = {}) {
+    const idx = Math.max(0, Math.min(PRICE_CHAPTERS.length - 1, Number(index) || 0));
+    const dollars = PRICE_CHAPTERS[idx];
+    state.priceCents = dollars * 100;
+    syncPriceUi();
+    if (persist) {
+      void persistPrice().then(() => refreshWatermark());
+    }
+  }
+
+  function syncPriceUi() {
+    const idx = priceIndexFromCents(state.priceCents);
+    const dollars = PRICE_CHAPTERS[idx] || 300;
+    const pct = (idx / (PRICE_CHAPTERS.length - 1)) * 100;
+    const valueEl = document.getElementById("lb-price-value");
+    const fillEl = document.getElementById("lb-price-fill");
+    const rangeEl = document.getElementById("lb-price-range");
+    if (valueEl) valueEl.textContent = formatPriceLabel(dollars);
+    if (fillEl) fillEl.style.width = pct + "%";
+    if (rangeEl) {
+      rangeEl.value = String(idx);
+      rangeEl.setAttribute("aria-valuetext", formatPriceLabel(dollars));
+    }
+    document.querySelectorAll(".ms-lb-price-chapters [data-price]").forEach((btn) => {
+      const selected = Number(btn.dataset.price) === dollars;
+      btn.classList.toggle("is-active", selected);
+      btn.setAttribute("aria-pressed", String(selected));
+    });
+  }
+
+  // Persist the seller-chosen price to the project row so the live watermark
+  // checkout (an unauthenticated business owner) can charge the right amount.
+  async function persistPrice() {
+    if (!state.projectId) return;
+    try {
+      localStorage.setItem("ms_project_price_" + state.projectId, String(state.priceCents));
+    } catch (_) {
+      /* ignore */
+    }
+    try {
+      const user = await window.StudioAuth.getUser();
+      await sb()
+        .from("projects")
+        .update({ price_cents: state.priceCents })
+        .eq("id", state.projectId)
+        .eq("user_id", user.id);
+      if (state.project) state.project.price_cents = state.priceCents;
+    } catch (_) {
+      /* non-fatal — price still applied locally */
+    }
+  }
+
   function refreshWatermark() {
     const host = document.getElementById("watermark-host");
     const enabled = !!(state.project?.watermark_enabled && state.html);
+    const logo =
+      (window.SITE_CONFIG && window.SITE_CONFIG.brandLogoUrl) || "doc/MoonriseLogo.png";
     window.StudioWatermark.mount(host, {
       enabled,
       projectId: state.projectId,
       handle: state.profile?.handle || "moonrise",
-      avatarUrl:
-        state.profile?.avatar_url ||
-        (window.SITE_CONFIG && window.SITE_CONFIG.defaultAvatarUrl) ||
-        "doc/pfp.png",
+      avatarUrl: logo,
+      priceCents: state.priceCents,
       urgencyEndsAt: state.project?.urgency_ends_at,
     });
     setPublishEnabled();
@@ -1126,6 +1378,15 @@
     state.projectId = data.id;
     state.project = data;
     state.html = data.html || "";
+    const allowedPrices = [30000, 50000, 70000, 100000, 150000];
+    const dbPrice = Number(data.price_cents);
+    const savedPrice = Number(localStorage.getItem("ms_project_price_" + data.id));
+    if (allowedPrices.includes(dbPrice)) {
+      state.priceCents = dbPrice;
+    } else if (allowedPrices.includes(savedPrice)) {
+      state.priceCents = savedPrice;
+    }
+    syncPriceUi();
     state.templateId = data.template_id || state.templateId;
     state.leadId = data.lead_id || null;
     state.onboardDone = !!(state.html && state.html.trim());
@@ -1135,21 +1396,28 @@
     setBusinessValue("phone", ctx.phone || "");
     setBusinessValue("address", ctx.address || "");
     setBusinessValue("mapsUrl", ctx.mapsUrl || "");
-    if (ctx.notes) document.getElementById("biz-notes").value = ctx.notes;
+    if (ctx.notes && !state.onboardDone) {
+      // Only seed the ask bar during setup — after generate it is for edit prompts.
+      const notesEl = document.getElementById("biz-notes");
+      if (notesEl && !notesEl.value.trim()) notesEl.value = ctx.notes;
+    }
     syncBusinessToOnboard();
     syncOnboardTemplateSelection();
+    syncPromptActionUi();
     updatePreview();
   }
 
   async function generate(opts) {
     const fromOnboard = !!(opts && opts.fromOnboard);
+    const fromFinderFlow = !!(opts && opts.fromFinder) || !!state.fromFinder;
     setError("");
     setOnboardError("");
 
-    // Dock / shortcut generate is blocked until the survey finishes via onboard Generate.
-    if (!fromOnboard && !state.onboardDone) {
+    // Dock generate is blocked until the first site exists — unless this is setup Generate
+    // or a Business Finder auto-generate handoff.
+    if (!fromOnboard && !fromFinderFlow && !state.onboardDone) {
       ensureOnboardSurvey();
-      setError("Finish business details and pick a template first.");
+      setError("Add a Google link or fill business details, then generate.");
       return;
     }
 
@@ -1159,30 +1427,20 @@
     if (!intake.businessName || intake.businessName === "Untitled business") {
       const msg = "Business name is required.";
       if (fromOnboard) {
-        showOnboardStep(1);
         setOnboardError(msg);
         updateOnboardContinue();
       } else setError(msg);
       return;
     }
-    if (!intake.templateId) {
-      const msg = "Pick a template first.";
-      if (fromOnboard) {
-        showOnboardStep(2);
-        setOnboardError(msg);
-      } else setError(msg);
-      return;
-    }
+
+    intake.templateId = intake.templateId || state.templateId || "local-service";
+    intake.usePresets = true;
+    intake.fromFinder = fromFinderFlow;
 
     if (!intake.notes) {
-      intake.notes =
-        "Personalize this template for " +
-        intake.businessName +
-        (intake.category ? ", a " + intake.category : "") +
-        (intake.address ? " at " + intake.address : "") +
-        (intake.phone ? ". Phone: " + intake.phone : "") +
-        ". Keep contact details accurate.";
-      document.getElementById("biz-notes").value = intake.notes;
+      intake.notes = buildFinderPrompt();
+      const notesEl = document.getElementById("biz-notes");
+      if (notesEl) notesEl.value = intake.notes;
     }
 
     try {
@@ -1193,15 +1451,25 @@
       return;
     }
 
-    setStatus("Generating with OpenRouter…");
-    document.body.classList.add("ms-lb-generating");
-    const btn = document.getElementById("btn-generate");
+    setStatus("");
+    setPromptBusy(true, "Generating…");
     const onboardBtn = document.getElementById("onboard-generate");
-    if (btn) btn.disabled = true;
     if (onboardBtn) onboardBtn.disabled = true;
     try {
+      const base = workerUrl();
+      if (!base) throw new Error("Worker URL is not configured.");
+      try {
+        const health = await fetch(base + "/health", { method: "GET" });
+        if (!health.ok) throw new Error("Worker health check failed");
+      } catch (_) {
+        throw new Error(
+          "Can't reach the Moonrise worker at " +
+            base +
+            ". Start it with: cd moonrise-studio/worker && npm start"
+        );
+      }
       const headers = await authHeaders();
-      const res = await fetch(workerUrl() + "/generate", {
+      const res = await fetch(base + "/generate", {
         method: "POST",
         headers,
         body: JSON.stringify({
@@ -1214,85 +1482,46 @@
       state.projectId = data.projectId;
       state.html = data.html || "";
       state.onboardDone = true;
+      state.autoGeneratePending = false;
       setBuilderPhase("workspace");
       await loadProject(state.projectId);
+      const notesEl = document.getElementById("biz-notes");
+      if (notesEl) notesEl.value = "";
       history.replaceState({}, "", "builder.html?project_id=" + encodeURIComponent(state.projectId));
-      setStatus("Generated. Watermark is on until payment.");
+      setStatus(
+        data.presetCount
+          ? "Generated with " + data.presetCount + " Website Presets. Watermark is on until payment."
+          : "Generated. Watermark is on until payment."
+      );
       state.mode = "preview";
       updatePreview();
+      syncPromptActionUi();
     } catch (e) {
-      const msg = e.message || "Generation failed";
+      let msg = e.message || "Generation failed";
+      if (/failed to fetch|networkerror|load failed|network request failed/i.test(msg)) {
+        msg =
+          "Can't reach the Moonrise worker at " +
+          workerUrl() +
+          ". Start it with: cd moonrise-studio/worker && npm start. If you opened Studio via a network IP, keep using that same host.";
+      }
       if (fromOnboard) setOnboardError(msg);
       setError(msg);
       setStatus("");
     } finally {
-      if (btn) btn.disabled = false;
-      if (onboardBtn) onboardBtn.disabled = !state.templateId;
-      document.body.classList.remove("ms-lb-generating");
+      if (onboardBtn) onboardBtn.disabled = !canContinueOnboard();
+      setPromptBusy(false);
     }
   }
 
   async function editWithAi() {
-    setError("");
-    if (!state.projectId || !state.html) {
-      setError("Generate a site first, then ask AI to change it.");
-      if (!state.onboardDone) setBuilderPhase("setup");
-      return;
-    }
-
-    let instruction = sanitizeClientText(document.getElementById("biz-notes")?.value || "", 2000);
-    if (!instruction || instruction.length < 3) {
-      setError("Describe the change you want in the AI bar.");
-      return;
-    }
-    try {
-      assertSafePrompt(instruction);
-    } catch (e) {
-      setError(e.message);
-      return;
-    }
-
-    setStatus("Updating with AI…");
-    document.body.classList.add("ms-lb-generating");
-    const btn = document.getElementById("btn-generate");
-    if (btn) btn.disabled = true;
-    try {
-      if (state.mode === "code") {
-        state.html = document.getElementById("code-editor")?.value || state.html;
-      }
-      const headers = await authHeaders();
-      const res = await fetch(workerUrl() + "/edit", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          projectId: state.projectId,
-          instruction,
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Edit failed");
-      state.html = data.html || state.html;
-      await loadProject(state.projectId);
-      setStatus("Updated.");
-      document.getElementById("biz-notes").value = "";
-      updatePreview();
-    } catch (e) {
-      setError(e.message || "Edit failed");
-      setStatus("");
-    } finally {
-      if (btn) btn.disabled = false;
-      document.body.classList.remove("ms-lb-generating");
-    }
+    /* Ask AI bar removed. */
   }
 
   async function runPromptAction() {
+    setError("");
     if (!state.onboardDone) {
       ensureOnboardSurvey();
-      setError("Finish business details and pick a template first.");
-      return;
-    }
-    if (state.html && state.projectId) {
-      await editWithAi();
+      setError("Generate a site first from setup.");
       return;
     }
     await generate({ fromOnboard: false });
@@ -1301,24 +1530,17 @@
   async function publish() {
     setError("");
     if (ensureOnboardSurvey()) {
-      setError("Finish business details and pick a template first.");
+      setError("Add a Google link or fill business details, then generate.");
       return;
     }
     if (!state.projectId) return;
-    if (state.project?.watermark_enabled) {
-      setError("Pay to remove the watermark before publishing.");
-      window.StudioWatermark.openPaywall({
-        projectId: state.projectId,
-        handle: state.profile?.handle || "moonrise",
-        avatarUrl:
-          state.profile?.avatar_url ||
-          (window.SITE_CONFIG && window.SITE_CONFIG.defaultAvatarUrl) ||
-          "doc/pfp.png",
-        urgencyEndsAt: state.project?.urgency_ends_at,
-      });
-      return;
-    }
-    setStatus("Publishing to Vercel…");
+    // Publishing is allowed while the watermark is on. The seller isn't the
+    // payer — the live site carries the "Complete your order" widget and the
+    // business owner pays there to remove the watermark (which auto-redeploys
+    // the clean site).
+    await persistPrice();
+    const watermarked = !!state.project?.watermark_enabled;
+    setStatus(watermarked ? "Publishing to Vercel (with watermark)…" : "Publishing to Vercel…");
     try {
       const headers = await authHeaders();
       const res = await fetch(workerUrl() + "/publish", {
@@ -1329,7 +1551,14 @@
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Publish failed");
       await loadProject(state.projectId);
-      setStatus("Published: " + (data.url || "done"));
+      const url = data.url || liveSiteUrl() || "done";
+      setStatus(
+        state.project?.watermark_enabled
+          ? "Published with watermark: " +
+              url +
+              " — your client can pay on the live site to remove it."
+          : "Published: " + url
+      );
     } catch (e) {
       setError(e.message || "Publish failed");
       setStatus("");
@@ -1344,12 +1573,13 @@
     if (!confirm("Delete this project permanently?")) return;
     const user = await window.StudioAuth.getUser();
     await sb().from("projects").delete().eq("id", state.projectId).eq("user_id", user.id);
-    location.href = "projects.html";
+    location.href = "dashboard.html";
   }
 
   function downloadHtml() {
+    if (!requireMvpPlus()) return;
     if (ensureOnboardSurvey()) {
-      setError("Finish business details and pick a template first.");
+      setError("Add a Google link or fill business details, then generate.");
       return;
     }
     if (!state.html || !state.html.trim()) {
@@ -1749,19 +1979,9 @@
     });
     document.addEventListener("keydown", (e) => {
       if (e.key !== "Escape") return;
-      const viewer = document.getElementById("template-viewer");
-      if (viewer && !viewer.hidden) {
-        closeTemplateViewer();
-        e.preventDefault();
-        return;
-      }
       const settings = document.getElementById("builder-site-settings");
       if (settings && !settings.hidden) {
         setSiteSettingsOpen(false);
-        e.preventDefault();
-        return;
-      }
-      if (dismissOnboard()) {
         e.preventDefault();
       }
     });
@@ -1770,21 +1990,11 @@
   function bindOnboard() {
     let mapsTimer = null;
 
-    document.getElementById("template-viewer-close")?.addEventListener("click", closeTemplateViewer);
-    document.getElementById("template-viewer-back")?.addEventListener("click", closeTemplateViewer);
-    document.getElementById("template-viewer")?.addEventListener("click", (event) => {
-      if (event.target?.id === "template-viewer") closeTemplateViewer();
-    });
-    document.getElementById("template-viewer-generate")?.addEventListener("click", () => {
-      closeTemplateViewer();
-      document.getElementById("onboard-generate")?.click();
-    });
-
     document.getElementById("onboard-cancel")?.addEventListener("click", () => {
       leaveBuilder();
     });
 
-    document.getElementById("onboard-next")?.addEventListener("click", () => {
+    document.getElementById("onboard-generate")?.addEventListener("click", () => {
       setOnboardError("");
       if (!canContinueOnboard()) {
         setOnboardError("Paste a link or fill every manual field.");
@@ -1794,32 +2004,14 @@
       const err = validateOnboardDetails();
       if (err) {
         setOnboardError(err);
-        return;
-      }
-      captureOnboardDetails();
-      showOnboardStep(2);
-    });
-
-    document.getElementById("onboard-back")?.addEventListener("click", () => {
-      setOnboardError("");
-      showOnboardStep(1);
-      updateOnboardContinue();
-    });
-
-    document.getElementById("onboard-generate")?.addEventListener("click", () => {
-      setOnboardError("");
-      const err = validateOnboardDetails();
-      if (err) {
-        showOnboardStep(1);
-        setOnboardError(err);
         updateOnboardContinue();
         return;
       }
-      if (!state.templateId) {
-        setOnboardError("Pick a template.");
-        return;
-      }
       captureOnboardDetails();
+      const notesEl = document.getElementById("biz-notes");
+      if (notesEl && !String(notesEl.value || "").trim()) {
+        notesEl.value = buildFinderPrompt();
+      }
       generate({ fromOnboard: true });
     });
 
@@ -1868,8 +2060,10 @@
   }
 
   function bindToolbar() {
+    syncMvpAccessUi();
     document.querySelectorAll(".is-mode").forEach((btn) => {
       btn.addEventListener("click", () => {
+        if (btn.dataset.mode === "code" && !requireMvpPlus()) return;
         if (state.mode === "code") {
           state.html = document.getElementById("code-editor")?.value || state.html;
         }
@@ -1884,21 +2078,25 @@
         updatePreview();
       });
     });
+    document.getElementById("lb-price-range")?.addEventListener("input", (e) => {
+      setPriceFromIndex(e.target.value);
+    });
+    document.getElementById("lb-price-range")?.addEventListener("change", (e) => {
+      setPriceFromIndex(e.target.value, { persist: true });
+    });
+    document.querySelectorAll(".ms-lb-price-chapters [data-price]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const idx =
+          btn.dataset.priceIndex != null
+            ? Number(btn.dataset.priceIndex)
+            : PRICE_CHAPTERS.indexOf(Number(btn.dataset.price));
+        if (idx < 0) return;
+        setPriceFromIndex(idx, { persist: true });
+      });
+    });
+    syncPriceUi();
     document.getElementById("code-editor")?.addEventListener("input", () => {
       state.html = document.getElementById("code-editor").value;
-    });
-    document.getElementById("opt-ai-images")?.addEventListener("change", (e) => {
-      state.aiImages = !!e.target.checked;
-    });
-    document.getElementById("opt-pro")?.addEventListener("change", (e) => {
-      state.pro = !!e.target.checked;
-    });
-    document.getElementById("btn-generate")?.addEventListener("click", runPromptAction);
-    document.getElementById("biz-notes")?.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        runPromptAction();
-      }
     });
     document.getElementById("btn-download-html")?.addEventListener("click", downloadHtml);
     document.getElementById("btn-publish-top")?.addEventListener("click", publish);
@@ -1908,10 +2106,41 @@
     bindToolbar();
     bindSiteSettings();
     bindOnboard();
+    // Clear the builder whenever the user leaves, and again if the browser
+    // restores this page from the back/forward cache, so it's always empty and
+    // ready for new business info on the next visit.
+    window.addEventListener("pagehide", clearBuilderForNextVisit);
+    window.addEventListener("pageshow", (e) => {
+      if (e.persisted && !params().get("project_id") && !hasFreshLeadIntake()) {
+        clearBuilderForNextVisit();
+        setBuilderPhase("setup");
+        showOnboardStep(1);
+        updateOnboardContinue();
+        updatePreview();
+      }
+    });
     const projectId = params().get("project_id");
-    setBuilderPhase(projectId ? "workspace" : "setup");
+    // Fresh setup visits start blank unless a lead was handed in via the URL.
+    if (!projectId) clearBuilderForNextVisit();
     const fromFinder = intakeFromQuery();
+    // Beat browser autofill that may refill fields after paint.
+    if (!projectId && !fromFinder && !hasFreshLeadIntake()) {
+      requestAnimationFrame(() => {
+        clearBuilderForNextVisit();
+        updateOnboardContinue();
+      });
+      setTimeout(() => {
+        if (!hasFreshLeadIntake() && !params().get("project_id")) {
+          clearBuilderForNextVisit();
+          updateOnboardContinue();
+        }
+      }, 250);
+    }
+    const skipSetup = !projectId && state.fromFinder && !!businessValue("businessName");
+
+    setBuilderPhase(projectId || skipSetup ? "workspace" : "setup");
     state.profile = await window.StudioAuth.getProfile();
+    syncMvpFromProfile(state.profile);
     if (params().get("paid") === "1" && projectId) {
       setStatus("Payment received — watermark should be off. Refreshing…");
     }
@@ -1936,6 +2165,16 @@
         updateOnboardContinue();
         updatePreview();
       }
+    } else if (skipSetup) {
+      state.onboardDone = false;
+      setBuilderPhase("workspace");
+      updateEmptyCopy(true);
+      updatePreview();
+      setStatus("Generating site from Business Finder details…");
+      if (state.autoGeneratePending) {
+        state.autoGeneratePending = false;
+        void generate({ fromFinder: true });
+      }
     } else {
       state.onboardDone = false;
       setBuilderPhase("setup");
@@ -1944,7 +2183,6 @@
       updateEmptyCopy(fromFinder);
       updatePreview();
       updateOnboardContinue();
-      if (fromFinder) setStatus("Business details loaded — confirm and continue");
       const maps = document.getElementById("onb-maps")?.value?.trim();
       if (maps && isLooseLink(maps)) void scrapeMapsLink();
       else if (isManualComplete()) updateOnboardContinue();

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0165
+    slug: radio-groups-custom-dot-radio
+    title: Custom Dot Radio
+    category: radio-groups
+    tags: radio-groups, dot
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0165 — Custom Dot Radio</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#fff;padding:2rem}.opt{display:flex;align-items:center;gap:12px;margin-bottom:12px;cursor:pointer}input{display:none}.dot{width:20px;height:20px;border:2px solid #ccc;border-radius:50%;position:relative}.dot::after{content:"";position:absolute;inset:4px;background:#6c8cff;border-radius:50%;transform:scale(0);transition:transform .2s}input:checked+.dot{border-color:#6c8cff}input:checked+.dot::after{transform:scale(1)}
+  </style>
+</head>
+<body>
+<div><label class="opt"><input type="radio" name="o" checked><span class="dot"></span>Option 1</label><label class="opt"><input type="radio" name="o" ><span class="dot"></span>Option 2</label></div>
+
+</body>
+</html>

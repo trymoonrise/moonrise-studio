@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0392
+    slug: heroes-mega-type
+    title: Mega Type Hero
+    category: heroes
+    tags: heroes, landing, experimental, typography, scroll
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0392 — Mega Type Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      margin: 0;
+      min-height: 260vh;
+      background: #fff;
+      color: #000;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    .stage {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .stack {
+      position: relative;
+      width: 100%;
+      height: min(52vh, 420px);
+    }
+
+    .word {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      margin: 0;
+      font-size: clamp(4rem, 18vw, 13rem);
+      font-weight: 900;
+      line-height: 0.82;
+      letter-spacing: -0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      transform: translate(-50%, -50%);
+      will-change: transform, opacity, letter-spacing;
+    }
+
+    .trail {
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .trail:nth-child(1) { color: rgba(255, 108, 176, 0.22); z-index: 1; }
+    .trail:nth-child(2) { color: rgba(108, 140, 255, 0.28); z-index: 2; }
+    .trail:nth-child(3) { color: rgba(108, 255, 184, 0.2); z-index: 3; }
+    .trail:nth-child(4) { color: rgba(17, 24, 39, 0.14); z-index: 4; }
+
+    .main {
+      z-index: 5;
+      color: #000;
+    }
+
+    .hint {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(0, 0, 0, 0.32);
+      opacity: var(--hint-opacity, 1);
+      transition: opacity 0.4s ease;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body { min-height: 100vh; }
+      .trail { display: none; }
+      .hint { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage" id="stage">
+    <div class="stack" aria-hidden="false">
+      <p class="word trail" data-trail="0">CREATE</p>
+      <p class="word trail" data-trail="1">CREATE</p>
+      <p class="word trail" data-trail="2">CREATE</p>
+      <p class="word trail" data-trail="3">CREATE</p>
+      <h1 class="word main" id="main">CREATE</h1>
+    </div>
+    <span class="hint">Scroll</span>
+  </div>
+
+  <script>
+    const stage = document.getElementById('stage');
+    const main = document.getElementById('main');
+    const trails = [...document.querySelectorAll('.trail')];
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const lag = [0, 0, 0, 0];
+    const speeds = [0.14, 0.1, 0.07, 0.05];
+    const trailWeight = [0.2, 0.26, 0.18, 0.12];
+    let lastScrollAt = 0;
+    let target = 0;
+
+    function ease(t) {
+      return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    }
+
+    function getProgress() {
+      const max = document.documentElement.scrollHeight - innerHeight;
+      return max > 0 ? ease(Math.min(1, scrollY / max)) : 0;
+    }
+
+    function trailStrength() {
+      const elapsed = performance.now() - lastScrollAt;
+      if (elapsed < 140) return 1;
+      return Math.max(0, 1 - (elapsed - 140) / 420);
+    }
+
+    function applyWord(el, progress, offsetY, offsetX, strength, weight) {
+      const scale = 0.86 + progress * 0.2;
+      const track = -0.06 + progress * 0.03;
+      const opacity = strength * weight;
+
+      el.style.opacity = opacity.toFixed(3);
+      el.style.letterSpacing = `${track}em`;
+      el.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px)) scale(${scale.toFixed(3)})`;
+    }
+
+    function tick() {
+      if (reduced) {
+        main.style.letterSpacing = '-0.04em';
+        return;
+      }
+
+      target += (getProgress() - target) * 0.22;
+      const strength = trailStrength();
+
+      lag.forEach((_, i) => {
+        lag[i] += (target - lag[i]) * speeds[i];
+      });
+
+      applyWord(main, target, 0, 0, 1, 1);
+      stage.style.setProperty('--hint-opacity', strength > 0.05 ? '0' : '1');
+
+      trails.forEach((el, i) => {
+        const delta = target - lag[i];
+        const y = delta * 160;
+        const x = delta * -36;
+        applyWord(el, lag[i], y, x, strength, trailWeight[i]);
+      });
+
+      requestAnimationFrame(tick);
+    }
+
+    addEventListener('scroll', () => {
+      lastScrollAt = performance.now();
+    }, { passive: true });
+
+    tick();
+  </script>
+</body>
+</html>

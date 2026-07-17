@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1824
+    slug: timeline-helix-dna
+    title: Helix DNA Timeline
+    category: timeline
+    tags: timeline, helix, 3d, insane
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1824 — Helix DNA Timeline</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700&family=Outfit:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#05060a;color:#fff;font-family:Outfit,sans-serif;overflow:hidden;display:grid;place-items:center}
+    .stage{perspective:900px;width:min(420px,90vw);height:min(620px,90vh);position:relative}
+    .helix{position:absolute;inset:0;transform-style:preserve-3d;animation:spin 18s linear infinite}
+    .node{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px;border-radius:50%;display:grid;place-items:center;font-family:Syne,sans-serif;font-size:.7rem;font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,.2);background:rgba(10,12,20,.85);transform-style:preserve-3d;transition:box-shadow .3s,border-color .3s,background .3s}
+    .node:hover,.node.on{border-color:#7ee0c3;box-shadow:0 0 30px rgba(126,224,195,.45);background:#0a1a16;color:#7ee0c3}
+    .bridge{position:absolute;left:50%;top:50%;height:2px;width:90px;margin-left:-45px;background:linear-gradient(90deg,transparent,#3a4a6a,transparent);transform-origin:center;opacity:.5}
+    .panel{position:absolute;bottom:8%;left:50%;translate:-50% 0;width:min(340px,88vw);text-align:center;z-index:2;pointer-events:none}
+    .panel h3{font-family:Syne,sans-serif;font-size:1.4rem;margin:0 0 .4rem;letter-spacing:-.02em}
+    .panel p{color:#8a8a96;margin:0;font-size:.9rem;line-height:1.55}
+    .label{position:absolute;top:6%;left:50%;translate:-50% 0;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:#5a5a68;z-index:2}
+    @keyframes spin{to{transform:rotateY(360deg)}}
+    @media(prefers-reduced-motion:reduce){.helix{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="label">Spiral chronology</div>
+  <div class="stage">
+    <div class="helix" id="helix"></div>
+  </div>
+  <div class="panel" id="panel"><h3>—</h3><p>—</p></div>
+  <script>
+    const events=[
+      {t:'Genesis',d:'First spark — the idea crystallizes.'},
+      {t:'Mutation',d:'Prototype pivots under pressure.'},
+      {t:'Bonding',d:'Team forms; culture locks in.'},
+      {t:'Replication',d:'Product scales across markets.'},
+      {t:'Evolution',d:'Platform becomes infrastructure.'},
+      {t:'Ascension',d:'Category redefined.'}
+    ];
+    const helix=document.getElementById('helix'),panel=document.getElementById('panel');
+    const r=110,h=420;
+    events.forEach((e,i)=>{
+      const t=i/(events.length-1);
+      const ang=t*Math.PI*3.2;
+      const y=(t-.5)*h;
+      const x=Math.cos(ang)*r,z=Math.sin(ang)*r;
+      const n=document.createElement('button');
+      n.className='node'+(i===0?' on':'');
+      n.textContent=String(i+1).padStart(2,'0');
+      n.style.transform=`translate3d(${x}px,${y}px,${z}px)`;
+      n.onclick=()=>{
+        document.querySelectorAll('.node').forEach(x=>x.classList.remove('on'));
+        n.classList.add('on');
+        panel.innerHTML=`<h3>${e.t}</h3><p>${e.d}</p>`;
+      };
+      helix.appendChild(n);
+      if(i<events.length-1){
+        const b=document.createElement('div');
+        b.className='bridge';
+        const ang2=((i+.5)/(events.length-1))*Math.PI*3.2;
+        const y2=((i+.5)/(events.length-1)-.5)*h;
+        b.style.transform=`translate3d(0,${y2}px,0) rotateY(${ang2}rad)`;
+        helix.appendChild(b);
+      }
+    });
+    panel.innerHTML=`<h3>${events[0].t}</h3><p>${events[0].d}</p>`;
+  </script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
+const { wrap, padId } = require('./lib/wrap');
+const catalog = require('./recipes/catalog');
+
+const OUT = path.join(__dirname, '..', 'presets');
+const START_ID = 61;
+
+function getExistingMaxId() {
+  const files = fs.readdirSync(OUT).filter((f) => /^\d{3,4}-.+\.html$/.test(f));
+  let max = 0;
+  for (const f of files) {
+    const n = parseInt(f.split('-')[0], 10);
+    if (n > max) max = n;
+  }
+  return max;
+}
+
+function main() {
+  const startFrom = Math.max(START_ID, getExistingMaxId() + 1);
+  let id = startFrom;
+  let written = 0;
+
+  for (const recipe of catalog) {
+    const file = `${padId(id)}-${recipe.slug}.html`;
+    const filePath = path.join(OUT, file);
+    if (fs.existsSync(filePath)) {
+      id++;
+      continue;
+    }
+    const meta = {
+      id: padId(id),
+      slug: recipe.slug,
+      title: recipe.title,
+      category: recipe.category,
+      tags: recipe.tags || [],
+    };
+    const built = typeof recipe.build === 'function' ? recipe.build() : recipe;
+    const html = wrap(meta, recipe.title, built.style || '', built.body || '', built.script || '');
+    fs.writeFileSync(filePath, html);
+    written++;
+    id++;
+  }
+
+  console.log(`Wrote ${written} new presets (IDs ${padId(startFrom)}–${padId(id - 1)})`);
+  execSync('node "' + path.join(__dirname, 'generate-manifest.js') + '"', { stdio: 'inherit' });
+}
+
+main();

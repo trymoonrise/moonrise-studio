@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1702
+    slug: animation-atomic-orbit
+    title: Atomic Orbit Rings
+    category: animation
+    tags: animation, orbit, atomic, rings
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1692 — Atomic Orbit Rings</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at 50% 45%, #12162a, #05060c 70%);
+      overflow: hidden;
+      font-family: Syne, sans-serif;
+      color: #eef2ff;
+    }
+
+    .atom {
+      position: relative;
+      width: min(78vmin, 420px);
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+    }
+
+    .core {
+      position: relative;
+      z-index: 4;
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #fff, #ff5c2e 55%, #9b1d1d);
+      box-shadow: 0 0 50px rgba(255, 92, 46, 0.7);
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+
+    .ring {
+      position: absolute;
+      inset: var(--inset);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 50%;
+      transform: rotateX(var(--rx)) rotateZ(var(--rz));
+      transform-style: preserve-3d;
+      animation: spin var(--spd) linear infinite;
+      animation-direction: var(--dir, normal);
+    }
+
+    .electron {
+      position: absolute;
+      top: -6px;
+      left: 50%;
+      width: 12px;
+      height: 12px;
+      margin-left: -6px;
+      border-radius: 50%;
+      background: var(--c);
+      box-shadow: 0 0 18px var(--c);
+    }
+
+    .ring:nth-child(1) { --inset: 8%; --rx: 68deg; --rz: 0deg; --spd: 6s; --c: #4de1ff; }
+    .ring:nth-child(2) { --inset: 16%; --rx: 68deg; --rz: 60deg; --spd: 8s; --dir: reverse; --c: #d6ff3f; }
+    .ring:nth-child(3) { --inset: 24%; --rx: 68deg; --rz: 120deg; --spd: 10s; --c: #ff4ecd; }
+
+    .label {
+      position: absolute;
+      bottom: -3.5rem;
+      text-align: center;
+    }
+
+    .label h1 {
+      margin: 0;
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .label p {
+      margin: 0.3rem 0 0;
+      font-size: 0.65rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: rgba(238, 242, 255, 0.4);
+    }
+
+    @keyframes spin { to { transform: rotateX(var(--rx)) rotateZ(calc(var(--rz) + 360deg)); } }
+    @keyframes pulse { 50% { transform: scale(1.08); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ring, .core { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="atom" style="perspective: 900px">
+    <div class="ring"><span class="electron"></span></div>
+    <div class="ring"><span class="electron"></span></div>
+    <div class="ring"><span class="electron"></span></div>
+    <div class="core" aria-hidden="true"></div>
+    <div class="label">
+      <h1>Atomic</h1>
+      <p>Never still</p>
+    </div>
+  </div>
+</body>
+</html>

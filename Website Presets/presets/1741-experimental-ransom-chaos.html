@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1741
+    slug: experimental-ransom-chaos
+    title: Ransom Chaos Type
+    category: experimental
+    tags: experimental, ransom, collage, type
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1741 — Ransom Chaos Type</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@700&family=Anton&family=Space+Grotesk:wght@700&family=Oswald:wght@700&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#1a1510;display:grid;place-items:center;overflow:hidden;padding:2rem}
+    .ransom{display:flex;flex-wrap:wrap;justify-content:center;gap:.35rem;max-width:900px}
+    .ch{display:inline-grid;place-items:center;padding:.35em .45em;font-size:clamp(2.2rem,8vw,5rem);font-weight:700;line-height:1;text-transform:uppercase;border:2px solid #000;box-shadow:4px 4px 0 #000;transform:rotate(var(--r)) translateY(var(--y));animation:twitch 2.8s steps(1) infinite;animation-delay:var(--d);cursor:default;user-select:none}
+    .ch:nth-child(3n){font-family:Anton,sans-serif;background:#ff0033;color:#fff}
+    .ch:nth-child(3n+1){font-family:'Courier Prime',monospace;background:#fff;color:#000}
+    .ch:nth-child(3n+2){font-family:Oswald,sans-serif;background:#0044ff;color:#fff}
+    .ch:nth-child(5n){font-family:'Space Grotesk',sans-serif;background:#f2e100;color:#000}
+    .ch:hover{transform:rotate(0) scale(1.15);z-index:2}
+    @keyframes twitch{0%,90%,100%{filter:none}92%{filter:contrast(1.4) hue-rotate(20deg)}94%{transform:rotate(calc(var(--r) + 4deg)) translate(2px,-1px)}}
+    @media (prefers-reduced-motion:reduce){.ch{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="ransom" id="ransom" aria-label="PAY ATTENTION"></div>
+  <script>
+    const word='PAY ATTENTION';
+    const fonts=['Anton','Courier Prime','Oswald','Space Grotesk'];
+    const el=document.getElementById('ransom');
+    [...word].forEach((c,i)=>{
+      if(c===' '){const s=document.createElement('span');s.style.width='1.2rem';el.appendChild(s);return;}
+      const span=document.createElement('span');
+      span.className='ch';
+      span.textContent=c;
+      span.style.setProperty('--r',((Math.random()-.5)*18).toFixed(1)+'deg');
+      span.style.setProperty('--y',((Math.random()-.5)*10).toFixed(1)+'px');
+      span.style.setProperty('--d',(-Math.random()*2.8)+'s');
+      el.appendChild(span);
+    });
+  </script>
+</body>
+</html>

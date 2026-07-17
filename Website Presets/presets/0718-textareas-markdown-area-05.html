@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0718
+    slug: textareas-markdown-area-05
+    title: Markdown Area 05
+    category: textareas
+    tags: textareas, modern, experimental, exaggerated
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0718 — Markdown Area 05</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f8fafc;font-family:Inter,system-ui,sans-serif;overflow:hidden;padding:24px;color:#111}
+    textarea{font:inherit;border:0;outline:0;resize:none;background:transparent;color:inherit;width:100%}
+    button{font:inherit;border:0;cursor:pointer}
+    .scene{position:relative;width:min(520px,92vw)}
+    .md{display:grid;grid-template-columns:1fr 180px;border:1px solid #cbd5e1;border-radius:30px;overflow:hidden;background:#fff;box-shadow:0 24px 70px rgba(15,23,42,.1)}.left{padding:18px}.label{font:800 11px 'JetBrains Mono';letter-spacing:.22em;text-transform:uppercase;color:#64748b;margin-bottom:14px}.area{min-height:220px;font:500 15px/1.6 'JetBrains Mono';color:#0f172a}.preview{background:#0f172a;color:#e2e8f0;padding:20px;display:flex;flex-direction:column;gap:10px}.preview strong{font-size:22px;letter-spacing:-.04em}.preview span{font-size:12px;color:#94a3b8;line-height:1.45}@media(max-width:620px){.md{grid-template-columns:1fr}.preview{min-height:120px}}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <div class="scene"><section class="md"><div class="left"><p class="label">Markdown</p><textarea class="area" id="ta"># Field Notes
+
+- smooth resizing
+- modern preview
+- exaggerated calm</textarea></div><aside class="preview"><strong id="title">Field Notes</strong><span id="meta">3 lines of markdown energy.</span></aside></section></div>
+  <script>const ta=document.getElementById('ta'),title=document.getElementById('title'),meta=document.getElementById('meta');function sync(){const lines=ta.value.split('
+');title.textContent=(lines.find(l=>l.startsWith('# '))||'# Untitled').replace(/^# /,'');meta.textContent=lines.length+' lines of markdown energy.';}ta.addEventListener('input',sync);sync();</script>
+</body>
+</html>

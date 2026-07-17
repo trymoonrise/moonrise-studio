@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1420
+    slug: buttons-ripple-click
+    title: Ripple Click Button
+    category: buttons
+    tags: buttons, ripple, click
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1420 — Ripple Click Button</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#0d0d0f}.btn{position:relative;padding:16px 36px;border:none;border-radius:8px;background:#1a1a2e;color:#fff;font-weight:600;font-size:1rem;cursor:pointer;overflow:hidden}.ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.3);transform:scale(0);animation:rip .6s ease-out;pointer-events:none}@keyframes rip{to{transform:scale(4);opacity:0}}
+  </style>
+</head>
+<body>
+<button class="btn" id="b">Click Me</button>
+<script>document.getElementById('b').onclick=function(e){const r=this.getBoundingClientRect();const d=document.createElement('span');d.className='ripple';d.style.width=d.style.height=Math.max(r.width,r.height)+'px';d.style.left=e.clientX-r.left-d.offsetWidth/2+'px';d.style.top=e.clientY-r.top-d.offsetHeight/2+'px';this.appendChild(d);setTimeout(()=>d.remove(),600);};</script>
+</body>
+</html>

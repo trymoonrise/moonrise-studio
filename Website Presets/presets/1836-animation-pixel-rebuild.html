@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1836
+    slug: animation-pixel-rebuild
+    title: Pixel Dissolve Rebuild
+    category: animation
+    tags: animation, pixel, dissolve, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1836 — Pixel Dissolve Rebuild</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');*{box-sizing:border-box}
+      body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0d0d0d;color:#fff;font-family:"DM Sans",system-ui,-apple-system,sans-serif;padding:2rem}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+      .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;width:min(90vw,320px)}
+      .px{aspect-ratio:1;background:#fff;opacity:0;transform:scale(0);animation:pop .5s cubic-bezier(.34,1.56,.64,1) forwards}
+      .cap{margin-top:1.5rem;text-align:center;font-family:"Syne",system-ui,sans-serif;font-size:1.4rem;font-weight:800;letter-spacing:-.03em;opacity:0;animation:fade .6s 1.8s forwards}
+      @keyframes pop{to{opacity:1;transform:scale(1)}}
+      @keyframes fade{to{opacity:1}}
+  </style>
+</head>
+<body>
+<div><div class="grid" id="g" aria-hidden="true"></div><p class="cap">Rebuild</p></div>
+<script>const g=document.getElementById('g');const order=[...Array(144).keys()].sort(()=>Math.random()-.5);
+order.forEach((idx,i)=>{const d=document.createElement('div');d.className='px';d.style.animationDelay=(i*12)+'ms';d.style.opacity=idx%7===0?.35:1;g.appendChild(d);});</script>
+</body>
+</html>

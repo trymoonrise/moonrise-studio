@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0281
+    slug: testimonials-video-testimonial
+    title: Video Testimonial
+    category: testimonials
+    tags: testimonials, video
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0281 — Video Testimonial</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 2rem;
+      background: radial-gradient(ellipse at 50% 0%, #1a1d2e 0%, #0c0d14 62%);
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: #fff;
+    }
+
+    .wrap {
+      width: min(100%, 720px);
+    }
+
+    .head {
+      text-align: center;
+      margin-bottom: 1.75rem;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #8aa0ff;
+      margin-bottom: 0.65rem;
+    }
+
+    .head h2 {
+      font-size: clamp(1.6rem, 3.5vw, 2.1rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .card {
+      border-radius: 20px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.35);
+    }
+
+    .player {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      background: #0a0a0c;
+      overflow: hidden;
+    }
+
+    .poster,
+    .player video {
+      width: 100%;
+      height: 100%;
+      max-width: none;
+      object-fit: cover;
+      display: block;
+    }
+
+    .player video {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    .player.is-playing video {
+      opacity: 1;
+    }
+
+    .player.is-playing .poster {
+      opacity: 0;
+    }
+
+    .poster {
+      transition: opacity 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-content: end start;
+      padding: 1.25rem;
+      background: linear-gradient(180deg, transparent 35%, rgba(0, 0, 0, 0.72));
+      transition: opacity 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    .player.is-playing .overlay {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .duration {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.82);
+      letter-spacing: 0.04em;
+    }
+
+    .play {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 68px;
+      height: 68px;
+      display: grid;
+      place-items: center;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.94);
+      color: #111827;
+      cursor: pointer;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.28);
+      transition:
+        transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1),
+        opacity 0.35s;
+    }
+
+    .play::before {
+      content: "";
+      position: absolute;
+      inset: -8px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      animation: pulse 2.2s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.7; }
+      50% { transform: scale(1.08); opacity: 0.25; }
+    }
+
+    .play:hover {
+      transform: translate(-50%, -50%) scale(1.05);
+    }
+
+    .player.is-playing .play {
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, -50%) scale(0.9);
+    }
+
+    .play svg {
+      width: 24px;
+      height: 24px;
+      fill: currentColor;
+      margin-left: 3px;
+    }
+
+    .body {
+      padding: 1.5rem 1.6rem 1.65rem;
+    }
+
+    blockquote {
+      margin: 0 0 1.25rem;
+      font-size: clamp(1.05rem, 2.2vw, 1.2rem);
+      line-height: 1.6;
+      color: rgba(255, 255, 255, 0.88);
+    }
+
+    blockquote::before {
+      content: "“";
+      color: #6c8cff;
+      font-size: 1.4em;
+      line-height: 0;
+      margin-right: 0.1em;
+    }
+
+    .author {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(108, 140, 255, 0.45);
+      flex-shrink: 0;
+    }
+
+    .author strong {
+      display: block;
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.15rem;
+    }
+
+    .author span {
+      font-size: 0.84rem;
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .play::before {
+        animation: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <section class="wrap">
+    <header class="head">
+      <span class="eyebrow">Customer stories</span>
+      <h2>Hear it from our customers</h2>
+    </header>
+
+    <article class="card">
+      <div class="player" id="player">
+        <img
+          class="poster"
+          id="poster"
+          src="../stock/media/16-9 Aspect Ratio(image).png"
+          alt=""
+        >
+        <video
+          id="video"
+          playsinline
+          controls
+          preload="metadata"
+          poster="../stock/media/16-9 Aspect Ratio(image).png"
+        >
+          <source src="../stock/media/16-9 Aspect Ratio(video).mp4" type="video/mp4">
+        </video>
+        <div class="overlay">
+          <span class="duration">1:24 watch</span>
+        </div>
+        <button class="play" id="play" type="button" aria-label="Play testimonial video">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="8,5 19,12 8,19"/></svg>
+        </button>
+      </div>
+
+      <div class="body">
+        <blockquote>
+          This platform cut our launch timeline in half. The team finally ships with confidence instead of scrambling every week.
+        </blockquote>
+        <div class="author">
+          <img
+            class="avatar"
+            src="../stock/media/4-5 Aspect Ratio(image).png"
+            alt=""
+          >
+          <div>
+            <strong>Jane Doe</strong>
+            <span>Marketing Director, Northwind Studio</span>
+          </div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <script>
+    const player = document.getElementById('player');
+    const video = document.getElementById('video');
+    const play = document.getElementById('play');
+
+    play.addEventListener('click', async () => {
+      player.classList.add('is-playing');
+      try {
+        await video.play();
+      } catch {
+        video.muted = true;
+        await video.play();
+      }
+    });
+
+    video.addEventListener('ended', () => {
+      player.classList.remove('is-playing');
+      video.currentTime = 0;
+    });
+
+    video.addEventListener('pause', () => {
+      if (video.currentTime === 0 || video.ended) {
+        player.classList.remove('is-playing');
+      }
+    });
+  </script>
+</body>
+</html>

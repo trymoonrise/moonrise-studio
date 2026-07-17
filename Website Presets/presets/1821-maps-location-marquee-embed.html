@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1821
+    slug: maps-location-marquee-embed
+    title: Location Marquee Embed
+    category: maps
+    tags: maps, embed, experimental, widgets, motion
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1821 — Location Marquee Embed</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;padding:1.5rem;overflow:hidden;background:#0a0a0a;color:#fff;font-family:Syne,sans-serif}
+    iframe{border:0;width:100%;height:100%;display:block}
+    button{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit}
+    .wrap{width:min(640px,96vw)}.marq{overflow:hidden;margin-bottom:12px;border-block:1px solid rgba(255,255,255,.12);padding:.7rem 0}
+.track{display:flex;width:max-content;gap:2rem;animation:run 28s linear infinite;font-size:clamp(1.4rem,4vw,2rem);font-weight:800;letter-spacing:-.04em;text-transform:uppercase;color:rgba(255,255,255,.25)}
+.track b{color:#fff}
+.stage{aspect-ratio:16/9;border-radius:24px;overflow:hidden;border:1px solid rgba(255,255,255,.1);position:relative}
+.pick{position:absolute;inset:auto 16px 16px 16px;display:flex;gap:8px;flex-wrap:wrap}
+.pick button{padding:.5rem .85rem;border-radius:999px;background:rgba(0,0,0,.65);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;transition:.25s}
+.pick button:hover,.pick button.on{background:#fff;color:#111}
+@keyframes run{to{transform:translateX(-50%)}}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="wrap"><div class="marq"><div class="track"><span>Lagos · <b>Nairobi</b> · Accra · <b>Addis</b> · Cairo · </span><span>Lagos · <b>Nairobi</b> · Accra · <b>Addis</b> · Cairo · </span></div></div>
+<div class="stage"><iframe id="map" src="https://www.google.com/maps?q=Nairobi%2C%20Kenya&hl=en&z=12&output=embed" title="Marquee map" loading="lazy"></iframe>
+<div class="pick">
+<button class="on" data-q="Nairobi, Kenya">Nairobi</button>
+<button data-q="Lagos, Nigeria">Lagos</button>
+<button data-q="Accra, Ghana">Accra</button>
+<button data-q="Cairo, Egypt">Cairo</button>
+</div></div></div>
+<script>const map=document.getElementById('map');document.querySelectorAll('.pick button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.pick button').forEach(x=>x.classList.remove('on'));b.classList.add('on');map.src='https://www.google.com/maps?q='+encodeURIComponent(b.dataset.q)+'&hl=en&z=12&output=embed';});</script>
+</body>
+</html>

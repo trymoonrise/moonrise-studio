@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0076
+    slug: cursor-trails-text-trail
+    title: Text Cursor Trail
+    category: cursor-trails
+    tags: cursor-trails, text
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0076 — Text Cursor Trail</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:100vh;background:#111;overflow:hidden;cursor:crosshair}
+    .hint{position:fixed;inset:0;display:grid;place-items:center;color:#6cffb8;font-family:monospace;font-size:1.25rem;opacity:.45;pointer-events:none}
+    .trail{position:fixed;pointer-events:none;font-family:monospace;font-weight:700;font-size:14px;color:#6cffb8;animation:trail .85s cubic-bezier(.22,.61,.36,1) forwards;will-change:transform,opacity}
+    @keyframes trail{0%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-90%) scale(.75)}}
+  </style>
+</head>
+<body>
+<p class="hint">Move your cursor</p>
+<script>
+    const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let last=0;
+    addEventListener('mousemove',e=>{
+      const now=Date.now();
+      if(now-last<45)return;
+      last=now;
+      const el=document.createElement('span');
+      el.className='trail';
+      el.textContent=chars[Math.floor(Math.random()*chars.length)];
+      el.style.left=e.clientX+'px';
+      el.style.top=e.clientY+'px';
+      document.body.appendChild(el);
+      setTimeout(()=>el.remove(),900);
+    });
+    </script>
+</body>
+</html>

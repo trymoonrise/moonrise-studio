@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0896
+    slug: avatars-circle-avatar-01
+    title: Circle Avatar 01
+    category: avatars
+    tags: avatars, circle, marquee, minimal
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0896 — Circle Avatar 01</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&family=DM+Mono:wght@400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#eceae4;overflow:hidden;font-family:'DM Mono',monospace}
+    .stage{min-height:100vh;display:grid;place-items:center}
+    .orbit{position:relative;width:200px;height:200px;display:grid;place-items:center}
+    .ring{position:absolute;inset:0;border:1px solid rgba(0,0,0,.15);border-radius:50%}
+    .av{width:64px;height:64px;border-radius:50%;background:#111;color:#eceae4;display:grid;place-items:center;font-family:'Instrument Serif',serif;font-style:italic;font-size:1.35rem;z-index:1}
+    .marq{position:absolute;inset:-8px;overflow:hidden;border-radius:50%;pointer-events:none}
+    .marq .track{position:absolute;top:50%;left:0;right:0;transform:translateY(-50%);display:flex;width:max-content;white-space:nowrap;animation:run 30s linear infinite;font-size:.55rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(0,0,0,.28)}
+    @keyframes run{to{transform:translateY(-50%) translateX(-50%)}}
+    @media (prefers-reduced-motion:reduce){.track{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="orbit">
+      <div class="ring"></div>
+      <div class="marq" aria-hidden="true"><div class="track"><span>Circle · Form · Circle · Form · Circle · Form · </span><span>Circle · Form · Circle · Form · Circle · Form · </span></div></div>
+      <div class="av">N</div>
+    </div>
+  </div>
+</body>
+</html>

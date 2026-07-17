@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0088
+    slug: scroll-animations-horizontal-scrub
+    title: Horizontal Text Scrub
+    category: scroll-animations
+    tags: scroll-animations, scrub
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0088 — Horizontal Text Scrub</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:100vh;background:#111} .track{height:300vh} .sticky{position:sticky;top:0;height:100vh;display:flex;align-items:center;overflow:hidden} .text{font-size:4rem;font-weight:900;color:#fff;white-space:nowrap;transform:translateX(var(--x,0))}
+  </style>
+</head>
+<body>
+<div class="track"><div class="sticky"><div class="text" id="t">SCROLL TO MOVE →</div></div></div>
+<script>const t=document.getElementById('t'),tr=document.querySelector('.track');addEventListener('scroll',()=>{const r=tr.getBoundingClientRect();const p=Math.min(1,Math.max(0,-r.top/(r.height-innerHeight)));t.style.setProperty('--x',-p*400+'px');});</script>
+</body>
+</html>

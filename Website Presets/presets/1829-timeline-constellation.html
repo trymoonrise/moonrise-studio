@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1829
+    slug: timeline-constellation
+    title: Constellation Timeline
+    category: timeline
+    tags: timeline, constellation, particles, insane
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1829 — Constellation Timeline</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700&family=Outfit:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#03040a;color:#fff;font-family:Outfit,sans-serif;overflow:hidden}
+    canvas{position:fixed;inset:0;width:100%;height:100%}
+    .ui{position:fixed;bottom:8%;left:50%;translate:-50% 0;text-align:center;width:min(380px,90vw);pointer-events:none;z-index:2}
+    .ui h3{font-family:Syne,sans-serif;margin:0 0 .35rem;font-size:1.4rem;text-shadow:0 0 20px rgba(180,200,255,.4)}
+    .ui p{margin:0;color:#7a8aaa;font-size:.9rem}
+    .tip{position:fixed;top:6%;left:50%;translate:-50% 0;font-size:.65rem;letter-spacing:.22em;text-transform:uppercase;color:#3a4560;z-index:2}
+  </style>
+</head>
+<body>
+  <div class="tip">Click a star</div>
+  <canvas id="c"></canvas>
+  <div class="ui" id="ui"><h3>Night map</h3><p>Trace the path across eras</p></div>
+  <script>
+    const canvas=document.getElementById('c'),ctx=canvas.getContext('2d'),ui=document.getElementById('ui');
+    const eras=[
+      {t:'Polaris',d:'The fixed point — founding myth.'},
+      {t:'Orion',d:'Hunter phase — chase the market.'},
+      {t:'Lyra',d:'Harmony — product-market fit sings.'},
+      {t:'Cassiopeia',d:'W-shaped growth curve.'},
+      {t:'Andromeda',d:'Collision course with scale.'}
+    ];
+    let W,H,stars=[],active=0,dust=[];
+    function resize(){W=canvas.width=innerWidth*devicePixelRatio;H=canvas.height=innerHeight*devicePixelRatio;canvas.style.width=innerWidth+'px';canvas.style.height=innerHeight+'px';place()}
+    function place(){
+      stars=eras.map((e,i)=>{
+        const a=(i/eras.length)*Math.PI*1.6+.2;
+        return{...e,x:W*.5+Math.cos(a)*Math.min(W,H)*.28,y:H*.48+Math.sin(a)*Math.min(W,H)*.22,r:6+i,i};
+      });
+      dust=Array.from({length:80},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.5,a:Math.random()}));
+    }
+    function draw(t){
+      ctx.clearRect(0,0,W,H);
+      dust.forEach(d=>{ctx.fillStyle=`rgba(180,200,255,${.15+d.a*.2})`;ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,6.28);ctx.fill()});
+      ctx.strokeStyle='rgba(140,170,255,.25)';ctx.lineWidth=1.5*devicePixelRatio;ctx.beginPath();
+      stars.forEach((s,i)=>{i?ctx.lineTo(s.x,s.y):ctx.moveTo(s.x,s.y)});ctx.stroke();
+      stars.forEach((s,i)=>{
+        const pulse=1+Math.sin(t/400+i)*.15;
+        const on=i===active;
+        ctx.beginPath();ctx.arc(s.x,s.y,(on?10:6)*pulse*devicePixelRatio,0,6.28);
+        ctx.fillStyle=on?'#c8d8ff':'#6a7aaa';ctx.shadowBlur=on?24:8;ctx.shadowColor='#8af';ctx.fill();ctx.shadowBlur=0;
+      });
+      requestAnimationFrame(draw);
+    }
+    canvas.onclick=e=>{
+      const x=e.clientX*devicePixelRatio,y=e.clientY*devicePixelRatio;
+      let hit=-1,best=40*devicePixelRatio;
+      stars.forEach(s=>{const d=Math.hypot(s.x-x,s.y-y);if(d<best){best=d;hit=s.i}});
+      if(hit>=0){active=hit;ui.innerHTML=`<h3>${eras[hit].t}</h3><p>${eras[hit].d}</p>`}
+    };
+    addEventListener('resize',resize);resize();requestAnimationFrame(draw);
+  </script>
+</body>
+</html>

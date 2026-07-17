@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1480
+    slug: scroll-text-split-reveal
+    title: Split Text Scroll Reveal
+    category: scroll-effects
+    tags: scroll, text, reveal
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1480 — Split Text Scroll Reveal</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#fafafa;color:#111;min-height:200vh}.wrap{min-height:100vh;display:grid;place-items:center;padding:2rem}h1{font-size:clamp(2.5rem,8vw,5rem);font-weight:900;line-height:1.1;text-align:center}.line{display:block;overflow:hidden}.line span{display:block;transform:translateY(110%);transition:transform 1s cubic-bezier(.16,1,.3,1)}.wrap.vis .line:nth-child(1) span{transition-delay:.05s;transform:none}.wrap.vis .line:nth-child(2) span{transition-delay:.15s;transform:none}.wrap.vis .line:nth-child(3) span{transition-delay:.25s;transform:none}
+  </style>
+</head>
+<body>
+<div class="wrap" id="w"><h1><span class="line"><span>Award</span></span><span class="line"><span>Winning</span></span><span class="line"><span>Scroll</span></span></h1></div>
+<script>const w=document.getElementById('w');const obs=new IntersectionObserver(es=>es.forEach(e=>e.isIntersecting&&w.classList.add('vis')),{threshold:.4});obs.observe(w);</script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0802
+    slug: tooltips-minimal-tip-11
+    title: Minimal Tip 11
+    category: tooltips
+    tags: tooltips, minimal
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0802 — Minimal Tip 11</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');*{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fff;color:#111;font-family:"DM Sans",system-ui,-apple-system,sans-serif;padding:2rem}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.tip,.pop{opacity:1!important;transform:none!important;visibility:visible!important}}
+    .line{font-size:1.05rem;line-height:1.7;max-width:32ch;text-align:center;color:#444}
+    .wrap{position:relative;display:inline;border-bottom:1.5px solid #111;cursor:help;color:#111;font-weight:600}
+    .tip{position:absolute;bottom:calc(100% + 8px);left:50%;translate:-50% 4px;padding:4px 0;font-size:.72rem;font-weight:500;letter-spacing:.04em;color:#888;white-space:nowrap;opacity:0;visibility:hidden;transition:opacity .25s,translate .25s,visibility .25s;border:none;background:transparent}
+    .tip::after{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;background:#ccc;transform:scaleX(0);transition:transform .3s cubic-bezier(.22,1,.36,1)}
+    .wrap:hover .tip{opacity:1;visibility:visible;translate:-50% 0}
+    .wrap:hover .tip::after{transform:scaleX(1)}
+  </style>
+</head>
+<body>
+<p class="line">Use a <span class="wrap">hairline tip<span class="tip" role="tooltip">Almost invisible until needed</span></span> for quiet UI.</p>
+
+</body>
+</html>

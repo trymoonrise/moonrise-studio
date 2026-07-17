@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0845
+    slug: toasts-top-toast-02
+    title: Command Strip Toast
+    category: toasts
+    tags: toasts, top
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0845 — Command Strip Toast</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #0d0f14;
+      font-family: 'Outfit', sans-serif;
+      color: #e8eaef;
+    }
+
+    .trigger {
+      padding: 0.85rem 1.6rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      background: #161922;
+      color: #e8eaef;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .strip {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      background: #161922;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      transform: translateY(-100%);
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: 30;
+      overflow: hidden;
+    }
+
+    .strip.show { transform: translateY(0); }
+
+    .strip::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 180, 60, 0.08), transparent);
+      transform: translateX(-100%);
+    }
+
+    .strip.show::before {
+      animation: sweep 1.2s ease 0.2s;
+    }
+
+    @keyframes sweep { to { transform: translateX(100%); } }
+
+    .kbd {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.55rem;
+      border: 1px solid rgba(255, 180, 60, 0.35);
+      border-radius: 4px;
+      color: #ffb43c;
+    }
+
+    .msg {
+      font-size: 0.88rem;
+      color: rgba(232, 234, 239, 0.85);
+    }
+
+    .msg strong {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .strip, .strip::before { transition: none; animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <button class="trigger" id="btn" type="button">Show command strip</button>
+
+  <div class="strip" id="strip" role="status" aria-live="polite" aria-hidden="true">
+    <span class="kbd">⌘K</span>
+    <p class="msg"><strong>Layout saved</strong> — grid preset applied to all breakpoints</p>
+  </div>
+
+  <script>
+    const btn = document.getElementById('btn');
+    const strip = document.getElementById('strip');
+    let timer;
+
+    btn.addEventListener('click', () => {
+      clearTimeout(timer);
+      strip.classList.add('show');
+      strip.setAttribute('aria-hidden', 'false');
+      timer = setTimeout(() => {
+        strip.classList.remove('show');
+        strip.setAttribute('aria-hidden', 'true');
+      }, 2800);
+    });
+  </script>
+</body>
+</html>

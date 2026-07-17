@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0608
+    slug: docks-compact-dock-12
+    title: Compact Dock 12
+    category: docks
+    tags: docks, compact
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0608 — Compact Dock 12</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#111}
+    .dock{display:flex;align-items:center;gap:2px;padding:4px;background:#1a1a1e;border:1px solid #2a2a2e;border-radius:12px;animation:in .55s cubic-bezier(.22,1,.36,1) both}
+    .btn{width:36px;height:36px;border:none;border-radius:9px;background:transparent;color:#777;cursor:pointer;display:grid;place-items:center;transition:background .25s,color .25s,transform .3s cubic-bezier(.22,1,.36,1)}
+    .btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.9}
+    .btn:hover{color:#ddd;transform:scale(1.08)}
+    .btn.active{background:#fff;color:#111}
+    .sep{width:1px;height:16px;background:#333;margin:0 2px}
+    @keyframes in{from{opacity:0;scale:.9}to{opacity:1;scale:1}}
+  </style>
+</head>
+<body>
+  <nav class="dock" aria-label="Compact dock">
+    <button class="btn active" aria-label="Home"><svg viewBox="0 0 24 24"><path d="M4 10.5L12 4l8 6.5V20h-5v-5H9v5H4z"/></svg></button>
+    <button class="btn" aria-label="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3"/></svg></button>
+    <button class="btn" aria-label="Add"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+    <div class="sep" aria-hidden="true"></div>
+    <button class="btn" aria-label="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2"/></svg></button>
+  </nav>
+  <script>
+    const btns=[...document.querySelectorAll('.btn')];
+    btns.forEach(b=>b.addEventListener('click',()=>{btns.forEach(x=>x.classList.remove('active'));b.classList.add('active')}));
+  </script>
+</body>
+</html>

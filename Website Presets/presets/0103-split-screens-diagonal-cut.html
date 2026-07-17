@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0103
+    slug: split-screens-diagonal-cut
+    title: Diagonal Split
+    category: split-screens
+    tags: split-screens, experimental, mask, shapes
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0103 — Diagonal Split</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;overflow:hidden;font-family:Syne,sans-serif;background:#111;color:#fff}
+    .stage{position:relative;min-height:100vh;overflow:hidden}
+.layer{position:absolute;inset:0;display:grid;place-items:center}
+.layer.top{background:linear-gradient(135deg,#ff4d6d,#c9184a);clip-path:polygon(0 0,100% 0,100% 35%,0 70%);animation:cut 1.4s cubic-bezier(.22,1,.36,1) both;z-index:2}
+.layer.bot{background:#0d0d0d;clip-path:polygon(0 55%,100% 20%,100% 100%,0 100%);animation:cutB 1.4s cubic-bezier(.22,1,.36,1) both}
+.layer h1{font-family:'Instrument Serif',serif;font-weight:400;font-style:italic;font-size:clamp(3rem,12vw,7rem);margin:0;letter-spacing:-.03em}
+.edge{position:absolute;left:-10%;right:-10%;height:4px;background:#fff;top:48%;transform:rotate(-12deg);z-index:3;box-shadow:0 0 40px rgba(255,255,255,.4);animation:edge 1.2s .2s both}
+.tag{position:absolute;bottom:8%;right:8%;font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.3em;text-transform:uppercase;z-index:4;opacity:.5}
+@keyframes cut{from{clip-path:polygon(0 0,100% 0,100% 0,0 0)}}
+@keyframes cutB{from{clip-path:polygon(0 100%,100% 100%,100% 100%,0 100%)}}
+@keyframes edge{from{transform:rotate(-12deg) scaleX(0);opacity:0}}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="stage"><div class="layer top"><h1>Above</h1></div><div class="edge" aria-hidden="true"></div><div class="layer bot"><h1>Below</h1></div><span class="tag">Diagonal cut</span></div>
+
+</body>
+</html>

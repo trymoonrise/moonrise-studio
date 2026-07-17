@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1794
+    slug: minimal-3d-hover-extrude
+    title: Extrude On Hover
+    category: 3d-effects
+    tags: 3d, minimal, hover, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1794 — Extrude On Hover</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Outfit:wght@300&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fafafa;perspective:900px;font-family:Outfit,sans-serif;color:#111;padding:2rem}
+    .stack{display:flex;gap:10px;transform-style:preserve-3d;transform:rotateX(18deg) rotateY(-12deg)}
+    .bar{width:48px;height:120px;position:relative;transform-style:preserve-3d;cursor:pointer}
+    .face{position:absolute;inset:0;border:1px solid #111;background:#fff;display:grid;place-items:end center;padding-bottom:.6rem;font-family:Syne,sans-serif;font-size:.65rem;font-weight:800;letter-spacing:.08em;transform:translateZ(var(--z,8px));transition:transform .45s cubic-bezier(.22,1,.36,1),height .45s cubic-bezier(.22,1,.36,1)}
+    .bar:hover .face,.bar:focus-within .face{transform:translateZ(36px);height:160px}
+    .edge{position:absolute;left:0;right:0;bottom:0;height:8px;background:#111;transform-origin:top;transform:rotateX(-90deg);opacity:.15;transition:height .45s cubic-bezier(.22,1,.36,1)}
+    .bar:hover .edge{height:36px}
+    .label{position:fixed;bottom:1.5rem;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;opacity:.4;font-weight:300}
+    .title{position:fixed;top:1.5rem;font-family:Syne,sans-serif;font-weight:800;letter-spacing:-.04em}
+  </style>
+</head>
+<body>
+  <div class="title">Extrude</div>
+  <div class="stack">
+    <div class="bar" tabindex="0"><div class="edge"></div><div class="face">A</div></div>
+    <div class="bar" tabindex="0"><div class="edge"></div><div class="face">B</div></div>
+    <div class="bar" tabindex="0"><div class="edge"></div><div class="face">C</div></div>
+    <div class="bar" tabindex="0"><div class="edge"></div><div class="face">D</div></div>
+    <div class="bar" tabindex="0"><div class="edge"></div><div class="face">E</div></div>
+  </div>
+  <div class="label">Hover a bar</div>
+</body>
+</html>

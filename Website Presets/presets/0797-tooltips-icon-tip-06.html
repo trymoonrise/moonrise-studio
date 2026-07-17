@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0797
+    slug: tooltips-icon-tip-06
+    title: Icon Tip 06
+    category: tooltips
+    tags: tooltips, icon
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0797 — Icon Tip 06</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');*{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fff;color:#111;font-family:"DM Sans",system-ui,-apple-system,sans-serif;padding:2rem}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.tip,.pop{opacity:1!important;transform:none!important;visibility:visible!important}}
+    .toolbar{display:flex;gap:4px;padding:6px;border:1px solid #e5e5e5;background:#fafafa}
+    .wrap{position:relative}
+    .ico{width:40px;height:40px;border:none;background:transparent;color:#111;cursor:pointer;display:grid;place-items:center;transition:background .2s}
+    .ico:hover,.ico:focus-visible{background:#111;color:#fff}
+    .ico svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+    .tip{position:absolute;bottom:calc(100% + 10px);left:50%;translate:-50% 4px;padding:6px 10px;background:#111;color:#fff;font-size:.7rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;opacity:0;visibility:hidden;transition:opacity .25s,translate .25s cubic-bezier(.22,1,.36,1),visibility .25s}
+    .wrap:hover .tip,.wrap:focus-within .tip{opacity:1;visibility:visible;translate:-50% 0}
+  </style>
+</head>
+<body>
+<div class="toolbar" role="toolbar">
+      <div class="wrap"><button class="ico" type="button" aria-label="Bold"><svg viewBox="0 0 24 24"><path d="M7 5h6a3.5 3.5 0 0 1 0 7H7zM7 12h7a3.5 3.5 0 0 1 0 7H7z"/></svg></button><div class="tip">Bold</div></div>
+      <div class="wrap"><button class="ico" type="button" aria-label="Italic"><svg viewBox="0 0 24 24"><path d="M10 5h8M6 19h8M14 5l-4 14"/></svg></button><div class="tip">Italic</div></div>
+      <div class="wrap"><button class="ico" type="button" aria-label="Link"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1.2 1.2"/><path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1.2-1.2"/></svg></button><div class="tip">Link</div></div>
+    </div>
+
+</body>
+</html>

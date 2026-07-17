@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0204
+    slug: dialogs-alert-dialog
+    title: Alert Dialog
+    category: dialogs
+    tags: dialogs, alert
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0204 — Alert Dialog</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #f4f5f8;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    .open-btn {
+      padding: 0.7rem 1.35rem;
+      border: none;
+      border-radius: 10px;
+      background: #4f6ef7;
+      color: #fff;
+      font-size: 0.92rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(79, 110, 247, 0.28);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .open-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 28px rgba(79, 110, 247, 0.35);
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 1.5rem;
+      background: rgba(15, 23, 42, 0);
+      visibility: hidden;
+      opacity: 0;
+      transition:
+        opacity 0.35s cubic-bezier(0.22, 0.61, 0.36, 1),
+        background 0.35s cubic-bezier(0.22, 0.61, 0.36, 1),
+        visibility 0.35s;
+      z-index: 20;
+    }
+
+    .overlay.open {
+      visibility: visible;
+      opacity: 1;
+      background: rgba(15, 23, 42, 0.45);
+    }
+
+    .dlg {
+      width: min(100%, 340px);
+      padding: 2rem 1.75rem 1.5rem;
+      border-radius: 20px;
+      background: #fff;
+      border: 1px solid #e4e6ec;
+      box-shadow: 0 28px 70px rgba(15, 23, 42, 0.18);
+      text-align: center;
+      transform: scale(0.88) translateY(18px);
+      opacity: 0;
+      transition:
+        transform 0.48s cubic-bezier(0.22, 0.61, 0.36, 1),
+        opacity 0.48s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    .overlay.open .dlg {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+    }
+
+    .ico {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 1.1rem;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #e8f8ef, #d4f0e0);
+      color: #16a34a;
+      transform: scale(0.5);
+      opacity: 0;
+      transition:
+        transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) 0.1s,
+        opacity 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) 0.1s;
+    }
+
+    .overlay.open .ico {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    .ico svg {
+      width: 28px;
+      height: 28px;
+      stroke: currentColor;
+      stroke-width: 2.5;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .dlg h3 {
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #111318;
+      margin-bottom: 0.45rem;
+      opacity: 0;
+      transform: translateY(8px);
+      transition:
+        opacity 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) 0.16s,
+        transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) 0.16s;
+    }
+
+    .overlay.open .dlg h3 {
+      opacity: 1;
+      transform: none;
+    }
+
+    .dlg p {
+      color: #6b7085;
+      font-size: 0.92rem;
+      line-height: 1.55;
+      margin-bottom: 1.35rem;
+      opacity: 0;
+      transform: translateY(8px);
+      transition:
+        opacity 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) 0.22s,
+        transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) 0.22s;
+    }
+
+    .overlay.open .dlg p {
+      opacity: 1;
+      transform: none;
+    }
+
+    .dlg .btn {
+      padding: 0.7rem 2rem;
+      border: none;
+      border-radius: 10px;
+      background: #4f6ef7;
+      color: #fff;
+      font-size: 0.9rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(8px);
+      transition:
+        background 0.2s,
+        transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) 0.28s,
+        opacity 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) 0.28s;
+    }
+
+    .overlay.open .dlg .btn {
+      opacity: 1;
+      transform: none;
+    }
+
+    .dlg .btn:hover {
+      background: #3d5ce6;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .overlay,
+      .dlg,
+      .ico,
+      .dlg h3,
+      .dlg p,
+      .dlg .btn {
+        transition: none;
+      }
+
+      .dlg,
+      .ico,
+      .dlg h3,
+      .dlg p,
+      .dlg .btn {
+        transform: none;
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="open-btn" id="open" type="button">Show alert</button>
+
+  <div class="overlay" id="overlay" aria-hidden="true">
+    <div class="dlg" role="alertdialog" aria-labelledby="title" aria-describedby="desc">
+      <div class="ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+      </div>
+      <h3 id="title">Success!</h3>
+      <p id="desc">Your changes have been saved successfully.</p>
+      <button class="btn" id="close" type="button">OK</button>
+    </div>
+  </div>
+
+  <script>
+    const overlay = document.getElementById('overlay');
+    const openBtn = document.getElementById('open');
+    const closeBtn = document.getElementById('close');
+
+    function showDialog() {
+      overlay.classList.add('open');
+      overlay.setAttribute('aria-hidden', 'false');
+      closeBtn.focus();
+    }
+
+    function hideDialog() {
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden', 'true');
+      openBtn.focus();
+    }
+
+    openBtn.addEventListener('click', showDialog);
+    closeBtn.addEventListener('click', hideDialog);
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) hideDialog();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && overlay.classList.contains('open')) {
+        hideDialog();
+      }
+    });
+  </script>
+</body>
+</html>

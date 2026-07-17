@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1673
+    slug: scroll-video-scrub-timeline
+    title: Video Scrub Timeline
+    category: scroll-animations
+    tags: scroll, video, scrub, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1673 — Video Scrub Timeline</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    
+    body{margin:0;background:#050505;color:#fff;font-family:system-ui,-apple-system,sans-serif}
+    .track{height:320vh}
+    .stage{position:sticky;top:0;height:100vh;display:grid;place-items:center;padding:1.5rem}
+    .frame{position:relative;width:min(92vw,900px);border-radius:18px;overflow:hidden;box-shadow:0 32px 90px rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.08)}
+    video{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:#111}
+    .hud{position:absolute;left:1rem;right:1rem;bottom:1rem;display:flex;justify-content:space-between;align-items:flex-end;pointer-events:none}
+    .time{font-family:ui-monospace,monospace;font-size:.78rem;color:rgba(255,255,255,.85);text-shadow:0 2px 12px rgba(0,0,0,.8)}
+    .label{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.55)}
+    .bar{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.15)}
+    .bar i{display:block;height:100%;width:var(--scrub,0%);background:#fff;box-shadow:0 0 12px rgba(255,255,255,.45)}
+    @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="track" id="track"><div class="stage"><div class="frame"><video id="v" src="../stock/media/heroes/steel-clip-16x9.mp4" muted playsinline preload="auto"></video><div class="hud"><span class="label">Scroll to scrub</span><span class="time" id="time">00:00</span></div><div class="bar" aria-hidden="true"><i id="bar"></i></div></div></div></div>
+<script>function ease(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2}function lerp(a,b,t){return a+(b-a)*t}function prog(track){const r=track.getBoundingClientRect();const h=r.height-innerHeight;return h>0?ease(Math.min(1,Math.max(0,-r.top/h))):0}function pageProg(){const max=document.documentElement.scrollHeight-innerHeight;return max>0?ease(Math.min(1,scrollY/max)):0};const track=document.getElementById('track'),v=document.getElementById('v'),timeEl=document.getElementById('time'),bar=document.getElementById('bar'),reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;let ready=false;function fmt(s){const m=Math.floor(s/60),sec=Math.floor(s%60);return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0')}function tick(){if(reduced||!ready||!v.duration)return;const p=prog(track);v.currentTime=Math.min(v.duration-0.05,p*v.duration);timeEl.textContent=fmt(v.currentTime);bar.style.setProperty('--scrub',(p*100).toFixed(1)+'%')}v.addEventListener('loadedmetadata',()=>{ready=true;tick()});let raf=false;addEventListener('scroll',()=>{if(raf)return;raf=true;requestAnimationFrame(()=>{raf=false;tick()})},{passive:true});addEventListener('resize',tick,{passive:true});</script>
+</body>
+</html>

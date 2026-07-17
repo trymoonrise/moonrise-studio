@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0513
+    slug: brutalist-concrete-slab-10
+    title: Concrete Slab 10
+    category: brutalist
+    tags: brutalist, concrete
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0513 — Concrete Slab 10</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@600&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#2a2a2a;overflow:hidden;font-family:'IBM Plex Mono',monospace;padding:2rem}
+    .slab{position:relative;width:min(520px,92vw);aspect-ratio:16/10;background:
+      linear-gradient(135deg,rgba(255,255,255,.06),transparent 40%),
+      linear-gradient(#8a8a8a,#6e6e6e 40%,#7a7a7a);
+      border:8px solid #111;box-shadow:24px 24px 0 #111,inset 0 0 80px rgba(0,0,0,.35);
+      display:grid;place-items:center;transform:rotate(-1.5deg);overflow:hidden}
+    .slab::before{content:"";position:absolute;inset:0;background:
+      radial-gradient(circle at 20% 30%,rgba(0,0,0,.2) 0 2px,transparent 3px),
+      radial-gradient(circle at 70% 60%,rgba(0,0,0,.18) 0 1.5px,transparent 2px),
+      radial-gradient(circle at 40% 80%,rgba(255,255,255,.15) 0 1px,transparent 2px);
+      background-size:80px 80px,120px 120px,60px 60px;opacity:.9;pointer-events:none}
+    .crack{position:absolute;left:18%;top:0;bottom:0;width:3px;background:#111;transform:skewX(-8deg);box-shadow:40px 0 0 #111,90px 20px 0 #222;opacity:.7}
+    h1{position:relative;margin:0;font-family:'Archivo Black',sans-serif;font-size:clamp(2.4rem,10vw,4.8rem);line-height:.82;text-transform:uppercase;letter-spacing:-.05em;color:#111;text-align:center;mix-blend-mode:multiply}
+    .mark{position:absolute;left:1rem;bottom:1rem;font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#111}
+    .rebar{position:absolute;right:-.5rem;top:20%;width:70px;height:12px;background:#c45a00;border:3px solid #111;transform:rotate(12deg);box-shadow:0 28px 0 #c45a00,0 56px 0 #c45a00}
+    @media(prefers-reduced-motion:reduce){.slab{transform:none}}
+  </style>
+</head>
+<body>
+  <div class="slab">
+    <div class="crack" aria-hidden="true"></div>
+    <div class="rebar" aria-hidden="true"></div>
+    <h1>CONCRETE<br>SLAB</h1>
+    <div class="mark">POUR DATE · 0513</div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1844
+    slug: hero-video-aperture-zoom
+    title: Aperture Zoom Video Hero
+    category: hero
+    tags: hero, video, interactive, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1844 — Aperture Zoom Video Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;overflow:hidden;background:#050505;color:#fff;font-family:Syne,sans-serif}
+    video{display:block}
+    button{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit}
+    .stage{position:relative;min-height:100vh;display:grid;place-items:center;overflow:hidden}
+video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(1.15);transition:transform .4s cubic-bezier(.22,1,.36,1)}
+.iris{position:absolute;inset:0;background:#000;clip-path:circle(18% at 50% 50%);transition:clip-path .5s cubic-bezier(.22,1,.36,1);z-index:2;mix-blend-mode:normal;pointer-events:none}
+.iris.open{clip-path:circle(80% at 50% 50%)}
+.copy{position:relative;z-index:3;text-align:center;padding:2rem}
+h1{font-size:clamp(2.5rem,8vw,5rem);font-weight:800;letter-spacing:-.06em;margin:0 0 1.25rem}
+button{padding:.85rem 1.4rem;border-radius:999px;background:#fff;color:#111;font-weight:800}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="stage"><video id="v" src="../stock/media/16-9 Aspect Ratio(video).mp4" autoplay muted loop playsinline></video><div class="iris" id="iris"></div><div class="copy"><h1>Open aperture</h1><button id="btn">Expand</button></div></div>
+<script>const iris=document.getElementById('iris'),btn=document.getElementById('btn'),v=document.getElementById('v');let open=false;btn.onclick=()=>{open=!open;iris.classList.toggle('open',open);v.style.transform=open?'scale(1)':'scale(1.15)';btn.textContent=open?'Close':'Expand'};</script>
+</body>
+</html>

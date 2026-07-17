@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1566
+    slug: 3d-prism-trio
+    title: 3D Prism Trio
+    category: 3d-effects
+    tags: 3d, prism
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1566 — 3D Prism Trio</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#07080d;perspective:1000px;overflow:hidden}
+    .stage{display:flex;gap:2.5rem;align-items:flex-end;transform-style:preserve-3d;transform:rotateX(12deg)}
+    .prism{position:relative;width:90px;height:160px;transform-style:preserve-3d;animation:float 5s ease-in-out infinite}
+    .prism:nth-child(2){animation-delay:-1.6s;height:200px}
+    .prism:nth-child(3){animation-delay:-3.2s;height:140px}
+    .side{position:absolute;inset:0;width:100%;height:100%;border:1px solid rgba(255,255,255,.2);backdrop-filter:blur(4px)}
+    .p1 .a{background:linear-gradient(180deg,#6c8cffaa,#6c8cff22);transform:rotateY(0deg) translateZ(28px)}
+    .p1 .b{background:linear-gradient(180deg,#3d5cffaa,#3d5cff22);transform:rotateY(72deg) translateZ(28px)}
+    .p1 .c{background:linear-gradient(180deg,#8aa4ffaa,#8aa4ff22);transform:rotateY(144deg) translateZ(28px)}
+    .p1 .d{background:linear-gradient(180deg,#4a6dffaa,#4a6dff22);transform:rotateY(216deg) translateZ(28px)}
+    .p1 .e{background:linear-gradient(180deg,#7b95ffaa,#7b95ff22);transform:rotateY(288deg) translateZ(28px)}
+    .p2 .a{background:linear-gradient(180deg,#ff6bcbaa,#ff6bcb22);transform:rotateY(0deg) translateZ(28px)}
+    .p2 .b{background:linear-gradient(180deg,#c43d88aa,#c43d8822);transform:rotateY(72deg) translateZ(28px)}
+    .p2 .c{background:linear-gradient(180deg,#ff9ad8aa,#ff9ad822);transform:rotateY(144deg) translateZ(28px)}
+    .p2 .d{background:linear-gradient(180deg,#e04f9aaa,#e04f9a22);transform:rotateY(216deg) translateZ(28px)}
+    .p2 .e{background:linear-gradient(180deg,#ff7fcfaa,#ff7fcf22);transform:rotateY(288deg) translateZ(28px)}
+    .p3 .a{background:linear-gradient(180deg,#7ee0c3aa,#7ee0c322);transform:rotateY(0deg) translateZ(28px)}
+    .p3 .b{background:linear-gradient(180deg,#2db89aaa,#2db89a22);transform:rotateY(72deg) translateZ(28px)}
+    .p3 .c{background:linear-gradient(180deg,#a8f0dcaa,#a8f0dc22);transform:rotateY(144deg) translateZ(28px)}
+    .p3 .d{background:linear-gradient(180deg,#4ecfb0aa,#4ecfb022);transform:rotateY(216deg) translateZ(28px)}
+    .p3 .e{background:linear-gradient(180deg,#6fd8b8aa,#6fd8b822);transform:rotateY(288deg) translateZ(28px)}
+    .prism{animation:float 5s ease-in-out infinite,spin 10s linear infinite}
+    .p2{animation-duration:5.5s,12s;animation-delay:-1.6s,-2s}
+    .p3{animation-duration:4.5s,8s;animation-delay:-3.2s,-4s}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-28px)}}
+    @keyframes spin{to{transform:translateY(0) rotateY(360deg)}}
+    @media(prefers-reduced-motion:reduce){.prism{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="prism p1"><div class="side a"></div><div class="side b"></div><div class="side c"></div><div class="side d"></div><div class="side e"></div></div>
+    <div class="prism p2"><div class="side a"></div><div class="side b"></div><div class="side c"></div><div class="side d"></div><div class="side e"></div></div>
+    <div class="prism p3"><div class="side a"></div><div class="side b"></div><div class="side c"></div><div class="side d"></div><div class="side e"></div></div>
+  </div>
+</body>
+</html>

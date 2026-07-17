@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0403
+    slug: cursor-trails-neon-streak-08
+    title: Neon Streak 08
+    category: cursor-trails
+    tags: cursor-trails, neon
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0403 — Neon Streak 08</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body{
+      margin:0;
+      min-height:100vh;
+      background:#100c18;
+      color:#ede8ff;
+      cursor:crosshair;
+      overflow:hidden;
+    }
+
+    canvas{position:fixed;inset:0;pointer-events:none}
+
+    .hint{
+      position:fixed;
+      inset:0;
+      display:grid;
+      place-items:center;
+      color:#a78bfa;
+      font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+      font-size:.82rem;
+      font-weight:600;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      opacity:.38;
+      pointer-events:none;
+      user-select:none;
+    }
+  </style>
+</head>
+
+<body>
+  <p class="hint" id="hint">Move your cursor</p>
+  <canvas id="c" aria-hidden="true"></canvas>
+
+  <script>
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+    const hint = document.getElementById('hint');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const SEGMENTS = 34;
+    const pts = [];
+    let mx = innerWidth / 2;
+    let my = innerHeight / 2;
+    let px = mx;
+    let py = my;
+    let moved = false;
+
+    function resize() {
+      canvas.width = innerWidth;
+      canvas.height = innerHeight;
+    }
+
+    resize();
+    addEventListener('resize', resize);
+
+    for (let i = 0; i < SEGMENTS; i += 1) pts.push({ x: mx, y: my });
+
+    if (!reduced) {
+      addEventListener('mousemove', (e) => {
+        mx = e.clientX;
+        my = e.clientY;
+        if (!moved) {
+          moved = true;
+          hint.style.opacity = '0';
+        }
+      }, { passive: true });
+
+      function tick() {
+        const vx = mx - px;
+        const vy = my - py;
+        const speed = Math.min(60, Math.hypot(vx, vy));
+        px = mx;
+        py = my;
+
+        // Ease points to form a streaky chain
+        pts[0].x += (mx - pts[0].x) * 0.46;
+        pts[0].y += (my - pts[0].y) * 0.46;
+        for (let i = 1; i < pts.length; i += 1) {
+          const prev = pts[i - 1];
+          const curr = pts[i];
+          const ease = 0.30 - i * 0.003;
+          curr.x += (prev.x - curr.x) * ease;
+          curr.y += (prev.y - curr.y) * ease;
+        }
+
+        // Fade previous frame (afterimage)
+        ctx.fillStyle = 'rgba(16, 12, 24, 0.16)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+
+        const head = pts[0];
+        const tail = pts[pts.length - 1];
+        const g = ctx.createLinearGradient(tail.x, tail.y, head.x, head.y);
+        g.addColorStop(0, 'rgba(167, 139, 250, 0)');
+        g.addColorStop(0.35, 'rgba(167, 139, 250, 0.25)');
+        g.addColorStop(1, 'rgba(167, 139, 250, 0.95)');
+
+        ctx.strokeStyle = g;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        const base = 10 + speed * 0.12;
+
+        // Outer glow
+        ctx.lineWidth = base * 1.6;
+        ctx.shadowBlur = 28;
+        ctx.shadowColor = 'rgba(167, 139, 250, 0.9)';
+        ctx.beginPath();
+        ctx.moveTo(pts[0].x, pts[0].y);
+        for (let i = 1; i < pts.length; i += 1) ctx.lineTo(pts[i].x, pts[i].y);
+        ctx.stroke();
+
+        // Inner core
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = 'rgba(255, 255, 255, 0.7)';
+        ctx.strokeStyle = 'rgba(237, 232, 255, 0.85)';
+        ctx.lineWidth = Math.max(2, base * 0.55);
+        ctx.beginPath();
+        ctx.moveTo(pts[0].x, pts[0].y);
+        for (let i = 1; i < pts.length; i += 1) ctx.lineTo(pts[i].x, pts[i].y);
+        ctx.stroke();
+
+        ctx.restore();
+        requestAnimationFrame(tick);
+      }
+
+      tick();
+    }
+  </script>
+</body>
+</html>

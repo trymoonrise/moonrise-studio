@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0703
+    slug: inputs-inline-validation-03
+    title: Live Inline Validation
+    category: inputs
+    tags: inputs, validation
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0703 — Live Inline Validation</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #0a0c10;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+      padding: 1.5rem;
+    }
+
+    .form { width: min(380px, 92vw); }
+
+    .field { margin-bottom: 1.25rem; }
+
+    label {
+      display: block;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 0.5rem;
+    }
+
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0 1rem;
+      height: 48px;
+      background: #111827;
+      border: 2px solid #1e293b;
+      border-radius: 8px;
+      transition: border-color 0.3s;
+    }
+
+    .input-row.valid { border-color: #00d4aa; }
+    .input-row.invalid { border-color: #f87171; animation: shake 0.4s ease; }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
+    }
+
+    .input-row input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 0.95rem;
+      color: #e2e8f0;
+    }
+
+    .status {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      opacity: 0;
+      transform: scale(0.5);
+      transition: opacity 0.25s, transform 0.25s;
+    }
+
+    .input-row.valid .status.ok,
+    .input-row.invalid .status.err {
+      opacity: 1;
+      transform: scale(1);
+      animation: statusPop 0.3s ease;
+    }
+
+    @keyframes statusPop {
+      0% { transform: scale(0); }
+      60% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    .status.ok { color: #00d4aa; }
+    .status.err { color: #f87171; }
+
+    .msg {
+      font-size: 0.8rem;
+      margin-top: 0.4rem;
+      min-height: 1.2em;
+      transition: color 0.2s;
+    }
+
+    .msg.ok { color: #00d4aa; }
+    .msg.err { color: #f87171; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .input-row.invalid { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <form class="form" novalidate>
+    <div class="field">
+      <label for="email">Email address</label>
+      <div class="input-row" id="row">
+        <input type="email" id="email" placeholder="you@company.com" autocomplete="email">
+        <svg class="status ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l5 5L20 7"/></svg>
+        <svg class="status err" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </div>
+      <div class="msg" id="msg"></div>
+    </div>
+  </form>
+
+  <script>
+    const email = document.getElementById('email');
+    const row = document.getElementById('row');
+    const msg = document.getElementById('msg');
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    function validate() {
+      const v = email.value.trim();
+      if (!v) {
+        row.className = 'input-row';
+        msg.className = 'msg';
+        msg.textContent = '';
+        return;
+      }
+      if (re.test(v)) {
+        row.className = 'input-row valid';
+        msg.className = 'msg ok';
+        msg.textContent = 'Valid email format';
+      } else {
+        row.className = 'input-row invalid';
+        msg.className = 'msg err';
+        msg.textContent = 'Enter a valid email address';
+      }
+    }
+
+    email.addEventListener('input', validate);
+    email.addEventListener('blur', validate);
+  </script>
+</body>
+</html>

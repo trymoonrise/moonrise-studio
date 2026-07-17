@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0072
+    slug: nested-submenu
+    title: Nested Submenu
+    category: dropdowns
+    tags: nested
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0072 — Nested Submenu</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#0d0d0f} .menu{background:#1a1a2e;border-radius:8px;padding:8px 0;min-width:180px} .item{padding:10px 16px;color:#ccc;font-size:.9rem;cursor:pointer;position:relative} .item:hover{background:#2a2a40;color:#fff} .sub{position:absolute;left:100%;top:0;background:#1a1a2e;border-radius:8px;padding:8px 0;min-width:140px;display:none} .item:hover .sub{display:block}
+  </style>
+</head>
+<body>
+<div class="menu"><div class="item">File</div><div class="item">Edit<div class="sub"><div class="item">Cut</div><div class="item">Copy</div><div class="item">Paste</div></div></div><div class="item">View</div></div>
+
+</body>
+</html>

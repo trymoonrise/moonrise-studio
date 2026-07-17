@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0820
+    slug: dialogs-alert-dialog-03
+    title: Critical Alert Dialog
+    category: dialogs
+    tags: dialogs, alert
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0820 — Critical Alert Dialog</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #0a0c10;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+      padding: 1.5rem;
+    }
+
+    .open-btn {
+      padding: 0.75rem 1.25rem;
+      border: 1px solid #fbbf24;
+      border-radius: 8px;
+      background: #fbbf2412;
+      color: #fbbf24;
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      display: grid;
+      place-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 50;
+      padding: 1rem;
+    }
+
+    .overlay.open { opacity: 1; pointer-events: auto; }
+
+    .dialog {
+      width: min(400px, 94vw);
+      background: #111827;
+      border: 2px solid #fbbf24;
+      border-radius: 12px;
+      padding: 0;
+      overflow: hidden;
+      transform: scale(0.95);
+      transition: transform 0.3s;
+    }
+
+    .overlay.open .dialog {
+      transform: scale(1);
+      animation: alertFlash 0.6s ease;
+    }
+
+    @keyframes alertFlash {
+      0%, 100% { border-color: #fbbf24; }
+      25% { border-color: #f87171; }
+      50% { border-color: #fbbf24; }
+    }
+
+    .alert-bar {
+      padding: 0.5rem 1.25rem;
+      background: #fbbf24;
+      color: #080a0e;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      animation: barSlide 0.4s ease;
+    }
+
+    @keyframes barSlide {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(0); }
+    }
+
+    .dialog-body { padding: 1.5rem; }
+
+    .dialog-body h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+    }
+
+    .dialog-body p {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      line-height: 1.55;
+      margin-bottom: 1.25rem;
+    }
+
+    .code {
+      display: block;
+      padding: 0.65rem 0.85rem;
+      background: #0f1419;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      color: #fbbf24;
+      font-family: monospace;
+      margin-bottom: 1.25rem;
+    }
+
+    .ok-btn {
+      width: 100%;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 8px;
+      background: #fbbf24;
+      color: #080a0e;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      transition: transform 0.2s;
+    }
+
+    .ok-btn:hover { transform: translateY(-2px); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .overlay.open .dialog, .alert-bar { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <button type="button" class="open-btn" id="open">Simulate outage</button>
+
+  <div class="overlay" id="overlay" hidden>
+    <div class="dialog" role="alertdialog" aria-labelledby="title">
+      <div class="alert-bar">Critical alert</div>
+      <div class="dialog-body">
+        <h2 id="title">Service disruption detected</h2>
+        <p>Our monitoring flagged elevated error rates on the primary API cluster. Engineering has been notified.</p>
+        <code class="code">ERR_CLUSTER_DEGRADED · incident #4821</code>
+        <button type="button" class="ok-btn" id="ok">Acknowledge</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const overlay = document.getElementById('overlay');
+    document.getElementById('open').onclick = () => {
+      overlay.hidden = false;
+      requestAnimationFrame(() => overlay.classList.add('open'));
+    };
+    document.getElementById('ok').onclick = () => {
+      overlay.classList.remove('open');
+      setTimeout(() => { overlay.hidden = true; }, 300);
+    };
+  </script>
+</body>
+</html>

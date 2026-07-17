@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0291
+    slug: bios-expanded-bio
+    title: Expanded Bio
+    category: bios
+    tags: bios, expanded, experimental, shapes
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0291 — Expanded Bio</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f3f1eb;font-family:'DM Sans',sans-serif;padding:2rem;overflow:hidden}
+    .frame{position:relative;width:min(420px,92vw);padding:2.2rem 2rem 2rem;animation:in .9s cubic-bezier(.22,1,.36,1) both}
+    .poly{position:absolute;inset:0;border:1.5px solid #1a1a1a;clip-path:polygon(0 8%,8% 0,100% 0,100% 92%,92% 100%,0 100%);background:#faf9f5;animation:breathe 7s ease-in-out infinite}
+    .corner{position:absolute;width:18px;height:18px;border:1.5px solid #1a1a1a;animation:pulse 3.2s ease-in-out infinite}
+    .corner.tl{top:-6px;left:-6px;border-right:0;border-bottom:0}
+    .corner.br{bottom:-6px;right:-6px;border-left:0;border-top:0;animation-delay:.8s}
+    .content{position:relative;z-index:1}
+    .mark{width:64px;height:64px;background:#1a1a1a;color:#faf9f5;display:grid;place-items:center;font-family:'Instrument Serif',serif;font-style:italic;font-size:1.5rem;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);animation:float 5s ease-in-out infinite;margin-bottom:1.25rem}
+    h1{margin:0 0 .35rem;font-family:'Instrument Serif',serif;font-weight:400;font-size:1.85rem;letter-spacing:-.02em;color:#1a1a1a}
+    .role{margin:0 0 1rem;font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(26,26,26,.45)}
+    p{margin:0;line-height:1.55;color:rgba(26,26,26,.7);font-size:.92rem}
+    @keyframes breathe{50%{transform:scale(1.012)}}
+    @keyframes float{50%{transform:translateY(-6px) rotate(6deg)}}
+    @keyframes pulse{50%{transform:scale(1.15)}}
+    @keyframes in{from{opacity:0;transform:translateY(20px)}}
+    @media (prefers-reduced-motion:reduce){.poly,.mark,.corner,.frame{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <div class="poly" aria-hidden="true"></div>
+    <span class="corner tl" aria-hidden="true"></span>
+    <span class="corner br" aria-hidden="true"></span>
+    <div class="content">
+      <div class="mark">AR</div>
+      <h1>Ava Reyes</h1>
+      <p class="role">Creative director</p>
+      <p>Builds brand systems that feel alive — type, motion, and quiet geometry in every surface.</p>
+    </div>
+  </div>
+</body>
+</html>

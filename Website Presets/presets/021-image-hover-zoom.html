@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 021
+    slug: image-hover-zoom
+    title: Image Hover Zoom
+    category: image
+    tags: hover, zoom
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>021 — Image Hover Zoom</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    
+    body{display:grid;place-items:center;min-height:100vh;background:#111;padding:2rem}
+    .frame{width:min(90vw,600px);aspect-ratio:16/9;border-radius:16px;overflow:hidden;cursor:pointer}
+    .frame img{width:100%;height:100%;object-fit:cover;transition:transform 1s cubic-bezier(.16,1,.3,1)}
+    .frame:hover img{transform:scale(1.12)}
+    
+  </style>
+</head>
+<body>
+<div class="frame"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt="16:9"></div>
+
+</body>
+</html>

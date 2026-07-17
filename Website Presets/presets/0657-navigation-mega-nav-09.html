@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0657
+    slug: navigation-mega-nav-09
+    title: Mega Nav 09
+    category: navigation
+    tags: navigation, mega
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0657 — Mega Nav 09</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#fafafa;color:#111;font-family:Outfit,sans-serif}
+    .bar{display:flex;align-items:center;justify-content:space-between;padding:1.4rem clamp(1.25rem,4vw,3rem);position:relative;z-index:20}
+    .logo{font-family:Syne,sans-serif;font-weight:800;letter-spacing:-.04em}
+    .trig{border:none;background:transparent;font:inherit;font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;font-weight:300;cursor:pointer;opacity:.45;transition:opacity .3s;padding:0}
+    .trig:hover,.trig[aria-expanded="true"]{opacity:1}
+    .panel{position:fixed;left:0;right:0;top:0;padding:6rem clamp(1.25rem,4vw,3rem) 3rem;background:#fafafa;border-bottom:1px solid #ececec;display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;transform:translateY(-100%);opacity:0;transition:transform .55s cubic-bezier(.22,1,.36,1),opacity .35s;z-index:10;pointer-events:none}
+    .panel.open{transform:none;opacity:1;pointer-events:auto}
+    .col h3{margin:0 0 1.25rem;font-size:.7rem;font-weight:300;letter-spacing:.16em;text-transform:uppercase;opacity:.4}
+    .col a{display:block;font-family:Syne,sans-serif;font-size:clamp(1.3rem,3vw,1.8rem);font-weight:700;letter-spacing:-.03em;color:#111;text-decoration:none;padding:.2rem 0;opacity:.35;transition:opacity .3s}
+    .col a:hover{opacity:1}
+    .page{height:70vh;display:grid;place-items:center;color:#ccc;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;font-weight:300}
+    @media(max-width:700px){.panel{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="bar">
+    <div class="logo">MEGA</div>
+    <button class="trig" id="trig" aria-expanded="false" aria-controls="panel">Menu</button>
+  </div>
+  <div class="panel" id="panel">
+    <div class="col"><h3>Practice</h3><a href="#">Brand</a><a href="#">Product</a><a href="#">Motion</a></div>
+    <div class="col"><h3>Archive</h3><a href="#">2026</a><a href="#">2025</a><a href="#">2024</a></div>
+    <div class="col"><h3>Studio</h3><a href="#">About</a><a href="#">Careers</a><a href="#">Contact</a></div>
+  </div>
+  <div class="page">Drop the index</div>
+  <script>
+    const t=document.getElementById('trig'),p=document.getElementById('panel');
+    t.addEventListener('click',()=>{const on=p.classList.toggle('open');t.setAttribute('aria-expanded',String(on))});
+  </script>
+</body>
+</html>

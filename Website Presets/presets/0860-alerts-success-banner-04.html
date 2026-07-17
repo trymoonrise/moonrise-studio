@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0860
+    slug: alerts-success-banner-04
+    title: Unfurl Success Banner
+    category: alerts
+    tags: alerts, success
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0860 — Unfurl Success Banner</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      padding: 2rem;
+      background: #0a0e0c;
+      font-family: 'Outfit', sans-serif;
+      color: #e8eaef;
+    }
+
+    .demo { width: min(100%, 560px); text-align: center; }
+
+    .trigger {
+      margin-bottom: 1.5rem;
+      padding: 0.75rem 1.4rem;
+      border: 1px solid rgba(110, 231, 183, 0.3);
+      border-radius: 8px;
+      background: rgba(110, 231, 183, 0.06);
+      color: #6ee7b7;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.82rem;
+      cursor: pointer;
+    }
+
+    .banner {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .banner.show { grid-template-rows: 1fr; }
+
+    .inner {
+      overflow: hidden;
+    }
+
+    .content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.85rem;
+      padding: 1rem 1.5rem;
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.12), rgba(52, 211, 153, 0.08));
+      border: 1px solid rgba(110, 231, 183, 0.25);
+      border-radius: 10px;
+      transform: scaleY(0.6);
+      opacity: 0;
+      transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.1s, opacity 0.4s ease 0.1s;
+      transform-origin: center top;
+    }
+
+    .banner.show .content {
+      transform: scaleY(1);
+      opacity: 1;
+    }
+
+    .content svg { flex-shrink: 0; color: #6ee7b7; }
+
+    .content p {
+      font-size: 0.88rem;
+      color: rgba(232, 234, 239, 0.85);
+    }
+
+    .content strong {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      color: #a7f3d0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .banner, .content { transition: none; }
+      .banner.show .content { transform: none; opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="demo">
+    <button class="trigger" id="btn" type="button">Publish changes</button>
+
+    <div class="banner" id="banner" role="status" aria-live="polite">
+      <div class="inner">
+        <div class="content">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <path d="M20 6L9 17l-5-5"/>
+          </svg>
+          <p><strong>Live</strong> — All 14 pages deployed to production</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const btn = document.getElementById('btn');
+    const banner = document.getElementById('banner');
+
+    btn.addEventListener('click', () => {
+      banner.classList.add('show');
+      btn.disabled = true;
+      btn.textContent = 'Published';
+    });
+  </script>
+</body>
+</html>

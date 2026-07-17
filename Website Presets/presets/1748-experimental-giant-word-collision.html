@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1748
+    slug: experimental-giant-word-collision
+    title: Giant Word Collision
+    category: experimental
+    tags: experimental, collision, giant, type
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1748 — Giant Word Collision</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#0d0d0d;overflow:hidden;font-family:Anton,sans-serif;cursor:pointer}
+    .a,.b{position:fixed;top:50%;left:50%;font-size:clamp(5rem,25vw,16rem);line-height:.8;text-transform:uppercase;letter-spacing:-.05em;white-space:nowrap;will-change:transform}
+    .a{color:#ff0033;transform:translate(-120%,-50%);animation:slam-l 2.8s cubic-bezier(.2,1.2,.3,1) infinite}
+    .b{color:#0044ff;transform:translate(20%,-50%);animation:slam-r 2.8s cubic-bezier(.2,1.2,.3,1) infinite;mix-blend-mode:screen}
+    .impact{position:fixed;inset:0;pointer-events:none;opacity:0;background:radial-gradient(circle,rgba(255,255,255,.35),transparent 45%);animation:flash 2.8s ease-out infinite}
+    .meta{position:fixed;bottom:1.2rem;left:0;right:0;text-align:center;font-family:monospace;font-size:.65rem;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.35);z-index:5}
+    @keyframes slam-l{0%,15%{transform:translate(-140%,-50%)}40%{transform:translate(-48%,-50%) skewX(-8deg)}48%{transform:translate(-52%,-50%) skewX(4deg)}55%,100%{transform:translate(-50%,-50%)}}
+    @keyframes slam-r{0%,15%{transform:translate(40%,-50%)}40%{transform:translate(-52%,-50%) skewX(8deg)}48%{transform:translate(-48%,-50%) skewX(-4deg)}55%,100%{transform:translate(-50%,-50%)}}
+    @keyframes flash{0%,35%{opacity:0}40%{opacity:1}55%,100%{opacity:0}}
+    @media (prefers-reduced-motion:reduce){.a,.b,.impact{animation:none}.a{transform:translate(-70%,-50%)}.b{transform:translate(-30%,-50%)}}
+  </style>
+</head>
+<body>
+  <div class="impact" aria-hidden="true"></div>
+  <div class="a" aria-hidden="true">YES</div>
+  <div class="b" aria-hidden="true">NO</div>
+  <p class="meta">1748 · Collision course</p>
+</body>
+</html>

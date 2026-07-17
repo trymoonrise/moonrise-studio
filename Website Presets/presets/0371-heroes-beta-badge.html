@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0371
+    slug: heroes-beta-badge
+    title: Beta Badge Hero
+    category: heroes
+    tags: heroes, landing, simple, startup
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0371 — Beta Badge Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 2rem;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(108, 140, 255, 0.14), transparent 52%),
+        #0a0a0c;
+      color: #fff;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      text-align: center;
+    }
+
+    .hero {
+      width: min(460px, 100%);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      margin-bottom: 1.35rem;
+      padding: 0.32rem 0.7rem;
+      border-radius: 999px;
+      background: rgba(108, 140, 255, 0.1);
+      border: 1px solid rgba(108, 140, 255, 0.22);
+      color: #a5b8ff;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #6c8cff;
+      box-shadow: 0 0 10px rgba(108, 140, 255, 0.8);
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.1rem);
+      font-weight: 800;
+      line-height: 1.06;
+      letter-spacing: -0.04em;
+      margin-bottom: 0.85rem;
+    }
+
+    p {
+      color: #8b8b95;
+      font-size: 0.98rem;
+      line-height: 1.55;
+      max-width: 34ch;
+      margin: 0 auto 1.65rem;
+    }
+
+    .btn {
+      padding: 0.68rem 1.2rem;
+      border: none;
+      border-radius: 999px;
+      background: #6c8cff;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 10px 28px rgba(108, 140, 255, 0.28);
+      transition: transform 0.2s cubic-bezier(.22, .61, .36, 1);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body>
+  <section class="hero">
+    <span class="badge"><span class="dot" aria-hidden="true"></span> Public beta</span>
+    <h1>AI that works beside you</h1>
+    <p>Automate repetitive tasks and focus on the work that actually matters.</p>
+    <button class="btn" type="button">Join waitlist</button>
+  </section>
+</body>
+</html>

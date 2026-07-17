@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1383
+    slug: experimental-text-scramble-02
+    title: Text Scramble 02
+    category: experimental
+    tags: experimental, text
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1383 — Text Scramble 02</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#1a0a12;color:#ffe8f0}h1{font-size:3rem;font-weight:900;letter-spacing:.05em;color:#ff8c42
+  </style>
+</head>
+<body>
+<h1 id="h">Text Scramble</h1>
+<script>const h=document.getElementById('h'),orig='Text Scramble 989',chars='!@#$%^&*';let f=0;setInterval(()=>{h.textContent=orig.split('').map((c,i)=>i<f?c:chars[Math.floor(Math.random()*chars.length)]).join('');if(f++>orig.length)f=0;},80);</script>
+</body>
+</html>

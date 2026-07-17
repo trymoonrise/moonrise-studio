@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0185
+    slug: date-pickers-inline-datepicker
+    title: Inline Datepicker
+    category: date-pickers
+    tags: date-pickers, inline
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0185 — Inline Datepicker</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #f4f5f8;
+      padding: 2rem;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    .picker {
+      width: min(300px, 100%);
+      padding: 1.15rem;
+      border-radius: 18px;
+      background: #fff;
+      border: 1px solid #e4e6ec;
+      box-shadow: 0 16px 45px rgba(15, 23, 42, 0.08);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .nav button {
+      width: 34px;
+      height: 34px;
+      border: 1px solid #e4e6ec;
+      border-radius: 10px;
+      background: #fff;
+      color: #3d4255;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+    }
+
+    .nav button:hover {
+      background: #f0f4ff;
+      border-color: #c8d2ff;
+      color: #4f6ef7;
+    }
+
+    #month-label {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #111318;
+      letter-spacing: -0.02em;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      text-align: center;
+    }
+
+    .dow {
+      padding: 0.35rem 0;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #a0a5b8;
+    }
+
+    .cell {
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border: none;
+      border-radius: 10px;
+      background: none;
+      font-size: 0.88rem;
+      font-family: inherit;
+      color: #2a2f3d;
+      cursor: pointer;
+      transition: background 0.18s, color 0.18s, transform 0.18s;
+    }
+
+    .cell:hover:not(:disabled) {
+      background: #f0f4ff;
+      color: #1e2f8a;
+    }
+
+    .cell.is-today {
+      box-shadow: inset 0 0 0 2px #4f6ef7;
+      font-weight: 700;
+      color: #4f6ef7;
+    }
+
+    .cell.is-selected {
+      background: #4f6ef7;
+      color: #fff;
+      font-weight: 700;
+      transform: scale(1.04);
+      box-shadow: 0 4px 14px rgba(79, 110, 247, 0.35);
+    }
+
+    .cell.is-selected.is-today {
+      box-shadow: 0 4px 14px rgba(79, 110, 247, 0.35);
+    }
+
+    .cell:disabled {
+      visibility: hidden;
+      cursor: default;
+    }
+
+    .selected {
+      margin-top: 1rem;
+      padding: 0.7rem 0.85rem;
+      border-radius: 10px;
+      background: #f0f4ff;
+      font-size: 0.86rem;
+      color: #4f6ef7;
+      font-weight: 600;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="picker" id="picker">
+    <div class="nav">
+      <button type="button" id="prev" aria-label="Previous month">‹</button>
+      <span id="month-label"></span>
+      <button type="button" id="next" aria-label="Next month">›</button>
+    </div>
+    <div class="grid" id="grid"></div>
+    <p class="selected" id="selected">Select a date</p>
+  </div>
+
+  <script>
+    const grid = document.getElementById('grid');
+    const monthLabel = document.getElementById('month-label');
+    const selectedEl = document.getElementById('selected');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let view = new Date(today.getFullYear(), today.getMonth(), 1);
+    let selected = new Date(today);
+
+    const dow = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+    function sameDay(a, b) {
+      return a.getFullYear() === b.getFullYear() &&
+        a.getMonth() === b.getMonth() &&
+        a.getDate() === b.getDate();
+    }
+
+    function formatDate(d) {
+      return d.toLocaleDateString(undefined, {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      });
+    }
+
+    function render() {
+      const y = view.getFullYear();
+      const m = view.getMonth();
+      const first = new Date(y, m, 1).getDay();
+      const total = new Date(y, m + 1, 0).getDate();
+
+      monthLabel.textContent = months[m] + ' ' + y;
+      grid.innerHTML = '';
+
+      dow.forEach((d) => {
+        const el = document.createElement('div');
+        el.className = 'dow';
+        el.textContent = d.slice(0, 1);
+        grid.appendChild(el);
+      });
+
+      for (let i = 0; i < first; i++) {
+        const pad = document.createElement('button');
+        pad.type = 'button';
+        pad.className = 'cell';
+        pad.disabled = true;
+        grid.appendChild(pad);
+      }
+
+      for (let day = 1; day <= total; day++) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'cell';
+        btn.textContent = day;
+
+        const date = new Date(y, m, day);
+        if (sameDay(date, today)) btn.classList.add('is-today');
+        if (sameDay(date, selected)) btn.classList.add('is-selected');
+
+        btn.addEventListener('click', () => {
+          selected = new Date(y, m, day);
+          selectedEl.textContent = formatDate(selected);
+          render();
+        });
+
+        grid.appendChild(btn);
+      }
+
+      selectedEl.textContent = formatDate(selected);
+    }
+
+    document.getElementById('prev').addEventListener('click', () => {
+      view.setMonth(view.getMonth() - 1);
+      render();
+    });
+
+    document.getElementById('next').addEventListener('click', () => {
+      view.setMonth(view.getMonth() + 1);
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>

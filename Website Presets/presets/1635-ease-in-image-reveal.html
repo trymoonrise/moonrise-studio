@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1635
+    slug: ease-in-image-reveal
+    title: Image Reveal Ease
+    category: ease-in
+    tags: ease-in, image, reveal, professional
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1635 — Image Reveal Ease</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#111;padding:2rem}.frame{width:min(420px,90vw);border-radius:16px;overflow:hidden;position:relative}.frame img{width:100%;display:block;transform:scale(1.08);animation:zoom 1.2s cubic-bezier(.22,.61,.36,1) forwards}.frame::after{content:'';position:absolute;inset:0;background:#6c8cff;transform-origin:left;animation:wipe 1s cubic-bezier(.22,.61,.36,1) forwards}@keyframes wipe{to{transform:scaleX(0)}}@keyframes zoom{to{transform:scale(1)}}@media (prefers-reduced-motion:reduce){.frame::after{display:none}.frame img{transform:none;animation:none}}
+  </style>
+</head>
+<body>
+<div class="frame"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div>
+
+</body>
+</html>

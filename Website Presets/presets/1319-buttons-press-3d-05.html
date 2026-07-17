@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1319
+    slug: buttons-press-3d-05
+    title: Mechanical Key Button
+    category: buttons
+    tags: buttons, mechanical, key
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1319 — Mechanical Key Button</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700&family=Outfit:wght@400;500;600&display=swap');
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:#12141a;font-family:Outfit,sans-serif}
+.key{position:relative;border:none;background:transparent;cursor:pointer;padding:0}
+.cap{width:120px;height:120px;border-radius:18px;background:linear-gradient(160deg,#2a2e3a,#1a1e28);border:2px solid #3a4050;box-shadow:0 10px 0 #0a0c10,0 14px 30px rgba(0,0,0,.5);display:grid;place-items:center;font-family:Syne,sans-serif;font-size:1.1rem;font-weight:700;color:#e8e8ea;transition:transform .08s,box-shadow .08s;letter-spacing:.04em}
+.key:active .cap,.key.down .cap{transform:translateY(8px);box-shadow:0 2px 0 #0a0c10,0 4px 12px rgba(0,0,0,.4)}
+.legend{position:absolute;bottom:18px;font-size:.65rem;color:#6a7080;letter-spacing:.12em}
+  </style>
+</head>
+<body>
+<button class="key" id="k" aria-label="Enter key"><div class="cap">ENTER<span class="legend">↵</span></div></button>
+<script>const k=document.getElementById('k');
+k.addEventListener('pointerdown',()=>k.classList.add('down'));
+k.addEventListener('pointerup',()=>k.classList.remove('down'));
+k.addEventListener('pointerleave',()=>k.classList.remove('down'));</script>
+</body>
+</html>

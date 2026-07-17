@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1588
+    slug: 3d-book-open
+    title: 3D Book Open
+    category: 3d-effects
+    tags: 3d, book, open
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1588 — 3D Book Open</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&display=swap');
+    *{box-sizing:border-box}
+    body{
+      margin:0;min-height:100vh;display:grid;place-items:center;
+      background:#07060a;color:#fff;font-family:Syne,sans-serif;
+      perspective:1400px;overflow:hidden;
+    }
+    .hint{
+      position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);
+      font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;opacity:.4;z-index:20;
+    }
+    .stage{
+      position:relative;
+      width:min(520px,86vw);
+      height:min(360px,60vw);
+      transform-style:preserve-3d;
+      transform:rotateX(14deg) rotateY(-6deg);
+    }
+    .book{
+      position:absolute;inset:0;
+      transform-style:preserve-3d;
+      cursor:pointer;
+      transform-origin:left center;
+    }
+    .leaf{
+      position:absolute;inset:0;
+      transform-style:preserve-3d;
+      transform-origin:left center;
+      border-radius:3px 12px 12px 3px;
+      backface-visibility:hidden;
+      -webkit-backface-visibility:hidden;
+    }
+    .cover{
+      background:linear-gradient(145deg,#6c1a2a,#2a0a12 60%,#120508);
+      border:1px solid rgba(255,180,120,.15);
+      box-shadow:0 24px 60px rgba(0,0,0,.5),inset 0 0 50px rgba(255,100,50,.06);
+      display:grid;place-items:center;padding:2rem;
+      z-index:5;
+      transform:translateZ(4px);
+      transition:transform 1.15s cubic-bezier(.22,1,.36,1);
+    }
+    .cover h1{
+      margin:0;font-family:'Instrument Serif',serif;
+      font-size:clamp(2.2rem,7vw,3.8rem);font-style:italic;
+      letter-spacing:-.04em;line-height:.85;text-align:center;
+      background:linear-gradient(180deg,#ffd9a0,#c47a40);
+      -webkit-background-clip:text;background-clip:text;color:transparent;
+    }
+    .cover p{margin:.75rem 0 0;font-size:.65rem;letter-spacing:.22em;text-transform:uppercase;opacity:.5}
+    .page{
+      color:#1a1208;padding:2rem;
+      display:grid;align-content:center;
+      box-shadow:inset -16px 0 28px rgba(0,0,0,.06);
+    }
+    .page h2{
+      margin:0;font-family:'Instrument Serif',serif;
+      font-size:clamp(1.6rem,4.5vw,2.4rem);font-style:italic;letter-spacing:-.03em;
+    }
+    .page p{margin:.7rem 0 0;font-size:.85rem;line-height:1.65;opacity:.65;max-width:28ch}
+    .page--1{background:#f4ead7;z-index:4;transform:translateZ(3px);transition:transform 1.05s cubic-bezier(.22,1,.36,1) .08s}
+    .page--2{background:#efe4cf;z-index:3;transform:translateZ(2px);transition:transform 1.05s cubic-bezier(.22,1,.36,1) .16s}
+    .page--3{background:#e8dcc4;z-index:2;transform:translateZ(1px);transition:transform 1.05s cubic-bezier(.22,1,.36,1) .24s}
+    .back{
+      background:linear-gradient(145deg,#1a1208,#0c0804);
+      border:1px solid rgba(255,180,120,.08);
+      z-index:1;
+      transform:translateZ(0);
+      box-shadow:0 20px 50px rgba(0,0,0,.4);
+    }
+    .spine{
+      position:absolute;left:0;top:0;bottom:0;width:10px;
+      background:linear-gradient(90deg,#1a1208,#3a2810,#1a1208);
+      transform:translateZ(2px);border-radius:2px 0 0 2px;z-index:6;pointer-events:none;
+    }
+    .book.open .cover{transform:translateZ(4px) rotateY(-155deg)}
+    .book.open .page--1{transform:translateZ(3px) rotateY(-26deg)}
+    .book.open .page--2{transform:translateZ(2px) rotateY(-14deg)}
+    .book.open .page--3{transform:translateZ(1px) rotateY(-5deg)}
+    .ember{
+      position:absolute;inset:-25%;pointer-events:none;
+      background:radial-gradient(circle at 40% 55%,rgba(255,80,40,.16),transparent 52%);
+      opacity:0;transition:opacity .7s ease;z-index:0;
+    }
+    .stage:has(.open) .ember{opacity:1}
+    @media(prefers-reduced-motion:reduce){
+      .cover,.page{transition-duration:.01ms}
+      .book.open .cover{transform:translateZ(4px) rotateY(-120deg)}
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="ember" aria-hidden="true"></div>
+    <div class="book" id="book" role="button" tabindex="0" aria-label="Open the book" aria-pressed="false">
+      <div class="leaf back" aria-hidden="true"></div>
+      <div class="leaf page page--3"><h2>Chapter III</h2><p>The last page waits beneath the fold of light.</p></div>
+      <div class="leaf page page--2"><h2>Chapter II</h2><p>Geometry unfolds into narrative space.</p></div>
+      <div class="leaf page page--1"><h2>Chapter I</h2><p>Click to peel the cover and flip through living pages.</p></div>
+      <div class="leaf cover"><div><h1>Grimoire</h1><p>Click to open</p></div></div>
+      <div class="spine" aria-hidden="true"></div>
+    </div>
+  </div>
+  <p class="hint">Click the book · pages cascade open</p>
+  <script>
+    const book=document.getElementById('book');
+    const toggle=()=>{
+      const open=book.classList.toggle('open');
+      book.setAttribute('aria-pressed',String(open));
+    };
+    book.addEventListener('click',toggle);
+    book.addEventListener('keydown',(e)=>{
+      if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle()}
+    });
+  </script>
+</body>
+</html>

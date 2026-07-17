@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0083
+    slug: ease-in-scale-in-grid
+    title: Scale In Grid
+    category: ease-in
+    tags: ease-in, scale
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0083 — Scale In Grid</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background: #fff;
+    }
+
+    .g {
+      display: grid;
+      grid-template-columns: repeat(3, 72px);
+      gap: 12px;
+    }
+
+    .c {
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      background: #fff;
+      border: 1.5px solid #111;
+      border-radius: 12px;
+      color: #111;
+      opacity: 0;
+      transform: scale(0);
+      animation: pop 0.55s cubic-bezier(0.22, 1.2, 0.36, 1) forwards;
+    }
+
+    .c svg {
+      width: 28px;
+      height: 28px;
+      stroke: currentColor;
+      stroke-width: 1.75;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .c:nth-child(1) { animation-delay: 0.05s; }
+    .c:nth-child(2) { animation-delay: 0.1s; }
+    .c:nth-child(3) { animation-delay: 0.15s; }
+    .c:nth-child(4) { animation-delay: 0.2s; }
+    .c:nth-child(5) { animation-delay: 0.25s; }
+    .c:nth-child(6) { animation-delay: 0.3s; }
+
+    @keyframes pop {
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .c {
+        animation: none;
+        opacity: 1;
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="g">
+    <div class="c" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg>
+    </div>
+    <div class="c" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+    </div>
+    <div class="c" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M12 3l2.2 6.6H21l-5.4 4 2.1 6.5L12 16.6 6.3 20.1l2.1-6.5L3 9.6h6.8z"/></svg>
+    </div>
+    <div class="c" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M4 19V5h4l2 3h10v11z"/><path d="M8 19v-6h12"/></svg>
+    </div>
+    <div class="c" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9h16M9 4v16"/></svg>
+    </div>
+    <div class="c" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M12 4v16M4 12h16"/><circle cx="12" cy="12" r="8"/></svg>
+    </div>
+  </div>
+</body>
+</html>

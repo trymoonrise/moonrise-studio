@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0854
+    slug: toasts-error-toast-11
+    title: Fault Line Toast
+    category: toasts
+    tags: toasts, error
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0854 — Fault Line Toast</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #0c0a0a;
+      font-family: 'Outfit', sans-serif;
+      color: #f0e8e8;
+    }
+
+    .trigger {
+      padding: 0.85rem 1.6rem;
+      border: 1px solid rgba(248, 113, 113, 0.3);
+      border-radius: 8px;
+      background: rgba(248, 113, 113, 0.06);
+      color: #f87171;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      width: min(calc(100% - 2rem), 400px);
+      padding: 1.1rem 1.2rem;
+      background: #141010;
+      border: 1px solid rgba(248, 113, 113, 0.25);
+      border-radius: 8px;
+      opacity: 0;
+      transform: translateX(-50%) translateY(70px);
+      transition: opacity 0.3s, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: 20;
+      overflow: hidden;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      animation: shake 0.5s ease 0.15s;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      20% { transform: translateX(calc(-50% - 4px)) translateY(0); }
+      40% { transform: translateX(calc(-50% + 4px)) translateY(0); }
+      60% { transform: translateX(calc(-50% - 2px)) translateY(0); }
+      80% { transform: translateX(calc(-50% + 2px)) translateY(0); }
+    }
+
+    .fault {
+      position: absolute;
+      top: 50%;
+      left: -10%;
+      width: 120%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #f87171, transparent);
+      transform: translateY(-50%) scaleX(0);
+      opacity: 0.6;
+    }
+
+    .toast.show .fault {
+      animation: tear 0.6s ease 0.2s forwards;
+    }
+
+    @keyframes tear { to { transform: translateY(-50%) scaleX(1); } }
+
+    .toast h2 {
+      position: relative;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #fca5a5;
+      margin-bottom: 0.2rem;
+    }
+
+    .toast p {
+      position: relative;
+      font-size: 0.78rem;
+      color: rgba(240, 232, 232, 0.5);
+    }
+
+    .code {
+      position: relative;
+      margin-top: 0.5rem;
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      color: rgba(248, 113, 113, 0.6);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .toast.show { animation: none; }
+      .toast.show .fault { transform: translateY(-50%) scaleX(1); animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <button class="trigger" id="btn" type="button">Simulate error</button>
+
+  <div class="toast" id="toast" role="alert" aria-live="assertive">
+    <div class="fault" aria-hidden="true"></div>
+    <h2>Connection failed</h2>
+    <p>Unable to reach payment gateway</p>
+    <p class="code">ERR_GATEWAY_TIMEOUT · 504</p>
+  </div>
+
+  <script>
+    const btn = document.getElementById('btn');
+    const toast = document.getElementById('toast');
+    let timer;
+
+    btn.addEventListener('click', () => {
+      clearTimeout(timer);
+      toast.classList.remove('show');
+      void toast.offsetWidth;
+      toast.classList.add('show');
+      timer = setTimeout(() => toast.classList.remove('show'), 3500);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0319
+    slug: countdown-simple-countdown
+    title: Simple Countdown
+    category: countdown
+    tags: countdown, simple
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0319 — Simple Countdown</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');*{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f4f4f4;color:#111;font-family:"DM Sans",system-ui,-apple-system,sans-serif;padding:2rem;overflow:hidden}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.marq-track{animation:none!important}}
+    .wrap{text-align:center;width:min(100%,640px)}
+    .kicker{margin:0 0 1rem;font-size:.62rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#888}
+    .time{font-family:"Syne",system-ui,sans-serif;font-size:clamp(3.5rem,14vw,7rem);font-weight:800;letter-spacing:-.08em;font-variant-numeric:tabular-nums;line-height:1}
+    .marq{margin-top:2rem;overflow:hidden;border-top:1px solid #ddd;border-bottom:1px solid #ddd;padding:.7rem 0}
+    .marq-track{display:flex;gap:2rem;width:max-content;animation:scroll 22s linear infinite;font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:#999;font-weight:600}
+    @keyframes scroll{to{transform:translateX(-50%)}}
+  </style>
+</head>
+<body>
+<div class="wrap"><p class="kicker">Launching in</p><div class="time" id="t">10:00</div>
+    <div class="marq" aria-hidden="true"><div class="marq-track"><span>Simple · Precise · Inevitable · Simple · Precise · Inevitable · </span><span>Simple · Precise · Inevitable · Simple · Precise · Inevitable · </span></div></div></div>
+<script>let s=600;const el=document.getElementById('t');function draw(){el.textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}draw();setInterval(()=>{s=Math.max(0,s-1);draw();},1000);</script>
+</body>
+</html>

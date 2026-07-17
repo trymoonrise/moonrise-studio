@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1024
+    slug: announcements-compact-banner-12
+    title: Compact Banner 12
+    category: announcements
+    tags: announcements, compact
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1024 — Compact Banner 12</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@600;700&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0f1117;font-family:Manrope,sans-serif}
+    .compact{
+      position:relative;width:min(360px,90vw);height:2.6rem;overflow:hidden;border-radius:999px;
+      background:#1a1e2a;border:1px solid rgba(255,255,255,.08);
+      box-shadow:0 16px 40px rgba(0,0,0,.35);
+    }
+    .marquee{
+      display:flex;width:max-content;height:100%;align-items:center;
+      animation:scroll var(--dur,24s) linear infinite;
+      will-change:transform;
+    }
+    .marquee:hover{animation-play-state:paused}
+    .segment{display:flex;align-items:center;flex-shrink:0;white-space:nowrap;color:#fff;font-size:.78rem;font-weight:700}
+    .segment span{padding:0 1rem}
+    .segment em{font-style:normal;color:#7ee0c3}
+    .fade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,#1a1e2a,#0000 18%,#0000 82%,#1a1e2a)}
+    @keyframes scroll{to{transform:translate3d(-50%,0,0)}}
+    @media (prefers-reduced-motion:reduce){.marquee{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="compact" role="status">
+    <div class="marquee" id="marquee">
+      <div class="segment" id="segA">
+        <span>v2.4 live</span><span>·</span><span>API latency <em>-18%</em></span><span>·</span><span>Changelog ready</span><span>·</span>
+      </div>
+      <div class="segment" id="segB" aria-hidden="true"></div>
+    </div>
+    <div class="fade" aria-hidden="true"></div>
+  </div>
+  <script>
+    const segB=document.getElementById('segB');
+    segB.innerHTML=document.getElementById('segA').innerHTML;
+    const w=document.getElementById('segA').offsetWidth;
+    document.getElementById('marquee').style.setProperty('--dur',(w/36)+'s');
+  </script>
+</body>
+</html>

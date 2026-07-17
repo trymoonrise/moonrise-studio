@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0597
+    slug: docks-mac-dock-01
+    title: Spotlight Shelf Dock
+    category: docks
+    tags: docks, spotlight, shelf
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0597 — Spotlight Shelf Dock</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700&family=Outfit:wght@400;500;600&display=swap');
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:end center;background:#0a0b10;padding-bottom:2.5rem;font-family:Outfit,sans-serif;overflow:hidden}
+.shelf{position:relative;padding:1rem}
+.glow{position:absolute;left:50%;bottom:8px;width:120px;height:40px;translate:-50% 0;background:radial-gradient(ellipse,rgba(255,200,120,.45),transparent 70%);filter:blur(12px);pointer-events:none;transition:left .35s cubic-bezier(.22,1,.36,1),opacity .3s}
+.dock{display:flex;gap:8px;padding:10px 14px;background:#12141c;border:1px solid #2a2d3a;border-radius:18px;position:relative;z-index:1}
+.icon{width:48px;height:48px;border:none;border-radius:14px;cursor:pointer;background:linear-gradient(160deg,var(--a),var(--b));box-shadow:inset 0 1px 0 rgba(255,255,255,.25);transition:transform .35s cubic-bezier(.22,1,.36,1),filter .3s;transform-origin:50% 100%}
+.icon:hover{transform:translateY(-14px) scale(1.12);filter:brightness(1.1)}
+.icon.on{outline:2px solid #ffc878;outline-offset:3px}
+  </style>
+</head>
+<body>
+<div class="shelf">
+  <div class="glow" id="glow"></div>
+  <nav class="dock" id="dock" aria-label="Spotlight dock">
+    <button class="icon on" style="--a:#ff9f43;--b:#e67e22" aria-label="Apps"></button>
+    <button class="icon" style="--a:#54a0ff;--b:#2e86de" aria-label="Browse"></button>
+    <button class="icon" style="--a:#5f27cd;--b:#341f97" aria-label="Create"></button>
+    <button class="icon" style="--a:#01a3a4;--b:#10ac84" aria-label="Music"></button>
+    <button class="icon" style="--a:#ee5a24;--b:#c23616" aria-label="Photos"></button>
+  </nav>
+</div>
+<script>const dock=document.getElementById('dock'),glow=document.getElementById('glow'),icons=[...dock.querySelectorAll('.icon')];
+function spot(el){const r=dock.getBoundingClientRect(),ir=el.getBoundingClientRect();glow.style.left=(ir.left-r.left+ir.width/2)+'px'}
+icons.forEach(i=>{i.addEventListener('mouseenter',()=>spot(i));i.addEventListener('click',()=>{icons.forEach(x=>x.classList.remove('on'));i.classList.add('on');spot(i)})});
+spot(icons[0]);</script>
+</body>
+</html>

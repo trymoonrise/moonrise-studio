@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1235
+    slug: galleries-lightbox-gallery-02
+    title: Focus Lightbox Gallery
+    category: galleries
+    tags: galleries, lightbox, focus, modal
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1235 — Focus Lightbox Gallery</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#0a0c10;color:#e6e9ef;font-family:Outfit,sans-serif;padding:2rem}
+    .thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:640px;margin:0 auto}
+    .thumb{border-radius:8px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:border-color .3s,transform .3s,opacity .3s;aspect-ratio:1}
+    .thumb img{width:100%;height:100%;object-fit:cover}
+    .thumb:hover{transform:scale(1.03);border-color:rgba(56,189,248,.4)}
+    .thumb.active{border-color:#38bdf8}
+    .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.85);display:grid;place-items:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .4s;backdrop-filter:blur(8px)}
+    .lightbox.open{opacity:1;pointer-events:auto}
+    .lightbox img{max-width:min(80vw,700px);max-height:70vh;border-radius:8px;transform:scale(.9);transition:transform .4s cubic-bezier(.16,1,.3,1);box-shadow:0 24px 80px rgba(0,0,0,.5)}
+    .lightbox.open img{transform:scale(1);animation:focus-in .5s ease}
+    .close{position:absolute;top:2rem;right:2rem;width:40px;height:40px;border:1px solid rgba(255,255,255,.2);border-radius:50%;background:transparent;color:#fff;font-size:1.2rem;cursor:pointer;transition:border-color .3s,transform .3s}
+    .close:hover{border-color:#38bdf8;transform:rotate(90deg)}
+    .caption{position:absolute;bottom:2rem;text-align:center;font-size:.85rem;color:rgba(230,233,239,.5)}
+    @keyframes focus-in{from{opacity:0;filter:blur(8px)}to{opacity:1;filter:none}}
+    @media(prefers-reduced-motion:reduce){.lightbox img,.lightbox.open img{animation:none;transform:none}}
+  </style>
+</head>
+<body>
+  <div class="thumbs" id="thumbs"></div>
+  <div class="lightbox" id="lb"><button class="close" id="close">×</button><img id="lb-img" src="" alt=""><p class="caption" id="cap"></p></div>
+  <script>
+    const imgs=['Frame 01 — Architecture study','Frame 02 — Light experiment','Frame 03 — Urban texture','Frame 04 — Detail capture'];
+    const src='../stock/media/16-9 Aspect Ratio(image).png';
+    const thumbs=document.getElementById('thumbs'),lb=document.getElementById('lb'),lbImg=document.getElementById('lb-img'),cap=document.getElementById('cap');
+    imgs.forEach((t,i)=>{const d=document.createElement('div');d.className='thumb'+(i===0?' active':'');d.innerHTML=`<img src="${src}" alt="">`;d.onclick=()=>{document.querySelectorAll('.thumb').forEach(x=>x.classList.remove('active'));d.classList.add('active');lbImg.src=src;cap.textContent=t;lb.classList.add('open')};thumbs.appendChild(d)});
+    document.getElementById('close').onclick=()=>lb.classList.remove('open');
+    lb.onclick=e=>{if(e.target===lb)lb.classList.remove('open')};
+  </script>
+</body>
+</html>

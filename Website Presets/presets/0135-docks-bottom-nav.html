@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0135
+    slug: docks-bottom-nav
+    title: Bottom Nav Dock
+    category: docks
+    tags: docks, bottom-nav
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0135 — Bottom Nav Dock</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#eef0f4;font-family:Outfit,sans-serif}
+    .phone{width:min(340px,92vw);height:580px;background:#0f1117;border-radius:36px;border:1px solid #2a2e3a;position:relative;overflow:hidden;color:#fff;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(20,30,50,.25)}
+    .screen{flex:1;display:grid;place-items:center;opacity:.35;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase}
+    .nav{display:flex;justify-content:space-around;padding:.85rem 1rem 1.35rem;position:relative;border-top:1px solid rgba(255,255,255,.06);background:rgba(15,17,23,.92);backdrop-filter:blur(12px)}
+    .nav a{display:flex;flex-direction:column;align-items:center;gap:.35rem;text-decoration:none;color:rgba(255,255,255,.35);font-size:.62rem;letter-spacing:.06em;transition:color .3s;position:relative;z-index:1;padding:.35rem .6rem}
+    .nav a svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.7;transition:transform .35s cubic-bezier(.22,1,.36,1)}
+    .nav a.active,.nav a:hover{color:#fff}
+    .nav a.active svg{transform:translateY(-2px)}
+    .blob{position:absolute;width:48px;height:32px;border-radius:999px;background:rgba(108,140,255,.2);top:12px;left:0;transform:translateX(var(--x,0px));transition:transform .45s cubic-bezier(.22,1,.36,1);pointer-events:none}
+  </style>
+</head>
+<body>
+  <div class="phone">
+    <div class="screen">Content</div>
+    <nav class="nav" id="nav">
+      <div class="blob" id="blob" aria-hidden="true"></div>
+      <a class="active" href="#" data-i="0"><svg viewBox="0 0 24 24"><path d="M4 10.5L12 4l8 6.5V20a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg>Home</a>
+      <a href="#" data-i="1"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3"/></svg>Search</a>
+      <a href="#" data-i="2"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg>Saved</a>
+      <a href="#" data-i="3"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>You</a>
+    </nav>
+  </div>
+  <script>
+    const nav=document.getElementById('nav'),blob=document.getElementById('blob'),links=[...nav.querySelectorAll('a')];
+    function move(el){const nr=nav.getBoundingClientRect(),r=el.getBoundingClientRect();blob.style.setProperty('--x',(r.left-nr.left+(r.width-48)/2)+'px')}
+    move(links[0]);
+    links.forEach(a=>a.addEventListener('click',e=>{e.preventDefault();links.forEach(l=>l.classList.remove('active'));a.classList.add('active');move(a)}));
+  </script>
+</body>
+</html>

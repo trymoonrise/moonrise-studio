@@ -16,28 +16,20 @@
     <header class="ms-page-head">
       <div class="ms-page-head-copy">
         <h1>My clients</h1>
+        <p class="lead">Businesses that paid to remove the watermark.</p>
       </div>
     </header>
 
     <section class="ms-card ms-clients-card" aria-label="Clients">
       <header class="ms-clients-section-head">
         <div class="ms-clients-section-copy">
-          <h2>Client roster</h2>
+          <h2>Paid clients</h2>
           <span class="ms-clients-count" id="ms-clients-count" aria-live="polite"></span>
         </div>
         <div class="ms-clients-toolbar">
-          <button type="button" class="ms-btn" id="ms-clients-add">Add client</button>
+          <button type="button" class="ms-btn ms-btn-secondary ms-clients-export-btn" id="ms-clients-download-csv">Export CSV</button>
         </div>
       </header>
-
-      <div class="ms-clients-export-bar">
-        <span class="ms-clients-export-label">Export</span>
-        <div class="ms-clients-export-actions">
-          <button type="button" class="ms-btn ms-btn-secondary ms-clients-export-btn" id="ms-clients-download-csv">CSV</button>
-          <button type="button" class="ms-btn ms-btn-secondary ms-clients-export-btn" id="ms-clients-download-txt">TXT</button>
-          <button type="button" class="ms-btn ms-btn-secondary ms-clients-export-btn" id="ms-clients-download-md">MD</button>
-        </div>
-      </div>
 
       <div class="ms-clients-table-wrap">
         <div class="ms-clients-table-toolbar">
@@ -47,7 +39,7 @@
               type="search"
               id="ms-clients-search"
               class="ms-clients-search"
-              placeholder="Search by name, phone, or domain…"
+              placeholder="Search by business or site…"
               autocomplete="off"
               spellcheck="false"
             />
@@ -64,14 +56,11 @@
           <thead>
             <tr>
               <th scope="col">Business</th>
-              <th scope="col">Contact</th>
               <th scope="col">Phone</th>
-              <th scope="col">Website</th>
-              <th scope="col">Price</th>
-              <th scope="col">Preference</th>
-              <th scope="col">Rep</th>
+              <th scope="col">Live site</th>
+              <th scope="col">Paid</th>
+              <th scope="col">Date</th>
               <th scope="col">Status</th>
-              <th scope="col">Notes</th>
               <th scope="col"><span class="ms-sr-only">Actions</span></th>
             </tr>
           </thead>
@@ -81,101 +70,11 @@
 
       <div class="ms-clients-empty" id="ms-clients-empty" hidden>
         <p class="ms-clients-empty-title">No clients yet</p>
-        <p class="ms-clients-empty-desc">Save contact and sale details for businesses you close.</p>
+        <p class="ms-clients-empty-desc">When a business pays to remove the watermark on a live site, they show up here.</p>
       </div>
 
       <div class="ms-clients-status" id="ms-clients-status" hidden role="status"></div>
     </section>
-
-    <dialog class="ms-clients-dialog" id="ms-client-form-dialog" aria-labelledby="ms-client-form-title">
-      <div class="ms-clients-dialog-panel">
-        <header class="ms-clients-dialog-head">
-          <h2 class="ms-clients-dialog-title" id="ms-client-form-title">Client details</h2>
-        </header>
-
-        <form class="ms-clients-form" id="ms-client-form">
-          <div class="ms-clients-form-body">
-            <div class="ms-clients-form-grid">
-              <div class="ms-clients-field">
-                <label class="ms-clients-field-label" for="ms-client-business">Business name</label>
-                <input class="ms-clients-input" id="ms-client-business" type="text" name="business_name" required autocomplete="organization" placeholder="Acme Plumbing">
-              </div>
-              <div class="ms-clients-field">
-                <label class="ms-clients-field-label" for="ms-client-contact">Contact name</label>
-                <input class="ms-clients-input" id="ms-client-contact" type="text" name="contact_name" autocomplete="name" placeholder="Jane Smith">
-              </div>
-              <div class="ms-clients-field">
-                <label class="ms-clients-field-label" for="ms-client-phone">Phone</label>
-                <input class="ms-clients-input" id="ms-client-phone" type="tel" name="phone" autocomplete="tel" inputmode="tel" placeholder="(555) 123-4567">
-              </div>
-              <div class="ms-clients-field">
-                <label class="ms-clients-field-label" for="ms-client-website">Website</label>
-                <input class="ms-clients-input" id="ms-client-website" type="text" name="website" autocomplete="url" inputmode="url" placeholder="example.com" spellcheck="false">
-              </div>
-              <div class="ms-clients-field">
-                <label class="ms-clients-field-label" for="ms-client-price">Price</label>
-                <select class="ms-clients-input" id="ms-client-price" name="price">
-                  <option value="">—</option>
-                </select>
-              </div>
-              <div class="ms-clients-field">
-                <label class="ms-clients-field-label" for="ms-client-preference">Preference</label>
-                <select class="ms-clients-input" id="ms-client-preference" name="preference">
-                  <option value="">—</option>
-                  <option value="Direct Link">Direct Link</option>
-                  <option value="Booking">Booking</option>
-                </select>
-              </div>
-              <div class="ms-clients-field">
-                <label class="ms-clients-field-label" for="ms-client-rep">Rep</label>
-                <input class="ms-clients-input" id="ms-client-rep" type="text" name="rep" autocomplete="off" placeholder="Sales rep name">
-              </div>
-              <div class="ms-clients-field">
-                <label class="ms-clients-field-label" for="ms-client-source">Status</label>
-                <select class="ms-clients-input" id="ms-client-source" name="source">
-                  <option value="">—</option>
-                  <option value="confirmed-sale">Confirmed sale</option>
-                  <option value="pending-sale">Pending sale</option>
-                  <option value="dismissed">Dismissed</option>
-                  <option value="lead-finder">Business Finder</option>
-                  <option value="pending">Pending</option>
-                  <option value="building">Building</option>
-                  <option value="completed">Completed</option>
-                  <option value="quick-save">Quick Save</option>
-                  <option value="not-interested">Unsuccessful</option>
-                  <option value="removed">Removed</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              <div class="ms-clients-field ms-clients-field--wide">
-                <label class="ms-clients-field-label" for="ms-client-notes">Notes</label>
-                <input class="ms-clients-input" id="ms-client-notes" type="text" name="notes" autocomplete="off" placeholder="Package, billing notes, best time to call…">
-              </div>
-            </div>
-            <div class="ms-clients-form-status" id="ms-client-form-status" hidden role="status"></div>
-          </div>
-
-          <footer class="ms-clients-form-actions">
-            <button type="button" class="ms-clients-dialog-back" id="ms-client-cancel">Cancel</button>
-            <button type="submit" class="ms-btn ms-clients-dialog-next" id="ms-client-submit">Add client</button>
-          </footer>
-        </form>
-      </div>
-    </dialog>
-
-    <dialog class="ms-clients-dialog" id="ms-client-delete-dialog" aria-labelledby="ms-client-delete-title">
-      <div class="ms-clients-dialog-panel ms-clients-dialog-panel--compact">
-        <header class="ms-clients-dialog-head">
-          <h2 class="ms-clients-dialog-title" id="ms-client-delete-title">Delete client</h2>
-        </header>
-        <p class="ms-clients-dialog-warning" id="ms-client-delete-message" aria-live="polite"></p>
-        <p class="ms-clients-dialog-error" id="ms-client-delete-error" hidden role="alert"></p>
-        <footer class="ms-clients-form-actions">
-          <button type="button" class="ms-clients-dialog-back" id="ms-client-delete-cancel">Cancel</button>
-          <button type="button" class="ms-btn ms-btn-danger ms-clients-dialog-next" id="ms-client-delete-submit">Delete client</button>
-        </footer>
-      </div>
-    </dialog>
   </div>
 
   <script src="js/config.js"></script>

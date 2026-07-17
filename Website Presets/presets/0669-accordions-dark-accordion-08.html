@@ -1,0 +1,13 @@
+﻿<!DOCTYPE html>
+<html lang="en"><head>
+  <!--
+    @preset
+    id: 0669
+    slug: accordions-dark-accordion-08
+    title: Dark Accordion 08
+    category: accordions
+    tags: accordions, dark
+  -->
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>0669 — Dark Accordion 08</title>
+  <style>@import url('../shared/preset-reset.css');@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap');*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0d0f14;padding:2rem;font-family:Inter,sans-serif;color:#f3f5f8}.acc{width:min(520px,100%);background:#141821;border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:.5rem}.item{border-radius:18px;overflow:hidden}.item.open{background:rgba(255,255,255,.04)}.trigger{width:100%;padding:1rem 1rem;border:0;background:none;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:inherit;font:600 .94rem Inter,sans-serif;text-align:left}.dash{width:16px;height:1.5px;background:#7ee0c3;box-shadow:0 0 18px rgba(126,224,195,.35);opacity:.5;transition:opacity .3s ease,transform .3s ease}.panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s cubic-bezier(.22,1,.36,1)}.panel>div{overflow:hidden}.panel p{margin:0;padding:0 1rem 1rem;color:rgba(243,245,248,.58);line-height:1.68;font-size:.88rem}.item.open .dash{opacity:1;transform:scaleX(1.4)}.item.open .panel{grid-template-rows:1fr}@media(prefers-reduced-motion:reduce){.dash,.panel{transition:none}}</style>
+</head><body><div class="acc"><div class="item open"><button class="trigger"><span>Dark mode with light motion</span><span class="dash"></span></button><div class="panel"><div><p>The open state glows through a single horizontal dash rather than a rotating icon.</p></div></div></div><div class="item"><button class="trigger"><span>Reduced visual clutter</span><span class="dash"></span></button><div class="panel"><div><p>Soft contrast and spacing do most of the work, which keeps the component modern and restrained.</p></div></div></div><div class="item"><button class="trigger"><span>Professional dashboard fit</span><span class="dash"></span></button><div class="panel"><div><p>This one works especially well in settings panels, changelog drawers, and internal tools.</p></div></div></div></div><script>document.querySelectorAll('.item .trigger').forEach((button)=>button.addEventListener('click',()=>button.parentElement.classList.toggle('open')));</script></body></html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1498
+    slug: timeline-progress-rail
+    title: Progress Rail Timeline
+    category: timeline
+    tags: timeline, progress, rail, animated
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1498 — Progress Rail Timeline</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700&family=Outfit:wght@400;500;600&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#090a0e;color:#fff;display:grid;place-items:center;padding:2rem;font-family:Outfit,sans-serif}
+    .card{width:min(560px,100%);background:#12131a;border-radius:24px;padding:2rem;border:1px solid #22232c;box-shadow:0 30px 80px rgba(0,0,0,.45);animation:rise .7s cubic-bezier(.22,1,.36,1) both}
+    .milestones{display:flex;justify-content:space-between;margin-bottom:1.5rem}
+    .m{text-align:center;flex:1;opacity:.35;transition:opacity .4s,transform .4s;cursor:pointer}
+    .m.on{opacity:1;transform:translateY(-2px)}
+    .m .yr{font-size:.68rem;color:#7ee0c3;letter-spacing:.12em;font-weight:600}
+    .m h4{font-size:.85rem;margin:.3rem 0 0;font-weight:600}
+    .rail{position:relative;height:6px;background:#1e1f28;border-radius:99px;margin:0 0 1.75rem;overflow:hidden}
+    .fill{height:100%;width:0;background:linear-gradient(90deg,#7ee0c3,#6c8cff);border-radius:99px;transition:width .55s cubic-bezier(.22,1,.36,1);position:relative}
+    .fill::after{content:"";position:absolute;right:0;top:50%;translate:50% -50%;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 0 16px rgba(126,224,195,.5)}
+    .detail{min-height:88px;overflow:hidden}
+    .detail h3{font-family:Syne,sans-serif;font-size:1.25rem;margin:0 0 .5rem;letter-spacing:-.02em;animation:fade .4s both}
+    .detail p{color:#8a8a96;font-size:.9rem;line-height:1.65;margin:0;animation:fade .45s .05s both}
+    .ctrl{display:flex;justify-content:flex-end;gap:.5rem;margin-top:1.25rem}
+    .btn{width:42px;height:42px;border-radius:50%;border:1px solid #2a2b34;background:transparent;color:#fff;cursor:pointer;font-size:1rem;transition:border-color .25s,color .25s,transform .25s}
+    .btn:hover{border-color:#7ee0c3;color:#7ee0c3}
+    .btn:active{transform:scale(.94)}
+    @keyframes rise{from{opacity:0;translate:0 18px}to{opacity:1;translate:0 0}}
+    @keyframes fade{from{opacity:0;translate:0 8px}to{opacity:1;translate:0 0}}
+    @media(prefers-reduced-motion:reduce){.card,.detail h3,.detail p{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="milestones" id="ms">
+      <div class="m" data-i="0"><div class="yr">2023</div><h4>Founded</h4></div>
+      <div class="m" data-i="1"><div class="yr">2024</div><h4>Seed</h4></div>
+      <div class="m" data-i="2"><div class="yr">2025</div><h4>Series A</h4></div>
+      <div class="m" data-i="3"><div class="yr">2026</div><h4>Global</h4></div>
+    </div>
+    <div class="rail"><div class="fill" id="f"></div></div>
+    <div class="detail" id="d"></div>
+    <div class="ctrl">
+      <button class="btn" id="prev" aria-label="Previous">←</button>
+      <button class="btn" id="fwd" aria-label="Next">→</button>
+    </div>
+  </div>
+  <script>
+    const data=[
+      {t:'Founded',d:'Started in a small studio with a vision for better web tools.'},
+      {t:'Seed round',d:'Raised funding to expand the team and ship v1.'},
+      {t:'Series A',d:'Scaled to 50k users across 12 countries.'},
+      {t:'Global',d:'Opened offices and launched enterprise tier.'}
+    ];
+    let i=0;
+    const ms=[...document.querySelectorAll('.m')],f=document.getElementById('f'),d=document.getElementById('d');
+    function go(n){
+      i=Math.max(0,Math.min(data.length-1,n));
+      f.style.width=(i/(data.length-1)*100)+'%';
+      ms.forEach((m,j)=>m.classList.toggle('on',j<=i));
+      d.innerHTML='<h3>'+data[i].t+'</h3><p>'+data[i].d+'</p>';
+    }
+    ms.forEach(m=>m.onclick=()=>go(+m.dataset.i));
+    document.getElementById('fwd').onclick=()=>go(i+1);
+    document.getElementById('prev').onclick=()=>go(i-1);
+    go(0);
+  </script>
+</body>
+</html>

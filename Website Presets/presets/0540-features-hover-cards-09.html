@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0540
+    slug: features-hover-cards-09
+    title: Hover Cards 09
+    category: features
+    tags: features, hover, cards
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0540 — Hover Cards 09</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0c0d12;color:#fff;font-family:Outfit,sans-serif;padding:2rem;perspective:1000px}
+    .wrap{width:min(860px,100%)}
+    h1{margin:0 0 1.75rem;font-family:Syne,sans-serif;font-size:clamp(1.8rem,4vw,2.6rem);letter-spacing:-.04em;font-weight:800}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+    .card{height:260px;border:1px solid rgba(255,255,255,.1);padding:1.4rem;display:flex;flex-direction:column;justify-content:flex-end;position:relative;overflow:hidden;transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:border-color .3s;background:rgba(255,255,255,.02)}
+    .card::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.12),transparent 45%);opacity:0;transition:opacity .3s;pointer-events:none}
+    .card:hover{border-color:rgba(255,255,255,.28)}.card:hover::before{opacity:1}
+    .idx{position:absolute;top:1.2rem;left:1.4rem;font-size:.68rem;letter-spacing:.16em;opacity:.35;font-weight:300}
+    h3{margin:0;font-family:Syne,sans-serif;font-size:1.25rem;letter-spacing:-.02em;transform:translateZ(24px)}
+    p{margin:.45rem 0 0;font-size:.85rem;opacity:.45;font-weight:300;line-height:1.5;transform:translateZ(16px);max-height:0;overflow:hidden;transition:max-height .45s cubic-bezier(.22,1,.36,1),opacity .35s,margin .35s}
+    .card:hover p{max-height:6rem;opacity:.55;margin-top:.55rem}
+    @media(max-width:700px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Hover reveals</h1>
+    <div class="grid">
+      <div class="card" data-card><span class="idx">01</span><h3>Magnetic</h3><p>Pointer tilt plus a specular that follows your hand.</p></div>
+      <div class="card" data-card><span class="idx">02</span><h3>Quiet</h3><p>Copy stays hidden until you commit to the card.</p></div>
+      <div class="card" data-card><span class="idx">03</span><h3>Depth</h3><p>Type floats on a separate Z plane from the frame.</p></div>
+    </div>
+  </div>
+  <script>
+    document.querySelectorAll('[data-card]').forEach(card=>{
+      let rx=0,ry=0,trx=0,try_=0,mx=50,my=50,cmx=50,cmy=50;
+      card.addEventListener('pointermove',e=>{
+        const r=card.getBoundingClientRect();const x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;
+        try_=(x-.5)*14;trx=(.5-y)*10;mx=x*100;my=y*100;
+      });
+      card.addEventListener('pointerleave',()=>{trx=0;try_=0});
+      (function loop(){rx+=(trx-rx)*.12;ry+=(try_-ry)*.12;cmx+=(mx-cmx)*.1;cmy+=(my-cmy)*.1;
+        card.style.setProperty('--rx',rx+'deg');card.style.setProperty('--ry',ry+'deg');
+        card.style.setProperty('--mx',cmx+'%');card.style.setProperty('--my',cmy+'%');requestAnimationFrame(loop)})();
+    });
+  </script>
+</body>
+</html>

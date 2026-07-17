@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1495
+    slug: timeline-pro-vertical
+    title: Pro Vertical Timeline
+    category: timeline
+    tags: timeline, vertical, professional
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1495 — Pro Vertical Timeline</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700&family=Outfit:wght@400;500;600&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#0c0d10;color:#e8e8ea;font-family:Outfit,sans-serif;padding:4rem 1.5rem}
+    .wrap{max-width:520px;margin:0 auto}
+    .head{margin-bottom:3rem;opacity:0;animation:in .7s .05s cubic-bezier(.22,1,.36,1) both}
+    .head h2{font-family:Syne,sans-serif;font-size:clamp(1.6rem,4vw,2rem);font-weight:700;letter-spacing:-.02em;margin:0 0 .4rem}
+    .head p{color:#8a8a96;margin:0;font-size:.95rem}
+    .timeline{position:relative;padding-left:2.25rem}
+    .rail{position:absolute;left:11px;top:10px;bottom:10px;width:2px;background:#1e1f26;border-radius:2px;overflow:hidden}
+    .rail-fill{width:100%;height:0;background:linear-gradient(180deg,#7ee0c3,#6c8cff);border-radius:2px;transition:height 1.1s cubic-bezier(.22,1,.36,1)}
+    .item{position:relative;padding:0 0 2.25rem 1.35rem;opacity:0;transform:translateY(18px);animation:in .7s cubic-bezier(.22,1,.36,1) both}
+    .item:nth-child(2){animation-delay:.15s}
+    .item:nth-child(3){animation-delay:.28s}
+    .item:nth-child(4){animation-delay:.41s}
+    .item:nth-child(5){animation-delay:.54s}
+    .item:last-child{padding-bottom:0}
+    .dot{position:absolute;left:-2.25rem;top:2px;width:24px;height:24px;border-radius:50%;background:#0c0d10;border:2px solid #2a2b34;display:grid;place-items:center;transition:border-color .4s,box-shadow .4s,transform .4s}
+    .dot i{width:8px;height:8px;border-radius:50%;background:#3a3b44;transition:background .4s,transform .4s}
+    .item.on .dot{border-color:#7ee0c3;box-shadow:0 0 0 6px rgba(126,224,195,.12);transform:scale(1.05)}
+    .item.on .dot i{background:#7ee0c3;transform:scale(1.15)}
+    .meta{font-size:.7rem;color:#7ee0c3;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.4rem}
+    .item h4{font-family:Syne,sans-serif;font-size:1.05rem;font-weight:600;margin:0 0 .35rem;letter-spacing:-.01em}
+    .item p{color:#8a8a96;font-size:.9rem;line-height:1.6;margin:0}
+    @keyframes in{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+    @media(prefers-reduced-motion:reduce){.item,.head,.rail-fill{animation:none;opacity:1;transform:none;transition:none}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head">
+      <h2>Product roadmap</h2>
+      <p>Milestones that shaped the release</p>
+    </div>
+    <div class="timeline">
+      <div class="rail"><div class="rail-fill" id="fill"></div></div>
+      <div class="item on"><div class="dot"><i></i></div><div class="meta">Q1 2025</div><h4>Research</h4><p>User interviews and competitive audit</p></div>
+      <div class="item on"><div class="dot"><i></i></div><div class="meta">Q2 2025</div><h4>Design</h4><p>Design system and prototype testing</p></div>
+      <div class="item on"><div class="dot"><i></i></div><div class="meta">Q3 2025</div><h4>Build</h4><p>Core platform and integrations</p></div>
+      <div class="item"><div class="dot"><i></i></div><div class="meta">Q4 2025</div><h4>Launch</h4><p>Public release and onboarding</p></div>
+    </div>
+  </div>
+  <script>
+    requestAnimationFrame(()=>{document.getElementById('fill').style.height='72%'});
+  </script>
+</body>
+</html>

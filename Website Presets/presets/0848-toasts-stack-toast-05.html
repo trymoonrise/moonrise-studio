@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0848
+    slug: toasts-stack-toast-05
+    title: Cascade Stack Toast
+    category: toasts
+    tags: toasts, stack
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0848 — Cascade Stack Toast</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #0a0b0f;
+      font-family: 'Outfit', sans-serif;
+      color: #e8eaef;
+    }
+
+    .trigger {
+      padding: 0.85rem 1.6rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      background: #13151a;
+      color: #e8eaef;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .stack {
+      position: fixed;
+      bottom: 2rem;
+      right: 1.5rem;
+      width: min(calc(100% - 2rem), 340px);
+      z-index: 20;
+    }
+
+    .card {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      padding: 0.95rem 1.1rem;
+      background: #161820;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 10px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      opacity: 0;
+      transform: translateY(40px) scale(0.92);
+      transition: opacity 0.35s, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .card.show { opacity: 1; transform: translateY(0) scale(1); }
+
+    .card:nth-child(1) { z-index: 3; }
+    .card:nth-child(2) { z-index: 2; }
+    .card:nth-child(3) { z-index: 1; }
+
+    .card.show:nth-child(2) { transform: translateY(-14px) scale(0.97); opacity: 0.85; }
+    .card.show:nth-child(3) { transform: translateY(-28px) scale(0.94); opacity: 0.65; }
+
+    .card h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin-bottom: 0.15rem;
+    }
+
+    .card p { font-size: 0.75rem; color: rgba(232, 234, 239, 0.5); }
+
+    .card .tag {
+      display: inline-block;
+      margin-top: 0.4rem;
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #94a3b8;
+    }
+
+    .spacer { height: 120px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .card { transition: opacity 0.2s; transform: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <button class="trigger" id="btn" type="button">Stack notifications</button>
+
+  <div class="stack" id="stack" aria-live="polite">
+    <div class="spacer" aria-hidden="true"></div>
+    <div class="card" data-i="0"><h2>Deploy queued</h2><p>v2.4.1 → production</p><span class="tag">Pipeline</span></div>
+    <div class="card" data-i="1"><h2>Tests passing</h2><p>142 specs · 0 failures</p><span class="tag">CI</span></div>
+    <div class="card" data-i="2"><h2>Build complete</h2><p>Artifact ready for release</p><span class="tag">Build</span></div>
+  </div>
+
+  <script>
+    const btn = document.getElementById('btn');
+    const cards = [...document.querySelectorAll('.card')];
+    let timers = [];
+
+    btn.addEventListener('click', () => {
+      timers.forEach(clearTimeout);
+      cards.forEach(c => c.classList.remove('show'));
+      cards.forEach((card, i) => {
+        timers.push(setTimeout(() => card.classList.add('show'), i * 180));
+        timers.push(setTimeout(() => card.classList.remove('show'), 3200 + i * 180));
+      });
+    });
+  </script>
+</body>
+</html>

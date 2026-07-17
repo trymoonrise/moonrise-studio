@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1515
+    slug: hero-mouse-parallax-layers
+    title: Mouse Parallax Hero
+    category: heroes
+    tags: heroes, mouse, parallax, layers
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1515 — Mouse Parallax Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:100vh;background:#0d0d0f;color:#fff;overflow:hidden;position:relative}.layer{position:absolute;inset:0;display:grid;place-items:center;will-change:transform}.layer img{width:110%;height:110%;object-fit:cover;opacity:.35}.layer--fg{z-index:2;text-align:center;padding:2rem}h1{font-size:clamp(2.5rem,6vw,4rem);font-weight:900;text-shadow:0 4px 30px rgba(0,0,0,.8)}
+  </style>
+</head>
+<body>
+<div class="layer layer--bg" id="bg"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div><div class="layer layer--mid" id="mid"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt="" style="opacity:.2;filter:blur(2px)"></div><div class="layer layer--fg"><h1>Depth in motion</h1></div>
+<script>const bg=document.getElementById('bg'),mid=document.getElementById('mid');addEventListener('mousemove',e=>{const x=(e.clientX/innerWidth-.5)*2,y=(e.clientY/innerHeight-.5)*2;bg.style.transform='translate('+x*12+'px,'+y*12+'px)';mid.style.transform='translate('+x*24+'px,'+y*24+'px)';});</script>
+</body>
+</html>

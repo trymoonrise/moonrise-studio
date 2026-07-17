@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 005
+    slug: scramble-decode
+    title: Scramble Decode
+    category: text
+    tags: scramble, interactive
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>005 — Scramble Decode</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    
+    body{display:grid;place-items:center;min-height:100vh;background:#0d0d0f;color:#fff}
+    h1{font-size:clamp(2rem,6vw,4rem);font-family:monospace;letter-spacing:.1em;cursor:default}
+    
+  </style>
+</head>
+<body>
+<h1 id="t">PRESET LIBRARY</h1>
+<script>const chars='!@#$%&*ABCDEFGHIJKLMNOPQRSTUVWXYZ';const el=document.getElementById('t');const target='PRESET LIBRARY';let frame=0;const tick=52;function scramble(){let out='';for(let i=0;i<target.length;i++){if(target[i]===' '){out+=' ';continue}out+=frame>i*3?target[i]:chars[Math.floor(Math.random()*chars.length)]}el.textContent=out;if(frame<target.length*3+10)setTimeout(()=>{frame++;scramble()},tick);}setTimeout(scramble,380);</script>
+</body>
+</html>

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0138
+    slug: sidebars-collapsible
+    title: Collapsible Sidebar
+    category: sidebars
+    tags: sidebars, collapse
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0138 — Collapsible Sidebar</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      background: #f4f5f8;
+      color: #111;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    .sidebar {
+      --w: 260px;
+      width: var(--w);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: #101119;
+      color: #e7e8ee;
+      border-right: 1px solid rgba(255, 255, 255, 0.06);
+      transition: width 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .sidebar.is-collapsed {
+      --w: 76px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1.35rem 1.15rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      min-height: 68px;
+    }
+
+    .brand__mark {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #6c8cff, #a855f7);
+      flex-shrink: 0;
+    }
+
+    .brand__name {
+      font-weight: 800;
+      font-size: 1.05rem;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+      opacity: 1;
+      transition: opacity 0.25s;
+    }
+
+    .sidebar.is-collapsed .brand__name {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .nav {
+      flex: 1;
+      padding: 1rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .nav__label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(231, 232, 238, 0.35);
+      padding: 0.5rem 0.85rem 0.35rem;
+      white-space: nowrap;
+      opacity: 1;
+      transition: opacity 0.25s;
+    }
+
+    .sidebar.is-collapsed .nav__label {
+      opacity: 0;
+      height: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .nav__item {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      padding: 0.7rem 0.85rem;
+      border: none;
+      background: none;
+      border-radius: 10px;
+      color: rgba(231, 232, 238, 0.62);
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color 0.2s, background 0.2s;
+      width: 100%;
+      text-align: left;
+    }
+
+    .nav__item:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .nav__item.is-active {
+      color: #fff;
+      background: rgba(108, 140, 255, 0.18);
+    }
+
+    .nav__item svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+
+    .nav__text {
+      opacity: 1;
+      transition: opacity 0.2s;
+    }
+
+    .sidebar.is-collapsed .nav__text {
+      opacity: 0;
+      width: 0;
+      overflow: hidden;
+    }
+
+    .sidebar.is-collapsed .nav__item {
+      justify-content: center;
+      padding: 0.7rem;
+    }
+
+    .sidebar__foot {
+      padding: 0.75rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      padding: 0.65rem;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      color: rgba(231, 232, 238, 0.7);
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .toggle:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+
+    .toggle svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+      transition: transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    .sidebar.is-collapsed .toggle svg {
+      transform: rotate(180deg);
+    }
+
+    .toggle__label {
+      white-space: nowrap;
+      transition: opacity 0.2s;
+    }
+
+    .sidebar.is-collapsed .toggle__label {
+      opacity: 0;
+      width: 0;
+      overflow: hidden;
+    }
+
+    .main {
+      flex: 1;
+      min-width: 0;
+      padding: clamp(1.5rem, 4vw, 2.5rem);
+    }
+
+    .main__head {
+      margin-bottom: 2rem;
+    }
+
+    .main__head h1 {
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.35rem;
+    }
+
+    .main__head p {
+      color: #666;
+      font-size: 0.95rem;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .card {
+      padding: 1.35rem;
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    }
+
+    .card strong {
+      display: block;
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 0.25rem;
+      color: #4f6ef7;
+    }
+
+    .card span {
+      font-size: 0.85rem;
+      color: #888;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .sidebar,
+      .toggle svg,
+      .brand__name,
+      .nav__text {
+        transition: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <div class="brand">
+      <span class="brand__mark" aria-hidden="true"></span>
+      <span class="brand__name">Northwind</span>
+    </div>
+
+    <nav class="nav">
+      <span class="nav__label">Menu</span>
+      <button class="nav__item is-active" type="button" data-panel="Dashboard">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+        <span class="nav__text">Dashboard</span>
+      </button>
+      <button class="nav__item" type="button" data-panel="Projects">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <span class="nav__text">Projects</span>
+      </button>
+      <button class="nav__item" type="button" data-panel="Analytics">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 15 4-5 3 3 5-6"/></svg>
+        <span class="nav__text">Analytics</span>
+      </button>
+      <button class="nav__item" type="button" data-panel="Team">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span class="nav__text">Team</span>
+      </button>
+
+      <span class="nav__label">Settings</span>
+      <button class="nav__item" type="button" data-panel="Settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        <span class="nav__text">Settings</span>
+      </button>
+    </nav>
+
+    <div class="sidebar__foot">
+      <button class="toggle" id="toggle" type="button" aria-expanded="true" aria-controls="sidebar">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+        <span class="toggle__label">Collapse</span>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="main__head">
+      <h1 id="panel-title">Dashboard</h1>
+      <p>Toggle the sidebar to collapse into an icon rail.</p>
+    </div>
+    <div class="cards">
+      <div class="card"><strong>128</strong><span>Active projects</span></div>
+      <div class="card"><strong>94%</strong><span>Uptime this month</span></div>
+      <div class="card"><strong>2.4k</strong><span>Team members</span></div>
+    </div>
+  </main>
+
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const toggle = document.getElementById('toggle');
+    const panelTitle = document.getElementById('panel-title');
+    const navItems = [...document.querySelectorAll('.nav__item')];
+
+    toggle.addEventListener('click', () => {
+      const collapsed = sidebar.classList.toggle('is-collapsed');
+      toggle.setAttribute('aria-expanded', String(!collapsed));
+    });
+
+    navItems.forEach((item) => {
+      item.addEventListener('click', () => {
+        navItems.forEach((el) => el.classList.remove('is-active'));
+        item.classList.add('is-active');
+        panelTitle.textContent = item.dataset.panel;
+      });
+    });
+  </script>
+</body>
+</html>

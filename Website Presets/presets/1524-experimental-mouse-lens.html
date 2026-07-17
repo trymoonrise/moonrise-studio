@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1524
+    slug: experimental-mouse-lens
+    title: Lens Distort Mouse
+    category: experimental
+    tags: experimental, mouse, lens, distort
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1524 — Lens Distort Mouse</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:100vh;overflow:hidden;position:relative}img{width:100%;height:100vh;object-fit:cover;display:block}.lens{position:fixed;width:180px;height:180px;border-radius:50%;border:3px solid rgba(255,255,255,.5);pointer-events:none;transform:translate(-50%,-50%);overflow:hidden;box-shadow:0 0 40px rgba(0,0,0,.5)}.lens img{position:absolute;width:100vw;height:100vh;object-fit:cover;max-width:none}
+  </style>
+</head>
+<body>
+<img src="../stock/media/16-9 Aspect Ratio(image).png" alt="" id="bg"><div class="lens" id="l"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt="" id="li"></div>
+<script>const l=document.getElementById('l'),li=document.getElementById('li');addEventListener('mousemove',e=>{l.style.left=e.clientX+'px';l.style.top=e.clientY+'px';li.style.left=-e.clientX+90+'px';li.style.top=-e.clientY+90+'px';li.style.width=innerWidth+'px';li.style.height=innerHeight+'px';});</script>
+</body>
+</html>

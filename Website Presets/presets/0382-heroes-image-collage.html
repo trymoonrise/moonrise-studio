@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0382
+    slug: heroes-image-collage
+    title: Image Collage Hero
+    category: heroes
+    tags: heroes, landing, image, grid
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0382 — Image Collage Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: clamp(2rem, 5vw, 3.5rem) clamp(1.25rem, 4vw, 2rem);
+      background:
+        radial-gradient(circle at 100% 0%, rgba(17, 24, 39, 0.05), transparent 40%),
+        #f8fafc;
+      color: #111827;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    .shell {
+      width: min(1080px, 100%);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+      gap: clamp(2rem, 4vw, 3.5rem);
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      margin-bottom: 0.9rem;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #6b7280;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 3.8vw, 2.85rem);
+      font-weight: 800;
+      line-height: 1.06;
+      letter-spacing: -0.04em;
+      max-width: 12ch;
+      margin-bottom: 0.9rem;
+    }
+
+    p {
+      color: #6b7280;
+      font-size: 0.98rem;
+      line-height: 1.65;
+      max-width: 36ch;
+      margin-bottom: 1.6rem;
+    }
+
+    .btn {
+      padding: 0.68rem 1.15rem;
+      border: none;
+      border-radius: 999px;
+      background: #111827;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(17, 24, 39, 0.14);
+      transition: transform 0.2s cubic-bezier(.22, .61, .36, 1);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .collage {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .tile {
+      position: relative;
+      overflow: hidden;
+      border-radius: 16px;
+      background: #fff;
+      border: 1px solid rgba(17, 24, 39, 0.08);
+      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+    }
+
+    .tile img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .tile--lead {
+      grid-row: span 2;
+      min-height: 360px;
+    }
+
+    .tile--sm {
+      min-height: 172px;
+    }
+
+    .tag {
+      position: absolute;
+      left: 0.75rem;
+      bottom: 0.75rem;
+      padding: 0.32rem 0.6rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(8px);
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #374151;
+    }
+
+    @media (max-width: 860px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        max-width: none;
+      }
+
+      .tile--lead {
+        min-height: 300px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="copy">
+        <span class="eyebrow">Creative studio</span>
+        <h1>Built for creative teams</h1>
+        <p>Showcase multiple shots without leaving the hero — perfect for studios and agencies.</p>
+        <button class="btn" type="button">View portfolio</button>
+      </div>
+
+      <div class="collage" aria-label="Image collage">
+        <figure class="tile tile--lead">
+          <img src="../stock/media/4-5 Aspect Ratio(image).png" alt="Featured project">
+          <span class="tag">Featured</span>
+        </figure>
+        <figure class="tile tile--sm">
+          <img src="../stock/media/16-9 Aspect Ratio(image).png" alt="Project preview one">
+          <span class="tag">Brand</span>
+        </figure>
+        <figure class="tile tile--sm">
+          <img src="../stock/media/16-9 Aspect Ratio(image).png" alt="Project preview two">
+          <span class="tag">Campaign</span>
+        </figure>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

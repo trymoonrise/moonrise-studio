@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1562
+    slug: effect-fade-stagger-grid
+    title: Fade Stagger Grid Reveal
+    category: reveals
+    tags: reveal, grid, stagger
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1562 — Fade Stagger Grid Reveal</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:100vh;background:#fafafa;display:grid;place-items:center;padding:2rem}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;max-width:400px}.cell{aspect-ratio:1;border-radius:12px;background:linear-gradient(135deg,#6c8cff,#764ba2);opacity:0;transform:scale(.8);animation:cell 0.6s cubic-bezier(.22,.61,.36,1) forwards}.cell:nth-child(1){animation-delay:.05s}.cell:nth-child(2){animation-delay:.1s}.cell:nth-child(3){animation-delay:.15s}.cell:nth-child(4){animation-delay:.2s}.cell:nth-child(5){animation-delay:.25s}.cell:nth-child(6){animation-delay:.3s}.cell:nth-child(7){animation-delay:.35s}.cell:nth-child(8){animation-delay:.4s}@keyframes cell{to{opacity:1;transform:scale(1)}}
+  </style>
+</head>
+<body>
+<div class="grid"><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div></div>
+
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 030
+    slug: muted-loop-grid
+    title: Muted Loop Grid
+    category: video
+    tags: grid, loop
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>030 — Muted Loop Grid</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #111;
+      padding: 2rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      max-width: 700px;
+      width: 100%;
+    }
+
+    .grid video {
+      width: 100%;
+      height: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: 8px;
+      background: #1a1a1a;
+    }
+
+    .grid .wide {
+      grid-column: span 2;
+      aspect-ratio: 16 / 9;
+    }
+
+    .grid .tall {
+      grid-row: span 2;
+      aspect-ratio: auto;
+      min-height: 0;
+    }
+
+    .grid .full {
+      grid-column: span 3;
+      aspect-ratio: 21 / 9;
+    }
+  </style>
+</head>
+<body>
+  <div class="grid">
+    <video class="wide" src="../stock/media/16-9 Aspect Ratio(video).mp4" autoplay muted loop playsinline></video>
+    <video class="tall" src="../stock/media/16-9 Aspect Ratio(video).mp4" autoplay muted loop playsinline></video>
+    <video src="../stock/media/16-9 Aspect Ratio(video).mp4" autoplay muted loop playsinline></video>
+    <video src="../stock/media/16-9 Aspect Ratio(video).mp4" autoplay muted loop playsinline></video>
+    <video class="full" src="../stock/media/16-9 Aspect Ratio(video).mp4" autoplay muted loop playsinline></video>
+  </div>
+</body>
+</html>

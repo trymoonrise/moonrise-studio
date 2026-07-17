@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1579
+    slug: 3d-carousel-ring
+    title: 3D Ring Carousel
+    category: 3d-effects
+    tags: 3d, carousel, ring
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1579 — 3D Ring Carousel</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Outfit:wght@400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#090a10;perspective:1100px;overflow:hidden;font-family:Outfit,sans-serif}
+    .stage{width:300px;height:220px;position:relative;transform-style:preserve-3d;transform:rotateX(-12deg)}
+    .ring{position:absolute;inset:0;transform-style:preserve-3d;animation:spin 16s linear infinite}
+    .card{position:absolute;left:50%;top:50%;width:140px;height:180px;margin:-90px -70px;border-radius:16px;display:flex;flex-direction:column;justify-content:flex-end;padding:1rem;color:#fff;border:1px solid rgba(255,255,255,.18);backface-visibility:hidden;box-shadow:0 20px 40px rgba(0,0,0,.35)}
+    .card h3{margin:0;font-family:Syne,sans-serif;font-size:1.2rem}
+    .card p{margin:.25rem 0 0;font-size:.75rem;opacity:.8}
+    .c0{background:linear-gradient(160deg,#6c8cff,#3147c8)}
+    .c1{background:linear-gradient(160deg,#ff6bcb,#a31f6e)}
+    .c2{background:linear-gradient(160deg,#7ee0c3,#1f8a6e)}
+    .c3{background:linear-gradient(160deg,#ffd16c,#b07a12)}
+    .c4{background:linear-gradient(160deg,#b06cff,#5520b8)}
+    .c5{background:linear-gradient(160deg,#5eead4,#0f766e)}
+    .hint{position:fixed;bottom:1.5rem;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.35);font-family:Syne,sans-serif}
+    @keyframes spin{to{transform:rotateY(360deg)}}
+    @media(prefers-reduced-motion:reduce){.ring{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="ring" id="ring"></div>
+  </div>
+  <div class="hint">Orbiting carousel</div>
+  <script>
+    const items=[
+      {c:'c0',t:'North',s:'Cold signal'},
+      {c:'c1',t:'Rose',s:'Warm pulse'},
+      {c:'c2',t:'Mint',s:'Soft glow'},
+      {c:'c3',t:'Gold',s:'Hard light'},
+      {c:'c4',t:'Violet',s:'Night mode'},
+      {c:'c5',t:'Tide',s:'Deep field'}
+    ];
+    const ring=document.getElementById('ring');
+    const radius=220;
+    items.forEach((item,i)=>{
+      const el=document.createElement('div');
+      el.className='card '+item.c;
+      el.innerHTML=`<h3>${item.t}</h3><p>${item.s}</p>`;
+      const angle=(i/items.length)*360;
+      el.style.transform=`rotateY(${angle}deg) translateZ(${radius}px)`;
+      ring.appendChild(el);
+    });
+  </script>
+</body>
+</html>

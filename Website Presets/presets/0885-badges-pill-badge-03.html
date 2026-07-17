@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0885
+    slug: badges-pill-badge-03
+    title: Pill Badge 03
+    category: badges
+    tags: badges, pill
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0885 — Pill Badge 03</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&display=swap');
+
+    * { box-sizing: border-box; }
+    body {
+      display: grid; place-items: center; min-height: 100vh;
+      background: #0c0a14; font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .pill {
+      position: relative;
+      display: inline-flex; align-items: center;
+      padding: 0.7rem 1.6rem;
+      border-radius: 999px;
+      font-size: 0.95rem; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: #0c0a14;
+      background: linear-gradient(90deg, #ff4ecd, #7c5cff, #4de1ff, #ff4ecd);
+      background-size: 300% 100%;
+      animation: flow 3s linear infinite, float 2.8s ease-in-out infinite;
+      box-shadow: 0 12px 40px rgba(124, 92, 255, 0.45);
+      overflow: hidden;
+    }
+
+    .pill::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.55) 50%, transparent 70%);
+      transform: translateX(-120%);
+      animation: shine 2.8s ease-in-out infinite;
+    }
+
+    @keyframes flow { to { background-position: 300% 0; } }
+    @keyframes float { 50% { transform: translateY(-8px); } }
+    @keyframes shine {
+      0% { transform: translateX(-120%); }
+      40%, 100% { transform: translateX(120%); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .pill, .pill::after { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <span class="pill">Limited Drop</span>
+</body>
+</html>

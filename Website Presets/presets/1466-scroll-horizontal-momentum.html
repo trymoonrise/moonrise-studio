@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1466
+    slug: scroll-horizontal-momentum
+    title: Momentum Scroll Rail
+    category: scroll-horizontal
+    tags: horizontal, momentum, smooth
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1466 — Momentum Scroll Rail</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#0d0d0f;color:#fff;overflow:hidden;height:100vh;display:flex;align-items:center}.viewport{overflow:hidden;width:100%;cursor:grab}.viewport:active{cursor:grabbing}.track{display:flex;gap:16px;padding:0 10vw;will-change:transform}.item{flex:0 0 220px;height:300px;border-radius:16px;background:linear-gradient(145deg,#1a1a2e,#2a2a4e);border:1px solid #333;display:grid;place-items:center;font-weight:700;font-size:1.1rem}.hint{position:fixed;bottom:1.5rem;width:100%;text-align:center;font-size:.8rem;color:#555}
+  </style>
+</head>
+<body>
+<div class="viewport" id="vp"><div class="track" id="tr"><div class="item">1</div><div class="item">2</div><div class="item">3</div><div class="item">4</div><div class="item">5</div><div class="item">6</div><div class="item">7</div><div class="item">8</div><div class="item">9</div><div class="item">10</div></div></div><p class="hint">Drag and release for momentum</p>
+<script>const vp=document.getElementById('vp'),tr=document.getElementById('tr');let x=0,vx=0,drag=false,lx=0;const max=()=>tr.scrollWidth-vp.clientWidth;function loop(){if(!drag){x+=vx;vx*=.92;if(x<0){x=0;vx=0}if(x>max()){x=max();vx=0}tr.style.transform='translateX('+(-x)+'px)';}requestAnimationFrame(loop);}loop();vp.onmousedown=e=>{drag=true;lx=e.clientX;vx=0;};addEventListener('mousemove',e=>{if(!drag)return;const dx=e.clientX-lx;lx=e.clientX;x=Math.max(0,Math.min(max(),x-dx));tr.style.transform='translateX('+(-x)+'px)';});addEventListener('mouseup',e=>{if(!drag)return;drag=false;vx=(e.movementX||0)*-1.5;});</script>
+</body>
+</html>

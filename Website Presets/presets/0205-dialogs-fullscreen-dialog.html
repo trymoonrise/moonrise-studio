@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0205
+    slug: dialogs-fullscreen-dialog
+    title: Fullscreen Dialog
+    category: dialogs
+    tags: dialogs, fullscreen
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0205 — Fullscreen Dialog</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:100vh;background:rgba(0,0,0,.8);display:grid;place-items:center}.dlg{background:#fff;width:90vw;max-width:600px;height:80vh;border-radius:16px;padding:2rem;position:relative;display:flex;flex-direction:column}.close{position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.5rem;cursor:pointer;color:#999}.content{flex:1;overflow-y:auto;margin-top:2rem;color:#444;line-height:1.6}
+  </style>
+</head>
+<body>
+<div class="dlg"><button class="close">×</button><h2>Fullscreen Dialog</h2><div class="content"><p>Large dialog content area for detailed information, forms, or media.</p><p style="margin-top:1rem">Scrollable content goes here.</p></div></div>
+
+</body>
+</html>

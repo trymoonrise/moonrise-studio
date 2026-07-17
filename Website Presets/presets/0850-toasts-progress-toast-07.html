@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0850
+    slug: toasts-progress-toast-07
+    title: Arc Progress Toast
+    category: toasts
+    tags: toasts, progress
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0850 — Arc Progress Toast</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #0b0d11;
+      font-family: 'Outfit', sans-serif;
+      color: #e8eaef;
+    }
+
+    .trigger {
+      padding: 0.85rem 1.6rem;
+      border: none;
+      border-radius: 8px;
+      background: #1e2430;
+      color: #e8eaef;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      display: flex;
+      align-items: center;
+      gap: 1.1rem;
+      padding: 1rem 1.3rem;
+      background: #12151c;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 14px;
+      opacity: 0;
+      transform: translateX(-50%) translateY(70px);
+      transition: opacity 0.35s, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: 20;
+    }
+
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .ring {
+      position: relative;
+      width: 48px;
+      height: 48px;
+      flex-shrink: 0;
+    }
+
+    .ring svg { transform: rotate(-90deg); }
+
+    .ring-bg { fill: none; stroke: rgba(255, 255, 255, 0.08); stroke-width: 4; }
+    .ring-fg {
+      fill: none;
+      stroke: #34d399;
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-dasharray: 113;
+      stroke-dashoffset: 113;
+      transition: stroke-dashoffset 2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .toast.show .ring-fg { stroke-dashoffset: 28; }
+
+    .pct {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #34d399;
+    }
+
+    .toast h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-bottom: 0.15rem;
+    }
+
+    .toast p { font-size: 0.78rem; color: rgba(232, 234, 239, 0.5); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ring-fg { transition: none; stroke-dashoffset: 28; }
+      .toast { transition: opacity 0.2s; transform: translateX(-50%); }
+    }
+  </style>
+</head>
+<body>
+  <button class="trigger" id="btn" type="button">Start upload</button>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <div class="ring" aria-hidden="true">
+      <svg width="48" height="48" viewBox="0 0 48 48">
+        <circle class="ring-bg" cx="24" cy="24" r="18"/>
+        <circle class="ring-fg" cx="24" cy="24" r="18"/>
+      </svg>
+      <span class="pct" id="pct">0%</span>
+    </div>
+    <div>
+      <h2>Uploading assets</h2>
+      <p>design-system-v3.zip · 24.6 MB</p>
+    </div>
+  </div>
+
+  <script>
+    const btn = document.getElementById('btn');
+    const toast = document.getElementById('toast');
+    const pct = document.getElementById('pct');
+    let timer, countTimer;
+
+    btn.addEventListener('click', () => {
+      clearTimeout(timer);
+      clearInterval(countTimer);
+      toast.classList.remove('show');
+      pct.textContent = '0%';
+      void toast.offsetWidth;
+      toast.classList.add('show');
+
+      let n = 0;
+      countTimer = setInterval(() => {
+        n = Math.min(n + 4, 75);
+        pct.textContent = n + '%';
+        if (n >= 75) clearInterval(countTimer);
+      }, 80);
+
+      timer = setTimeout(() => {
+        toast.classList.remove('show');
+        clearInterval(countTimer);
+      }, 3500);
+    });
+  </script>
+</body>
+</html>

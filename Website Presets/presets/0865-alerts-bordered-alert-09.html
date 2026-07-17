@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0865
+    slug: alerts-bordered-alert-09
+    title: Bordered Alert 09
+    category: alerts
+    tags: alerts, bordered
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0865 — Bordered Alert 09</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      padding: 2rem;
+      background: #0a0a0f;
+      font-family: 'Space Grotesk', sans-serif;
+      overflow: hidden;
+    }
+
+    .frame {
+      position: relative;
+      width: min(100%, 440px);
+      padding: 3px;
+      border-radius: 20px;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .frame::before {
+      content: '';
+      position: absolute;
+      inset: -50%;
+      background: conic-gradient(from 0deg,
+        #ff4ecd, #4e8bff, #4effc8, #ffe74e, #ff4ecd);
+      animation: rotate 4s linear infinite;
+      z-index: -2;
+    }
+
+    .frame::after {
+      content: '';
+      position: absolute;
+      inset: 3px;
+      border-radius: 17px;
+      background: #0e0e16;
+      z-index: -1;
+    }
+
+    .inner {
+      position: relative;
+      padding: 1.7rem 1.7rem;
+      color: #eef0f6;
+    }
+
+    .dashes {
+      position: absolute;
+      inset: 10px;
+      border: 1px dashed rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      pointer-events: none;
+      animation: march 20s linear infinite;
+    }
+
+    .head { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.7rem; }
+
+    .chip {
+      width: 34px; height: 34px;
+      border-radius: 9px;
+      display: grid; place-items: center;
+      background: linear-gradient(135deg, #ff4ecd, #4e8bff);
+      font-size: 1.1rem;
+    }
+
+    .tag {
+      font-size: 0.64rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, #ff4ecd, #4effc8);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .title { display: block; font-size: 1.25rem; font-weight: 700; }
+    .msg { margin: 0.5rem 0 0; font-size: 0.9rem; line-height: 1.6; color: rgba(238, 240, 246, 0.62); }
+
+    @keyframes rotate { to { transform: rotate(360deg); } }
+    @keyframes march { to { background-position: 200px 0; } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .frame::before, .dashes { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <div class="inner" role="status" aria-live="polite">
+      <div class="dashes" aria-hidden="true"></div>
+      <div class="head">
+        <div class="chip" aria-hidden="true">✨</div>
+        <div>
+          <span class="tag">Highlight</span>
+          <strong class="title">Premium unlocked</strong>
+        </div>
+      </div>
+      <p class="msg">Every feature is now available on your account. The animated border is just for fun.</p>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1574
+    slug: 3d-button-layer-stack
+    title: 3D Layer Stack Button
+    category: 3d-effects
+    tags: 3d, button, layers
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1574 — 3D Layer Stack Button</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0a0b10;perspective:900px;font-family:Syne,sans-serif}
+    .btn{position:relative;border:none;background:transparent;cursor:pointer;transform-style:preserve-3d;width:200px;height:64px}
+    .layer{position:absolute;inset:0;border-radius:16px;display:grid;place-items:center;font-weight:800;font-size:1.05rem;color:#fff;transition:transform .45s cubic-bezier(.16,1,.3,1)}
+    .l1{background:#6c8cff;transform:translateZ(0);z-index:4}
+    .l2{background:#ff6bcb;transform:translateZ(-8px) translateY(4px);z-index:3;opacity:.9}
+    .l3{background:#7ee0c3;transform:translateZ(-16px) translateY(8px);z-index:2;opacity:.8}
+    .l4{background:#ffd16c;transform:translateZ(-24px) translateY(12px);z-index:1;opacity:.7;color:#111}
+    .btn:hover .l1{transform:translateZ(24px) translateY(-8px)}
+    .btn:hover .l2{transform:translateZ(8px) translateY(-2px) translateX(-10px) rotateZ(-3deg)}
+    .btn:hover .l3{transform:translateZ(-4px) translateY(6px) translateX(10px) rotateZ(3deg)}
+    .btn:hover .l4{transform:translateZ(-28px) translateY(16px)}
+    .btn:active .layer{transition-duration:.12s}
+    .btn:active .l1{transform:translateZ(4px)}
+    @media(prefers-reduced-motion:reduce){.layer{transition:none}}
+  </style>
+</head>
+<body>
+  <button class="btn" type="button" aria-label="Stack button">
+    <span class="layer l4">STACK</span>
+    <span class="layer l3">STACK</span>
+    <span class="layer l2">STACK</span>
+    <span class="layer l1">STACK</span>
+  </button>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1197
+    slug: countdown-event-countdown-03
+    title: Launch Poster Event Countdown
+    category: countdown
+    tags: countdown, event, launch, poster
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1197 — Launch Poster Event Countdown</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0a0a0c;color:#eceef2;font-family:Outfit,sans-serif;padding:2rem}
+    .poster{width:min(480px,100%);border:1px solid rgba(255,255,255,.08);border-radius:4px;overflow:hidden;background:#111318}
+    .top{padding:2.5rem 2rem 2rem;border-bottom:1px solid rgba(255,255,255,.06);position:relative}
+    .top::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#38bdf8,#22d3ee,#38bdf8);background-size:200%;animation:gradient-slide 3s linear infinite}
+    .eyebrow{font-size:.6rem;letter-spacing:.35em;text-transform:uppercase;color:#38bdf8;margin-bottom:1rem}
+    h1{font-family:Syne,sans-serif;font-size:clamp(1.8rem,5vw,2.4rem);letter-spacing:-.05em;line-height:1.1;margin:0}
+    .date{font-size:.85rem;color:rgba(236,238,242,.45);margin-top:.75rem}
+    .countdown{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid rgba(255,255,255,.06)}
+    .block{padding:1.5rem 1rem;text-align:center;border-right:1px solid rgba(255,255,255,.06);animation:fade-up .6s ease backwards}
+    .block:last-child{border-right:none}
+    .block:nth-child(1){animation-delay:.1s}.block:nth-child(2){animation-delay:.2s}.block:nth-child(3){animation-delay:.3s}.block:nth-child(4){animation-delay:.4s}
+    .num{font-family:Syne,sans-serif;font-size:2rem;font-weight:800;color:#38bdf8;letter-spacing:-.04em}
+    .lbl{font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(236,238,242,.35);margin-top:.25rem}
+    @keyframes gradient-slide{to{background-position:200% 0}}
+    @keyframes fade-up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+    @media(max-width:400px){.countdown{grid-template-columns:repeat(2,1fr)}.block:nth-child(2){border-right:none}}
+    @media(prefers-reduced-motion:reduce){.top::after,.block{animation:none}}
+  </style>
+</head>
+<body>
+  <article class="poster">
+    <div class="top">
+      <p class="eyebrow">Product launch</p>
+      <h1>Config 2026<br>Keynote Live</h1>
+      <p class="date">April 24 · San Francisco · 10:00 AM PST</p>
+    </div>
+    <div class="countdown" id="cd"></div>
+  </article>
+  <script>
+    const target=new Date('2026-04-24T17:00:00Z');
+    function upd(){const d=Math.max(0,target-Date.now());const v=[['Days',Math.floor(d/86400000)],['Hours',Math.floor(d/3600000)%24],['Minutes',Math.floor(d/60000)%60],['Seconds',Math.floor(d/1000)%60]];document.getElementById('cd').innerHTML=v.map(([l,n])=>`<div class="block"><div class="num">${String(n).padStart(2,'0')}</div><div class="lbl">${l}</div></div>`).join('')}
+    upd();setInterval(upd,1000);
+  </script>
+</body>
+</html>

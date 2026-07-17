@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0855
+    slug: toasts-success-toast-12
+    title: Stroke Success Toast
+    category: toasts
+    tags: toasts, success
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0855 — Stroke Success Toast</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #0a0e0c;
+      font-family: 'Outfit', sans-serif;
+      color: #e8eaef;
+    }
+
+    .trigger {
+      padding: 0.85rem 1.6rem;
+      border: none;
+      border-radius: 8px;
+      background: #142018;
+      color: #6ee7b7;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.3rem;
+      background: #101814;
+      border: 1px solid rgba(110, 231, 183, 0.2);
+      border-radius: 12px;
+      opacity: 0;
+      transform: translateX(-50%) translateY(60px);
+      transition: opacity 0.35s, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: 20;
+    }
+
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .check {
+      width: 40px;
+      height: 40px;
+      flex-shrink: 0;
+    }
+
+    .check circle { fill: none; stroke: rgba(110, 231, 183, 0.2); stroke-width: 2; }
+    .check path {
+      fill: none;
+      stroke: #6ee7b7;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 24;
+      stroke-dashoffset: 24;
+    }
+
+    .toast.show .check path {
+      animation: draw 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.2s forwards;
+    }
+
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+
+    .toast h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 0.15rem;
+    }
+
+    .toast p { font-size: 0.78rem; color: rgba(232, 234, 239, 0.5); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .check path { stroke-dashoffset: 0; animation: none; }
+      .toast { transition: opacity 0.2s; transform: translateX(-50%); }
+    }
+  </style>
+</head>
+<body>
+  <button class="trigger" id="btn" type="button">Confirm action</button>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <svg class="check" viewBox="0 0 40 40" aria-hidden="true">
+      <circle cx="20" cy="20" r="17"/>
+      <path d="M12 20l5 5 11-12"/>
+    </svg>
+    <div>
+      <h2>Payment confirmed</h2>
+      <p>Invoice #4821 sent to billing@studio.io</p>
+    </div>
+  </div>
+
+  <script>
+    const btn = document.getElementById('btn');
+    const toast = document.getElementById('toast');
+    let timer;
+
+    btn.addEventListener('click', () => {
+      clearTimeout(timer);
+      toast.classList.remove('show');
+      void toast.offsetWidth;
+      toast.classList.add('show');
+      timer = setTimeout(() => toast.classList.remove('show'), 3200);
+    });
+  </script>
+</body>
+</html>

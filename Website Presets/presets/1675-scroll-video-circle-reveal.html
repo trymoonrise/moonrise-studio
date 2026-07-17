@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1675
+    slug: scroll-video-circle-reveal
+    title: Video Circle Reveal
+    category: scroll-animations
+    tags: scroll, video, reveal, clip
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1675 — Video Circle Reveal</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    
+    body{margin:0;min-height:240vh;background:#000;color:#fff;font-family:system-ui,-apple-system,sans-serif}
+    .stage{position:sticky;top:0;height:100vh;display:grid;place-items:center;overflow:hidden}
+    .clip{width:100%;height:100%;clip-path:circle(var(--r,8%) at 50% 50%);transition:clip-path .05s linear}
+    video{width:100%;height:100%;object-fit:cover;display:block;transform:scale(var(--zoom,1.15))}
+    .title{position:absolute;z-index:2;font-size:clamp(2rem,6vw,3.5rem);font-weight:900;letter-spacing:-.03em;opacity:var(--title-o,1);transform:translateY(var(--title-y,0px))}
+    @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="stage" id="stage"><div class="clip"><video src="../stock/media/heroes/cosmos-clip-16x9.mp4" autoplay muted loop playsinline aria-hidden="true"></video></div><h1 class="title">Expand</h1></div>
+<script>function ease(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2}function lerp(a,b,t){return a+(b-a)*t}function prog(track){const r=track.getBoundingClientRect();const h=r.height-innerHeight;return h>0?ease(Math.min(1,Math.max(0,-r.top/h))):0}function pageProg(){const max=document.documentElement.scrollHeight-innerHeight;return max>0?ease(Math.min(1,scrollY/max)):0};const stage=document.getElementById('stage'),reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;function tick(){const p=pageProg();if(reduced){stage.style.setProperty('--r','75%');stage.style.setProperty('--title-o','0');return}stage.style.setProperty('--r',lerp(8,75,p).toFixed(1)+'%');stage.style.setProperty('--zoom',lerp(1.15,1,p).toFixed(3));stage.style.setProperty('--title-o',lerp(1,0,Math.min(1,p/.35)).toFixed(3));stage.style.setProperty('--title-y',lerp(0,-24,p).toFixed(1)+'px')}let raf=false;addEventListener('scroll',()=>{if(raf)return;raf=true;requestAnimationFrame(()=>{raf=false;tick()})},{passive:true});addEventListener('resize',tick,{passive:true});tick();</script>
+</body>
+</html>

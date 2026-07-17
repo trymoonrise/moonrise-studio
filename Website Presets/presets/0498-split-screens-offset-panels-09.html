@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0498
+    slug: split-screens-offset-panels-09
+    title: Offset Panels 09
+    category: split-screens
+    tags: split-screens, experimental, mask, shapes
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0498 — Offset Panels 09</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;overflow:hidden;font-family:Syne,sans-serif;background:#eef2ff;color:#111}
+    .stage{min-height:100vh;display:grid;place-items:center;padding:2rem;perspective:1000px}
+.stack{position:relative;width:min(520px,90vw);height:360px;transform-style:preserve-3d}
+.panel{position:absolute;inset:0;border-radius:24px;display:grid;place-items:center;font-size:clamp(1.8rem,5vw,3rem);font-weight:800;letter-spacing:-.04em;box-shadow:0 30px 60px rgba(30,40,100,.2);transition:transform .7s cubic-bezier(.22,1,.36,1)}
+.p1{background:#1e1b4b;color:#fff;transform:translate(-40px,-30px) rotate(-6deg);z-index:1}
+.p2{background:#6366f1;color:#fff;transform:translate(0,0) rotate(2deg);z-index:2}
+.p3{background:#fff;color:#1e1b4b;transform:translate(40px,30px) rotate(8deg);z-index:3;border:1px solid rgba(30,27,75,.1)}
+.stack:hover .p1{transform:translate(-80px,-50px) rotate(-12deg)}
+.stack:hover .p2{transform:translate(0,-10px) rotate(0deg)}
+.stack:hover .p3{transform:translate(80px,50px) rotate(14deg)}
+.hint{margin-top:2rem;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;color:rgba(30,27,75,.4);text-align:center}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="stage"><div><div class="stack"><div class="panel p1">Offset</div><div class="panel p2">Layer</div><div class="panel p3">Panel</div></div><p class="hint">Hover to fan</p></div></div>
+
+</body>
+</html>

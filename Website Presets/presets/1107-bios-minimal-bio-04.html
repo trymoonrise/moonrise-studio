@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1107
+    slug: bios-minimal-bio-04
+    title: Minimal Bio 04
+    category: bios
+    tags: bios, minimal, experimental, shapes
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1107 — Minimal Bio 04</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f6f5f1;font-family:'DM Mono',monospace;overflow:hidden}
+    .stack{text-align:center;animation:in .8s cubic-bezier(.22,1,.36,1) both}
+    .shape{width:10px;height:10px;margin:0 auto 1.5rem;background:#111;animation:shape 5s ease-in-out infinite}
+    h1{margin:0;font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(2rem,6vw,3rem);letter-spacing:-.03em;color:#111}
+    .role{margin:.75rem 0 0;font-size:.6rem;letter-spacing:.35em;text-transform:uppercase;color:rgba(0,0,0,.4)}
+    .bar{width:48px;height:1px;background:#111;margin:1.25rem auto 0;transform-origin:center;animation:draw 1s cubic-bezier(.22,1,.36,1) .3s both}
+    @keyframes shape{
+      0%,100%{border-radius:50%;transform:rotate(0) scale(1)}
+      25%{border-radius:2px;transform:rotate(45deg) scale(1.2)}
+      50%{border-radius:50% 0;transform:rotate(90deg) scale(1)}
+      75%{border-radius:0;transform:rotate(180deg) scale(1.15)}
+    }
+    @keyframes draw{from{transform:scaleX(0)}}
+    @keyframes in{from{opacity:0;transform:translateY(12px)}}
+    @media (prefers-reduced-motion:reduce){.shape,.bar,.stack{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="stack">
+    <div class="shape" aria-hidden="true"></div>
+    <h1>Ivy Park</h1>
+    <p class="role">Art director</p>
+    <div class="bar" aria-hidden="true"></div>
+  </div>
+</body>
+</html>

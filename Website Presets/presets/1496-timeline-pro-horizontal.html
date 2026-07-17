@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1496
+    slug: timeline-pro-horizontal
+    title: Zigzag Era Timeline
+    category: timeline
+    tags: timeline, zigzag, eras
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1496 — Zigzag Era Timeline</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700&family=Outfit:wght@400;500;600&display=swap');
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:#090b10;color:#fff;font-family:Outfit,sans-serif;padding:3rem 1.5rem;display:grid;place-items:center}
+.wrap{width:min(640px,100%)}
+h2{font-family:Syne,sans-serif;text-align:center;margin:0 0 2.5rem;font-size:1.6rem;letter-spacing:-.02em}
+.path{position:relative}
+.row{display:grid;grid-template-columns:1fr 24px 1fr;gap:.75rem;align-items:center;margin-bottom:1.5rem;opacity:0;animation:in .6s cubic-bezier(.22,1,.36,1) both}
+.row:nth-child(1){animation-delay:.05s}.row:nth-child(2){animation-delay:.15s}.row:nth-child(3){animation-delay:.25s}.row:nth-child(4){animation-delay:.35s}.row:nth-child(5){animation-delay:.45s}
+.row:nth-child(odd) .left{text-align:right}.row:nth-child(even) .right{text-align:left}
+.row:nth-child(odd) .right,.row:nth-child(even) .left{opacity:0;pointer-events:none}
+.mid{width:14px;height:14px;border-radius:50%;background:#7ee0c3;margin:0 auto;box-shadow:0 0 0 6px rgba(126,224,195,.15);position:relative}
+.mid::before{content:"";position:absolute;left:50%;top:14px;width:2px;height:calc(1.5rem + 14px);background:#1e2430;translate:-50% 0}
+.row:last-child .mid::before{display:none}
+.yr{font-size:.7rem;color:#7ee0c3;letter-spacing:.12em;font-weight:600}
+h4{margin:.2rem 0;font-size:1rem}.p{margin:0;color:#7a8090;font-size:.85rem}
+@keyframes in{from{opacity:0;translate:0 16px}to{opacity:1;translate:0 0}}
+  </style>
+</head>
+<body>
+<div class="wrap"><h2>Growth eras</h2><div class="path">
+  <div class="row"><div class="left"><div class="yr">2022</div><h4>Ideation</h4><p class="p">Problem validated</p></div><div class="mid"></div><div class="right"></div></div>
+  <div class="row"><div class="left"></div><div class="mid"></div><div class="right"><div class="yr">2023</div><h4>MVP</h4><p class="p">First paying users</p></div></div>
+  <div class="row"><div class="left"><div class="yr">2024</div><h4>Growth</h4><p class="p">Series A closed</p></div><div class="mid"></div><div class="right"></div></div>
+  <div class="row"><div class="left"></div><div class="mid"></div><div class="right"><div class="yr">2025</div><h4>Scale</h4><p class="p">Global expansion</p></div></div>
+  <div class="row"><div class="left"><div class="yr">2026</div><h4>Leader</h4><p class="p">Category defining</p></div><div class="mid"></div><div class="right"></div></div>
+</div></div>
+
+</body>
+</html>

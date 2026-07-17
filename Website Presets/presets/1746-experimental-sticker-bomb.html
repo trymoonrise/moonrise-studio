@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1746
+    slug: experimental-sticker-bomb
+    title: Sticker Bomb Type
+    category: experimental
+    tags: experimental, sticker, bomb, collage
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1746 — Sticker Bomb Type</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@700&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#1c1c1c;overflow:hidden;font-family:'Archivo Black',sans-serif}
+    .wall{position:fixed;inset:0}
+    .sticker{position:absolute;padding:.55rem 1rem;font-size:clamp(1rem,3.5vw,1.8rem);text-transform:uppercase;letter-spacing:-.02em;border:3px solid #111;box-shadow:6px 6px 0 #111;transform:rotate(var(--r)) scale(0);animation:slap .5s cubic-bezier(.34,1.56,.64,1) forwards;animation-delay:var(--d);cursor:grab;user-select:none}
+    .sticker:nth-child(odd){font-family:'Space Grotesk',sans-serif}
+    .sticker:active{cursor:grabbing}
+    .hint{position:fixed;bottom:1rem;left:0;right:0;text-align:center;font-family:monospace;font-size:.65rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.3);z-index:5}
+  </style>
+</head>
+<body>
+  <div class="wall" id="wall"></div>
+  <p class="hint">Drag stickers · click empty space to slap more</p>
+  <script>
+    const words=['WILD','NOPE','YES','RAW','CHAOS','LOUD','NOW','VOID','HOT','FAIL','GO','MAX'];
+    const colors=['#ff0033','#f2e100','#00e5ff','#fff','#ff6b00','#b4ff39','#ff4ecd'];
+    const wall=document.getElementById('wall');
+    let n=0;
+    function slap(x,y,delay=0){
+      const s=document.createElement('div');
+      s.className='sticker';
+      s.textContent=words[n++%words.length];
+      s.style.left=(x??Math.random()*80+5)+'%';
+      s.style.top=(y??Math.random()*70+10)+'%';
+      const bg=colors[Math.floor(Math.random()*colors.length)];
+      s.style.background=bg;
+      s.style.color=['#f2e100','#fff','#b4ff39','#00e5ff'].includes(bg)?'#111':'#fff';
+      s.style.setProperty('--r',((Math.random()-.5)*40).toFixed(1)+'deg');
+      s.style.setProperty('--d',delay+'s');
+      let dragging=false,ox=0,oy=0;
+      s.addEventListener('pointerdown',e=>{dragging=true;s.setPointerCapture(e.pointerId);ox=e.clientX;oy=e.clientY;s.style.zIndex=10;});
+      s.addEventListener('pointermove',e=>{
+        if(!dragging)return;
+        const dx=e.clientX-ox,dy=e.clientY-oy;
+        s.style.left=`calc(${s.style.left} + ${dx}px)`;
+        s.style.top=`calc(${s.style.top} + ${dy}px)`;
+        ox=e.clientX;oy=e.clientY;
+      });
+      s.addEventListener('pointerup',()=>{dragging=false;s.style.zIndex='';});
+      wall.appendChild(s);
+    }
+    for(let i=0;i<10;i++) slap(null,null,i*.08);
+    wall.addEventListener('click',e=>{
+      if(e.target!==wall)return;
+      slap(e.clientX/innerWidth*100,e.clientY/innerHeight*100,0);
+    });
+  </script>
+  <style>@keyframes slap{to{transform:rotate(var(--r)) scale(1)}}</style>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1484
+    slug: scroll-depth-cards
+    title: Depth Cards on Scroll
+    category: scroll-effects
+    tags: scroll, depth, 3d
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1484 — Depth Cards on Scroll</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#111;color:#fff;perspective:1000px}.wrap{padding:20vh 2rem 80vh;max-width:500px;margin:0 auto}.card{height:200px;margin-bottom:2rem;border-radius:16px;background:linear-gradient(135deg,#6c8cff,#764ba2);display:grid;place-items:center;font-size:1.5rem;font-weight:800;box-shadow:0 20px 60px rgba(0,0,0,.4);will-change:transform,opacity;transform-origin:center}
+  </style>
+</head>
+<body>
+<div class="wrap"><div class="card">1</div><div class="card">2</div><div class="card">3</div><div class="card">4</div><div class="card">5</div><div class="card">6</div></div>
+<script>const cards=[...document.querySelectorAll('.card')];function u(){const cy=window.innerHeight/2;cards.forEach(c=>{const r=c.getBoundingClientRect();const d=(r.top+r.height/2-cy)/cy;const scale=1-Math.abs(d)*.15;const op=1-Math.abs(d)*.5;c.style.transform='translateZ('+(-Math.abs(d)*100)+'px) scale('+scale+')';c.style.opacity=op;});}addEventListener('scroll',u,{passive:true});u();</script>
+</body>
+</html>

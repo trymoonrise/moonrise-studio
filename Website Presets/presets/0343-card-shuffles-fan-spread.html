@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0343
+    slug: card-shuffles-fan-spread
+    title: Fan Spread Cards
+    category: card-shuffles
+    tags: card-shuffles, fan
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0343 — Fan Spread Cards</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 2rem;
+      background:
+        radial-gradient(circle at 50% 35%, rgba(108, 140, 255, 0.12), transparent 42%),
+        #0d0d0f;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    .fan {
+      position: relative;
+      width: 300px;
+      height: 210px;
+    }
+
+    .card {
+      position: absolute;
+      width: 130px;
+      height: 170px;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #14141c;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.38);
+      transition: transform 0.45s cubic-bezier(.22, .61, .36, 1);
+      cursor: pointer;
+    }
+
+    .card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .card:nth-child(1) {
+      left: 0;
+      transform: rotate(-15deg);
+      z-index: 1;
+    }
+
+    .card:nth-child(2) {
+      left: 85px;
+      z-index: 2;
+    }
+
+    .card:nth-child(3) {
+      right: 0;
+      transform: rotate(15deg);
+      z-index: 1;
+    }
+
+    .fan:hover .card:nth-child(1) {
+      transform: rotate(-24deg) translateX(-18px);
+    }
+
+    .fan:hover .card:nth-child(3) {
+      transform: rotate(24deg) translateX(18px);
+    }
+  </style>
+</head>
+<body>
+  <div class="fan">
+    <div class="card"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt="Card one"></div>
+    <div class="card"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt="Card two"></div>
+    <div class="card"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt="Card three"></div>
+  </div>
+</body>
+</html>

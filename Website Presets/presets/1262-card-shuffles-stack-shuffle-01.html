@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1262
+    slug: card-shuffles-stack-shuffle-01
+    title: Deck Cycle Shuffle
+    category: card-shuffles
+    tags: card-shuffles, stack
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1262 — Deck Cycle Shuffle</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0b0b0f;color:#ececf0;font-family:Outfit,sans-serif;padding:24px}
+    button{font:inherit;border:0;cursor:pointer}
+    .deck-area{text-align:center}
+    .stack{position:relative;width:260px;height:340px;margin:0 auto 24px;perspective:800px}
+    .card{position:absolute;inset:0;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:#14141c;padding:24px;display:flex;flex-direction:column;justify-content:flex-end;transition:transform .55s cubic-bezier(.16,1,.3,1),opacity .4s;transform-origin:center bottom}
+    .card b{font-family:Syne,sans-serif;font-size:1.5rem;letter-spacing:-.03em}
+    .card span{font-size:.8rem;color:rgba(236,236,240,.45);margin-top:6px}
+    .card::before{content:attr(data-n);position:absolute;top:16px;right:16px;font:700 .65rem Syne,sans-serif;color:rgba(255,255,255,.25)}
+    .card.leaving{transform:translateX(120px) rotate(12deg);opacity:0}
+    .shuffle{padding:14px 28px;background:#00c896;color:#0b0b0f;font:600 .8rem Outfit,sans-serif;letter-spacing:.1em;text-transform:uppercase;border-radius:2px;transition:transform .2s,background .2s}
+    .shuffle:hover{transform:translateY(-2px);background:#00e0a8}
+    .shuffle:active{transform:scale(.97)}
+    @media(prefers-reduced-motion:reduce){.card{transition:none}}
+  </style>
+</head>
+<body>
+<div class="deck-area">
+  <div class="stack" id="stack"></div>
+  <button class="shuffle" id="btn" type="button">Cycle deck</button>
+</div>
+<script>
+const stack=document.getElementById('stack'),cards=['Vector','Tensor','Matrix','Scalar','Tensor'];
+let order=[...Array(cards.length).keys()];
+function render(){stack.innerHTML='';order.forEach((idx,i)=>{const el=document.createElement('div');el.className='card';el.dataset.n=String(i+1).padStart(2,'0');el.innerHTML=`<b>${cards[idx]}</b><span>Layer ${i+1}</span>`;el.style.transform=`translateY(${-i*8}px) scale(${1-i*.02})`;el.style.zIndex=String(cards.length-i);stack.appendChild(el);});}
+document.getElementById('btn').onclick=()=>{const top=stack.lastElementChild;if(top){top.classList.add('leaving');setTimeout(()=>{order.push(order.shift());render();},400);}};
+render();
+</script>
+</body>
+</html>

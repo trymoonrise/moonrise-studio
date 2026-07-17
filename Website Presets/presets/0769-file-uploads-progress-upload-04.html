@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0769
+    slug: file-uploads-progress-upload-04
+    title: Queue Progress Upload
+    category: file-uploads
+    tags: file-uploads, progress
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0769 — Queue Progress Upload</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #0a0c10;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+      padding: 1.5rem;
+    }
+
+    .panel {
+      width: min(400px, 92vw);
+      background: #111827;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+
+    .panel h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 1rem;
+    }
+
+    .item {
+      padding: 0.85rem 0;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    .item:last-child { border-bottom: 0; }
+
+    .item-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .name { font-size: 0.9rem; font-weight: 500; }
+
+    .pct {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #00d4aa;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .bar {
+      height: 4px;
+      background: #1e293b;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00d4aa, #38bdf8);
+      border-radius: 2px;
+      transition: width 0.3s;
+      animation: barShimmer 2s ease-in-out infinite;
+    }
+
+    @keyframes barShimmer {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .item.done .bar-fill {
+      background: #00d4aa;
+      animation: doneFlash 0.5s ease;
+    }
+
+    @keyframes doneFlash {
+      0% { box-shadow: 0 0 0 0 #00d4aa66; }
+      100% { box-shadow: 0 0 0 8px #00d4aa00; }
+    }
+
+    .start-btn {
+      width: 100%;
+      margin-top: 1rem;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 8px;
+      background: #00d4aa;
+      color: #080a0e;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+      transition: transform 0.2s;
+    }
+
+    .start-btn:hover { transform: translateY(-2px); }
+    .start-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bar-fill { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="panel">
+    <h2>Upload queue</h2>
+    <div class="item" data-progress="0">
+      <div class="item-head"><span class="name">report-q3.pdf</span><span class="pct">0%</span></div>
+      <div class="bar"><div class="bar-fill" style="width:0%"></div></div>
+    </div>
+    <div class="item" data-progress="0">
+      <div class="item-head"><span class="name">assets-bundle.zip</span><span class="pct">0%</span></div>
+      <div class="bar"><div class="bar-fill" style="width:0%"></div></div>
+    </div>
+    <div class="item" data-progress="0">
+      <div class="item-head"><span class="name">screenshot.png</span><span class="pct">0%</span></div>
+      <div class="bar"><div class="bar-fill" style="width:0%"></div></div>
+    </div>
+    <button type="button" class="start-btn" id="start">Start upload</button>
+  </div>
+
+  <script>
+    const items = document.querySelectorAll('.item');
+    const start = document.getElementById('start');
+
+    start.addEventListener('click', () => {
+      start.disabled = true;
+      items.forEach((item, i) => {
+        let p = 0;
+        const fill = item.querySelector('.bar-fill');
+        const pct = item.querySelector('.pct');
+        const interval = setInterval(() => {
+          p += Math.random() * 12 + 4;
+          if (p >= 100) {
+            p = 100;
+            clearInterval(interval);
+            item.classList.add('done');
+          }
+          fill.style.width = p + '%';
+          pct.textContent = Math.round(p) + '%';
+        }, 200 + i * 100);
+      });
+    });
+  </script>
+</body>
+</html>

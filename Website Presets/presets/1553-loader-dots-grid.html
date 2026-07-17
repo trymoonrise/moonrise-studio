@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1553
+    slug: loader-dots-grid
+    title: Dot Grid Loader
+    category: loading
+    tags: loading, dots, grid
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1553 — Dot Grid Loader</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#111}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.dot{width:10px;height:10px;border-radius:50%;background:#6c8cff;animation:pop .9s ease-in-out infinite}.dot:nth-child(1){animation-delay:0s}.dot:nth-child(2){animation-delay:.1s}.dot:nth-child(3){animation-delay:.2s}.dot:nth-child(4){animation-delay:.15s}.dot:nth-child(5){animation-delay:.25s}.dot:nth-child(6){animation-delay:.35s}.dot:nth-child(7){animation-delay:.2s}.dot:nth-child(8){animation-delay:.3s}.dot:nth-child(9){animation-delay:.4s}@keyframes pop{0%,100%{transform:scale(.5);opacity:.3}50%{transform:scale(1);opacity:1}}
+  </style>
+</head>
+<body>
+<div class="grid"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+
+</body>
+</html>

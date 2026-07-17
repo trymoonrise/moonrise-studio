@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1615
+    slug: 3d-mouse-diamond-tilt
+    title: 3D Diamond Mouse Tilt
+    category: 3d-mouse
+    tags: 3d, mouse, diamond
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1615 — 3D Diamond Mouse Tilt</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#06070c;perspective:900px;overflow:hidden}
+    .diamond{width:180px;height:180px;position:relative;transform-style:preserve-3d;transform:rotateX(var(--rx,-20deg)) rotateY(var(--ry,35deg)) rotateZ(45deg)}
+    .face{position:absolute;inset:0;border:1px solid rgba(255,255,255,.25);backdrop-filter:blur(4px)}
+    .f0{background:linear-gradient(145deg,#6c8cffaa,#3147c866);transform:translateZ(50px)}
+    .f1{background:linear-gradient(145deg,#ff6bcbaa,#a31f6e66);transform:rotateY(90deg) translateZ(50px)}
+    .f2{background:linear-gradient(145deg,#7ee0c3aa,#1f8a6e66);transform:rotateY(180deg) translateZ(50px)}
+    .f3{background:linear-gradient(145deg,#ffd16caa,#b07a1266);transform:rotateY(-90deg) translateZ(50px)}
+    .f4{background:linear-gradient(145deg,#b06cffaa,#5520b866);transform:rotateX(90deg) translateZ(50px)}
+    .f5{background:linear-gradient(145deg,#222a,#1118);transform:rotateX(-90deg) translateZ(50px)}
+    .glow{position:fixed;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(108,140,255,.35),transparent 70%);filter:blur(20px);pointer-events:none}
+    .hint{position:fixed;bottom:1.4rem;font:700 .7rem Syne,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.35)}
+  </style>
+</head>
+<body>
+  <div class="glow" aria-hidden="true"></div>
+  <div class="diamond" id="d">
+    <div class="face f0"></div><div class="face f1"></div><div class="face f2"></div>
+    <div class="face f3"></div><div class="face f4"></div><div class="face f5"></div>
+  </div>
+  <div class="hint">Tilt the diamond</div>
+  <script>
+    const d=document.getElementById('d');let rx=-20,ry=35,trx=-20,try_=35;
+    addEventListener('pointermove',e=>{const x=(e.clientX/innerWidth-.5)*2;const y=(e.clientY/innerHeight-.5)*2;try_=35+x*45;trx=-20+y*-30});
+    (function loop(){rx+=(trx-rx)*.1;ry+=(try_-ry)*.1;d.style.setProperty('--rx',rx+'deg');d.style.setProperty('--ry',ry+'deg');requestAnimationFrame(loop)})();
+  </script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1250
+    slug: carousels-card-carousel-03
+    title: Card Carousel 03
+    category: carousels
+    tags: carousels, animated, modern, interactive
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1250 — Card Carousel 03</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#e8f0fe;font-family:'DM Sans',system-ui,sans-serif;color:#111;overflow:hidden;padding:24px}
+    button{font:inherit;border:0;cursor:pointer;background:transparent;color:inherit}
+    .wrap{width:min(640px,96vw)}.rail{display:flex;gap:16px;overflow:hidden;padding:20px 8px;scroll-behavior:smooth;cursor:grab}.rail:active{cursor:grabbing}.card{flex:0 0 min(220px,62vw);background:#fff;border-radius:24px;overflow:hidden;box-shadow:0 18px 40px rgba(40,80,160,.14);transform:translateY(8px) scale(.94);opacity:.55;transition:transform .55s cubic-bezier(.22,1,.36,1),opacity .55s}.card.on{transform:none;opacity:1;scale:1}.card img{width:100%;aspect-ratio:4/5;object-fit:cover;display:block}.card h3{margin:0;padding:14px 16px 4px;font-family:Syne,sans-serif;font-size:1rem;letter-spacing:-.02em}.card p{margin:0;padding:0 16px 16px;font-size:.8rem;color:#5a6a80}.nav{display:flex;justify-content:center;gap:10px;margin-top:8px}.nav button{width:46px;height:46px;border-radius:50%;background:#1e3a8a;color:#fff;font-size:16px;transition:transform .25s}.nav button:hover{transform:scale(1.08)}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="wrap"><div class="rail" id="rail">
+<article class="card on"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt=""><h3>Atlas</h3><p>Product kit</p></article>
+<article class="card"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt="" style="filter:hue-rotate(40deg)"><h3>Nova</h3><p>Brand pack</p></article>
+<article class="card"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt="" style="filter:hue-rotate(110deg)"><h3>Orbit</h3><p>Motion set</p></article>
+<article class="card"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt="" style="filter:hue-rotate(200deg)"><h3>Pulse</h3><p>UI system</p></article>
+<article class="card"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt="" style="filter:hue-rotate(280deg)"><h3>Form</h3><p>Type kit</p></article>
+</div><div class="nav"><button id="prev">←</button><button id="next">→</button></div></div>
+<script>
+const rail=document.getElementById('rail'),cards=[...rail.children];let i=0;function sync(){cards.forEach((c,k)=>c.classList.toggle('on',k===i));cards[i].scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});}document.getElementById('prev').onclick=()=>{i=Math.max(0,i-1);sync()};document.getElementById('next').onclick=()=>{i=Math.min(cards.length-1,i+1);sync()};let drag=false,sx=0,sl=0;rail.onpointerdown=e=>{drag=true;sx=e.clientX;sl=rail.scrollLeft;rail.setPointerCapture(e.pointerId)};rail.onpointermove=e=>{if(!drag)return;rail.scrollLeft=sl-(e.clientX-sx)};rail.onpointerup=()=>{drag=false};sync();
+</script>
+</body>
+</html>

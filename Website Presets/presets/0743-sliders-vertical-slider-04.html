@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0743
+    slug: sliders-vertical-slider-04
+    title: Vertical Gain Fader
+    category: sliders
+    tags: sliders, vertical
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0743 — Vertical Gain Fader</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #080a0e;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+      padding: 1.5rem;
+    }
+
+    .fader-panel {
+      display: flex;
+      gap: 2rem;
+      align-items: flex-end;
+      padding: 2rem;
+      background: #0f1419;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+    }
+
+    .channel { text-align: center; }
+
+    .channel label {
+      display: block;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-top: 0.75rem;
+    }
+
+    .track {
+      position: relative;
+      width: 8px;
+      height: 200px;
+      background: #1e293b;
+      border-radius: 4px;
+      margin: 0 auto;
+    }
+
+    .level-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, #00d4aa, #38bdf8);
+      border-radius: 4px;
+      transition: height 0.1s;
+      animation: meterPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes meterPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.75; }
+    }
+
+    input[type="range"] {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%) rotate(-90deg);
+      transform-origin: center bottom;
+      width: 200px;
+      height: 32px;
+      appearance: none;
+      background: transparent;
+      margin: 0;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 28px;
+      height: 14px;
+      background: #e2e8f0;
+      border-radius: 3px;
+      cursor: grab;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+      transition: background 0.2s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover { background: #fbbf24; }
+
+    .db {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #00d4aa;
+      margin-bottom: 0.5rem;
+      min-height: 1.2em;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .level-bar { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="fader-panel">
+    <div class="channel">
+      <div class="db" data-db>−6 dB</div>
+      <div class="track">
+        <div class="level-bar" data-bar style="height:70%"></div>
+        <input type="range" orient="vertical" min="0" max="100" value="70" data-slider>
+      </div>
+      <label>CH 1</label>
+    </div>
+    <div class="channel">
+      <div class="db" data-db>−12 dB</div>
+      <div class="track">
+        <div class="level-bar" data-bar style="height:45%"></div>
+        <input type="range" orient="vertical" min="0" max="100" value="45" data-slider>
+      </div>
+      <label>CH 2</label>
+    </div>
+    <div class="channel">
+      <div class="db" data-db>0 dB</div>
+      <div class="track">
+        <div class="level-bar" data-bar style="height:90%"></div>
+        <input type="range" orient="vertical" min="0" max="100" value="90" data-slider>
+      </div>
+      <label>CH 3</label>
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll('.channel').forEach((ch) => {
+      const slider = ch.querySelector('[data-slider]');
+      const bar = ch.querySelector('[data-bar]');
+      const db = ch.querySelector('[data-db]');
+      function update() {
+        const v = +slider.value;
+        bar.style.height = v + '%';
+        const dbVal = v === 0 ? '−∞ dB' : (v >= 90 ? '0 dB' : `−${Math.round((100 - v) / 5)} dB`);
+        db.textContent = dbVal;
+      }
+      slider.addEventListener('input', update);
+    });
+  </script>
+</body>
+</html>

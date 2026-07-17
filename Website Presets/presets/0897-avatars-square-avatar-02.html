@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0897
+    slug: avatars-square-avatar-02
+    title: Square Avatar 02
+    category: avatars
+    tags: avatars, square, marquee, minimal
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0897 — Square Avatar 02</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700&family=DM+Mono:wght@400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#fafafa;color:#111;overflow:hidden;font-family:'DM Mono',monospace}
+    .band{position:fixed;top:0;bottom:0;width:2.2rem;overflow:hidden;border-inline:1px solid rgba(0,0,0,.08);writing-mode:vertical-rl}
+    .band.l{left:0}
+    .band.r{right:0}
+    .track{display:flex;flex-direction:column;width:max-content;white-space:nowrap;animation:run 22s linear infinite;font-size:.55rem;letter-spacing:.35em;text-transform:uppercase;color:rgba(0,0,0,.35);padding:1rem 0;gap:.5rem}
+    .band.r .track{animation-direction:reverse;animation-duration:26s}
+    .stage{min-height:100vh;display:grid;place-items:center}
+    .av{width:72px;height:72px;border:1px solid #111;display:grid;place-items:center;font-family:Syne,sans-serif;font-weight:700;font-size:1.15rem;background:#fff}
+    @keyframes run{to{transform:translateY(-50%)}}
+    @media (prefers-reduced-motion:reduce){.track{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="band l" aria-hidden="true"><div class="track"><span>Square · Edge · Square · Edge · Square · Edge · </span><span>Square · Edge · Square · Edge · Square · Edge · </span></div></div>
+  <div class="band r" aria-hidden="true"><div class="track"><span>Hard · Soft · Hard · Soft · Hard · Soft · </span><span>Hard · Soft · Hard · Soft · Hard · Soft · </span></div></div>
+  <div class="stage"><div class="av">SQ</div></div>
+</body>
+</html>

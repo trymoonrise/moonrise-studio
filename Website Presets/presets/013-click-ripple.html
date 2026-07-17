@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 013
+    slug: click-ripple
+    title: Click Ripple
+    category: animation
+    tags: ripple, click
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>013 — Click Ripple</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .stage {
+      position: relative;
+      width: 200px;
+      height: 240px;
+      display: grid;
+      place-items: center;
+    }
+
+    .shadow {
+      position: absolute;
+      bottom: 78px;
+      left: 50%;
+      width: 88px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.18);
+      transform: translateX(-50%) scale(1);
+      filter: blur(2px);
+      pointer-events: none;
+    }
+
+    .stage.is-breaking .shadow {
+      animation: shadow-break 1.35s cubic-bezier(0.33, 0.1, 0.25, 1) forwards;
+    }
+
+    .btn {
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+      padding: 9px 26px;
+      border: 1px solid #000;
+      border-radius: 999px;
+      background: #000;
+      color: #fff;
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transform-origin: center center;
+      will-change: transform;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn:hover:not(.broken):not(.recovering) {
+      background: #111;
+    }
+
+    .btn.broken {
+      pointer-events: none;
+      animation: break-button 1.35s cubic-bezier(0.33, 0.1, 0.25, 1) forwards;
+    }
+
+    .btn.recovering {
+      pointer-events: none;
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      transform: translate(0, 0) rotate(0deg) scale(1);
+    }
+
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.32);
+      transform: scale(0);
+      animation: ripple 0.55s ease-out;
+      pointer-events: none;
+    }
+
+    @keyframes ripple {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
+
+    @keyframes shadow-break {
+      0% { transform: translateX(-50%) scale(1); opacity: 0.18; }
+      10% { transform: translateX(-50%) scale(1.15); opacity: 0.22; }
+      30% { transform: translateX(-50%) scale(0.35); opacity: 0.06; }
+      48% { transform: translateX(-50%) scale(0.28); opacity: 0.05; }
+      68% { transform: translateX(-42%) scale(1.2); opacity: 0.22; }
+      78% { transform: translateX(-48%) scale(0.7); opacity: 0.1; }
+      88% { transform: translateX(-44%) scale(1.05); opacity: 0.18; }
+      100% { transform: translateX(-46%) scale(0.95); opacity: 0.16; }
+    }
+
+    @keyframes break-button {
+      0% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
+      }
+      7% {
+        transform: translate(0, 6px) rotate(-3deg) scale(1.06, 0.86);
+      }
+      26% {
+        transform: translate(-10px, -140px) rotate(-22deg) scale(1);
+      }
+      40% {
+        transform: translate(8px, -156px) rotate(16deg) scale(1);
+      }
+      58% {
+        transform: translate(14px, 22px) rotate(34deg) scale(1.08, 0.82);
+      }
+      70% {
+        transform: translate(4px, -28px) rotate(-12deg) scale(0.96, 1.06);
+      }
+      82% {
+        transform: translate(10px, 10px) rotate(18deg) scale(1.04, 0.92);
+      }
+      100% {
+        transform: translate(8px, 4px) rotate(11deg) scale(1);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ripple { animation: none; opacity: 0; }
+      .btn.broken { animation: none; transform: translate(8px, 4px) rotate(11deg); }
+      .btn.recovering { transition: none; }
+      .stage.is-breaking .shadow { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage" id="stage">
+    <span class="shadow" aria-hidden="true"></span>
+    <button class="btn" id="btn" type="button">Click me</button>
+  </div>
+  <script>
+    const btn = document.getElementById('btn');
+    const stage = document.getElementById('stage');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const BREAK_MS = 1350;
+    const RECOVER_MS = reduced ? 0 : 350;
+    let busy = false;
+    let timer = 0;
+
+    function spawnRipple(e) {
+      const r = btn.getBoundingClientRect();
+      const d = document.createElement('span');
+      d.className = 'ripple';
+      const size = Math.max(r.width, r.height);
+      d.style.width = d.style.height = size + 'px';
+      d.style.left = (e.clientX - r.left - size / 2) + 'px';
+      d.style.top = (e.clientY - r.top - size / 2) + 'px';
+      btn.appendChild(d);
+      d.addEventListener('animationend', (ev) => {
+        ev.stopPropagation();
+        d.remove();
+      });
+    }
+
+    function finish() {
+      btn.classList.remove('broken', 'recovering');
+      stage.classList.remove('is-breaking');
+      btn.style.transform = '';
+      busy = false;
+    }
+
+    function recover() {
+      // Capture settled pose, then ease upright so the loop can restart cleanly
+      const computed = getComputedStyle(btn).transform;
+      btn.classList.remove('broken');
+      stage.classList.remove('is-breaking');
+      btn.style.transform = computed === 'none' ? 'translate(8px, 4px) rotate(11deg)' : computed;
+      void btn.offsetWidth;
+      btn.classList.add('recovering');
+      btn.style.transform = 'translate(0, 0) rotate(0deg) scale(1)';
+
+      clearTimeout(timer);
+      timer = setTimeout(finish, RECOVER_MS);
+    }
+
+    btn.addEventListener('click', function (e) {
+      if (busy) return;
+      busy = true;
+      clearTimeout(timer);
+
+      spawnRipple(e);
+
+      btn.classList.remove('broken', 'recovering');
+      stage.classList.remove('is-breaking');
+      btn.style.transform = '';
+      void btn.offsetWidth;
+      btn.classList.add('broken');
+      stage.classList.add('is-breaking');
+
+      timer = setTimeout(recover, reduced ? 400 : BREAK_MS);
+    });
+  </script>
+</body>
+</html>

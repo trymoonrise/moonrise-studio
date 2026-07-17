@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1689
+    slug: scroll-reveal-rgb-split
+    title: RGB Split Resolve
+    category: animation
+    tags: scroll, reveal, chromatic, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1689 — RGB Split Resolve</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;background:#050507;color:#f5f5f7;font-family:'Space Grotesk',sans-serif}
+    .hero{min-height:100vh;display:grid;place-items:center;text-align:center;padding:2rem}
+    .hero h1{font-family:'Archivo Black',sans-serif;font-size:clamp(3rem,12vw,7rem);margin:0;letter-spacing:-.04em}
+    .hero p{opacity:.45;margin-top:1rem}
+    .rail{max-width:800px;margin:0 auto;padding:0 1.5rem 40vh;display:grid;gap:30vh}
+    .block{--p:0;--split:calc((1 - var(--p))*18px);position:relative}
+    .title{
+      position:relative;font-family:'Archivo Black',sans-serif;
+      font-size:clamp(2.2rem,7vw,4.5rem);letter-spacing:-.04em;line-height:.95;
+      color:#fff;
+    }
+    .title::before,.title::after{
+      content:attr(data-text);position:absolute;inset:0;pointer-events:none;
+      mix-blend-mode:screen;
+    }
+    .title::before{
+      color:#ff2a2a;transform:translate(calc(var(--split)*-1),calc(var(--split)*-.3));
+      clip-path:inset(0 0 40% 0);opacity:calc(1 - var(--p)*.7);
+    }
+    .title::after{
+      color:#2ad4ff;transform:translate(var(--split),calc(var(--split)*.3));
+      clip-path:inset(40% 0 0 0);opacity:calc(1 - var(--p)*.7);
+    }
+    .body{margin-top:1.25rem;max-width:38ch;font-size:1.05rem;line-height:1.7;opacity:calc(.2 + var(--p)*.65);filter:blur(calc((1 - var(--p))*6px))}
+    .meta{margin-bottom:.85rem;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:#ff6b3d;opacity:var(--p)}
+    @media (prefers-reduced-motion:reduce){.title::before,.title::after{display:none}.body{filter:none;opacity:.75}}
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div>
+      <h1>PRISM</h1>
+      <p>Chromatic error collapses into focus</p>
+    </div>
+  </header>
+  <main class="rail">
+    <article class="block" data-block>
+      <div class="meta">Channel misalignment</div>
+      <h2 class="title" data-text="Broken light">Broken light</h2>
+      <p class="body">Red and cyan channels peel apart at the far plane. Scroll racks them back into a single coherent image.</p>
+    </article>
+    <article class="block" data-block>
+      <div class="meta">Aberration decay</div>
+      <h2 class="title" data-text="Color converges">Color converges</h2>
+      <p class="body">The split distance is a function of scroll progress — zero split means perfect registration.</p>
+    </article>
+    <article class="block" data-block>
+      <div class="meta">Final frame</div>
+      <h2 class="title" data-text="One signal">One signal</h2>
+      <p class="body">When the channels lock, the blur lifts and the copy becomes readable again.</p>
+    </article>
+  </main>
+  <script>
+    const blocks=[...document.querySelectorAll('[data-block]')];
+    const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function clamp(n,a,b){return Math.min(b,Math.max(a,n))}
+    function tick(){
+      blocks.forEach(b=>{
+        if(reduced){b.style.setProperty('--p','1');return}
+        const r=b.getBoundingClientRect(),vh=innerHeight;
+        b.style.setProperty('--p',clamp((vh*.88-r.top)/(vh*.55),0,1).toFixed(4));
+      });
+    }
+    tick();
+    addEventListener('scroll',tick,{passive:true});
+    addEventListener('resize',tick,{passive:true});
+  </script>
+</body>
+</html>

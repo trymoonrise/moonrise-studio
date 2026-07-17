@@ -5,7 +5,31 @@
   let timerId = null;
 
   function workerUrl() {
-    return String(global.SITE_CONFIG?.workerUrl || "").replace(/\/$/, "");
+    const configured = String(global.SITE_CONFIG?.workerUrl || "").replace(/\/$/, "");
+    if (!configured || typeof location === "undefined") return configured;
+    try {
+      const pageHost = location.hostname;
+      const worker = new URL(configured);
+      const pageIsLocal =
+        pageHost === "localhost" ||
+        pageHost === "127.0.0.1" ||
+        pageHost === "[::1]";
+      const workerIsLoopback =
+        worker.hostname === "localhost" ||
+        worker.hostname === "127.0.0.1" ||
+        worker.hostname === "[::1]";
+      if (!pageIsLocal && workerIsLoopback && location.protocol.startsWith("http")) {
+        worker.hostname = pageHost;
+        return worker.origin;
+      }
+      if (pageIsLocal && workerIsLoopback && pageHost !== worker.hostname) {
+        worker.hostname = pageHost;
+        return worker.origin;
+      }
+    } catch (_) {
+      /* keep configured */
+    }
+    return configured;
   }
 
   function formatRemaining(endsAt) {
@@ -15,12 +39,12 @@
     const m = Math.floor((ms % 3600000) / 60000);
     const s = Math.floor((ms % 60000) / 1000);
     return (
+      "Ends in " +
       String(h).padStart(2, "0") +
       ":" +
       String(m).padStart(2, "0") +
       ":" +
-      String(s).padStart(2, "0") +
-      " left to lock this price"
+      String(s).padStart(2, "0")
     );
   }
 
@@ -37,13 +61,11 @@
     btn.innerHTML =
       '<img src="' +
       (opts.avatarUrl ||
-        (window.SITE_CONFIG && window.SITE_CONFIG.defaultAvatarUrl) ||
-        "doc/pfp.png") +
+        (window.SITE_CONFIG && window.SITE_CONFIG.brandLogoUrl) ||
+        "doc/MoonriseLogo.png") +
       '" alt="">' +
-      '<span class="ms-watermark-text"><strong>Pay to go live!</strong>' +
-      "<span>@" +
-      (opts.handle || "moonrise") +
-      "</span></span>";
+      '<span class="ms-watermark-text"><strong>Complete your order</strong>' +
+      "<span>trymoonrise.com</span></span>";
     btn.addEventListener("click", () => openPaywall(opts));
     wrap.appendChild(btn);
     host.appendChild(wrap);
@@ -51,24 +73,26 @@
 
   function openPaywall(opts) {
     const el = document.getElementById("paywall");
-    const price = document.getElementById("paywall-price");
     const timer = document.getElementById("paywall-timer");
     const err = document.getElementById("paywall-error");
     if (!el) return;
-    if (price) price.textContent = global.SITE_CONFIG?.goLivePriceLabel || "$500";
     if (err) err.hidden = true;
     el.classList.add("is-open");
     el.setAttribute("aria-hidden", "false");
 
     if (timerId) clearInterval(timerId);
     const tick = () => {
-      if (timer) timer.textContent = formatRemaining(opts.urgencyEndsAt || Date.now() + 3600000);
+      if (timer) timer.textContent = formatRemaining(opts.urgencyEndsAt || Date.now() + 96 * 3600000);
     };
     tick();
     timerId = setInterval(tick, 1000);
 
     const checkoutBtn = document.getElementById("btn-checkout");
     if (checkoutBtn) {
+      const dollars = Number(opts.priceCents) / 100;
+      checkoutBtn.textContent = Number.isFinite(dollars) && dollars > 0
+        ? "Pay $" + dollars.toLocaleString("en-US") + " with Stripe"
+        : "Pay with Stripe";
       checkoutBtn.onclick = async () => {
         err.hidden = true;
         checkoutBtn.disabled = true;
@@ -81,7 +105,10 @@
               "Content-Type": "application/json",
               Authorization: "Bearer " + session.access_token,
             },
-            body: JSON.stringify({ projectId: opts.projectId }),
+            body: JSON.stringify({
+              projectId: opts.projectId,
+              amountCents: opts.priceCents,
+            }),
           });
           const data = await res.json().catch(() => ({}));
           if (!res.ok) throw new Error(data.error || "Checkout failed");
@@ -119,6 +146,20 @@
     const el = document.getElementById("paywall");
     if (el?.classList.contains("is-open")) closePaywall();
   });
+
+  (function bindExclusiveFaq() {
+    const root = document.getElementById("paywall-faq");
+    if (!root) return;
+    const items = Array.from(root.querySelectorAll("details"));
+    items.forEach((details) => {
+      details.addEventListener("toggle", () => {
+        if (!details.open) return;
+        items.forEach((other) => {
+          if (other !== details) other.open = false;
+        });
+      });
+    });
+  })();
 
   global.StudioWatermark = { mount, openPaywall, closePaywall };
 })(window);

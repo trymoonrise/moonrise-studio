@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0398
+    slug: cursor-trails-text-trail-03
+    title: Text Trail 03
+    category: cursor-trails
+    tags: cursor-trails, text
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0398 — Text Trail 03</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#1a0a12;color:#ffe8f0;cursor:crosshair}#t{position:fixed;pointer-events:none;font-size:.8rem;color:#ff8c42;opacity:.8}
+  </style>
+</head>
+<body>
+<div id="t"></div>
+<script>const t=document.getElementById('t');addEventListener('mousemove',e=>{t.style.left=e.clientX+12+'px';t.style.top=e.clientY+12+'px';t.textContent='text-trail 5';});</script>
+</body>
+</html>

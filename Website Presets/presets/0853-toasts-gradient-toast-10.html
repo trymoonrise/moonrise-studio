@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0853
+    slug: toasts-gradient-toast-10
+    title: Chromatic Edge Toast
+    category: toasts
+    tags: toasts, gradient
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0853 — Chromatic Edge Toast</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #0a0c10;
+      font-family: 'Outfit', sans-serif;
+      color: #e8eaef;
+    }
+
+    .trigger {
+      padding: 0.85rem 1.6rem;
+      border: none;
+      border-radius: 8px;
+      background: #151820;
+      color: #e8eaef;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      width: min(calc(100% - 2rem), 380px);
+      padding: 2px;
+      border-radius: 12px;
+      background: conic-gradient(from var(--angle, 0deg), #06b6d4, #22d3ee, #0891b2, #06b6d4);
+      opacity: 0;
+      transform: translateX(-50%) translateY(60px) scale(0.95);
+      transition: opacity 0.35s, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: 20;
+      animation: spin 3s linear infinite;
+      animation-play-state: paused;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0) scale(1);
+      animation-play-state: running;
+    }
+
+    @property --angle {
+      syntax: '<angle>';
+      initial-value: 0deg;
+      inherits: false;
+    }
+
+    @keyframes spin { to { --angle: 360deg; } }
+
+    .inner {
+      padding: 1rem 1.2rem;
+      background: #0f1218;
+      border-radius: 10px;
+    }
+
+    .inner h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 0.2rem;
+    }
+
+    .inner p { font-size: 0.78rem; color: rgba(232, 234, 239, 0.55); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .toast { animation: none; transition: opacity 0.2s; transform: translateX(-50%); }
+    }
+  </style>
+</head>
+<body>
+  <button class="trigger" id="btn" type="button">Show edge toast</button>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <div class="inner">
+      <h2>Feature flag enabled</h2>
+      <p>Realtime sync rolling out to 12% of users</p>
+    </div>
+  </div>
+
+  <script>
+    const btn = document.getElementById('btn');
+    const toast = document.getElementById('toast');
+    let timer;
+
+    btn.addEventListener('click', () => {
+      clearTimeout(timer);
+      toast.classList.add('show');
+      timer = setTimeout(() => toast.classList.remove('show'), 3000);
+    });
+  </script>
+</body>
+</html>

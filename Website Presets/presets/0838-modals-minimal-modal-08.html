@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0838
+    slug: modals-minimal-modal-08
+    title: Minimal Modal 08
+    category: modals
+    tags: modals, minimal
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0838 — Minimal Modal 08</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#0a0a0c}.btn{padding:10px 24px;background:#ff6cb0;color:#0a0a0c;border:none;border-radius:8px;cursor:pointer}.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;place-items:center;z-index:10}.overlay.open{display:grid}.dlg{background:#111118;color:#ffffff;border-radius:16px;padding:2rem;width:min(90vw,360px);border:1px solid #ff6cb0}
+  </style>
+</head>
+<body>
+<button class="btn" id="o">Open</button><div class="overlay" id="ov"><div class="dlg"><h3>Minimal Modal 450</h3><p style="color:#a0a0b8;margin:1rem 0;font-size:.9rem">Dialog content here</p><button class="btn" id="c">Close</button></div></div>
+<script>document.getElementById('o').onclick=()=>document.getElementById('ov').classList.add('open');document.getElementById('c').onclick=()=>document.getElementById('ov').classList.remove('open');</script>
+</body>
+</html>

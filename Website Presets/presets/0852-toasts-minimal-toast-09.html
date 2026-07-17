@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0852
+    slug: toasts-minimal-toast-09
+    title: Mono Line Toast
+    category: toasts
+    tags: toasts, minimal
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0852 — Mono Line Toast</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #080808;
+      font-family: 'Outfit', sans-serif;
+      color: #e8eaef;
+    }
+
+    .trigger {
+      padding: 0.85rem 1.6rem;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 0;
+      background: transparent;
+      color: rgba(232, 234, 239, 0.7);
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 3rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      z-index: 20;
+    }
+
+    .toast.show { opacity: 1; }
+
+    .line {
+      width: 0;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.25);
+      transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.1s;
+    }
+
+    .toast.show .line { width: 48px; }
+    .toast.show .line:last-child { transition-delay: 0.25s; }
+
+    .text {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: rgba(232, 234, 239, 0.9);
+      clip-path: inset(0 100% 0 0);
+      transition: clip-path 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.2s;
+    }
+
+    .toast.show .text { clip-path: inset(0 0 0 0); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .line, .text, .toast { transition: none; }
+      .toast.show .line { width: 48px; }
+      .toast.show .text { clip-path: none; }
+    }
+  </style>
+</head>
+<body>
+  <button class="trigger" id="btn" type="button">Notify</button>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <span class="line" aria-hidden="true"></span>
+    <span class="text">Saved</span>
+    <span class="line" aria-hidden="true"></span>
+  </div>
+
+  <script>
+    const btn = document.getElementById('btn');
+    const toast = document.getElementById('toast');
+    let timer;
+
+    btn.addEventListener('click', () => {
+      clearTimeout(timer);
+      toast.classList.remove('show');
+      void toast.offsetWidth;
+      toast.classList.add('show');
+      timer = setTimeout(() => toast.classList.remove('show'), 2400);
+    });
+  </script>
+</body>
+</html>

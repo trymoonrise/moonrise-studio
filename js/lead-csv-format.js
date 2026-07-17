@@ -96,29 +96,64 @@
     return /^(directions|website|menu|call|save|share|order online|overview|reviews|photos|updates|about)$/i.test(v);
   }
 
+  function unwrapGoogleRedirect(url) {
+    const href = raw(url);
+    if (!href) return "";
+    try {
+      const parsed = new URL(href);
+      if (parsed.hostname.includes("google.") && parsed.pathname.includes("/url")) {
+        const target = parsed.searchParams.get("q") || parsed.searchParams.get("url");
+        if (target) return raw(target);
+      }
+    } catch (_) {
+      /* keep original */
+    }
+    return href;
+  }
+
   function isValidWebsiteUrl(url) {
-    const u = raw(url);
+    const u = unwrapGoogleRedirect(raw(url));
     if (!u) return false;
     const low = u.toLowerCase();
     if (!low.startsWith("http://") && !low.startsWith("https://")) return false;
     if (
       low.includes("google.com/maps") ||
       low.includes("google.com/aclk") ||
-      low.includes("gstatic.com")
+      low.includes("gstatic.com") ||
+      low.includes("google.com/url")
     ) {
       return false;
     }
     return true;
   }
 
+  function normalizeWebsiteUrl(url) {
+    const u = unwrapGoogleRedirect(raw(url));
+    return isValidWebsiteUrl(u) ? u : "";
+  }
+
+  /**
+   * Official business website only — not booking, menu, or order links.
+   */
   function resolveWebsiteUrl(row) {
-    const primary = raw(cell(row, "website") || row.website || row["lcr4fd href"] || row.website_url);
-    if (isValidWebsiteUrl(primary)) return primary;
-    const booking = raw(row.booking_url || row.bookingUrl);
-    if (isValidWebsiteUrl(booking)) return booking;
-    const order = raw(row.order_url || row.orderUrl);
-    if (isValidWebsiteUrl(order)) return order;
+    const primary = raw(
+      cell(row, "website") || row.website || row.websiteUrl || row["lcr4fd href"] || row.website_url
+    );
+    if (isValidWebsiteUrl(primary)) return normalizeWebsiteUrl(primary);
     return "";
+  }
+
+  function resolveLeadWebsite(lead) {
+    if (!lead || typeof lead !== "object") return "";
+    const fromRow = resolveWebsiteUrl(lead);
+    if (fromRow) return fromRow;
+    return normalizeWebsiteUrl(
+      raw(lead.website || lead.websiteUrl || lead.website_url || lead["lcr4fd href"])
+    );
+  }
+
+  function resolveLeadHasWebsite(lead) {
+    return !!resolveLeadWebsite(lead);
   }
 
   function looksLikeHours(value) {
@@ -333,7 +368,7 @@
     const reviewMeta = parseReviewCount(cell(row, "reviewCount"));
     const phone = raw(cell(row, "phone"));
     const websiteUrl = resolveWebsiteUrl(row);
-    const hasWebsite = row.has_website === true || isValidWebsiteUrl(websiteUrl);
+    const hasWebsite = isValidWebsiteUrl(websiteUrl);
     const address = resolveAddress(row);
     const hours = resolveHours(row);
     const categoryGroup = resolveCategoryGroup(row);
@@ -400,6 +435,10 @@
     looksLikeStreetAddress,
     cleanAddressCandidate,
     isValidWebsiteUrl,
+    normalizeWebsiteUrl,
+    unwrapGoogleRedirect,
     resolveWebsiteUrl,
+    resolveLeadWebsite,
+    resolveLeadHasWebsite,
   };
 })(window);

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1706
+    slug: animation-warp-tunnel
+    title: Warp Zoom Tunnel
+    category: animation
+    tags: animation, warp, tunnel, zoom
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1696 — Warp Zoom Tunnel</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #020205;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      font-family: Syne, sans-serif;
+      color: #f4f1ea;
+      cursor: pointer;
+    }
+
+    .tunnel {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      perspective: 600px;
+      transform-style: preserve-3d;
+    }
+
+    .ring {
+      position: absolute;
+      width: var(--s);
+      height: var(--s);
+      border: 2px solid rgba(77, 225, 255, calc(0.08 + var(--o)));
+      border-radius: 50%;
+      box-shadow: 0 0 20px rgba(77, 225, 255, calc(var(--o) * 0.5));
+      transform: translateZ(var(--z)) scale(var(--sc, 1));
+      animation: rush var(--spd) linear infinite;
+      animation-delay: var(--d);
+    }
+
+    .core {
+      position: relative;
+      z-index: 5;
+      text-align: center;
+      animation: breathe 2.5s ease-in-out infinite;
+    }
+
+    .core h1 {
+      margin: 0;
+      font-size: clamp(2.5rem, 8vw, 5rem);
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      text-shadow: 0 0 40px rgba(77, 225, 255, 0.45);
+    }
+
+    .core p {
+      margin: 0.5rem 0 0;
+      font-size: 0.68rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: rgba(244, 241, 234, 0.45);
+    }
+
+    .stars {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        radial-gradient(1px 1px at 10% 20%, #fff, transparent),
+        radial-gradient(1px 1px at 80% 30%, #fff, transparent),
+        radial-gradient(1.5px 1.5px at 40% 70%, #fff, transparent),
+        radial-gradient(1px 1px at 70% 80%, #fff, transparent),
+        radial-gradient(1px 1px at 25% 55%, #fff, transparent);
+      animation: streak 1.2s linear infinite;
+      opacity: 0.5;
+    }
+
+    @keyframes rush {
+      0% { transform: translateZ(-800px) scale(0.2); opacity: 0; }
+      20% { opacity: 1; }
+      100% { transform: translateZ(400px) scale(1.6); opacity: 0; }
+    }
+
+    @keyframes breathe {
+      50% { transform: scale(1.04); }
+    }
+
+    @keyframes streak {
+      to { transform: scale(1.15); opacity: 0.25; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ring, .core, .stars { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stars" aria-hidden="true"></div>
+  <div class="tunnel" id="tunnel" aria-hidden="true"></div>
+  <div class="core">
+    <h1>WARP</h1>
+    <p>Click to boost</p>
+  </div>
+
+  <script>
+    const tunnel = document.getElementById('tunnel');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let boost = 1;
+
+    function build() {
+      tunnel.innerHTML = '';
+      for (let i = 0; i < 16; i++) {
+        const r = document.createElement('div');
+        r.className = 'ring';
+        r.style.setProperty('--s', (120 + i * 28) + 'px');
+        r.style.setProperty('--o', String(0.05 + i * 0.03));
+        r.style.setProperty('--spd', (2.8 / boost) + 's');
+        r.style.setProperty('--d', (-i * (0.18 / boost)) + 's');
+        tunnel.appendChild(r);
+      }
+    }
+
+    build();
+
+    addEventListener('click', () => {
+      if (reduced) return;
+      boost = 2.4;
+      build();
+      document.body.animate(
+        [{ filter: 'brightness(1)' }, { filter: 'brightness(1.6)' }, { filter: 'brightness(1)' }],
+        { duration: 400 }
+      );
+      setTimeout(() => {
+        boost = 1;
+        build();
+      }, 1200);
+    });
+  </script>
+</body>
+</html>

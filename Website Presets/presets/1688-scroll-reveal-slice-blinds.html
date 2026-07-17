@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1688
+    slug: scroll-reveal-slice-blinds
+    title: Slice Blind Reveal
+    category: animation
+    tags: scroll, reveal, clip, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1688 — Slice Blind Reveal</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;600&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;background:#12100e;color:#f3ebe1;font-family:Outfit,sans-serif}
+    .hero{min-height:100vh;display:grid;place-items:center;text-align:center;padding:2rem}
+    .hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(4rem,16vw,9rem);margin:0;letter-spacing:.04em;line-height:.9}
+    .hero p{opacity:.5;margin-top:.75rem;letter-spacing:.16em;text-transform:uppercase;font-size:.75rem}
+    .rail{max-width:860px;margin:0 auto;padding:0 1.25rem 45vh;display:grid;gap:32vh}
+    .panel{--p:0;position:relative}
+    .blinds{display:grid;gap:3px}
+    .slice{
+      overflow:hidden;background:#2a2420;border-radius:2px;
+      transform:scaleX(calc(0.08 + var(--p)*0.92));
+      transform-origin:left center;
+      opacity:calc(0.15 + var(--p)*0.85);
+    }
+    .slice:nth-child(odd){transform-origin:right center}
+    .slice__inner{
+      padding:clamp(.7rem,2vw,1.1rem) 1.25rem;
+      font-family:'Bebas Neue',sans-serif;
+      font-size:clamp(1.6rem,4.5vw,2.8rem);
+      letter-spacing:.04em;
+      line-height:1;
+      white-space:nowrap;
+      transform:translateX(calc((1 - var(--p))*var(--dir,40px)));
+    }
+    .slice:nth-child(odd) .slice__inner{--dir:-40px}
+    .cap{margin-top:1.25rem;max-width:36ch;font-size:.95rem;line-height:1.65;opacity:calc(var(--p)*.7);transform:translateY(calc((1 - var(--p))*16px))}
+    @media (prefers-reduced-motion:reduce){.slice,.slice__inner,.cap{transform:none!important;opacity:1!important}}
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div>
+      <h1>BLINDS</h1>
+      <p>Horizontal slices unlock on scroll</p>
+    </div>
+  </header>
+  <main class="rail">
+    <section class="panel" data-panel>
+      <div class="blinds">
+        <div class="slice"><div class="slice__inner">MOTION IS STRUCTURE</div></div>
+        <div class="slice"><div class="slice__inner">STRUCTURE IS RHYTHM</div></div>
+        <div class="slice"><div class="slice__inner">RHYTHM IS REVEAL</div></div>
+        <div class="slice"><div class="slice__inner">REVEAL IS CONTROL</div></div>
+        <div class="slice"><div class="slice__inner">CONTROL IS SCROLL</div></div>
+      </div>
+      <p class="cap">Each blind expands from opposite edges — odd rows from the right, even from the left — so the sentence stitches itself together.</p>
+    </section>
+    <section class="panel" data-panel>
+      <div class="blinds">
+        <div class="slice"><div class="slice__inner">NO FADE. NO BLUR.</div></div>
+        <div class="slice"><div class="slice__inner">ONLY SHUTTERS.</div></div>
+        <div class="slice"><div class="slice__inner">OPENING ON DEMAND.</div></div>
+        <div class="slice"><div class="slice__inner">CLOSING ON EXIT.</div></div>
+      </div>
+      <p class="cap">Progress is bidirectional — scroll back and the blinds slam shut again.</p>
+    </section>
+  </main>
+  <script>
+    const panels=[...document.querySelectorAll('[data-panel]')];
+    const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function clamp(n,a,b){return Math.min(b,Math.max(a,n))}
+    function tick(){
+      panels.forEach(p=>{
+        if(reduced){p.style.setProperty('--p','1');return}
+        const r=p.getBoundingClientRect(),vh=innerHeight;
+        const v=clamp((vh*.85-r.top)/(vh*.6),0,1);
+        p.style.setProperty('--p',v.toFixed(4));
+      });
+    }
+    tick();
+    addEventListener('scroll',tick,{passive:true});
+    addEventListener('resize',tick,{passive:true});
+  </script>
+</body>
+</html>

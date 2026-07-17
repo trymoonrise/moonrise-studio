@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1606
+    slug: 3d-mouse-text-letters
+    title: 3D Letter Mouse Depth
+    category: 3d-mouse
+    tags: 3d, mouse, text, letters
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1606 — 3D Letter Mouse Depth</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#07080e;perspective:800px;overflow:hidden;font-family:Syne,sans-serif}
+    .word{display:flex;gap:.05em;transform-style:preserve-3d;transform:rotateX(8deg);font-size:clamp(3rem,12vw,7rem);font-weight:800;letter-spacing:-.04em;color:#fff}
+    .word span{display:inline-block;transform:translateZ(var(--z,0px)) rotateY(var(--ry,0deg));text-shadow:0 12px 30px rgba(108,140,255,.35);transition:color .2s}
+    .hint{position:fixed;bottom:1.4rem;font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.35)}
+  </style>
+</head>
+<body>
+  <div class="word" id="word" aria-label="DEPTH"></div>
+  <div class="hint">Letters rise toward the cursor</div>
+  <script>
+    const word='DEPTH',el=document.getElementById('word');
+    const letters=[...word].map((ch,i)=>{const s=document.createElement('span');s.textContent=ch;el.appendChild(s);return {s,i,z:0,tz:0,ry:0,try:0}});
+    let mx=.5;
+    addEventListener('pointermove',e=>{mx=e.clientX/innerWidth});
+    (function loop(){
+      letters.forEach(L=>{
+        const center=(L.i+.5)/letters.length;
+        const d=Math.abs(center-mx);
+        L.tz=Math.max(0,80-d*220);L.try=(center-mx)*-30;
+        L.z+=(L.tz-L.z)*.15;L.ry+=(L.try-L.ry)*.12;
+        L.s.style.setProperty('--z',L.z+'px');L.s.style.setProperty('--ry',L.ry+'deg');
+        L.s.style.color=`hsl(${210+L.z},${70+L.z*.2}%,${70+L.z*.15}%)`;
+      });
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0501
+    slug: split-screens-animated-split-12
+    title: Animated Split 12
+    category: split-screens
+    tags: split-screens, experimental, mask, shapes
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0501 — Animated Split 12</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;overflow:hidden;font-family:Syne,sans-serif;background:#111;color:#fff}
+    .stage{position:relative;min-height:100vh;overflow:hidden}
+.half{position:absolute;inset:0;display:grid;place-items:center}
+.half.a{background:#fbbf24;color:#111;clip-path:polygon(0 0,50% 0,50% 100%,0 100%);animation:wipe 4s cubic-bezier(.65,.05,.36,1) infinite}
+.half.b{background:#111;clip-path:polygon(50% 0,100% 0,100% 100%,50% 100%);animation:wipeB 4s cubic-bezier(.65,.05,.36,1) infinite}
+.half h1{font-size:clamp(3rem,12vw,7rem);font-weight:800;letter-spacing:-.08em;margin:0}
+.pulse{position:absolute;left:50%;top:50%;width:12px;height:12px;margin:-6px;border-radius:50%;background:#fff;z-index:3;box-shadow:0 0 0 0 rgba(255,255,255,.5);animation:ping 2s ease-out infinite}
+@keyframes wipe{
+  0%,10%{clip-path:polygon(0 0,50% 0,50% 100%,0 100%)}
+  45%,55%{clip-path:polygon(0 0,72% 0,28% 100%,0 100%)}
+  90%,100%{clip-path:polygon(0 0,50% 0,50% 100%,0 100%)}
+}
+@keyframes wipeB{
+  0%,10%{clip-path:polygon(50% 0,100% 0,100% 100%,50% 100%)}
+  45%,55%{clip-path:polygon(28% 0,100% 0,100% 100%,72% 100%)}
+  90%,100%{clip-path:polygon(50% 0,100% 0,100% 100%,50% 100%)}
+}
+@keyframes ping{to{box-shadow:0 0 0 40px transparent;opacity:0}}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="stage"><div class="half a"><h1>ON</h1></div><div class="half b"><h1>OFF</h1></div><span class="pulse" aria-hidden="true"></span></div>
+
+</body>
+</html>

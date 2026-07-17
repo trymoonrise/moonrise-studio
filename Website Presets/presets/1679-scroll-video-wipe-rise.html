@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1679
+    slug: scroll-video-wipe-rise
+    title: Video Wipe Rise
+    category: scroll-animations
+    tags: scroll, video, wipe, reveal
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1679 — Video Wipe Rise</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    
+    body{margin:0;min-height:240vh;background:#fafafa;color:#111;font-family:system-ui,-apple-system,sans-serif}
+    .stage{position:sticky;top:0;height:100vh;display:grid;place-items:center;padding:2rem}
+    .shell{width:min(92vw,820px);border-radius:22px;overflow:hidden;box-shadow:0 28px 80px rgba(15,23,42,.12);clip-path:inset(var(--clip,100% 0 0 0) round 22px)}
+    video{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;transform:translateY(var(--vid-y,12%)) scale(var(--vid-s,1.08))}
+    .cap{margin-top:1.25rem;text-align:center;opacity:var(--cap-o,0);transform:translateY(var(--cap-y,16px))}
+    .cap h2{font-size:1.4rem;font-weight:800;letter-spacing:-.02em}
+    @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="stage" id="stage"><div><div class="shell"><video src="../stock/media/heroes/ocean-archive.mp4" autoplay muted loop playsinline aria-hidden="true"></video></div><div class="cap"><h2>Rise into frame</h2></div></div></div>
+<script>function ease(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2}function lerp(a,b,t){return a+(b-a)*t}function prog(track){const r=track.getBoundingClientRect();const h=r.height-innerHeight;return h>0?ease(Math.min(1,Math.max(0,-r.top/h))):0}function pageProg(){const max=document.documentElement.scrollHeight-innerHeight;return max>0?ease(Math.min(1,scrollY/max)):0};const stage=document.getElementById('stage'),reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;function tick(){const p=pageProg();if(reduced){stage.style.setProperty('--clip','0% 0 0 0');stage.style.setProperty('--cap-o','1');return}stage.style.setProperty('--clip',lerp(100,0,p).toFixed(1)+'% 0 0 0');stage.style.setProperty('--vid-y',lerp(12,0,p).toFixed(1)+'%');stage.style.setProperty('--vid-s',lerp(1.08,1,p).toFixed(3));stage.style.setProperty('--cap-o',Math.max(0,(p-.5)/.5).toFixed(3));stage.style.setProperty('--cap-y',lerp(16,0,p).toFixed(1)+'px')}let raf=false;addEventListener('scroll',()=>{if(raf)return;raf=true;requestAnimationFrame(()=>{raf=false;tick()})},{passive:true});addEventListener('resize',tick,{passive:true});tick();</script>
+</body>
+</html>

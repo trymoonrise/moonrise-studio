@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1257
+    slug: carousels-vertical-carousel-10
+    title: Vertical Carousel 10
+    category: carousels
+    tags: carousels, animated, modern, interactive
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1257 — Vertical Carousel 10</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0f172a;font-family:'DM Sans',system-ui,sans-serif;color:#fff;overflow:hidden;padding:24px}
+    button{font:inherit;border:0;cursor:pointer;background:transparent;color:inherit}
+    .wrap{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;width:min(420px,92vw)}.stage{height:360px;width:min(260px,62vw);overflow:hidden;border-radius:28px;position:relative;box-shadow:0 28px 70px rgba(0,0,0,.4)}.track{transition:transform .8s cubic-bezier(.22,1,.36,1)}.slide{height:360px;position:relative}.slide img{width:100%;height:100%;object-fit:cover}.side{display:flex;flex-direction:column;gap:14px}.side button{width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.2);color:#fff;font-size:16px;transition:background .25s,transform .25s}.side button:hover{background:rgba(255,255,255,.1);transform:scale(1.08)}.meta{font-family:Syne,sans-serif;font-weight:700;writing-mode:vertical-rl;transform:rotate(180deg);letter-spacing:.12em;text-transform:uppercase;font-size:.75rem;color:rgba(255,255,255,.45);min-height:120px}.dots{display:flex;flex-direction:column;gap:8px}.dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.25);transition:height .35s,background .35s}.dot.on{height:28px;border-radius:99px;background:#38bdf8}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="wrap"><div class="side"><button id="prev">↑</button><div class="dots" id="dots"></div><button id="next">↓</button></div><div><div class="stage"><div class="track" id="track">
+<div class="slide"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt=""></div>
+<div class="slide"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt="" style="filter:hue-rotate(80deg)"></div>
+<div class="slide"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt="" style="filter:hue-rotate(170deg)"></div>
+</div></div></div><div class="meta" id="meta">Vertical 01</div></div>
+<script>
+const track=document.getElementById('track'),slides=[...track.children],dots=document.getElementById('dots'),meta=document.getElementById('meta'),labels=['Vertical 01','Vertical 02','Vertical 03'];let i=0;slides.forEach((_,n)=>{const d=document.createElement('button');d.className='dot'+(n===0?' on':'');d.onclick=()=>go(n);dots.appendChild(d);});function go(n){i=(n+slides.length)%slides.length;track.style.transform='translateY('+(-i*360)+'px)';[...dots.children].forEach((d,k)=>d.classList.toggle('on',k===i));meta.textContent=labels[i];}document.getElementById('prev').onclick=()=>go(i-1);document.getElementById('next').onclick=()=>go(i+1);
+</script>
+</body>
+</html>

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0144
+    slug: folder-dropdown-breadcrumb-path
+    title: Breadcrumb Path
+    category: folder-dropdown
+    tags: folder-dropdown, breadcrumb
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0144 — Breadcrumb Path</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: radial-gradient(ellipse at 50% 15%, #1a1d2e 0%, #0c0d12 65%);
+      padding: 2rem;
+      color: #e7e8ee;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    .explorer {
+      width: min(520px, 100%);
+      border-radius: 18px;
+      overflow: hidden;
+      background: #14151c;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.45);
+    }
+
+    .toolbar {
+      padding: 1rem 1.15rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .breadcrumb {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.15rem;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .breadcrumb__item {
+      display: flex;
+      align-items: center;
+      gap: 0.15rem;
+      min-width: 0;
+    }
+
+    .breadcrumb__sep {
+      width: 16px;
+      height: 16px;
+      stroke: rgba(231, 232, 238, 0.28);
+      stroke-width: 2;
+      fill: none;
+      flex-shrink: 0;
+    }
+
+    .breadcrumb__link,
+    .breadcrumb__current {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.55rem;
+      border-radius: 8px;
+      font-size: 0.86rem;
+      font-weight: 500;
+      border: none;
+      background: none;
+      font-family: inherit;
+      max-width: 140px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .breadcrumb__link {
+      color: rgba(231, 232, 238, 0.72);
+      cursor: pointer;
+      text-decoration: none;
+      transition: color 0.2s, background 0.2s;
+    }
+
+    .breadcrumb__link:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .breadcrumb__current {
+      color: #fff;
+      font-weight: 600;
+      background: rgba(108, 140, 255, 0.14);
+    }
+
+    .breadcrumb__icon {
+      width: 15px;
+      height: 15px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.85rem 1.15rem 0.35rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(231, 232, 238, 0.38);
+    }
+
+    .panel-head span:last-child {
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.04em;
+      text-transform: none;
+      font-weight: 500;
+    }
+
+    .files {
+      list-style: none;
+      margin: 0;
+      padding: 0.35rem 0.65rem 0.85rem;
+    }
+
+    .file {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+      padding: 0.7rem 0.65rem;
+      border: none;
+      border-radius: 10px;
+      background: none;
+      color: rgba(231, 232, 238, 0.82);
+      font-size: 0.9rem;
+      font-family: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .file:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+    }
+
+    .file svg {
+      width: 18px;
+      height: 18px;
+      stroke: #8aa0ff;
+      stroke-width: 2;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+
+    .file--doc svg {
+      stroke: rgba(231, 232, 238, 0.45);
+    }
+
+    .file__meta {
+      margin-left: auto;
+      font-size: 0.75rem;
+      color: rgba(231, 232, 238, 0.35);
+    }
+  </style>
+</head>
+<body>
+  <div class="explorer">
+    <header class="toolbar">
+      <ol class="breadcrumb" id="breadcrumb" aria-label="Folder path"></ol>
+    </header>
+    <div class="panel-head">
+      <span>Contents</span>
+      <span id="count">0 items</span>
+    </div>
+    <ul class="files" id="files"></ul>
+  </div>
+
+  <script>
+    const tree = {
+      '': [
+        { name: 'Projects', type: 'folder' },
+        { name: 'Documents', type: 'folder' },
+        { name: 'Downloads', type: 'folder' },
+      ],
+      Projects: [
+        { name: 'Website', type: 'folder' },
+        { name: 'Mobile App', type: 'folder' },
+        { name: 'brief.pdf', type: 'file' },
+      ],
+      'Projects/Website': [
+        { name: 'assets', type: 'folder' },
+        { name: 'components', type: 'folder' },
+        { name: 'index.html', type: 'file' },
+        { name: 'styles.css', type: 'file' },
+      ],
+      'Projects/Website/assets': [
+        { name: 'hero.png', type: 'file' },
+        { name: 'logo.svg', type: 'file' },
+        { name: 'icons', type: 'folder' },
+      ],
+      'Projects/Website/assets/icons': [
+        { name: 'home.svg', type: 'file' },
+        { name: 'search.svg', type: 'file' },
+      ],
+      Documents: [
+        { name: 'notes.md', type: 'file' },
+        { name: 'invoice.pdf', type: 'file' },
+      ],
+      Downloads: [
+        { name: 'archive.zip', type: 'file' },
+      ],
+      'Projects/Mobile App': [
+        { name: 'screens', type: 'folder' },
+        { name: 'readme.md', type: 'file' },
+      ],
+      'Projects/Website/components': [
+        { name: 'Header.tsx', type: 'file' },
+        { name: 'Footer.tsx', type: 'file' },
+      ],
+      'Projects/Mobile App/screens': [
+        { name: 'onboarding.fig', type: 'file' },
+      ],
+    };
+
+    const folderIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z"/></svg>';
+    const fileIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>';
+    const homeIcon = '<svg class="breadcrumb__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>';
+    const chevIcon = '<svg class="breadcrumb__sep" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>';
+
+    let path = ['Projects', 'Website'];
+
+    function pathKey() {
+      return path.join('/');
+    }
+
+    function renderBreadcrumb() {
+      const bc = document.getElementById('breadcrumb');
+      const parts = [{ label: 'Home', depth: 0 }];
+      path.forEach((segment, i) => parts.push({ label: segment, depth: i + 1 }));
+
+      bc.innerHTML = parts.map((part, i) => {
+        const isLast = i === parts.length - 1;
+        const sep = i > 0 ? chevIcon : '';
+        const icon = i === 0 ? homeIcon : '';
+        if (isLast) {
+          return `<li class="breadcrumb__item">${sep}<span class="breadcrumb__current">${icon}${part.label}</span></li>`;
+        }
+        return `<li class="breadcrumb__item">${sep}<button class="breadcrumb__link" type="button" data-depth="${part.depth}">${icon}${part.label}</button></li>`;
+      }).join('');
+
+      bc.querySelectorAll('[data-depth]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const depth = Number(btn.dataset.depth);
+          path = path.slice(0, depth);
+          render();
+        });
+      });
+    }
+
+    function renderFiles() {
+      const list = document.getElementById('files');
+      const items = tree[pathKey()] || [];
+      document.getElementById('count').textContent = items.length + (items.length === 1 ? ' item' : ' items');
+
+      list.innerHTML = items.map((item) => {
+        const icon = item.type === 'folder' ? folderIcon : fileIcon;
+        const cls = item.type === 'file' ? 'file file--doc' : 'file';
+        const meta = item.type === 'folder' ? 'Folder' : 'File';
+        return `<li><button class="${cls}" type="button" data-name="${item.name}" data-type="${item.type}">${icon}<span>${item.name}</span><span class="file__meta">${meta}</span></button></li>`;
+      }).join('');
+
+      list.querySelectorAll('.file').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          if (btn.dataset.type === 'folder') {
+            path.push(btn.dataset.name);
+            render();
+          }
+        });
+      });
+    }
+
+    function render() {
+      renderBreadcrumb();
+      renderFiles();
+    }
+
+    render();
+  </script>
+</body>
+</html>

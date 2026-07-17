@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1476
+    slug: scroll-progress-top-bar
+    title: Gradient Progress Bar
+    category: scroll-progress
+    tags: scroll, progress, bar
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1476 — Gradient Progress Bar</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#111;color:#fff}.bar{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,#6c8cff,#ff6cb0,#6cffb8);z-index:99;transition:width .08s}section{min-height:100vh;display:grid;place-items:center;font-size:2rem;font-weight:800;border-bottom:1px solid #222}
+  </style>
+</head>
+<body>
+<div class="bar" id="bar"></div><section>Start</section><section>Journey</section><section>Middle</section><section>End</section>
+<script>const p=document.documentElement;const bar=document.getElementById('bar');window.addEventListener('scroll',()=>{const h=p.scrollHeight-p.clientHeight;bar.style.width=(p.scrollTop/h*100)+'%';},{passive:true});</script>
+</body>
+</html>

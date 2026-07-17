@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1114
+    slug: bios-gradient-bio-11
+    title: Gradient Bio 11
+    category: bios
+    tags: bios, gradient, experimental, shapes
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1114 — Gradient Bio 11</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=DM+Sans:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0a0a0c;font-family:'DM Sans',sans-serif;overflow:hidden}
+    .stage{position:relative;width:min(340px,90vw);height:280px;display:grid;place-items:center;animation:in .9s cubic-bezier(.22,1,.36,1) both}
+    .wash{position:absolute;width:220px;height:220px;background:conic-gradient(from 0deg,#2dd4bf,#60a5fa,#c084fc,#f472b6,#2dd4bf);border-radius:40% 60% 55% 45% / 55% 40% 60% 45%;filter:blur(28px);opacity:.55;animation:morph 10s ease-in-out infinite,spin 20s linear infinite}
+    .glass{position:relative;z-index:1;padding:1.75rem 1.5rem;text-align:center;background:rgba(10,10,12,.55);border:1px solid rgba(255,255,255,.12);border-radius:28px 40px 32px 48px;backdrop-filter:blur(14px);min-width:220px}
+    .avatar{width:52px;height:52px;margin:0 auto .9rem;border-radius:50%;background:linear-gradient(135deg,#2dd4bf,#60a5fa);display:grid;place-items:center;font-family:Fraunces,serif;font-size:1.1rem;color:#0a0a0c;animation:pulse 3s ease-in-out infinite}
+    h2{margin:0;font-family:Fraunces,serif;font-weight:500;font-size:1.35rem;color:#f5f5f7}
+    .role{margin:.35rem 0 0;font-size:.65rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(245,245,247,.45)}
+    p{margin:.85rem 0 0;font-size:.85rem;line-height:1.45;color:rgba(245,245,247,.6)}
+    @keyframes morph{0%,100%{border-radius:40% 60% 55% 45% / 55% 40% 60% 45%}50%{border-radius:55% 45% 40% 60% / 40% 55% 45% 55%}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes pulse{50%{transform:scale(1.06)}}
+    @keyframes in{from{opacity:0;transform:scale(.95)}}
+    @media (prefers-reduced-motion:reduce){.wash,.avatar,.stage{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="wash" aria-hidden="true"></div>
+    <div class="glass">
+      <div class="avatar">AM</div>
+      <h2>Asha Moon</h2>
+      <p class="role">Colorist</p>
+      <p>Gradients with a pulse.</p>
+    </div>
+  </div>
+</body>
+</html>

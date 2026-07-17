@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0320
+    slug: countdown-event-countdown
+    title: Event Countdown
+    category: countdown
+    tags: countdown, event
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0320 — Event Countdown</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');*{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fff;color:#111;font-family:"DM Sans",system-ui,-apple-system,sans-serif;padding:2rem}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.marq-track{animation:none!important}}
+    .card{width:min(100%,380px);border:1.5px solid #111;position:relative;overflow:hidden}
+    .marq{overflow:hidden;background:#111;color:#fff;padding:.45rem 0}
+    .marq-track{display:flex;gap:1.5rem;width:max-content;animation:scroll 18s linear infinite;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;font-weight:600}
+    @keyframes scroll{to{transform:translateX(-50%)}}
+    .body{padding:1.75rem 1.5rem 1.5rem;text-align:center}
+    h3{margin:0;font-family:"Syne",system-ui,sans-serif;font-size:1.6rem;font-weight:800;letter-spacing:-.04em}
+    .date{margin:.4rem 0 1.5rem;font-size:.78rem;color:#888}
+    .nums{display:flex;justify-content:center;gap:1.25rem}
+    .n .v{font-family:"Syne",system-ui,sans-serif;font-size:2rem;font-weight:800;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+    .n .l{font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:#999;margin-top:.25rem}
+  </style>
+</head>
+<body>
+<div class="card"><div class="marq" aria-hidden="true"><div class="marq-track"><span>Event · Doors open soon · Limited seats · Event · Doors open soon · Limited seats · </span><span>Event · Doors open soon · Limited seats · Event · Doors open soon · Limited seats · </span></div></div>
+    <div class="body"><h3>Product Launch</h3><div class="date">July 30, 2026</div>
+    <div class="nums"><div class="n"><div class="v" id="d">09</div><div class="l">Days</div></div><div class="n"><div class="v" id="h">05</div><div class="l">Hrs</div></div><div class="n"><div class="v" id="m">22</div><div class="l">Min</div></div><div class="n"><div class="v" id="s">00</div><div class="l">Sec</div></div></div></div></div>
+<script>const end=Date.now()+9*864e5+12*36e5+34*6e4+56e3;const $=id=>document.getElementById(id);function tick(){let t=Math.max(0,end-Date.now());const D=String(Math.floor(t/864e5)).padStart(2,'0'),H=String(Math.floor(t/36e5%24)).padStart(2,'0'),M=String(Math.floor(t/6e4%60)).padStart(2,'0'),S=String(Math.floor(t/1e3%60)).padStart(2,'0');$('d')&&($('d').textContent=D);$('h')&&($('h').textContent=H);$('m')&&($('m').textContent=M);$('s')&&($('s').textContent=S);}tick();setInterval(tick,1000);</script>
+</body>
+</html>

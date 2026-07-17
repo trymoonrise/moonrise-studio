@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0961
+    slug: errors-404-page-01
+    title: 404 Page 01
+    category: errors
+    tags: errors, 404
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0961 — 404 Page 01</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@800;900&family=Exo+2:wght@400;600&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;overflow:hidden;background:#000;color:#fff;font-family:'Exo 2',sans-serif;display:grid;place-items:center;perspective:800px}
+    .void{position:fixed;inset:0;background:radial-gradient(ellipse at center,#0a1520 0%,#000 70%)}
+    .star{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;animation:drift linear infinite;opacity:.6}
+    .lost{
+      position:relative;z-index:2;text-align:center;transform-style:preserve-3d;
+      animation:tumble 12s linear infinite;
+    }
+    .code{
+      font-family:Orbitron,sans-serif;font-size:clamp(6rem,22vw,12rem);font-weight:900;
+      letter-spacing:-.05em;line-height:.85;
+      background:linear-gradient(180deg,#7ee0ff,#2060ff 60%,#001040);
+      -webkit-background-clip:text;background-clip:text;color:transparent;
+      filter:drop-shadow(0 0 40px rgba(60,140,255,.5));
+      animation:pulse-void 2s ease-in-out infinite;
+    }
+    h1{margin:1.5rem 0 .5rem;font-size:1.3rem;font-weight:600;letter-spacing:.3em;text-transform:uppercase;opacity:.7}
+    p{opacity:.4;max-width:28ch;margin:0 auto 2rem;font-size:.9rem}
+    button{appearance:none;border:1px solid rgba(126,224,255,.4);background:rgba(126,224,255,.08);color:#7ee0ff;padding:.85rem 1.8rem;font:600 .8rem 'Exo 2',sans-serif;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;border-radius:999px;animation:beacon 2s ease-in-out infinite}
+    @keyframes tumble{to{transform:rotateY(360deg) rotateX(20deg)}}
+    @keyframes pulse-void{0%,100%{transform:scale(1) translateZ(0)}50%{transform:scale(1.05) translateZ(60px)}}
+    @keyframes drift{to{transform:translateY(100vh) scale(0)}}
+    @keyframes beacon{0%,100%{box-shadow:0 0 0 0 rgba(126,224,255,.3)}50%{box-shadow:0 0 0 16px rgba(126,224,255,0)}}
+    @media (prefers-reduced-motion:reduce){.lost,.code,button,.star{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="void" id="void" aria-hidden="true"></div>
+  <div class="lost">
+    <div class="code">404</div>
+    <h1>Lost in deep space</h1>
+    <p>This URL drifted past the event horizon. No light returns from here.</p>
+    <button type="button">Deploy rescue beacon</button>
+  </div>
+  <script>
+    const v=document.getElementById('void');
+    for(let i=0;i<60;i++){
+      const s=document.createElement('div');
+      s.className='star';
+      s.style.left=Math.random()*100+'%';
+      s.style.top=Math.random()*100+'%';
+      s.style.animationDuration=(3+Math.random()*8)+'s';
+      s.style.animationDelay=Math.random()*5+'s';
+      s.style.width=s.style.height=(1+Math.random()*2)+'px';
+      v.appendChild(s);
+    }
+  </script>
+</body>
+</html>

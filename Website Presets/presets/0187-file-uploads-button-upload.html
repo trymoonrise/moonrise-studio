@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0187
+    slug: file-uploads-button-upload
+    title: Button Upload
+    category: file-uploads
+    tags: file-uploads, button
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0187 — Button Upload</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#0d0d0f;padding:2rem}.btn{padding:12px 28px;background:#6c8cff;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer}.name{margin-top:12px;color:#888;font-size:.85rem}input{display:none}
+  </style>
+</head>
+<body>
+<label><input type="file" id="f"><button class="btn" onclick="document.getElementById('f').click()">Choose File</button></label><div class="name" id="n">No file selected</div>
+<script>document.getElementById('f').onchange=function(){document.getElementById('n').textContent=this.files[0]?.name||'No file selected';};</script>
+</body>
+</html>

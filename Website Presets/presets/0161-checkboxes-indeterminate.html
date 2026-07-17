@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0161
+    slug: checkboxes-indeterminate
+    title: Indeterminate Checkbox
+    category: checkboxes
+    tags: checkboxes, indeterminate
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0161 — Indeterminate Checkbox</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #f4f5f8;
+      padding: 2rem;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: #111318;
+    }
+
+    .card {
+      width: min(400px, 100%);
+      padding: 1.5rem;
+      border-radius: 18px;
+      background: #fff;
+      border: 1px solid #e4e6ec;
+      box-shadow: 0 16px 45px rgba(15, 23, 42, 0.07);
+    }
+
+    .head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #eceef3;
+    }
+
+    .head h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.25rem;
+    }
+
+    .head p {
+      font-size: 0.86rem;
+      color: #6b7085;
+    }
+
+    .count {
+      flex-shrink: 0;
+      padding: 0.35rem 0.65rem;
+      border-radius: 999px;
+      background: rgba(79, 110, 247, 0.1);
+      color: #4f6ef7;
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .list {
+      display: grid;
+      gap: 0.35rem;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      padding: 0.7rem 0.75rem;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .row:hover {
+      background: #f7f8fb;
+    }
+
+    .row--parent {
+      margin-bottom: 0.35rem;
+      font-weight: 600;
+    }
+
+    .row input {
+      position: absolute;
+      opacity: 0;
+      width: 1px;
+      height: 1px;
+      pointer-events: none;
+    }
+
+    .cb {
+      width: 22px;
+      height: 22px;
+      border: 2px solid #d0d4de;
+      border-radius: 7px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      background: #fff;
+      transition:
+        background-color 0.28s cubic-bezier(0.22, 0.61, 0.36, 1),
+        border-color 0.28s cubic-bezier(0.22, 0.61, 0.36, 1),
+        transform 0.2s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    .row:hover .cb {
+      border-color: #4f6ef7;
+    }
+
+    .cb svg {
+      width: 13px;
+      height: 13px;
+      stroke: #fff;
+      stroke-width: 2.5;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0;
+      transform: scale(0.5);
+      transition:
+        opacity 0.22s cubic-bezier(0.22, 0.61, 0.36, 1),
+        transform 0.22s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    .cb.is-checked,
+    .cb.is-indeterminate {
+      background: #4f6ef7;
+      border-color: #4f6ef7;
+      transform: scale(1.03);
+    }
+
+    .cb.is-checked .icon-check,
+    .cb.is-indeterminate .icon-minus {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .label {
+      font-size: 0.92rem;
+      color: #2a2f3d;
+    }
+
+    .row--parent .label {
+      font-size: 0.95rem;
+    }
+
+    .children {
+      display: grid;
+      gap: 0.2rem;
+      padding-left: 0.35rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="head">
+      <div>
+        <h2>Select items</h2>
+        <p>Parent shows indeterminate when partially selected.</p>
+      </div>
+      <span class="count" id="count">0 of 4</span>
+    </div>
+
+    <div class="list">
+      <label class="row row--parent">
+        <input type="checkbox" id="parent">
+        <span class="cb" id="parent-cb" aria-hidden="true">
+          <svg class="icon-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+          <svg class="icon-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></svg>
+        </span>
+        <span class="label">Select all</span>
+      </label>
+
+      <div class="children">
+        <label class="row">
+          <input type="checkbox" class="child" data-cb="cb1">
+          <span class="cb" id="cb1" aria-hidden="true">
+            <svg class="icon-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+            <svg class="icon-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></svg>
+          </span>
+          <span class="label">Design system</span>
+        </label>
+        <label class="row">
+          <input type="checkbox" class="child" data-cb="cb2">
+          <span class="cb" id="cb2" aria-hidden="true">
+            <svg class="icon-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+            <svg class="icon-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></svg>
+          </span>
+          <span class="label">Landing page</span>
+        </label>
+        <label class="row">
+          <input type="checkbox" class="child" data-cb="cb3">
+          <span class="cb" id="cb3" aria-hidden="true">
+            <svg class="icon-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+            <svg class="icon-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></svg>
+          </span>
+          <span class="label">Mobile app</span>
+        </label>
+        <label class="row">
+          <input type="checkbox" class="child" data-cb="cb4">
+          <span class="cb" id="cb4" aria-hidden="true">
+            <svg class="icon-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+            <svg class="icon-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></svg>
+          </span>
+          <span class="label">Marketing site</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const parent = document.getElementById('parent');
+    const parentCb = document.getElementById('parent-cb');
+    const count = document.getElementById('count');
+    const children = [...document.querySelectorAll('.child')];
+
+    function syncVisual(input, box) {
+      box.classList.toggle('is-checked', input.checked && !input.indeterminate);
+      box.classList.toggle('is-indeterminate', input.indeterminate);
+    }
+
+    function updateParent() {
+      const selected = children.filter((c) => c.checked).length;
+      parent.checked = selected === children.length;
+      parent.indeterminate = selected > 0 && selected < children.length;
+      syncVisual(parent, parentCb);
+      count.textContent = selected + ' of ' + children.length;
+    }
+
+    parent.addEventListener('change', () => {
+      const on = parent.checked;
+      children.forEach((c) => {
+        c.checked = on;
+        syncVisual(c, document.getElementById(c.dataset.cb));
+      });
+      parent.indeterminate = false;
+      updateParent();
+    });
+
+    children.forEach((child) => {
+      child.addEventListener('change', () => {
+        syncVisual(child, document.getElementById(child.dataset.cb));
+        updateParent();
+      });
+    });
+
+    updateParent();
+  </script>
+</body>
+</html>

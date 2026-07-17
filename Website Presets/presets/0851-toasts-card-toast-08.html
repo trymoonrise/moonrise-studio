@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0851
+    slug: toasts-card-toast-08
+    title: Tilt Card Toast
+    category: toasts
+    tags: toasts, card
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0851 — Tilt Card Toast</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: radial-gradient(ellipse at 50% 100%, #141820, #08090c 60%);
+      font-family: 'Outfit', sans-serif;
+      color: #e8eaef;
+      perspective: 800px;
+    }
+
+    .trigger {
+      padding: 0.85rem 1.6rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      color: #e8eaef;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .toast-wrap {
+      position: fixed;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s;
+    }
+
+    .toast-wrap.show { opacity: 1; pointer-events: auto; }
+
+    .toast {
+      width: min(calc(100vw - 2rem), 360px);
+      padding: 1.3rem;
+      background: linear-gradient(145deg, #1a1f2a, #12151c);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+      transform: translateY(80px) rotateX(8deg);
+      transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+      transform-style: preserve-3d;
+    }
+
+    .toast-wrap.show .toast { transform: translateY(0) rotateX(0deg); }
+
+    .meta {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      display: grid;
+      place-items: center;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+
+    .meta span { font-size: 0.72rem; color: rgba(232, 234, 239, 0.45); }
+
+    .toast h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+    }
+
+    .toast p { font-size: 0.82rem; color: rgba(232, 234, 239, 0.6); line-height: 1.5; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .toast, .toast-wrap { transition: none; }
+      .toast-wrap.show .toast { transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <button class="trigger" id="btn" type="button">Show card toast</button>
+
+  <div class="toast-wrap" id="wrap">
+    <div class="toast" id="toast" role="status" aria-live="polite">
+      <div class="meta">
+        <div class="avatar" aria-hidden="true">MK</div>
+        <span>Mira K. · 2 min ago</span>
+      </div>
+      <h2>Comment on wireframe</h2>
+      <p>Consider increasing contrast on the nav hierarchy — left panel feels flat.</p>
+    </div>
+  </div>
+
+  <script>
+    const btn = document.getElementById('btn');
+    const wrap = document.getElementById('wrap');
+    const toast = document.getElementById('toast');
+    let timer;
+
+    toast.addEventListener('mousemove', (e) => {
+      const rect = toast.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      toast.style.transform = `rotateY(${x * 12}deg) rotateX(${-y * 12}deg)`;
+    });
+
+    toast.addEventListener('mouseleave', () => {
+      toast.style.transform = '';
+    });
+
+    btn.addEventListener('click', () => {
+      clearTimeout(timer);
+      wrap.classList.add('show');
+      timer = setTimeout(() => wrap.classList.remove('show'), 4000);
+    });
+  </script>
+</body>
+</html>

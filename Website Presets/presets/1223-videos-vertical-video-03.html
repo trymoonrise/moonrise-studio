@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1223
+    slug: videos-vertical-video-03
+    title: Reel Frame Vertical Video
+    category: videos
+    tags: videos, vertical, reel, frame
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1223 — Reel Frame Vertical Video</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#060608;color:#eceef2;font-family:Outfit,sans-serif;padding:2rem}
+    .phone{width:260px;background:#111318;border-radius:32px;padding:12px;border:2px solid rgba(255,255,255,.08);box-shadow:0 24px 60px rgba(0,0,0,.5);position:relative}
+    .notch{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:80px;height:24px;background:#060608;border-radius:0 0 16px 16px;z-index:2}
+    .screen{position:relative;border-radius:24px;overflow:hidden;aspect-ratio:9/16;background:#0a0c10}
+    .screen img{width:100%;height:100%;object-fit:cover;animation:ken-burns 12s ease-in-out infinite alternate}
+    .overlay{position:absolute;inset:0;background:linear-gradient(transparent 60%,rgba(0,0,0,.7));pointer-events:none}
+    .progress{position:absolute;top:40px;left:12px;right:12px;display:flex;gap:4px;z-index:1}
+    .seg{flex:1;height:2px;background:rgba(255,255,255,.2);border-radius:1px;overflow:hidden}
+    .seg.done{background:rgba(255,255,255,.5)}
+    .seg.active{background:rgba(255,255,255,.2)}
+    .seg.active::after{content:'';display:block;height:100%;width:60%;background:#fff;animation:story-progress 5s linear infinite}
+    .meta{position:absolute;bottom:16px;left:16px;right:16px;z-index:1}
+    .meta h3{font-family:Syne,sans-serif;font-size:.95rem;margin:0 0 4px}
+    .meta p{font-size:.7rem;color:rgba(236,238,242,.6)}
+    .play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.15);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);display:grid;place-items:center;z-index:1;cursor:pointer;transition:transform .3s,background .3s;animation:play-pulse 2s ease infinite}
+    .play:hover{transform:translate(-50%,-50%) scale(1.1);background:rgba(255,255,255,.25)}
+    .play svg{width:20px;height:20px;fill:#fff;margin-left:3px}
+    @keyframes ken-burns{to{transform:scale(1.08)}}
+    @keyframes story-progress{to{width:100%}}
+    @keyframes play-pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.2)}50%{box-shadow:0 0 0 12px rgba(255,255,255,0)}}
+    @media(prefers-reduced-motion:reduce){.screen img,.seg.active::after,.play{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="screen">
+      <img src="../stock/media/16-9 Aspect Ratio(image).png" alt="Video frame">
+      <div class="overlay"></div>
+      <div class="progress"><div class="seg done"></div><div class="seg active"></div><div class="seg"></div></div>
+      <button class="play" aria-label="Play"><svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19"/></svg></button>
+      <div class="meta"><h3>Behind the build</h3><p>Episode 03 · 2:14</p></div>
+    </div>
+  </div>
+</body>
+</html>

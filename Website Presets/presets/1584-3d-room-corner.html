@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1584
+    slug: 3d-room-corner
+    title: 3D Room Corner
+    category: 3d-effects
+    tags: 3d, room, perspective
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1584 — 3D Room Corner</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&display=swap');
+    *{box-sizing:border-box}
+    body{
+      margin:0;min-height:100vh;display:grid;place-items:center;overflow:hidden;
+      background:#03040a;color:#fff;font-family:Syne,sans-serif;
+      perspective:950px;
+    }
+    body::before{
+      content:"";position:fixed;inset:0;pointer-events:none;
+      background:
+        radial-gradient(circle at 50% 48%,rgba(78,91,255,.18),transparent 32%),
+        radial-gradient(circle at 20% 80%,rgba(255,48,181,.12),transparent 28%);
+      filter:blur(20px);
+    }
+    .viewport{
+      position:relative;width:min(760px,94vw);height:min(520px,74vh);
+      transform-style:preserve-3d;
+    }
+    .room{
+      position:absolute;inset:0;transform-style:preserve-3d;
+      transform:rotateX(var(--rx,7deg)) rotateY(var(--ry,-10deg)) translateZ(-30px);
+      transition:transform .12s ease-out;
+    }
+    .wall{
+      position:absolute;overflow:hidden;
+      border:1px solid rgba(126,154,255,.2);
+      background-color:#090c1b;
+      background-image:
+        linear-gradient(rgba(94,116,255,.17) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(94,116,255,.17) 1px,transparent 1px);
+      background-size:42px 42px;
+      box-shadow:inset 0 0 80px rgba(0,0,0,.7);
+    }
+    .back{inset:0;transform:translateZ(-230px);animation:grid-drift 9s linear infinite}
+    .floor{
+      left:0;right:0;bottom:-260px;height:520px;
+      transform-origin:top;transform:translateZ(-230px) rotateX(90deg);
+      background-color:#070912;
+      background-image:
+        linear-gradient(rgba(255,58,184,.16) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,58,184,.16) 1px,transparent 1px);
+      background-size:42px 42px;
+    }
+    .left{
+      left:-380px;top:0;width:380px;height:100%;
+      transform-origin:right;transform:translateZ(-230px) rotateY(-90deg);
+      background-color:#080b18;
+    }
+    .ceiling{
+      left:0;right:0;top:-260px;height:520px;
+      transform-origin:bottom;transform:translateZ(-230px) rotateX(-90deg);
+      opacity:.65;
+    }
+    .portal{
+      position:absolute;left:50%;top:48%;width:190px;height:270px;
+      transform:translate(-50%,-50%) translateZ(-214px);
+      border-radius:50% 50% 12px 12px;
+      background:
+        radial-gradient(ellipse at 50% 50%,#fff 0 3%,#67f7ff 7%,#744cff 25%,#160e48 54%,#03040a 72%);
+      box-shadow:
+        0 0 18px #65eaff,0 0 55px rgba(100,83,255,.9),
+        0 0 120px rgba(255,50,190,.45);
+      animation:portal 4s ease-in-out infinite;
+    }
+    .portal::before,.portal::after{
+      content:"";position:absolute;inset:-18px;border:2px solid rgba(104,238,255,.65);
+      border-radius:50% 50% 18px 18px;filter:drop-shadow(0 0 8px #67efff);
+      animation:ring 7s linear infinite;
+    }
+    .portal::after{inset:-36px;border-color:rgba(255,74,196,.4);animation-direction:reverse;animation-duration:11s}
+    .monolith{
+      position:absolute;width:74px;height:160px;transform-style:preserve-3d;
+      background:linear-gradient(150deg,rgba(125,150,255,.9),rgba(32,35,90,.45));
+      border:1px solid rgba(255,255,255,.32);
+      box-shadow:0 25px 45px rgba(0,0,0,.5),inset 0 0 25px rgba(135,166,255,.22);
+      animation:levitate 5s ease-in-out infinite;
+    }
+    .monolith::before{
+      content:"";position:absolute;inset:9px;
+      border:1px solid rgba(121,245,255,.55);
+      background:linear-gradient(180deg,transparent,rgba(88,105,255,.2));
+    }
+    .m1{left:14%;top:47%;transform:translateZ(80px) rotateY(20deg);animation-delay:-1s}
+    .m2{right:13%;top:34%;width:58px;height:125px;transform:translateZ(30px) rotateY(-25deg);animation-delay:-3s}
+    .orb{
+      position:absolute;left:50%;top:51%;width:28px;height:28px;border-radius:50%;
+      background:radial-gradient(circle at 32% 28%,#fff,#87f6ff 28%,#6250ff 68%,#170f42);
+      box-shadow:0 0 20px #70efff,0 0 55px #6a4cff;
+      transform-style:preserve-3d;
+      animation:orbit 7s linear infinite;
+    }
+    .title{
+      position:absolute;left:50%;top:10%;transform:translateX(-50%) translateZ(110px);
+      margin:0;font-size:clamp(1.25rem,3vw,2.35rem);letter-spacing:.18em;
+      text-transform:uppercase;text-align:center;white-space:nowrap;
+      text-shadow:0 0 24px rgba(111,229,255,.6);
+    }
+    .coordinates{
+      position:fixed;left:1.4rem;bottom:1.25rem;
+      font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;
+      color:rgba(255,255,255,.4);
+    }
+    @keyframes grid-drift{to{background-position:0 42px,42px 0}}
+    @keyframes portal{
+      0%,100%{filter:hue-rotate(0deg);transform:translate(-50%,-50%) translateZ(-214px) scale(1)}
+      50%{filter:hue-rotate(22deg);transform:translate(-50%,-50%) translateZ(-214px) scale(1.045)}
+    }
+    @keyframes ring{to{transform:rotate(360deg)}}
+    @keyframes levitate{
+      0%,100%{translate:0 0;rotate:0deg}
+      50%{translate:0 -26px;rotate:2deg}
+    }
+    @keyframes orbit{
+      from{transform:rotateY(0deg) translateX(175px) translateZ(90px) rotateY(0deg)}
+      to{transform:rotateY(360deg) translateX(175px) translateZ(90px) rotateY(-360deg)}
+    }
+    @media(max-width:600px){
+      .viewport{height:64vh}.monolith{scale:.75}.title{top:14%}
+    }
+    @media(prefers-reduced-motion:reduce){
+      .back,.portal,.portal::before,.portal::after,.monolith,.orb{animation:none}
+      .room{transition:none}
+    }
+  </style>
+</head>
+<body>
+  <div class="viewport">
+    <div class="room" id="room">
+      <div class="wall back"></div>
+      <div class="wall left"></div>
+      <div class="wall floor"></div>
+      <div class="wall ceiling"></div>
+      <div class="portal" aria-hidden="true"></div>
+      <div class="monolith m1" aria-hidden="true"></div>
+      <div class="monolith m2" aria-hidden="true"></div>
+      <div class="orb" aria-hidden="true"></div>
+      <h1 class="title">Impossible Chamber</h1>
+    </div>
+  </div>
+  <div class="coordinates">Sector 1584 · move to bend space</div>
+  <script>
+    const room=document.getElementById('room');
+    let targetX=7,targetY=-10,currentX=7,currentY=-10;
+    addEventListener('pointermove',(event)=>{
+      const x=event.clientX/innerWidth-.5;
+      const y=event.clientY/innerHeight-.5;
+      targetY=x*26;
+      targetX=7-y*18;
+    });
+    (function render(){
+      currentX+=(targetX-currentX)*.08;
+      currentY+=(targetY-currentY)*.08;
+      room.style.setProperty('--rx',currentX+'deg');
+      room.style.setProperty('--ry',currentY+'deg');
+      requestAnimationFrame(render);
+    })();
+  </script>
+</body>
+</html>

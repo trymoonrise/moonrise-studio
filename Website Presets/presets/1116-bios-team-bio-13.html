@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1116
+    slug: bios-team-bio-13
+    title: Team Bio 13
+    category: bios
+    tags: bios, team, experimental, shapes
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1116 — Team Bio 13</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700&family=DM+Sans:wght@400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f2f4f7;font-family:'DM Sans',sans-serif;overflow:hidden;padding:2rem}
+    .team{text-align:center;animation:in .8s cubic-bezier(.22,1,.36,1) both}
+    .label{margin:0 0 1.5rem;font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(0,0,0,.4)}
+    .cluster{position:relative;width:220px;height:140px;margin:0 auto 1.25rem}
+    .person{position:absolute;width:64px;height:64px;display:grid;place-items:center;color:#fff;font-family:Syne,sans-serif;font-weight:700;font-size:.85rem;animation:float 4.5s ease-in-out infinite}
+    .person:nth-child(1){left:20px;top:30px;background:#1f2937;border-radius:50%;z-index:3;animation-delay:0s}
+    .person:nth-child(2){left:78px;top:10px;background:#2563eb;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);z-index:2;animation-delay:.35s}
+    .person:nth-child(3){right:20px;top:36px;background:#059669;border-radius:18px;z-index:1;animation-delay:.7s;transform:rotate(8deg)}
+    .person:nth-child(4){left:50%;bottom:0;transform:translateX(-50%);width:36px;height:36px;background:#111;border-radius:50%;font-size:.55rem;z-index:4;animation-delay:1s;border:2px solid #f2f4f7}
+    .title{margin:0;font-family:Syne,sans-serif;font-size:1.1rem;color:#111;letter-spacing:-.02em}
+    .sub{margin:.35rem 0 0;font-size:.8rem;color:rgba(0,0,0,.45)}
+    @keyframes float{50%{transform:translateY(-8px)}}
+    .person:nth-child(3){animation-name:float-rot}
+    @keyframes float-rot{50%{transform:rotate(8deg) translateY(-8px)}}
+    .person:nth-child(4){animation-name:float-c}
+    @keyframes float-c{50%{transform:translateX(-50%) translateY(-6px)}}
+    @keyframes in{from{opacity:0;transform:translateY(16px)}}
+    @media (prefers-reduced-motion:reduce){.person,.team{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="team">
+    <p class="label">Studio</p>
+    <div class="cluster">
+      <div class="person" title="Ada">A</div>
+      <div class="person" title="Ben">B</div>
+      <div class="person" title="Cam">C</div>
+      <div class="person" title="More">+4</div>
+    </div>
+    <h2 class="title">North Form</h2>
+    <p class="sub">Seven makers · One studio</p>
+  </div>
+</body>
+</html>

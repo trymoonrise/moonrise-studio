@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1564
+    slug: 3d-cube-mouse-rotate
+    title: Mouse Rotate 3D Cube
+    category: 3d-effects
+    tags: 3d, cube, mouse
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1564 — Mouse Rotate 3D Cube</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#08090f;perspective:1000px;overflow:hidden;font-family:Syne,sans-serif;cursor:crosshair}
+    .hint{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);font-size:.75rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.35)}
+    .scene{width:200px;height:200px;transform-style:preserve-3d;transform:rotateX(var(--rx,-18deg)) rotateY(var(--ry,28deg));transition:transform .08s linear}
+    .cube{width:100%;height:100%;position:relative;transform-style:preserve-3d}
+    .face{position:absolute;inset:0;display:grid;place-items:center;font-size:1.4rem;font-weight:800;color:#fff;border:1px solid rgba(255,255,255,.25);backface-visibility:hidden}
+    .f0{background:linear-gradient(160deg,#6c8cff,#3147c8);transform:translateZ(100px)}
+    .f1{background:linear-gradient(160deg,#ff6bcb,#a31f6e);transform:rotateY(90deg) translateZ(100px)}
+    .f2{background:linear-gradient(160deg,#7ee0c3,#1f8a6e);transform:rotateY(180deg) translateZ(100px)}
+    .f3{background:linear-gradient(160deg,#ffd16c,#b07a12);transform:rotateY(-90deg) translateZ(100px)}
+    .f4{background:linear-gradient(160deg,#b06cff,#5520b8);transform:rotateX(90deg) translateZ(100px)}
+    .f5{background:linear-gradient(160deg,#222,#111);transform:rotateX(-90deg) translateZ(100px)}
+    .trail{position:absolute;inset:-30px;border:1px solid rgba(108,140,255,.3);transform:translateZ(-40px);pointer-events:none;opacity:.6}
+    @media(prefers-reduced-motion:reduce){.scene{transition:none}}
+  </style>
+</head>
+<body>
+  <div class="scene" id="scene">
+    <div class="trail" aria-hidden="true"></div>
+    <div class="cube">
+      <div class="face f0">N</div>
+      <div class="face f1">E</div>
+      <div class="face f2">S</div>
+      <div class="face f3">W</div>
+      <div class="face f4">UP</div>
+      <div class="face f5">DN</div>
+    </div>
+  </div>
+  <div class="hint">Move to rotate</div>
+  <script>
+    const scene=document.getElementById('scene');
+    let tx=-18,ty=28,cx=tx,cy=ty;
+    addEventListener('pointermove',(e)=>{
+      const x=(e.clientX/innerWidth-.5)*2;
+      const y=(e.clientY/innerHeight-.5)*2;
+      tx=y*-42;ty=x*55;
+    });
+    (function loop(){
+      cx+=(tx-cx)*.12;cy+=(ty-cy)*.12;
+      scene.style.setProperty('--rx',cx+'deg');
+      scene.style.setProperty('--ry',cy+'deg');
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>

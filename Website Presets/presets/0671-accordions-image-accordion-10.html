@@ -1,0 +1,13 @@
+﻿<!DOCTYPE html>
+<html lang="en"><head>
+  <!--
+    @preset
+    id: 0671
+    slug: accordions-image-accordion-10
+    title: Image Accordion 10
+    category: accordions
+    tags: accordions, image
+  -->
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>0671 — Image Accordion 10</title>
+  <style>@import url('../shared/preset-reset.css');@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap');*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#ece9e1;padding:2rem;font-family:Inter,sans-serif}.acc{width:min(560px,100%);display:grid;gap:.8rem}.item{border-radius:24px;background:#fff;border:1px solid #e6e1d7;overflow:hidden}.visual{height:180px;background:linear-gradient(135deg,#b9c7d4,#f4efe6 55%,#9a7b63);filter:saturate(.85);transform:scale(1.04);transition:transform .45s ease}.trigger{width:100%;padding:1rem 1.1rem;border:0;background:none;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font:600 .94rem Inter,sans-serif;text-align:left}.panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s cubic-bezier(.22,1,.36,1)}.panel>div{overflow:hidden}.panel p{margin:0;padding:0 1.1rem 1rem;color:#6d665c;line-height:1.66;font-size:.88rem}.item.open .visual{transform:scale(1)}.item.open .panel{grid-template-rows:1fr}@media(prefers-reduced-motion:reduce){.visual,.panel{transition:none}}</style>
+</head><body><div class="acc"><div class="item open"><div class="visual"></div><button class="trigger"><span>Image-led accordion</span><span>01</span></button><div class="panel"><div><p>This version pairs each section with a quiet abstract image plane that settles as the panel opens.</p></div></div></div><div class="item"><div class="visual" style="background:linear-gradient(135deg,#111824,#4e6d86 55%,#d6d0c4)"></div><button class="trigger"><span>Minimal media treatment</span><span>02</span></button><div class="panel"><div><p>The image is intentionally abstract so the component stays flexible for many content types.</p></div></div></div></div><script>document.querySelectorAll('.item .trigger').forEach((button)=>button.addEventListener('click',()=>button.parentElement.classList.toggle('open')));</script></body></html>

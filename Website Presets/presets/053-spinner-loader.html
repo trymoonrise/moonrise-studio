@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 053
+    slug: spinner-loader
+    title: Spinner Loader
+    category: loading
+    tags: spinner
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>053 — Spinner Loader</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    
+    body{display:grid;place-items:center;min-height:100vh;background:#0d0d0f}
+    .spinner{width:48px;height:48px;border:3px solid #2a2a32;border-top-color:#6c8cff;border-radius:50%;animation:spin .8s linear infinite}
+    p{color:#888;margin-top:1.5rem;font-size:.9rem}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    
+  </style>
+</head>
+<body>
+<div style="text-align:center"><div class="spinner"></div><p>Loading...</p></div>
+
+</body>
+</html>

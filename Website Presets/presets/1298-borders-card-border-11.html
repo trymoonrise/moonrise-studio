@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1298
+    slug: borders-card-border-11
+    title: Card Border 11
+    category: borders
+    tags: borders, card
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1298 — Card Border 11</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f0f0f0;font-family:"DM Sans",system-ui,-apple-system,sans-serif;padding:2rem;color:#111}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+    .card{position:relative;width:min(100%,300px);background:#fff;border:1px solid #111;box-shadow:4px 4px 0 #111;overflow:hidden;animation:lift .8s cubic-bezier(.22,1,.36,1) both}
+    @keyframes lift{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+    .stripe{height:4px;background:#111;transform-origin:left;animation:grow .9s .2s cubic-bezier(.22,1,.36,1) both}
+    @keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+    .body{padding:1.75rem 1.5rem}
+    .label{font-size:.65rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#888;margin-bottom:.6rem}
+    h2{font-family:"Syne",system-ui,sans-serif;font-size:1.35rem;font-weight:800;letter-spacing:-.03em;margin:0 0 .35rem}
+    p{margin:0;color:#666;font-size:.88rem;line-height:1.5}
+  </style>
+</head>
+<body>
+<article class="card"><div class="stripe" aria-hidden="true"></div><div class="body"><div class="label">Card</div><h2>Framed block</h2><p>Hard edge with accent stripe.</p></div></article>
+
+</body>
+</html>

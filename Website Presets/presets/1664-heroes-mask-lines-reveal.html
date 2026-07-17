@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1664
+    slug: heroes-mask-lines-reveal
+    title: Mask Lines Reveal Hero
+    category: heroes
+    tags: heroes, landing, image, experimental, scroll
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1664 — Mask Lines Reveal Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      margin: 0;
+      min-height: 260vh;
+      background: #000;
+      color: #fff;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    .stage {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: grid;
+      place-content: center;
+      gap: 0.15em;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .bg {
+      position: absolute;
+      inset: 0;
+    }
+
+    .bg img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.18;
+    }
+
+    .line {
+      margin: 0;
+      padding: 0 1rem;
+      font-size: clamp(3.2rem, 11vw, 8.5rem);
+      font-weight: 900;
+      text-transform: uppercase;
+      line-height: 0.9;
+      background-image: url('../stock/media/16-9 Aspect Ratio(image).png');
+      background-size: cover;
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .line--one {
+      background-position: 40% 35%;
+      transform: scale(var(--line-one-scale, 0.94));
+      opacity: var(--line-one-opacity, 0.85);
+    }
+
+    .line--two {
+      background-position: 60% 65%;
+      clip-path: inset(var(--clip-top, 100%) 0 0 0);
+      transform: translateY(var(--line-two-y, 16px));
+    }
+
+    .caption {
+      position: absolute;
+      bottom: 2.75rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.5);
+      opacity: var(--caption-opacity, 0);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body { min-height: 100vh; }
+      .line--two { clip-path: none; transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage" id="stage">
+    <div class="bg" aria-hidden="true">
+      <img src="../stock/media/16-9 Aspect Ratio(image).png" alt="">
+    </div>
+    <h1 class="line line--one">Stay</h1>
+    <h1 class="line line--two">Curious</h1>
+    <p class="caption">Scroll to reveal</p>
+  </div>
+
+  <script>
+    const stage = document.getElementById('stage');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function ease(t) {
+      return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    }
+
+    function lerp(a, b, t) {
+      return a + (b - a) * t;
+    }
+
+    function update() {
+      if (reduced) {
+        stage.style.setProperty('--clip-top', '0%');
+        stage.style.setProperty('--caption-opacity', '0.7');
+        return;
+      }
+
+      const max = document.documentElement.scrollHeight - innerHeight;
+      const p = max > 0 ? ease(Math.min(1, scrollY / max)) : 0;
+      const reveal = Math.min(1, Math.max(0, (p - 0.15) / 0.7));
+
+      stage.style.setProperty('--line-one-scale', lerp(0.94, 1, p).toFixed(3));
+      stage.style.setProperty('--line-one-opacity', lerp(0.85, 1, p).toFixed(3));
+      stage.style.setProperty('--clip-top', lerp(100, 0, reveal).toFixed(1) + '%');
+      stage.style.setProperty('--line-two-y', lerp(16, 0, reveal).toFixed(1) + 'px');
+      stage.style.setProperty('--caption-opacity', Math.max(0, (p - 0.5) / 0.5).toFixed(3));
+    }
+
+    let ticking = false;
+    addEventListener('scroll', () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        update();
+      });
+    }, { passive: true });
+
+    addEventListener('resize', update, { passive: true });
+    update();
+  </script>
+</body>
+</html>

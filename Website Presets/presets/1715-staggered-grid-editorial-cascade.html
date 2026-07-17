@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1715
+    slug: staggered-grid-editorial-cascade
+    title: Editorial Cascade Grid
+    category: animation
+    tags: grid, stagger, editorial, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1715 — Editorial Cascade Grid</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;padding:clamp(1rem,4vw,3rem);background:#eee9df;color:#17130e;font-family:Inter,system-ui,sans-serif}.head{max-width:1120px;margin:0 auto 2rem;display:flex;justify-content:space-between;gap:2rem;align-items:end}.head h1{margin:0;font-family:Georgia,serif;font-weight:400;font-size:clamp(3rem,8vw,7rem);line-height:.82;letter-spacing:-.06em}.head p{max-width:24ch;margin:0;text-transform:uppercase;letter-spacing:.14em;font-size:.72rem;opacity:.55}.grid{max-width:1120px;margin:auto;display:grid;grid-template-columns:repeat(12,1fr);grid-auto-rows:clamp(74px,9vw,122px);gap:.8rem;perspective:1000px}.tile{position:relative;overflow:hidden;border-radius:6px;background:linear-gradient(135deg,var(--a),var(--b));grid-column:span var(--c);grid-row:span var(--r);opacity:0;transform:translateY(36px) rotateX(14deg) scale(.94);animation:in .75s cubic-bezier(.16,1,.3,1) forwards;animation-delay:calc(var(--i)*70ms);box-shadow:0 18px 48px rgba(33,25,16,.12)}.tile:before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 25% 20%,rgba(255,255,255,.35),transparent 34%),linear-gradient(180deg,transparent,rgba(0,0,0,.26));opacity:.65}.tile span{position:absolute;left:1rem;bottom:.9rem;color:#fff;font-weight:800;font-size:clamp(1rem,2vw,1.6rem);letter-spacing:-.04em}.tile:hover{transform:translateY(-8px) rotateX(0) scale(1.02);transition:transform .35s ease;z-index:2}@keyframes in{to{opacity:1;transform:none}}@media(max-width:720px){.head{display:block}.grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:130px}.tile{grid-column:span 1!important;grid-row:span 1!important}.tile:nth-child(1),.tile:nth-child(6){grid-column:span 2!important}}@media(prefers-reduced-motion:reduce){.tile{opacity:1;transform:none;animation:none}}
+  </style>
+</head>
+<body>
+  <header class="head"><h1>Field Notes</h1><p>A magazine grid arriving like shuffled print plates.</p></header>
+  <main class="grid">
+    <div class="tile" style="--i:1;--c:5;--r:3;--a:#1f2937;--b:#9a6b43"><span>North</span></div>
+    <div class="tile" style="--i:2;--c:3;--r:2;--a:#bf6b44;--b:#f0c17a"><span>Signal</span></div>
+    <div class="tile" style="--i:3;--c:4;--r:3;--a:#263d42;--b:#8fb7a5"><span>Archive</span></div>
+    <div class="tile" style="--i:4;--c:3;--r:2;--a:#101418;--b:#4f6470"><span>Index</span></div>
+    <div class="tile" style="--i:5;--c:4;--r:2;--a:#7b3f2c;--b:#df835f"><span>Study</span></div>
+    <div class="tile" style="--i:6;--c:5;--r:2;--a:#d9d1c4;--b:#7d8a78"><span>Motion</span></div>
+    <div class="tile" style="--i:7;--c:6;--r:2;--a:#0d1117;--b:#725a42"><span>Edition</span></div>
+    <div class="tile" style="--i:8;--c:3;--r:2;--a:#51433b;--b:#caa36a"><span>Grid</span></div>
+    <div class="tile" style="--i:9;--c:3;--r:2;--a:#24404c;--b:#d6c2a2"><span>Frame</span></div>
+  </main>
+</body>
+</html>

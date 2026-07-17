@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0348
+    slug: puzzles-word-scramble
+    title: Word Scramble
+    category: puzzles
+    tags: puzzles, word
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0348 — Word Scramble</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 2rem;
+      background:
+        radial-gradient(circle at 20% 18%, rgba(108, 140, 255, 0.14), transparent 34%),
+        radial-gradient(circle at 82% 82%, rgba(108, 255, 184, 0.1), transparent 36%),
+        #0d0d0f;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: #fff;
+    }
+
+    .game {
+      width: min(100%, 420px);
+      padding: 1.5rem;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.38);
+      backdrop-filter: blur(18px);
+      text-align: center;
+    }
+
+    .eyebrow {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #6c8cff;
+      margin-bottom: 0.35rem;
+    }
+
+    h2 {
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.25rem;
+    }
+
+    .letters {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 1.25rem;
+    }
+
+    .letter {
+      width: 48px;
+      height: 48px;
+      border: none;
+      border-radius: 12px;
+      background: #1a1a2e;
+      color: #fff;
+      font-family: inherit;
+      font-size: 1.2rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition:
+        transform 0.25s cubic-bezier(.22, .61, .36, 1),
+        background 0.2s,
+        opacity 0.25s,
+        box-shadow 0.2s;
+    }
+
+    .letter:hover:not(:disabled) {
+      background: #6c8cff;
+      transform: translateY(-2px);
+    }
+
+    .letter.is-used {
+      opacity: 0;
+      transform: scale(0.8);
+      pointer-events: none;
+    }
+
+    .answer-wrap {
+      min-height: 3rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .answer {
+      font-size: 1.5rem;
+      letter-spacing: 0.28em;
+      font-family: ui-monospace, "Cascadia Code", monospace;
+      font-weight: 800;
+      color: #6cffb8;
+      min-height: 2rem;
+    }
+
+    .answer.is-wrong {
+      color: #ff6b8a;
+      animation: shake 0.5s cubic-bezier(.22, .61, .36, 1);
+    }
+
+    .answer.is-correct {
+      color: #6cffb8;
+    }
+
+    .status {
+      font-size: 0.82rem;
+      color: #9ca3af;
+      min-height: 1.2rem;
+    }
+
+    .status.is-success {
+      color: #6cffb8;
+      font-weight: 700;
+    }
+
+    .status.is-error {
+      color: #ff8ca8;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-8px); }
+      40% { transform: translateX(8px); }
+      60% { transform: translateX(-6px); }
+      80% { transform: translateX(6px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="game">
+    <div class="eyebrow">Puzzle</div>
+    <h2>Unscramble the word</h2>
+
+    <div class="letters" id="letters"></div>
+
+    <div class="answer-wrap">
+      <div class="answer" id="answer" aria-live="polite"></div>
+    </div>
+
+    <div class="status" id="status">Tap letters to spell the word.</div>
+  </div>
+
+  <script>
+    const TARGET = 'PRESETS';
+    const lettersEl = document.getElementById('letters');
+    const answerEl = document.getElementById('answer');
+    const statusEl = document.getElementById('status');
+
+    let answer = '';
+    let locked = false;
+
+    function shuffle(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function renderLetters() {
+      lettersEl.innerHTML = '';
+      shuffle(TARGET.split('')).forEach((char) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'letter';
+        btn.textContent = char;
+        btn.addEventListener('click', () => pickLetter(btn));
+        lettersEl.appendChild(btn);
+      });
+    }
+
+    function resetRound(message) {
+      answer = '';
+      locked = false;
+      answerEl.textContent = '';
+      answerEl.classList.remove('is-wrong', 'is-correct');
+      statusEl.classList.remove('is-success', 'is-error');
+      statusEl.textContent = message || 'Tap letters to spell the word.';
+      lettersEl.querySelectorAll('.letter').forEach((btn) => {
+        btn.classList.remove('is-used');
+        btn.disabled = false;
+      });
+    }
+
+    function pickLetter(btn) {
+      if (locked || btn.classList.contains('is-used')) return;
+
+      answer += btn.textContent;
+      answerEl.textContent = answer;
+      btn.classList.add('is-used');
+
+      if (answer.length < TARGET.length) return;
+
+      locked = true;
+
+      if (answer === TARGET) {
+        answerEl.classList.add('is-correct');
+        statusEl.textContent = 'Correct!';
+        statusEl.classList.add('is-success');
+        return;
+      }
+
+      answerEl.classList.add('is-wrong');
+      statusEl.textContent = 'Not quite — try again.';
+      statusEl.classList.add('is-error');
+
+      setTimeout(() => {
+        resetRound('Letters sent back. Try again.');
+      }, 650);
+    }
+
+    renderLetters();
+  </script>
+</body>
+</html>

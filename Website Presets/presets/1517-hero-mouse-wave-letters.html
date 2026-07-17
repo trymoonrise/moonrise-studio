@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1517
+    slug: hero-mouse-wave-letters
+    title: Wave Letter Hero
+    category: heroes
+    tags: heroes, mouse, text, wave
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1517 — Wave Letter Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:100vh;background:linear-gradient(180deg,#0d0d0f,#1a1a2e);color:#fff;display:grid;place-items:center}h1{font-size:clamp(2.5rem,7vw,5rem);font-weight:800;display:flex;gap:2px}.ch{display:inline-block;transition:transform .2s cubic-bezier(.22,.61,.36,1)}
+  </style>
+</head>
+<body>
+<h1 id="h"><span class="ch">C</span><span class="ch">U</span><span class="ch">R</span><span class="ch">S</span><span class="ch">O</span><span class="ch">R</span></h1>
+<script>const h=document.getElementById('h'),chs=[...h.children];h.onmousemove=e=>{const r=h.getBoundingClientRect();chs.forEach((ch,i)=>{const cr=ch.getBoundingClientRect();const dist=Math.hypot(e.clientX-(cr.left+cr.width/2),e.clientY-(cr.top+cr.height/2));const lift=Math.max(0,120-dist)/120;ch.style.transform='translateY('+(-lift*20)+'px)';});};h.onmouseleave=()=>chs.forEach(ch=>ch.style.transform='');</script>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0178
+    slug: sliders-range-slider
+    title: Range Slider
+    category: sliders
+    tags: sliders, range
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0178 — Range Slider</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #f4f5f8;
+      padding: 2rem;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    .card {
+      width: min(360px, 100%);
+      padding: 1.5rem;
+      border-radius: 18px;
+      background: #fff;
+      border: 1px solid #e4e6ec;
+      box-shadow: 0 14px 40px rgba(15, 23, 42, 0.07);
+    }
+
+    .head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+
+    .head label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #6b7085;
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+
+    .head strong {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #111318;
+      letter-spacing: -0.02em;
+    }
+
+    .val {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: #4f6ef7;
+      font-variant-numeric: tabular-nums;
+      transition: transform 0.2s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    .val.is-ticking {
+      transform: scale(1.04);
+    }
+
+    .val span {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #8b8fa3;
+      margin-left: 0.1rem;
+    }
+
+    .slider-wrap {
+      padding: 0.25rem 0;
+    }
+
+    input[type="range"] {
+      --fill: 50%;
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: linear-gradient(
+        to right,
+        #4f6ef7 0%,
+        #6c8cff var(--fill),
+        #e8eaef var(--fill),
+        #e8eaef 100%
+      );
+      outline: none;
+      cursor: pointer;
+      transition: box-shadow 0.2s;
+    }
+
+    input[type="range"]:focus-visible {
+      box-shadow: 0 0 0 3px rgba(79, 110, 247, 0.2);
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #fff;
+      border: 3px solid #4f6ef7;
+      box-shadow: 0 2px 8px rgba(79, 110, 247, 0.35), 0 4px 14px rgba(0, 0, 0, 0.1);
+      cursor: grab;
+      transition: transform 0.2s cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 0.2s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 14px rgba(79, 110, 247, 0.45), 0 6px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    input[type="range"]::-webkit-slider-thumb:active {
+      cursor: grabbing;
+      transform: scale(1.05);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #fff;
+      border: 3px solid #4f6ef7;
+      box-shadow: 0 2px 8px rgba(79, 110, 247, 0.35);
+      cursor: grab;
+    }
+
+    input[type="range"]::-moz-range-track {
+      height: 6px;
+      border-radius: 999px;
+      background: transparent;
+    }
+
+    .ticks {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.65rem;
+      font-size: 0.72rem;
+      color: #a0a5b8;
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="head">
+      <div>
+        <label for="range">Volume</label>
+        <strong>Adjust level</strong>
+      </div>
+      <div class="val" id="val">50<span>%</span></div>
+    </div>
+
+    <div class="slider-wrap">
+      <input type="range" min="0" max="100" value="50" id="range" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+    </div>
+
+    <div class="ticks">
+      <span>0</span>
+      <span>25</span>
+      <span>50</span>
+      <span>75</span>
+      <span>100</span>
+    </div>
+  </div>
+
+  <script>
+    const range = document.getElementById('range');
+    const val = document.getElementById('val');
+    let tickTimer;
+
+    function update() {
+      const min = Number(range.min);
+      const max = Number(range.max);
+      const n = Number(range.value);
+      const pct = ((n - min) / (max - min)) * 100 + '%';
+
+      range.style.setProperty('--fill', pct);
+      range.setAttribute('aria-valuenow', n);
+      val.innerHTML = n + '<span>%</span>';
+
+      val.classList.add('is-ticking');
+      clearTimeout(tickTimer);
+      tickTimer = setTimeout(() => val.classList.remove('is-ticking'), 120);
+    }
+
+    range.addEventListener('input', update);
+    update();
+  </script>
+</body>
+</html>

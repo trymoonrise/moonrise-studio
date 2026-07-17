@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0973
+    slug: errors-full-error-13
+    title: Full Error 13
+    category: errors
+    tags: errors, full
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0973 — Full Error 13</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:wght@400;700&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#0a0a0c;color:#fff;font-family:'Space Mono',monospace;overflow:hidden;position:relative}
+    .crack{
+      position:fixed;inset:0;pointer-events:none;z-index:20;
+      background:
+        linear-gradient(135deg,transparent 48%,rgba(255,255,255,.15) 49%,transparent 51%),
+        linear-gradient(160deg,transparent 40%,rgba(255,255,255,.1) 41%,transparent 43%),
+        linear-gradient(20deg,transparent 55%,rgba(255,255,255,.12) 56%,transparent 58%);
+      animation:crack-appear 1s ease-out both;
+      mix-blend-mode:overlay;
+    }
+    .shatter{
+      position:fixed;z-index:15;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);
+      animation:shard-fly 2s ease-in forwards;pointer-events:none;
+    }
+    .overlay{position:relative;z-index:10;min-height:100vh;display:grid;place-items:center;text-align:center;padding:2rem}
+    .bsod{
+      max-width:640px;animation:boot-fail 3s ease-in-out infinite;
+    }
+    .code{font-family:Anton,sans-serif;font-size:clamp(5rem,18vw,10rem);line-height:.85;letter-spacing:-.02em;
+      background:linear-gradient(180deg,#fff 20%,#ff2040);
+      -webkit-background-clip:text;background-clip:text;color:transparent;
+      filter:drop-shadow(0 0 40px rgba(255,32,64,.4));
+      animation:glitch-big .3s steps(2) infinite;
+    }
+    h1{font-family:Anton,sans-serif;font-size:clamp(1.5rem,4vw,2.5rem);margin:1rem 0;letter-spacing:.02em;text-transform:uppercase}
+    .dump{text-align:left;margin:1.5rem auto;padding:1rem;background:rgba(255,32,64,.08);border:1px solid rgba(255,32,64,.25);border-radius:8px;font-size:.7rem;line-height:1.8;max-width:420px;color:#ff8a96}
+    .progress{height:4px;background:#222;border-radius:2px;margin:2rem auto;max-width:280px;overflow:hidden}
+    .progress i{display:block;height:100%;width:0;background:#ff2040;animation:load-fail 3s ease-in-out infinite}
+    .btns{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap}
+    button{appearance:none;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;padding:.8rem 1.4rem;font:700 .75rem 'Space Mono',monospace;cursor:pointer;letter-spacing:.06em;text-transform:uppercase}
+    button:hover{background:#fff;color:#0a0a0c}
+    button.danger{border-color:#ff2040;color:#ff2040}
+    button.danger:hover{background:#ff2040;color:#fff}
+    @keyframes crack-appear{from{opacity:0;transform:scale(1.2)}to{opacity:1;transform:none}}
+    @keyframes shard-fly{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--x),var(--y)) rotate(var(--r))}}
+    @keyframes boot-fail{0%,100%{transform:translate(0)}10%{transform:translate(-4px,2px)}20%{transform:translate(4px,-2px)}30%{transform:none}}
+    @keyframes glitch-big{0%,100%{transform:none;filter:drop-shadow(0 0 40px rgba(255,32,64,.4))}50%{transform:translate(3px,-2px);filter:drop-shadow(-4px 0 #0ff) drop-shadow(4px 0 #f0f)}}
+    @keyframes load-fail{0%{width:0}70%{width:85%}85%{width:87%}100%{width:0}}
+    @media (prefers-reduced-motion:reduce){.code,.bsod,.progress i,.crack,.shatter{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="crack" aria-hidden="true"></div>
+  <div class="overlay">
+    <div class="bsod" role="alert">
+      <div class="code">SYSTEM</div>
+      <h1>Everything is broken</h1>
+      <div class="dump">
+        STOP: 0x000000DEAD<br>
+        Cause: User opened this page<br>
+        Thread: main (panicked)<br>
+        Memory: screaming<br>
+        Disk: filing for divorce<br>
+        Hope: null
+      </div>
+      <div class="progress"><i></i></div>
+      <div class="btns">
+        <button type="button">Collect shards</button>
+        <button class="danger" type="button" id="boom">Break it more</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.getElementById('boom').onclick=()=>{
+      for(let i=0;i<16;i++){
+        const s=document.createElement('div');
+        s.className='shatter';
+        s.style.width=(20+Math.random()*80)+'px';
+        s.style.height=(20+Math.random()*80)+'px';
+        s.style.left=Math.random()*100+'vw';
+        s.style.top=Math.random()*100+'vh';
+        s.style.setProperty('--x',(Math.random()-0.5)*600+'px');
+        s.style.setProperty('--y',(Math.random()-0.5)*600+'px');
+        s.style.setProperty('--r',(Math.random()*720-360)+'deg');
+        document.body.appendChild(s);
+        setTimeout(()=>s.remove(),2000);
+      }
+      document.body.style.animation='none';
+      document.body.offsetHeight;
+      document.body.style.animation='boot-fail .3s ease-in-out 3';
+    };
+  </script>
+</body>
+</html>

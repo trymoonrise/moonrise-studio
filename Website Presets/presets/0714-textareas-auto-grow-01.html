@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0714
+    slug: textareas-auto-grow-01
+    title: Auto Grow 01
+    category: textareas
+    tags: textareas, modern, experimental, exaggerated
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0714 — Auto Grow 01</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#101010;font-family:Inter,system-ui,sans-serif;overflow:hidden;padding:24px;color:#fff}
+    textarea{font:inherit;border:0;outline:0;resize:none;background:transparent;color:inherit;width:100%}
+    button{font:inherit;border:0;cursor:pointer}
+    .scene{position:relative;width:min(560px,92vw)}
+    .poster{position:relative;padding:28px;border-radius:38px;background:#f6ff00;color:#101010;box-shadow:18px 18px 0 #fff,28px 28px 0 #101010}.poster::before{content:'';position:absolute;inset:-12px;border:2px dashed rgba(255,255,255,.45);border-radius:44px;animation:spin 24s linear infinite}.kicker{font:800 12px 'JetBrains Mono';letter-spacing:.28em;text-transform:uppercase;margin-bottom:18px}.mega{min-height:110px;font-size:clamp(34px,8vw,58px);font-weight:800;line-height:.92;letter-spacing:-.08em}.mega::placeholder{color:rgba(16,16,16,.35)}@keyframes spin{to{transform:rotate(360deg)}}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <div class="scene"><section class="poster"><p class="kicker">Grow loud</p><textarea class="mega" id="ta" rows="1">Type big. It keeps expanding.</textarea></section></div>
+  <script>const ta=document.getElementById('ta');function sync(){ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';}ta.addEventListener('input',sync);sync();</script>
+</body>
+</html>

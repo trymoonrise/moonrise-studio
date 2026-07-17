@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0605
+    slug: docks-dark-dock-09
+    title: Dark Dock 09
+    category: docks
+    tags: docks, dark
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0605 — Dark Dock 09</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:end center;background:#050506;padding-bottom:2.5rem}
+    .dock{display:flex;gap:2px;padding:5px;background:#121214;border:1px solid #222;border-radius:16px;box-shadow:0 0 40px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.03);animation:in .65s cubic-bezier(.22,1,.36,1) both}
+    .btn{width:46px;height:46px;border:none;border-radius:12px;background:transparent;color:#666;cursor:pointer;display:grid;place-items:center;position:relative;transition:color .3s,background .3s}
+    .btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;transition:transform .35s cubic-bezier(.22,1,.36,1),filter .3s}
+    .btn:hover{color:#ccc}
+    .btn:hover svg{transform:translateY(-2px)}
+    .btn.active{color:#fff;background:#1c1c1f}
+    .btn.active svg{filter:drop-shadow(0 0 6px rgba(255,255,255,.45));transform:translateY(-1px)}
+    .scan{position:absolute;inset:0;border-radius:12px;overflow:hidden;pointer-events:none;opacity:0;transition:opacity .3s}
+    .btn.active .scan{opacity:1}
+    .scan::after{content:"";position:absolute;left:-40%;top:0;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);animation:sweep 2.5s ease-in-out infinite}
+    @keyframes sweep{to{left:120%}}
+    @keyframes in{from{opacity:0;translate:0 14px}to{opacity:1;translate:0 0}}
+    @media(prefers-reduced-motion:reduce){.scan::after,.dock{animation:none}}
+  </style>
+</head>
+<body>
+  <nav class="dock" aria-label="Dark dock">
+    <button class="btn active" aria-label="Home"><span class="scan"></span><svg viewBox="0 0 24 24"><path d="M4 10.5L12 4l8 6.5V20h-5v-5H9v5H4z"/></svg></button>
+    <button class="btn" aria-label="Search"><span class="scan"></span><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3"/></svg></button>
+    <button class="btn" aria-label="Compass"><span class="scan"></span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.5L10 10l-.5 4.5L14 14z"/></svg></button>
+    <button class="btn" aria-label="User"><span class="scan"></span><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg></button>
+  </nav>
+  <script>
+    const btns=[...document.querySelectorAll('.btn')];
+    btns.forEach(b=>b.addEventListener('click',()=>{btns.forEach(x=>x.classList.remove('active'));b.classList.add('active')}));
+  </script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1444
+    slug: experimental-mouse-trail-blur
+    title: Mouse Trail Blur
+    category: experimental
+    tags: experimental, mouse, trail
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1444 — Mouse Trail Blur</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:100vh;background:#0a0a0c;cursor:none;overflow:hidden}
+  </style>
+</head>
+<body>
+
+<script>const trails=[];document.addEventListener('mousemove',e=>{const d=document.createElement('div');d.style.cssText='position:fixed;width:20px;height:20px;border-radius:50%;background:rgba(108,140,255,.5);filter:blur(4px);pointer-events:none;left:'+(e.clientX-10)+'px;top:'+(e.clientY-10)+'px;transition:opacity .6s,transform .6s';document.body.appendChild(d);trails.push(d);if(trails.length>20){const o=trails.shift();o.style.opacity=0;setTimeout(()=>o.remove(),600);}setTimeout(()=>{d.style.opacity=0;d.style.transform='scale(2)';setTimeout(()=>d.remove(),600);},50);});</script>
+</body>
+</html>

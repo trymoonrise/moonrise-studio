@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1147
+    slug: calendars-day-view-05
+    title: Day View 05
+    category: calendars
+    tags: calendars, day
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1147 — Day View 05</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#ffff00;padding:2rem;color:#000000}.cal{width:min(90vw,300px);border:1px solid #33333344;border-radius:12px;overflow:hidden;background:#ffffff}.head{padding:12px;text-align:center;font-weight:600;background:#ff000022;color:#ff0000}.grid{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:.8rem}.dow{padding:8px 4px;color:#333333;font-weight:600}.day{padding:8px 4px;cursor:pointer;border-radius:6px;margin:2px}.day:hover{background:#ff000022}.day.sel{background:#ff0000;color:#ffff00}
+  </style>
+</head>
+<body>
+<div class="cal"><div class="head">July 2026 — Day View 756</div><div class="grid"><div class="dow">S</div><div class="dow">M</div><div class="dow">T</div><div class="dow">W</div><div class="dow">T</div><div class="dow">F</div><div class="dow">S</div><div class="day">1</div><div class="day">2</div><div class="day">3</div><div class="day">4</div><div class="day">5</div><div class="day sel">6</div><div class="day">7</div><div class="day">8</div><div class="day">9</div><div class="day">10</div><div class="day">11</div><div class="day">12</div><div class="day">13</div><div class="day">14</div><div class="day">15</div><div class="day">16</div><div class="day">17</div><div class="day">18</div><div class="day">19</div><div class="day">20</div><div class="day">21</div><div class="day">22</div><div class="day">23</div><div class="day">24</div><div class="day">25</div><div class="day">26</div><div class="day">27</div><div class="day">28</div><div class="day">29</div><div class="day">30</div></div></div>
+<script>document.querySelectorAll('.day').forEach(d=>d.onclick=()=>{document.querySelectorAll('.day').forEach(x=>x.classList.remove('sel'));d.classList.add('sel');});</script>
+</body>
+</html>

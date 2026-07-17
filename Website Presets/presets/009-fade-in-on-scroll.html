@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 009
+    slug: fade-in-on-scroll
+    title: Fade In On Scroll
+    category: animation
+    tags: scroll, fade
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>009 — Fade In On Scroll</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Outfit:wght@400;500;600&display=swap');
+
+    :root {
+      --bg: #071016;
+      --ink: #e8f2f0;
+      --muted: rgba(232, 242, 240, 0.55);
+      --accent: #e8a54b;
+      --mist: #1a3a42;
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: Outfit, sans-serif;
+      background:
+        radial-gradient(120% 80% at 50% -10%, #16353d 0%, transparent 55%),
+        radial-gradient(80% 50% at 100% 40%, rgba(232, 165, 75, 0.12), transparent 45%),
+        radial-gradient(60% 40% at 0% 80%, rgba(60, 140, 150, 0.18), transparent 50%),
+        var(--bg);
+      background-attachment: fixed;
+    }
+
+    .depth-meter {
+      position: fixed;
+      top: 20%;
+      right: 1.25rem;
+      width: 2px;
+      height: 60vh;
+      background: rgba(232, 242, 240, 0.08);
+      border-radius: 2px;
+      z-index: 30;
+      overflow: hidden;
+    }
+
+    .depth-meter__fill {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 0%;
+      background: linear-gradient(to top, var(--accent), #7ec8b8);
+      box-shadow: 0 0 12px rgba(232, 165, 75, 0.5);
+    }
+
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+      perspective: 1200px;
+    }
+
+    .hero__planes {
+      position: absolute;
+      inset: -20%;
+      transform-style: preserve-3d;
+      pointer-events: none;
+      animation: drift 18s ease-in-out infinite;
+    }
+
+    .hero__plane {
+      position: absolute;
+      border-radius: 40%;
+      filter: blur(40px);
+      opacity: 0.35;
+    }
+
+    .hero__plane--a {
+      width: 55vmax;
+      height: 35vmax;
+      left: 10%;
+      top: 15%;
+      background: radial-gradient(circle, #2a5a62, transparent 70%);
+      transform: translateZ(-200px);
+    }
+
+    .hero__plane--b {
+      width: 40vmax;
+      height: 40vmax;
+      right: 5%;
+      bottom: 10%;
+      background: radial-gradient(circle, rgba(232, 165, 75, 0.45), transparent 70%);
+      transform: translateZ(-80px);
+      animation: pulse-glow 6s ease-in-out infinite;
+    }
+
+    .hero__copy {
+      position: relative;
+      z-index: 2;
+      transform-style: preserve-3d;
+      animation: hero-settle 1.4s var(--ease) both;
+    }
+
+    .hero__brand {
+      margin: 0;
+      font-family: Bricolage Grotesque, sans-serif;
+      font-size: clamp(4.5rem, 18vw, 9.5rem);
+      font-weight: 800;
+      font-variation-settings: 'opsz' 96;
+      letter-spacing: -0.06em;
+      line-height: 0.85;
+      background: linear-gradient(180deg, #fff 20%, rgba(232, 242, 240, 0.55));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero__line {
+      margin: 1.25rem auto 0;
+      max-width: 28ch;
+      font-size: 1.05rem;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .hero__cue {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      animation: cue-bob 2.2s ease-in-out infinite;
+    }
+
+    .hero__cue span {
+      width: 1px;
+      height: 36px;
+      background: linear-gradient(to bottom, var(--accent), transparent);
+    }
+
+    .stage {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 10vh 1.5rem 35vh;
+      perspective: 1400px;
+      display: grid;
+      gap: 22vh;
+    }
+
+    .panel {
+      --p: 0;
+      position: relative;
+      transform-style: preserve-3d;
+      opacity: calc(0.08 + var(--p) * 0.92);
+      filter: blur(calc((1 - var(--p)) * 18px));
+      transform:
+        translateY(calc((1 - var(--p)) * 72px))
+        translateZ(calc((1 - var(--p)) * -280px))
+        rotateX(calc((1 - var(--p)) * 14deg))
+        scale(calc(0.94 + var(--p) * 0.06));
+      will-change: transform, opacity, filter;
+    }
+
+    .panel--from-left {
+      transform:
+        translateX(calc((1 - var(--p)) * -48px))
+        translateY(calc((1 - var(--p)) * 40px))
+        translateZ(calc((1 - var(--p)) * -220px))
+        rotateY(calc((1 - var(--p)) * 18deg));
+    }
+
+    .panel--from-right {
+      transform:
+        translateX(calc((1 - var(--p)) * 48px))
+        translateY(calc((1 - var(--p)) * 40px))
+        translateZ(calc((1 - var(--p)) * -220px))
+        rotateY(calc((1 - var(--p)) * -18deg));
+    }
+
+    .panel__index {
+      display: block;
+      margin-bottom: 0.85rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .panel h2 {
+      margin: 0;
+      font-family: Bricolage Grotesque, sans-serif;
+      font-size: clamp(2rem, 5.5vw, 3.2rem);
+      font-weight: 800;
+      font-variation-settings: 'opsz' 72;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .panel h2 .word {
+      display: inline-block;
+      opacity: calc(var(--p) * var(--p));
+      transform: translateY(calc((1 - var(--p)) * 0.4em));
+      transition: none;
+    }
+
+    .panel p {
+      margin: 1rem 0 0;
+      max-width: 40ch;
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+
+    .focus-frame {
+      position: relative;
+      margin-top: 1.75rem;
+      aspect-ratio: 16 / 9;
+      border-radius: 4px;
+      overflow: hidden;
+      isolation: isolate;
+      box-shadow:
+        0 0 0 1px rgba(232, 242, 240, 0.12),
+        0 40px 80px rgba(0, 0, 0, 0.35);
+      transform: translateZ(calc(var(--p) * 40px));
+    }
+
+    .focus-frame__img {
+      position: absolute;
+      inset: -8%;
+      background:
+        linear-gradient(160deg, rgba(232, 165, 75, 0.25), transparent 45%),
+        url('../stock/media/16-9 Aspect Ratio(image).png') center / cover;
+      transform: scale(calc(1.12 - var(--p) * 0.12));
+      filter: saturate(calc(0.4 + var(--p) * 0.6)) brightness(calc(0.65 + var(--p) * 0.35));
+    }
+
+    .focus-frame__iris {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        circle at 50% 50%,
+        transparent calc(20% + var(--p) * 80%),
+        rgba(7, 16, 22, 0.92) calc(55% + var(--p) * 50%)
+      );
+      pointer-events: none;
+    }
+
+    .focus-frame__tag {
+      position: absolute;
+      left: 1rem;
+      bottom: 1rem;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(232, 242, 240, 0.85);
+      opacity: var(--p);
+    }
+
+    .quote {
+      font-family: Bricolage Grotesque, sans-serif;
+      font-size: clamp(1.5rem, 4vw, 2.15rem);
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      line-height: 1.25;
+      max-width: 18ch;
+    }
+
+    .quote em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(232, 242, 240, 0.1);
+    }
+
+    .metric strong {
+      display: block;
+      font-family: Bricolage Grotesque, sans-serif;
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--ink);
+      opacity: calc(0.2 + var(--p) * 0.8);
+      transform: translateY(calc((1 - var(--p)) * 12px));
+    }
+
+    .metric span {
+      display: block;
+      margin-top: 0.25rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    @keyframes drift {
+      0%, 100% { transform: rotateX(4deg) rotateY(-6deg); }
+      50% { transform: rotateX(2deg) rotateY(8deg); }
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 0.28; transform: translateZ(-80px) scale(1); }
+      50% { opacity: 0.45; transform: translateZ(-40px) scale(1.08); }
+    }
+
+    @keyframes hero-settle {
+      from {
+        opacity: 0;
+        filter: blur(12px);
+        transform: translateZ(-180px) rotateX(12deg);
+      }
+      to {
+        opacity: 1;
+        filter: blur(0);
+        transform: translateZ(0) rotateX(0);
+      }
+    }
+
+    @keyframes cue-bob {
+      0%, 100% { opacity: 0.4; transform: translateX(-50%) translateY(0); }
+      50% { opacity: 1; transform: translateX(-50%) translateY(6px); }
+    }
+
+    @media (max-width: 640px) {
+      .depth-meter { display: none; }
+      .metrics { grid-template-columns: 1fr; gap: 1.25rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .hero__planes,
+      .hero__plane--b,
+      .hero__copy,
+      .hero__cue {
+        animation: none !important;
+      }
+      .panel,
+      .panel--from-left,
+      .panel--from-right {
+        opacity: 1 !important;
+        filter: none !important;
+        transform: none !important;
+      }
+      .panel h2 .word,
+      .metric strong,
+      .focus-frame__img,
+      .focus-frame__iris,
+      .focus-frame__tag {
+        opacity: 1 !important;
+        transform: none !important;
+        filter: none !important;
+      }
+      .focus-frame__iris { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="depth-meter" aria-hidden="true">
+    <div class="depth-meter__fill" id="depthFill"></div>
+  </div>
+
+  <header class="hero">
+    <div class="hero__planes" aria-hidden="true">
+      <div class="hero__plane hero__plane--a"></div>
+      <div class="hero__plane hero__plane--b"></div>
+    </div>
+    <div class="hero__copy">
+      <h1 class="hero__brand">Focus</h1>
+      <p class="hero__line">Scroll to rack depth of field — content fades in from the far plane.</p>
+    </div>
+    <div class="hero__cue" aria-hidden="true">Scroll<span></span></div>
+  </header>
+
+  <main class="stage">
+    <article class="panel" data-panel>
+      <span class="panel__index">01 — Soft entry</span>
+      <h2 data-words="Blur arrives before meaning"></h2>
+      <p>Each block starts deep in Z-space — soft, dim, and out of focus — then racks sharp as it crosses the optical center of the viewport.</p>
+    </article>
+
+    <article class="panel panel--from-left" data-panel>
+      <span class="panel__index">02 — Lateral depth</span>
+      <h2 data-words="Slide in from the wings"></h2>
+      <p>Not every reveal climbs from below. This panel yaws in from the left while opacity and blur resolve together.</p>
+      <div class="metrics">
+        <div class="metric"><strong>0→1</strong><span>Progress</span></div>
+        <div class="metric"><strong>280</strong><span>Z travel</span></div>
+        <div class="metric"><strong>18°</strong><span>Yaw</span></div>
+      </div>
+    </article>
+
+    <article class="panel panel--from-right" data-panel>
+      <span class="panel__index">03 — Iris unlock</span>
+      <h2 data-words="The aperture opens"></h2>
+      <p>Media waits behind a radial iris. As focus lands, the dark ring dissolves and color returns.</p>
+      <div class="focus-frame">
+        <div class="focus-frame__img"></div>
+        <div class="focus-frame__iris" aria-hidden="true"></div>
+        <span class="focus-frame__tag">Depth plane</span>
+      </div>
+    </article>
+
+    <article class="panel" data-panel>
+      <span class="panel__index">04 — Closing line</span>
+      <p class="quote">Fade is not disappearance — it is <em>arrival</em> through focus.</p>
+    </article>
+  </main>
+
+  <script>
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const panels = [...document.querySelectorAll('[data-panel]')];
+    const depthFill = document.getElementById('depthFill');
+
+    document.querySelectorAll('[data-words]').forEach((el) => {
+      const text = el.getAttribute('data-words') || '';
+      el.innerHTML = text
+        .split(' ')
+        .map((w) => `<span class="word">${w}</span>`)
+        .join(' ');
+    });
+
+    function clamp(n, a, b) {
+      return Math.min(b, Math.max(a, n));
+    }
+
+    function panelProgress(el) {
+      const rect = el.getBoundingClientRect();
+      const vh = innerHeight;
+      const start = vh * 0.92;
+      const end = vh * 0.28;
+      return clamp((start - rect.top) / (start - end), 0, 1);
+    }
+
+    function tick() {
+      if (reduced) {
+        panels.forEach((p) => p.style.setProperty('--p', '1'));
+        return;
+      }
+
+      panels.forEach((p) => {
+        p.style.setProperty('--p', panelProgress(p).toFixed(4));
+      });
+
+      const max = document.documentElement.scrollHeight - innerHeight;
+      const pct = max > 0 ? (scrollY / max) * 100 : 0;
+      depthFill.style.height = pct + '%';
+    }
+
+    tick();
+    addEventListener('scroll', tick, { passive: true });
+    addEventListener('resize', tick, { passive: true });
+  </script>
+</body>
+</html>

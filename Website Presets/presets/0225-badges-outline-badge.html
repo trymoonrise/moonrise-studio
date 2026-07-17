@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0225
+    slug: badges-outline-badge
+    title: Outline Badge
+    category: badges
+    tags: badges, outline
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0225 — Outline Badge</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&display=swap');
+
+    * { box-sizing: border-box; }
+    body {
+      display: grid; place-items: center; min-height: 100vh;
+      background: #07070b; font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .row { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; padding: 2rem; }
+
+    .badge {
+      position: relative;
+      padding: 0.55rem 1.2rem;
+      border-radius: 999px;
+      font-size: 0.82rem; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: #e8e8f0;
+      background: transparent;
+      isolation: isolate;
+    }
+
+    .badge::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 2px;
+      background: conic-gradient(from var(--a, 0deg), #ff4ecd, #4e8bff, #4effc8, #ffe74e, #ff4ecd);
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      animation: spin 3s linear infinite;
+    }
+
+    .badge:nth-child(2)::before { animation-duration: 4.5s; animation-direction: reverse; }
+    .badge:nth-child(3)::before { animation-duration: 2.2s; }
+
+    @keyframes spin { to { --a: 360deg; } }
+    @property --a {
+      syntax: '<angle>';
+      inherits: false;
+      initial-value: 0deg;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .badge::before { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="row">
+    <span class="badge">Neon</span>
+    <span class="badge">Orbit</span>
+    <span class="badge">Pulse</span>
+  </div>
+</body>
+</html>

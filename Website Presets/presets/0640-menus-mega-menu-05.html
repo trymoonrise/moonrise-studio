@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0640
+    slug: menus-mega-menu-05
+    title: Editorial Grid Mega Menu
+    category: menus
+    tags: menus, mega
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0640 — Editorial Grid Mega Menu</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #0a0c10;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      height: 64px;
+      border-bottom: 1px solid #1e293b;
+      background: #0c1018;
+    }
+
+    .nav-brand {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 0.95rem;
+      letter-spacing: 0.06em;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    .nav-item { position: relative; }
+
+    .nav-trigger {
+      padding: 0.65rem 1rem;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border-radius: 6px;
+      transition: color 0.2s, background 0.2s;
+    }
+
+    .nav-trigger:hover, .nav-trigger[aria-expanded="true"] {
+      color: #38bdf8;
+      background: #38bdf812;
+    }
+
+    .mega {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%) translateY(-8px);
+      width: min(640px, 92vw);
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1.5rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s, transform 0.3s;
+      z-index: 50;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+    }
+
+    .mega.open {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+      animation: megaReveal 0.35s ease;
+    }
+
+    @keyframes megaReveal {
+      from { clip-path: inset(0 0 100% 0); }
+      to { clip-path: inset(0 0 0 0); }
+    }
+
+    .mega-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    .mega-col h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 0.75rem;
+    }
+
+    .mega-col a {
+      display: block;
+      padding: 0.5rem 0;
+      color: #cbd5e1;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s, transform 0.2s;
+    }
+
+    .mega-col a:hover {
+      color: #38bdf8;
+      transform: translateX(4px);
+    }
+
+    .featured {
+      grid-column: span 3;
+      margin-top: 0.5rem;
+      padding: 1rem;
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border-radius: 8px;
+      border: 1px solid #334155;
+      animation: featuredPulse 5s ease-in-out infinite;
+    }
+
+    @keyframes featuredPulse {
+      0%, 100% { border-color: #334155; }
+      50% { border-color: #38bdf866; }
+    }
+
+    .featured span {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #38bdf8;
+    }
+
+    .featured p {
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-top: 0.25rem;
+    }
+
+    .page { padding: 3rem 1.5rem; color: #64748b; }
+
+    @media (max-width: 600px) {
+      .mega-grid { grid-template-columns: 1fr; }
+      .featured { grid-column: span 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .mega.open { animation: none; }
+      .featured { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <span class="nav-brand">MONOLITH</span>
+    <div class="nav-links">
+      <div class="nav-item">
+        <button type="button" class="nav-trigger" id="products" aria-expanded="false" aria-haspopup="true">Products ▾</button>
+        <div class="mega" id="mega" role="region" aria-label="Products menu">
+          <div class="mega-grid">
+            <div class="mega-col">
+              <h3>Platform</h3>
+              <a href="#">Analytics Hub</a>
+              <a href="#">Data Pipeline</a>
+              <a href="#">Edge Compute</a>
+            </div>
+            <div class="mega-col">
+              <h3>Integrations</h3>
+              <a href="#">API Gateway</a>
+              <a href="#">Webhooks</a>
+              <a href="#">SSO Connect</a>
+            </div>
+            <div class="mega-col">
+              <h3>Resources</h3>
+              <a href="#">Documentation</a>
+              <a href="#">Changelog</a>
+              <a href="#">Status</a>
+            </div>
+            <div class="featured">
+              <span>New: Real-time dashboards</span>
+              <p>Ship insights in under 200ms with our streaming layer.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="nav-trigger">Pricing</button>
+      <button type="button" class="nav-trigger">About</button>
+    </div>
+  </header>
+  <main class="page">Hover or click Products to open the editorial mega menu grid.</main>
+
+  <script>
+    const trigger = document.getElementById('products');
+    const mega = document.getElementById('mega');
+    let open = false;
+
+    function setOpen(v) {
+      open = v;
+      trigger.setAttribute('aria-expanded', String(open));
+      mega.classList.toggle('open', open);
+    }
+
+    trigger.addEventListener('click', (e) => { e.stopPropagation(); setOpen(!open); });
+    trigger.addEventListener('mouseenter', () => setOpen(true));
+    document.querySelector('.nav-item').addEventListener('mouseleave', () => setOpen(false));
+    document.addEventListener('click', () => setOpen(false));
+    mega.querySelectorAll('a').forEach((a) => a.addEventListener('click', (e) => e.preventDefault()));
+  </script>
+</body>
+</html>

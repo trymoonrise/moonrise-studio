@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1847
+    slug: hero-video-liquid-mask
+    title: Liquid Mask Video Hero
+    category: hero
+    tags: hero, video, interactive, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1847 — Liquid Mask Video Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;overflow:hidden;background:#050505;color:#fff;font-family:Syne,sans-serif}
+    video{display:block}
+    button{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit}
+    .stage{position:relative;min-height:100vh;overflow:hidden;background:#0a0a0a}
+video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;clip-path:circle(12% at 50% 50%);transition:clip-path .15s linear}
+.copy{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;padding:clamp(2rem,5vw,4rem);pointer-events:none}
+h1{font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;font-size:clamp(3rem,10vw,6.5rem);margin:0;max-width:8ch;line-height:.9}
+.meta{font:500 .65rem 'DM Mono',monospace;letter-spacing:.28em;text-transform:uppercase;opacity:.45}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="stage" id="s"><video id="v" src="../stock/media/16-9 Aspect Ratio(video).mp4" autoplay muted loop playsinline></video><div class="copy"><p class="meta">Liquid aperture</p><h1>Follow the pool</h1></div></div>
+<script>const s=document.getElementById('s'),v=document.getElementById('v');let r=12;s.onmousemove=e=>{const x=(e.clientX/innerWidth)*100,y=(e.clientY/innerHeight)*100;r=Math.min(42,r+.8);v.style.clipPath='circle('+r+'% at '+x+'% '+y+'%)'};s.onmouseleave=()=>{r=12;v.style.clipPath='circle(12% at 50% 50%)'};</script>
+</body>
+</html>

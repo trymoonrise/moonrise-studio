@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1425
+    slug: cards-shine-flip
+    title: Shine Flip Card
+    category: cards
+    tags: cards, flip, shine
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1425 — Shine Flip Card</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#111;perspective:800px}.card{width:240px;height:160px;position:relative;transform-style:preserve-3d;transition:transform .6s;cursor:pointer}.card:hover{transform:rotateY(180deg)}.face{position:absolute;inset:0;border-radius:12px;backface-visibility:hidden;display:grid;place-items:center;font-weight:700;color:#fff}.front{background:linear-gradient(135deg,#6c8cff,#764ba2)}.back{background:linear-gradient(135deg,#ff6cb0,#6cffb8);transform:rotateY(180deg)}
+  </style>
+</head>
+<body>
+<div class="card"><div class="face front">Front</div><div class="face back">Back</div></div>
+
+</body>
+</html>

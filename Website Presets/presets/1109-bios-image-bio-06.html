@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1109
+    slug: bios-image-bio-06
+    title: Image Bio 06
+    category: bios
+    tags: bios, image, experimental, shapes
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1109 — Image Bio 06</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=DM+Sans:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#e7e2d9;font-family:'DM Sans',sans-serif;overflow:hidden;padding:2rem}
+    .unit{display:flex;align-items:center;gap:1.5rem;animation:in .9s cubic-bezier(.22,1,.36,1) both}
+    .mask{position:relative;width:120px;height:140px;flex-shrink:0}
+    .frame{position:absolute;inset:0;overflow:hidden;border-radius:60% 40% 50% 50% / 40% 50% 50% 60%;animation:morph 9s ease-in-out infinite;box-shadow:0 20px 40px rgba(0,0,0,.12)}
+    .frame img{width:100%;height:100%;object-fit:cover;filter:grayscale(.3) contrast(1.05);animation:zoom 12s ease-in-out infinite alternate}
+    .outline{position:absolute;inset:-8px;border:1.5px solid rgba(0,0,0,.2);border-radius:50% 40% 60% 40% / 40% 60% 40% 60%;animation:morph 9s ease-in-out infinite reverse}
+    .info{max-width:18ch}
+    h2{margin:0;font-family:Fraunces,serif;font-weight:500;font-size:1.45rem;color:#1c1a17;letter-spacing:-.02em}
+    .role{margin:.35rem 0 0;font-size:.65rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(28,26,23,.45)}
+    p{margin:.8rem 0 0;font-size:.88rem;line-height:1.45;color:rgba(28,26,23,.65)}
+    @media(max-width:520px){.unit{flex-direction:column;text-align:center}.info{max-width:28ch}}
+    @keyframes morph{0%,100%{border-radius:60% 40% 50% 50% / 40% 50% 50% 60%}50%{border-radius:40% 60% 40% 60% / 60% 40% 60% 40%}}
+    @keyframes zoom{to{transform:scale(1.08)}}
+    @keyframes in{from{opacity:0;transform:translateY(16px)}}
+    @media (prefers-reduced-motion:reduce){.frame,.outline,.frame img,.unit{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="unit">
+    <div class="mask">
+      <span class="outline" aria-hidden="true"></span>
+      <div class="frame"><img src="../stock/media/4-5 Aspect Ratio(image).png" alt=""></div>
+    </div>
+    <div class="info">
+      <h2>Lena Moss</h2>
+      <p class="role">Photographer</p>
+      <p>Frames people like quiet monuments.</p>
+    </div>
+  </div>
+</body>
+</html>

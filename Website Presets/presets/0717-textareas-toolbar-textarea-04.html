@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0717
+    slug: textareas-toolbar-textarea-04
+    title: Markdown Toolbar Editor
+    category: textareas
+    tags: textareas, toolbar
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0717 — Markdown Toolbar Editor</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #080a0e;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+      padding: 1.5rem;
+    }
+
+    .editor {
+      width: min(520px, 94vw);
+      background: #0f1419;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 0.25rem;
+      padding: 0.5rem;
+      border-bottom: 1px solid #1e293b;
+      background: #111827;
+    }
+
+    .toolbar button {
+      width: 36px;
+      height: 36px;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      color: #94a3b8;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      transition: background 0.2s, color 0.2s, transform 0.2s;
+    }
+
+    .toolbar button:hover {
+      background: #1e293b;
+      color: #38bdf8;
+      transform: translateY(-2px);
+    }
+
+    .toolbar button:active { transform: translateY(0); animation: toolTap 0.2s ease; }
+
+    @keyframes toolTap {
+      50% { background: #38bdf833; }
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 180px;
+      padding: 1rem 1.25rem;
+      border: none;
+      background: transparent;
+      outline: none;
+      resize: vertical;
+      font-size: 0.95rem;
+      line-height: 1.65;
+      color: #cbd5e1;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 1rem;
+      border-top: 1px solid #1e293b;
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    .count { font-variant-numeric: tabular-nums; animation: countPulse 0.3s ease; }
+
+    @keyframes countPulse {
+      50% { color: #38bdf8; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .toolbar button:active { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="editor">
+    <div class="toolbar" role="toolbar" aria-label="Formatting">
+      <button type="button" data-wrap="**" title="Bold"><strong>B</strong></button>
+      <button type="button" data-wrap="*" title="Italic"><em>I</em></button>
+      <button type="button" data-wrap="`" title="Code">&lt;/&gt;</button>
+      <button type="button" data-prefix="# " title="Heading">H</button>
+      <button type="button" data-prefix="- " title="List">•</button>
+    </div>
+    <textarea id="ta" placeholder="Write your note…">## Release notes
+
+- Fixed login redirect
+- Improved dashboard load time</textarea>
+    <div class="footer">
+      <span>Markdown supported</span>
+      <span class="count" id="count">0 chars</span>
+    </div>
+  </div>
+
+  <script>
+    const ta = document.getElementById('ta');
+    const count = document.getElementById('count');
+
+    function updateCount() {
+      count.textContent = ta.value.length + ' chars';
+      count.style.animation = 'none';
+      count.offsetHeight;
+      count.style.animation = '';
+    }
+
+    ta.addEventListener('input', updateCount);
+    updateCount();
+
+    document.querySelectorAll('.toolbar button').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const start = ta.selectionStart;
+        const end = ta.selectionEnd;
+        const sel = ta.value.slice(start, end) || 'text';
+        let insert;
+        if (btn.dataset.wrap) {
+          const w = btn.dataset.wrap;
+          insert = w + sel + w;
+        } else {
+          insert = btn.dataset.prefix + sel;
+        }
+        ta.setRangeText(insert, start, end, 'end');
+        ta.focus();
+        updateCount();
+      });
+    });
+  </script>
+</body>
+</html>

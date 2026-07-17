@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0636
+    slug: menus-horizontal-nav-01
+    title: Magnetic Underline Nav
+    category: menus
+    tags: menus, magnetic, underline
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0636 — Magnetic Underline Nav</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700&family=Outfit:wght@400;500;600&display=swap');
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:#0c0d10;font-family:Outfit,sans-serif}
+nav{display:flex;align-items:center;gap:2rem;padding:1.25rem 2rem;border-bottom:1px solid #1e2028;position:relative}
+.logo{font-family:Syne,sans-serif;font-weight:700;color:#fff;letter-spacing:-.02em;text-decoration:none}
+.links{display:flex;gap:1.75rem;position:relative;margin-left:1rem}
+.links a{color:#8a8a96;text-decoration:none;font-size:.9rem;font-weight:500;padding:.35rem 0;transition:color .25s}
+.links a:hover,.links a.on{color:#fff}
+.bar{position:absolute;bottom:-1px;height:2px;background:#7ee0c3;width:0;left:0;transition:left .4s cubic-bezier(.22,1,.36,1),width .4s cubic-bezier(.22,1,.36,1);border-radius:2px}
+.cta{margin-left:auto;padding:.55rem 1.1rem;border-radius:999px;background:#fff;color:#111;text-decoration:none;font-size:.8rem;font-weight:600}
+  </style>
+</head>
+<body>
+<nav>
+  <a class="logo" href="#">North</a>
+  <div class="links" id="links">
+    <a class="on" href="#">Work</a>
+    <a href="#">Studio</a>
+    <a href="#">Journal</a>
+    <div class="bar" id="bar"></div>
+  </div>
+  <a class="cta" href="#">Contact</a>
+</nav>
+<script>const links=[...document.querySelectorAll('#links a')],bar=document.getElementById('bar'),wrap=document.getElementById('links');
+function move(el){const r=el.getBoundingClientRect(),p=wrap.getBoundingClientRect();bar.style.left=(r.left-p.left)+'px';bar.style.width=r.width+'px'}
+links.forEach(a=>{a.addEventListener('mouseenter',()=>move(a));a.addEventListener('click',e=>{e.preventDefault();links.forEach(x=>x.classList.remove('on'));a.classList.add('on');move(a)})});
+move(links[0]);</script>
+</body>
+</html>

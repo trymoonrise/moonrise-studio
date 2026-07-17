@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1508
+    slug: menu-fullscreen-curtain
+    title: Curtain Drop Menu
+    category: navigation
+    tags: menu, hamburger, fullscreen, curtain
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1508 — Curtain Drop Menu</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Outfit:wght@300&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#fff;color:#111;font-family:Outfit,sans-serif;overflow:hidden}
+    .top{display:flex;justify-content:space-between;align-items:center;padding:1.5rem clamp(1.25rem,4vw,3rem);position:relative;z-index:40}
+    .logo{font-family:Syne,sans-serif;font-weight:800;letter-spacing:-.04em}
+    .burger{border:0;background:transparent;font:inherit;font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;font-weight:300;cursor:pointer;padding:0;opacity:.45;transition:opacity .3s;z-index:50}
+    .burger:hover,.burger.open{opacity:1}
+    .curtain{position:fixed;inset:0;background:#111;color:#fff;z-index:30;transform:translateY(-100%);transition:transform .75s cubic-bezier(.76,0,.24,1);display:grid;place-items:center;pointer-events:none}
+    .curtain.open{transform:none;pointer-events:auto}
+    .curtain nav{display:flex;flex-direction:column;align-items:center;gap:.15rem}
+    .curtain a{font-family:Syne,sans-serif;font-size:clamp(2.5rem,10vw,6rem);font-weight:800;letter-spacing:-.05em;color:#fff;text-decoration:none;line-height:1;opacity:0;transform:translateY(-30px);transition:opacity .5s,transform .5s cubic-bezier(.22,1,.36,1)}
+    .curtain.open a{opacity:1;transform:none}
+    .curtain.open a:nth-child(1){transition-delay:.2s}.curtain.open a:nth-child(2){transition-delay:.28s}
+    .curtain.open a:nth-child(3){transition-delay:.36s}.curtain.open a:nth-child(4){transition-delay:.44s}
+    .curtain a:hover{opacity:.35}
+    .page{height:70vh;display:grid;place-items:center;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;font-weight:300;color:#999}
+    @media(prefers-reduced-motion:reduce){.curtain,.curtain a{transition:none}}
+  </style>
+</head>
+<body>
+  <div class="top">
+    <div class="logo">DROP</div>
+    <button class="burger" id="burger" aria-expanded="false">Menu</button>
+  </div>
+  <div class="curtain" id="curtain">
+    <nav><a href="#">Fall</a><a href="#">Into</a><a href="#">The</a><a href="#">Dark</a></nav>
+  </div>
+  <div class="page">Curtain falls</div>
+  <script>
+    const b=document.getElementById('burger'),c=document.getElementById('curtain');
+    b.addEventListener('click',()=>{
+      const on=c.classList.toggle('open');
+      b.classList.toggle('open',on);
+      b.textContent=on?'Close':'Menu';
+      b.setAttribute('aria-expanded',String(on));
+    });
+  </script>
+</body>
+</html>

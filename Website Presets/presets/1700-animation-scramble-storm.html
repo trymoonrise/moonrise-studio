@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1700
+    slug: animation-scramble-storm
+    title: Letter Scramble Storm
+    category: animation
+    tags: animation, scramble, storm, text
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1690 — Letter Scramble Storm</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@600;700&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #05070a;
+      color: #d6ff3f;
+      font-family: 'JetBrains Mono', monospace;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .storm {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      opacity: 0.18;
+      font-size: 0.85rem;
+      letter-spacing: 0.2em;
+      color: #4de1ff;
+    }
+
+    .storm span {
+      position: absolute;
+      top: -2em;
+      animation: rain linear infinite;
+      white-space: nowrap;
+    }
+
+    .word {
+      position: relative;
+      z-index: 2;
+      font-size: clamp(2.4rem, 9vw, 5.5rem);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-shadow: 0 0 30px rgba(214, 255, 63, 0.45);
+      min-height: 1.2em;
+    }
+
+    .hint {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 0.65rem;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: rgba(214, 255, 63, 0.35);
+    }
+
+    @keyframes rain {
+      to { transform: translateY(110vh); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .storm { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="storm" id="storm" aria-hidden="true"></div>
+  <div class="word" id="word">THRILL</div>
+  <p class="hint">Click to scramble</p>
+
+  <script>
+    const phrases = ['THRILL', 'CHAOS', 'SIGNAL', 'VOLTAGE', 'IMPACT'];
+    const glyphs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&*';
+    const word = document.getElementById('word');
+    const storm = document.getElementById('storm');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let idx = 0;
+    let busy = false;
+
+    for (let i = 0; i < 28; i++) {
+      const s = document.createElement('span');
+      s.textContent = Array.from({ length: 8 }, () => glyphs[(Math.random() * glyphs.length) | 0]).join('');
+      s.style.left = Math.random() * 100 + '%';
+      s.style.animationDuration = 4 + Math.random() * 8 + 's';
+      s.style.animationDelay = -Math.random() * 8 + 's';
+      storm.appendChild(s);
+    }
+
+    async function scrambleTo(target) {
+      if (busy) return;
+      busy = true;
+      const chars = target.split('');
+      let frame = 0;
+      const total = chars.length * 4;
+
+      await new Promise((resolve) => {
+        const id = setInterval(() => {
+          word.textContent = chars.map((ch, i) => {
+            if (frame / 4 > i) return ch;
+            return glyphs[(Math.random() * glyphs.length) | 0];
+          }).join('');
+          frame++;
+          if (frame > total) {
+            clearInterval(id);
+            word.textContent = target;
+            resolve();
+          }
+        }, reduced ? 0 : 32);
+      });
+
+      busy = false;
+    }
+
+    addEventListener('click', () => {
+      idx = (idx + 1) % phrases.length;
+      scrambleTo(phrases[idx]);
+    });
+  </script>
+</body>
+</html>

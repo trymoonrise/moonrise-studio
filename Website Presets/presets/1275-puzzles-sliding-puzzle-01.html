@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1275
+    slug: puzzles-sliding-puzzle-01
+    title: Grid Lock Slide
+    category: puzzles
+    tags: puzzles, sliding
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1275 — Grid Lock Slide</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0a0a0e;color:#ececf2;font-family:Outfit,sans-serif;padding:24px}
+    button{font:inherit;border:0;cursor:pointer}
+    .puzzle{text-align:center}
+    .head{margin-bottom:20px}
+    .head h2{font-family:Syne,sans-serif;font-size:1.4rem;margin:0 0 4px;letter-spacing:-.02em}
+    .head p{margin:0;font-size:.8rem;color:rgba(236,236,242,.4)}
+    .board{display:grid;grid-template-columns:repeat(3,90px);gap:4px;margin:0 auto 20px;padding:8px;background:#14141a;border:1px solid rgba(255,255,255,.1);border-radius:4px}
+    .tile{height:90px;border-radius:3px;background:#1e1e28;display:grid;place-items:center;font-family:Syne,sans-serif;font-size:1.6rem;font-weight:800;cursor:pointer;transition:transform .2s,background .2s;border:1px solid rgba(255,255,255,.08)}
+    .tile:hover:not(.empty){background:#2a2a38;transform:scale(1.03)}
+    .tile.empty{background:transparent;border-color:transparent;cursor:default}
+    .tile.win{animation:winPulse .5s ease}
+    .reset{padding:10px 20px;background:transparent;border:1px solid rgba(255,255,255,.2);color:#fff;font:500 .7rem Outfit,sans-serif;letter-spacing:.12em;text-transform:uppercase}
+    @keyframes winPulse{0%,100%{box-shadow:0 0 0 0 rgba(0,200,150,0)}50%{box-shadow:0 0 20px rgba(0,200,150,.4)}}
+    @media(prefers-reduced-motion:reduce){.tile{transition:none}.tile.win{animation:none}}
+  </style>
+</head>
+<body>
+<div class="puzzle">
+  <header class="head"><h2>Grid lock</h2><p>Slide tiles into ascending order</p></header>
+  <div class="board" id="board"></div>
+  <button class="reset" id="reset" type="button">Shuffle</button>
+</div>
+<script>
+const board=document.getElementById('board');let tiles=[1,2,3,4,5,6,7,8,0];
+function render(){board.innerHTML='';const win=tiles.every((v,i)=>v===(i+1)%9);tiles.forEach((v,i)=>{const t=document.createElement('div');t.className='tile'+(v===0?' empty':'')+(win&&v?' win':'');t.textContent=v||'';t.onclick=()=>move(i);board.appendChild(t);});}
+function move(i){const e=tiles.indexOf(0);const r=Math.floor(i/3),c=i%3,re=Math.floor(e/3),ec=e%3;if(Math.abs(r-re)+Math.abs(c-ec)===1){[tiles[i],tiles[e]]=[tiles[e],tiles[i]];render();}}
+function shuffle(){for(let k=0;k<80;k++){const e=tiles.indexOf(0);const opts=[e-1,e+1,e-3,e+3].filter(x=>x>=0&&x<9&&Math.abs(x%3-e%3)+Math.abs(Math.floor(x/3)-Math.floor(e/3))===1);const pick=opts[Math.floor(Math.random()*opts.length)];if(pick!==undefined)[tiles[e],tiles[pick]]=[tiles[pick],tiles[e]];}}
+document.getElementById('reset').onclick=()=>{shuffle();render();};
+render();
+</script>
+</body>
+</html>

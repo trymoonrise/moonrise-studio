@@ -125,6 +125,16 @@
     );
   }
 
+  function syncFinanceSetupLink() {
+    const link = document.getElementById("set-finance-onboarding-link");
+    if (!link) return;
+    const complete = window.StudioAuth.financeProfileComplete({
+      payout_profile: payoutProfile,
+    });
+    link.textContent = complete ? "View full payout profile →" : "Resume payout setup →";
+    link.href = complete ? "finance.html" : "finance.html?onboarding=1&next=settings.html";
+  }
+
   function extForType(type) {
     if (type === "image/png") return "png";
     if (type === "image/webp") return "webp";
@@ -494,6 +504,7 @@
       await savePayoutProfile(next);
       closePayoutAddPanel();
       renderPayoutList();
+      syncFinanceSetupLink();
       setPayoutOk(meta.label + " saved.");
     } catch (e) {
       setPayoutError(e.message || "Could not save payment method.");
@@ -515,6 +526,7 @@
       next.methods[id] = { enabled: false, handle: "" };
       await savePayoutProfile(next);
       renderPayoutList();
+      syncFinanceSetupLink();
       setPayoutOk("Payment method removed.");
     } catch (e) {
       setPayoutError(e.message || "Could not remove payment method.");
@@ -594,6 +606,7 @@
     }
     refreshPreview();
     renderPayoutList();
+    syncFinanceSetupLink();
   }
 
   fileInput?.addEventListener("change", async () => {

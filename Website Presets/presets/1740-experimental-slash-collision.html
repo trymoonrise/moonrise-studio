@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1740
+    slug: experimental-slash-collision
+    title: Slash Collision Poster
+    category: experimental
+    tags: experimental, brutalist, slash, poster
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1740 — Slash Collision Poster</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@600&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#0a0a0a;color:#f5f5f0;overflow:hidden;font-family:'Archivo Black',sans-serif}
+    .field{position:fixed;inset:-20%;display:grid;place-items:center;transform:rotate(-18deg)}
+    .slash{position:absolute;left:-10%;width:120%;white-space:nowrap;font-size:clamp(3rem,10vw,7rem);line-height:.85;text-transform:uppercase;letter-spacing:-.03em;border-block:6px solid #f5f5f0;padding:.15em 0;background:#0a0a0a;animation:rush var(--spd) linear infinite}
+    .slash:nth-child(1){top:8%;--spd:14s;background:#ff0033;color:#0a0a0a;border-color:#0a0a0a}
+    .slash:nth-child(2){top:28%;--spd:18s;animation-direction:reverse}
+    .slash:nth-child(3){top:48%;--spd:11s;background:#f5f5f0;color:#0a0a0a;border-color:#ff0033;z-index:3}
+    .slash:nth-child(4){top:68%;--spd:22s;animation-direction:reverse;opacity:.7}
+    .slash:nth-child(5){top:88%;--spd:16s;background:#0044ff;color:#fff;border-color:#fff}
+    .meta{position:fixed;bottom:1rem;left:1rem;font-family:'IBM Plex Mono',monospace;font-size:.65rem;letter-spacing:.22em;text-transform:uppercase;z-index:10}
+    @keyframes rush{to{transform:translateX(-50%)}}
+    @media (prefers-reduced-motion:reduce){.slash{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="field" aria-hidden="true">
+    <div class="slash"><span>CUT / THROUGH / CUT / THROUGH / </span><span>CUT / THROUGH / CUT / THROUGH / </span></div>
+    <div class="slash"><span>NO SAFE ANGLE / NO SAFE ANGLE / </span><span>NO SAFE ANGLE / NO SAFE ANGLE / </span></div>
+    <div class="slash"><span>COLLISION / COLLISION / </span><span>COLLISION / COLLISION / </span></div>
+    <div class="slash"><span>BRUTAL VECTOR / BRUTAL VECTOR / </span><span>BRUTAL VECTOR / BRUTAL VECTOR / </span></div>
+    <div class="slash"><span>OFF AXIS / OFF AXIS / </span><span>OFF AXIS / OFF AXIS / </span></div>
+  </div>
+  <p class="meta">1740 · Slash Collision</p>
+</body>
+</html>

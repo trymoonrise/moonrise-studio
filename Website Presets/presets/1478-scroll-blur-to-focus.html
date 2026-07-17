@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1478
+    slug: scroll-blur-to-focus
+    title: Blur to Focus Scroll
+    category: scroll-effects
+    tags: scroll, blur, focus
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1478 — Blur to Focus Scroll</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#000;color:#fff}.hero{height:100vh;position:relative;overflow:hidden}.hero img{width:100%;height:100%;object-fit:cover;filter:blur(20px) brightness(.4);transition:filter .3s}.hero.focus img{filter:blur(0) brightness(.7)}.overlay{position:absolute;inset:0;display:grid;place-items:center;font-size:2.5rem;font-weight:900;text-shadow:0 2px 20px rgba(0,0,0,.8)}.spacer{height:50vh}
+  </style>
+</head>
+<body>
+<div class="hero" id="h"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""><div class="overlay">Focus</div></div><div class="spacer"></div>
+<script>const h=document.getElementById('h');const obs=new IntersectionObserver(es=>es.forEach(e=>h.classList.toggle('focus',e.isIntersecting)),{threshold:.6});obs.observe(h);</script>
+</body>
+</html>

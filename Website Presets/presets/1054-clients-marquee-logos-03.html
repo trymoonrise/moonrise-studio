@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1054
+    slug: clients-marquee-logos-03
+    title: Marquee Logos 03
+    category: clients
+    tags: clients, marquee
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1054 — Marquee Logos 03</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@600;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      background: #030308;
+      font-family: Outfit, sans-serif;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at 20% 30%, rgba(0, 255, 200, 0.12), transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(255, 0, 120, 0.12), transparent 40%);
+      animation: aura 8s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+
+    .stack {
+      position: relative;
+      width: 100%;
+      display: grid;
+      gap: 0;
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+      mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    }
+
+    .row {
+      position: relative;
+      height: clamp(4rem, 14vw, 7.5rem);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+    }
+
+    .row + .row {
+      margin-top: -0.5rem;
+    }
+
+    .track {
+      display: flex;
+      align-items: center;
+      gap: clamp(1.5rem, 4vw, 3rem);
+      white-space: nowrap;
+      will-change: transform;
+    }
+
+    .row--1 .track { animation: scroll-a 18s linear infinite; }
+    .row--2 .track { animation: scroll-b 14s linear infinite; }
+    .row--3 .track { animation: scroll-a 22s linear infinite; }
+
+    .logo {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.35em 0.85em;
+      font-size: clamp(2rem, 7vw, 4.5rem);
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      text-transform: uppercase;
+      line-height: 1;
+      color: #fff;
+      transform-style: preserve-3d;
+      animation: logo-glitch 3s steps(1) infinite;
+    }
+
+    .logo:nth-child(2n) { animation-delay: -0.7s; }
+    .logo:nth-child(3n) { animation-delay: -1.4s; }
+    .logo:nth-child(4n) { animation-delay: -2.1s; }
+
+    /* Chromatic ghost layers */
+    .logo::before,
+    .logo::after {
+      content: attr(data-text);
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      pointer-events: none;
+    }
+
+    .logo::before {
+      color: #00fff0;
+      mix-blend-mode: screen;
+      animation: chrom-l 2s steps(1) infinite;
+      opacity: 0;
+    }
+
+    .logo::after {
+      color: #ff0066;
+      mix-blend-mode: screen;
+      animation: chrom-r 2s steps(1) infinite;
+      opacity: 0;
+    }
+
+    .row--2 .logo {
+      color: transparent;
+      -webkit-text-stroke: 2px rgba(255, 255, 255, 0.7);
+      font-weight: 600;
+    }
+
+    .row--2 .logo::before {
+      color: transparent;
+      -webkit-text-stroke: 2px #00fff0;
+    }
+
+    .row--2 .logo::after {
+      color: transparent;
+      -webkit-text-stroke: 2px #ff0066;
+    }
+
+    .row--3 .logo {
+      font-size: clamp(1.2rem, 3.5vw, 2rem);
+      letter-spacing: 0.35em;
+      opacity: 0.4;
+      animation-name: logo-drift;
+    }
+
+    .divider {
+      width: 0.5em;
+      height: 0.5em;
+      border-radius: 50%;
+      background: #00fff0;
+      box-shadow: 0 0 20px #00fff0, 0 0 40px #ff0066;
+      animation: orb 1.2s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    .row--2 .divider {
+      background: #ff0066;
+      border-radius: 0;
+      transform: rotate(45deg);
+    }
+
+    .hud {
+      position: absolute;
+      bottom: 8%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.65rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.35);
+      animation: hud-blink 2s steps(1) infinite;
+    }
+
+    @keyframes scroll-a {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    @keyframes scroll-b {
+      from { transform: translateX(-50%); }
+      to { transform: translateX(0); }
+    }
+
+    @keyframes aura {
+      from { opacity: 0.6; transform: scale(1); }
+      to { opacity: 1; transform: scale(1.15); }
+    }
+
+    @keyframes logo-glitch {
+      0%, 88%, 100% { transform: none; filter: none; }
+      89% { transform: translate(-4px, 2px) skewX(-8deg); filter: hue-rotate(60deg); }
+      91% { transform: translate(5px, -3px) scaleY(1.2); filter: invert(0.3); }
+      93% { transform: translate(-2px, 0) skewX(4deg); }
+      95% { transform: none; }
+    }
+
+    @keyframes logo-drift {
+      0%, 100% { opacity: 0.3; letter-spacing: 0.35em; }
+      50% { opacity: 0.7; letter-spacing: 0.5em; }
+    }
+
+    @keyframes chrom-l {
+      0%, 88%, 100% { transform: translate(0); opacity: 0; }
+      89% { transform: translate(-6px, 1px); opacity: 0.9; }
+      93% { transform: translate(-3px, 0); opacity: 0.4; }
+      95% { opacity: 0; }
+    }
+
+    @keyframes chrom-r {
+      0%, 88%, 100% { transform: translate(0); opacity: 0; }
+      89% { transform: translate(6px, -1px); opacity: 0.9; }
+      93% { transform: translate(3px, 0); opacity: 0.4; }
+      95% { opacity: 0; }
+    }
+
+    @keyframes orb {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.8); opacity: 0.5; }
+    }
+
+    @keyframes hud-blink {
+      0%, 80%, 100% { opacity: 0.35; }
+      85% { opacity: 0; }
+      90% { opacity: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .track, .logo, .logo::before, .logo::after, .divider, .hud, body::before {
+        animation: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="stack" aria-label="Glitch client logo marquee">
+    <div class="row row--1">
+      <div class="track" id="t1"></div>
+    </div>
+    <div class="row row--2">
+      <div class="track" id="t2"></div>
+    </div>
+    <div class="row row--3">
+      <div class="track" id="t3"></div>
+    </div>
+  </div>
+  <p class="hud">signal // partners // live</p>
+
+  <script>
+    const names = ['NOVA', 'AXIOM', 'PULSE', 'KAIRO', 'VEIL', 'ORBIT', 'LUNAR', 'HEX'];
+    function fill(id, outlined) {
+      const piece = names.map((n) =>
+        '<span class="logo" data-text="' + n + '">' + n + '</span><span class="divider" aria-hidden="true"></span>'
+      ).join('');
+      document.getElementById(id).innerHTML = piece + piece;
+    }
+    fill('t1');
+    fill('t2');
+    fill('t3');
+  </script>
+</body>
+</html>

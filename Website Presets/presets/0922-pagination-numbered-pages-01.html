@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0922
+    slug: pagination-numbered-pages-01
+    title: Tape Measure Pagination
+    category: pagination
+    tags: pagination, numbered, tape, editorial
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0922 — Tape Measure Pagination</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#111318;color:#e2e4ea;font-family:Outfit,sans-serif;padding:2rem}
+    .wrap{width:min(520px,100%)}
+    .head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:1.5rem}
+    .head h2{font-family:Syne,sans-serif;font-size:1.2rem;letter-spacing:-.03em;margin:0}
+    .head span{font-size:.7rem;color:rgba(226,228,234,.4);letter-spacing:.15em;text-transform:uppercase}
+    .tape{position:relative;background:#1a1d24;border:1px solid rgba(255,255,255,.08);border-radius:4px;padding:1rem 0;overflow:hidden}
+    .tape::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.04) 0,rgba(255,255,255,.04) 1px,transparent 1px,transparent 40px);animation:tape-scroll 8s linear infinite}
+    .pages{display:flex;justify-content:center;gap:0;position:relative;z-index:1}
+    .pg{position:relative;width:48px;height:48px;display:grid;place-items:center;font-family:Syne,sans-serif;font-weight:700;font-size:.95rem;border:none;background:transparent;color:rgba(226,228,234,.5);cursor:pointer;transition:color .3s,transform .3s}
+    .pg::after{content:'';position:absolute;bottom:6px;left:50%;width:2px;height:8px;background:rgba(255,255,255,.15);transform:translateX(-50%);transition:height .3s,background .3s}
+    .pg.on{color:#38bdf8;transform:scale(1.15)}
+    .pg.on::after{height:14px;background:#38bdf8;animation:tick 1.5s ease infinite}
+    .pg:hover:not(.on){color:#e2e4ea}
+    .nav{display:flex;justify-content:space-between;margin-top:1rem;font-size:.75rem;color:rgba(226,228,234,.35)}
+    .nav button{background:none;border:1px solid rgba(255,255,255,.1);color:inherit;padding:.4rem .8rem;border-radius:4px;font-family:Outfit,sans-serif;transition:border-color .3s,color .3s}
+    .nav button:hover{border-color:#38bdf8;color:#38bdf8}
+    @keyframes tape-scroll{to{background-position:40px 0}}
+    @keyframes tick{0%,100%{opacity:1}50%{opacity:.4}}
+    @media(prefers-reduced-motion:reduce){.tape::before,.pg.on::after{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h2>Archive Index</h2><span>Page 3 of 7</span></div>
+    <div class="tape">
+      <div class="pages">
+        <button class="pg">1</button><button class="pg">2</button><button class="pg on">3</button><button class="pg">4</button><button class="pg">5</button><button class="pg">6</button><button class="pg">7</button>
+      </div>
+    </div>
+    <div class="nav"><button>← Prev</button><button>Next →</button></div>
+  </div>
+  <script>
+    document.querySelectorAll('.pg').forEach(b=>b.addEventListener('click',()=>{document.querySelector('.pg.on')?.classList.remove('on');b.classList.add('on')}));
+  </script>
+</body>
+</html>

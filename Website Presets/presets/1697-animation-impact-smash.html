@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1697
+    slug: animation-impact-smash
+    title: Impact Smash Letters
+    category: animation
+    tags: animation, impact, smash, letters
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1687 — Impact Smash Letters</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Anton&family=DM+Mono:wght@500&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #0a0a0c;
+      overflow: hidden;
+      font-family: Anton, sans-serif;
+      cursor: pointer;
+    }
+
+    .shock {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at 50% 50%, rgba(255, 60, 40, 0.25), transparent 45%);
+      opacity: 0;
+    }
+
+    .shock.on { animation: flash 0.35s ease-out; }
+
+    .stage {
+      position: relative;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .word {
+      display: flex;
+      justify-content: center;
+      gap: 0.02em;
+      font-size: clamp(4rem, 16vw, 9rem);
+      line-height: 0.85;
+      letter-spacing: -0.02em;
+      color: #f4f1ea;
+      text-transform: uppercase;
+    }
+
+    .char {
+      display: inline-block;
+      transform: translateY(-120vh) rotate(-20deg) scale(1.4);
+      opacity: 0;
+    }
+
+    .char.in {
+      animation: smash 0.55s cubic-bezier(0.2, 1.4, 0.3, 1) forwards;
+    }
+
+    .dust {
+      position: absolute;
+      left: 50%;
+      bottom: -0.4rem;
+      width: 80%;
+      height: 4px;
+      transform: translateX(-50%) scaleX(0);
+      background: linear-gradient(90deg, transparent, rgba(255, 80, 40, 0.7), transparent);
+      box-shadow: 0 0 30px rgba(255, 80, 40, 0.5);
+    }
+
+    .dust.on { animation: dust 0.5s ease-out 0.25s forwards; }
+
+    .hint {
+      margin-top: 2rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: rgba(244, 241, 234, 0.35);
+    }
+
+    @keyframes smash {
+      0% { transform: translateY(-120vh) rotate(-20deg) scale(1.4); opacity: 0; }
+      70% { transform: translateY(8px) rotate(2deg) scale(1.05); opacity: 1; }
+      85% { transform: translateY(-4px) rotate(-1deg) scale(0.98); }
+      100% { transform: none; opacity: 1; }
+    }
+
+    @keyframes dust {
+      0% { transform: translateX(-50%) scaleX(0); opacity: 1; }
+      100% { transform: translateX(-50%) scaleX(1); opacity: 0; }
+    }
+
+    @keyframes flash {
+      0% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .char { transform: none; opacity: 1; animation: none; }
+      .shock, .dust { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shock" id="shock" aria-hidden="true"></div>
+  <div class="stage">
+    <div class="word" id="word" aria-label="SMASH"></div>
+    <div class="dust" id="dust" aria-hidden="true"></div>
+    <p class="hint">Click to smash again</p>
+  </div>
+
+  <script>
+    const text = 'SMASH';
+    const word = document.getElementById('word');
+    const shock = document.getElementById('shock');
+    const dust = document.getElementById('dust');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function play() {
+      word.innerHTML = '';
+      dust.classList.remove('on');
+      shock.classList.remove('on');
+      void shock.offsetWidth;
+
+      [...text].forEach((ch, i) => {
+        const span = document.createElement('span');
+        span.className = 'char';
+        span.textContent = ch;
+        word.appendChild(span);
+        if (reduced) {
+          span.style.opacity = '1';
+          span.style.transform = 'none';
+          return;
+        }
+        setTimeout(() => span.classList.add('in'), i * 70);
+      });
+
+      if (reduced) return;
+      setTimeout(() => {
+        shock.classList.add('on');
+        dust.classList.add('on');
+        document.body.animate(
+          [{ transform: 'translate(0)' }, { transform: 'translate(-6px, 3px)' }, { transform: 'translate(5px, -2px)' }, { transform: 'none' }],
+          { duration: 280, easing: 'ease-out' }
+        );
+      }, text.length * 70 + 120);
+    }
+
+    play();
+    addEventListener('click', play);
+  </script>
+</body>
+</html>

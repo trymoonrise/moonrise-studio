@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0207
+    slug: modals-slide-modal
+    title: Slide Up Modal
+    category: modals
+    tags: modals, slide
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0207 — Slide Up Modal</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#0d0d0f}.btn{padding:10px 24px;background:#1a1a2e;color:#fff;border:1px solid #333;border-radius:8px;cursor:pointer}.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;z-index:10}.overlay.open{display:flex}.sheet{background:#1a1a2e;width:100%;border-radius:20px 20px 0 0;padding:2rem;color:#fff;animation:slideUp .3s}@keyframes slideUp{from{transform:translateY(100%)}to{transform:none}}.handle{width:40px;height:4px;background:#444;border-radius:2px;margin:0 auto 1.5rem}
+  </style>
+</head>
+<body>
+<button class="btn" id="o">Open Sheet</button><div class="overlay" id="ov"><div class="sheet"><div class="handle"></div><h3>Bottom Sheet</h3><p style="opacity:.7;margin-top:.5rem;font-size:.9rem">Slides up from bottom</p></div></div>
+<script>document.getElementById('o').onclick=()=>document.getElementById('ov').classList.add('open');document.getElementById('ov').onclick=e=>{if(e.target.id==='ov')e.target.classList.remove('open');};</script>
+</body>
+</html>

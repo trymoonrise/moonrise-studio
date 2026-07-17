@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1625
+    slug: 3d-mouse-ring-selector
+    title: 3D Ring Selector Mouse
+    category: 3d-mouse
+    tags: 3d, mouse, selector
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1625 — 3D Ring Selector Mouse</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Outfit:wght@400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#090a10;perspective:1000px;overflow:hidden;font-family:Outfit,sans-serif;color:#fff}
+    .stage{width:300px;height:180px;position:relative;transform-style:preserve-3d;transform:rotateX(-8deg)}
+    .ring{position:absolute;inset:0;transform-style:preserve-3d}
+    .item{position:absolute;left:50%;top:50%;width:100px;height:120px;margin:-60px -50px;border-radius:14px;display:grid;place-items:center;font-family:Syne,sans-serif;font-weight:800;font-size:1.1rem;border:1px solid rgba(255,255,255,.18);box-shadow:0 16px 32px rgba(0,0,0,.35)}
+    .label{position:fixed;bottom:3.2rem;font-family:Syne,sans-serif;font-size:1.1rem;letter-spacing:.04em}
+    .hint{position:fixed;bottom:1.4rem;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.35);font-family:Syne,sans-serif}
+  </style>
+</head>
+<body>
+  <div class="stage"><div class="ring" id="ring"></div></div>
+  <div class="label" id="label">Select</div>
+  <div class="hint">Move X to select</div>
+  <script>
+    const items=[{t:'Alpha',c:'#6c8cff'},{t:'Beta',c:'#ff6bcb'},{t:'Gamma',c:'#7ee0c3'},{t:'Delta',c:'#ffd16c'},{t:'Epsilon',c:'#b06cff'},{t:'Zeta',c:'#5eead4'}];
+    const ring=document.getElementById('ring'),label=document.getElementById('label'),R=200;
+    items.forEach((it,i)=>{const el=document.createElement('div');el.className='item';el.textContent=it.t;el.style.background=`linear-gradient(160deg,${it.c},#111)`;el.dataset.i=i;ring.appendChild(el)});
+    let spin=0,tspin=0;
+    addEventListener('pointermove',e=>{tspin=((e.clientX/innerWidth)-.5)*360});
+    (function loop(){
+      spin+=(tspin-spin)*.08;
+      const active=((Math.round(-spin/60)%items.length)+items.length)%items.length;
+      label.textContent=items[active].t;
+      [...ring.children].forEach((el,i)=>{
+        const a=(i/items.length)*360+spin;
+        const focused=i===active;
+        el.style.transform=`rotateY(${a}deg) translateZ(${R}px) scale(${focused?1.12:1})`;
+        el.style.opacity=focused?1:.55;
+      });
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>

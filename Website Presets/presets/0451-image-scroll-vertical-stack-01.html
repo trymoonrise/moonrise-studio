@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0451
+    slug: image-scroll-vertical-stack-01
+    title: Vertical Stack 01
+    category: image-scroll
+    tags: image-scroll, vertical
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0451 — Vertical Stack 01</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#0d0d0f;color:#e8e8ed;font-family:system-ui}.wrap{max-width:960px;margin:0 auto;padding:18vh 1.25rem 22vh}.shot{position:relative;margin:0 auto 18vh;width:min(90vw,760px);aspect-ratio:16/9;border-radius:22px;overflow:hidden;border:1px solid rgba(255,255,255,.12);transform:translateY(var(--y,0px));opacity:var(--o,1)}.shot img{width:100%;height:100%;object-fit:cover;transform:scale(1.08)}.shot::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.45))}h1{position:fixed;left:22px;top:18px;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(232,232,237,.6)}
+  </style>
+</head>
+<body>
+<h1>Vertical stack</h1><div class="wrap"><figure class="shot"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></figure><figure class="shot"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></figure><figure class="shot"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></figure><figure class="shot"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></figure><figure class="shot"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></figure></div>
+<script>const shots=[...document.querySelectorAll('.shot')];function tick(){shots.forEach(s=>{const r=s.getBoundingClientRect();const p=Math.min(1,Math.max(0,1-(r.top+r.height*.3)/innerHeight));s.style.setProperty('--y',(1-p)*40+'px');s.style.setProperty('--o',String(.35+p*.65));});requestAnimationFrame(tick);}tick();</script>
+</body>
+</html>

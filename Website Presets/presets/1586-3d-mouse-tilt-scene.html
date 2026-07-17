@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1586
+    slug: 3d-mouse-tilt-scene
+    title: 3D Mouse Tilt Scene
+    category: 3d-effects
+    tags: 3d, mouse, tilt, scene
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1586 — 3D Mouse Tilt Scene</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:100vh;background:linear-gradient(180deg,#0d0d0f,#1a1a2e);display:grid;place-items:center;perspective:1000px;overflow:hidden}.scene{width:min(500px,90vw);height:min(320px,60vh);transform-style:preserve-3d;transition:transform .1s ease-out;position:relative}.card{position:absolute;border-radius:16px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:1.2rem;box-shadow:0 20px 50px rgba(0,0,0,.4)}.c1{width:200px;height:140px;background:#6c8cff;transform:translateZ(60px);top:20%;left:10%}.c2{width:160px;height:120px;background:#ff6cb0;transform:translateZ(20px);top:40%;right:15%}.c3{width:180px;height:100px;background:#6cffb8;color:#111;transform:translateZ(100px);bottom:15%;left:30%}
+  </style>
+</head>
+<body>
+<div class="scene" id="s"><div class="card c1">Front</div><div class="card c2">Mid</div><div class="card c3">Deep</div></div>
+<script>const s=document.getElementById('s');addEventListener('mousemove',e=>{const x=(e.clientX/innerWidth-.5)*30,y=-(e.clientY/innerHeight-.5)*20;s.style.transform='rotateY('+x+'deg) rotateX('+y+'deg)';});</script>
+</body>
+</html>

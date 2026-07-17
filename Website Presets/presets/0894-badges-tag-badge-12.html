@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0894
+    slug: badges-tag-badge-12
+    title: Tag Badge 12
+    category: badges
+    tags: badges, tag
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0894 — Tag Badge 12</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&display=swap');
+
+    * { box-sizing: border-box; }
+    body {
+      display: grid; place-items: center; min-height: 100vh;
+      background: #111; font-family: 'Space Grotesk', sans-serif;
+      gap: 1rem;
+    }
+
+    .row { display: flex; flex-wrap: wrap; gap: 0.7rem; justify-content: center; padding: 2rem; max-width: 420px; }
+
+    .tag {
+      position: relative;
+      display: inline-flex; align-items: center;
+      padding: 0.45rem 0.9rem 0.45rem 1.1rem;
+      font-size: 0.8rem; font-weight: 700;
+      color: #111;
+      background: var(--c, #4de1ff);
+      clip-path: polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0 50%);
+      animation: pop-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      animation-delay: var(--d, 0s);
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .tag:hover { transform: translateX(4px) scale(1.05); }
+    .tag:active { transform: scale(0.95); }
+
+    .tag::before {
+      content: '';
+      position: absolute;
+      left: 7px; top: 50%;
+      width: 5px; height: 5px;
+      margin-top: -2.5px;
+      border-radius: 50%;
+      background: #111;
+    }
+
+    .tag:nth-child(1) { --c: #4de1ff; --d: 0.05s; }
+    .tag:nth-child(2) { --c: #d6ff3f; --d: 0.15s; }
+    .tag:nth-child(3) { --c: #ff4ecd; --d: 0.25s; color: #fff; }
+    .tag:nth-child(3)::before { background: #fff; }
+    .tag:nth-child(4) { --c: #ffc53d; --d: 0.35s; }
+    .tag:nth-child(5) { --c: #a78bfa; --d: 0.45s; color: #fff; }
+    .tag:nth-child(5)::before { background: #fff; }
+
+    @keyframes pop-in {
+      from { opacity: 0; transform: translateX(-20px) scale(0.8); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .tag { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="row">
+    <span class="tag">design</span>
+    <span class="tag">motion</span>
+    <span class="tag">chaos</span>
+    <span class="tag">type</span>
+    <span class="tag">wild</span>
+  </div>
+</body>
+</html>

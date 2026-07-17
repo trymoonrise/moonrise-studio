@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0078
+    slug: mouse-effects-parallax-image
+    title: Parallax Image on Mouse
+    category: mouse-effects
+    tags: mouse-effects, parallax
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0078 — Parallax Image on Mouse</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#111;overflow:hidden} .img{width:min(80vw,500px);aspect-ratio:16/9;border-radius:12px;overflow:hidden;transition:transform .1s}
+  </style>
+</head>
+<body>
+<div class="img" id="i"><img src="../stock/media/16-9 Aspect Ratio(image).png" style="width:100%;height:100%;object-fit:cover"></div>
+<script>const i=document.getElementById('i');i.parentElement.addEventListener('mousemove',e=>{const r=i.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5;const y=(e.clientY-r.top)/r.height-.5;i.style.transform='translate('+x*20+'px,'+y*20+'px)';});</script>
+</body>
+</html>

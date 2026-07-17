@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1663
+    slug: heroes-mask-parallax-type
+    title: Parallax Mask Type Hero
+    category: heroes
+    tags: heroes, landing, image, experimental, scroll
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1663 — Parallax Mask Type Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      margin: 0;
+      min-height: 240vh;
+      background: #050505;
+      color: #fff;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    .stage {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .title {
+      margin: 0;
+      padding: 0 1rem;
+      font-size: clamp(4.5rem, 16vw, 12rem);
+      font-weight: 900;
+      text-transform: uppercase;
+      line-height: 0.82;
+      letter-spacing: var(--track, 0.06em);
+      text-align: center;
+      background-image: url('../stock/media/16-9 Aspect Ratio(image).png');
+      background-size: 140% 140%;
+      background-position: var(--mask-x, 50%) var(--mask-y, 50%);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      transform: translateY(var(--shift-y, 12px));
+      will-change: transform, background-position, letter-spacing;
+    }
+
+    .sub {
+      position: absolute;
+      bottom: 3rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.75rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.45);
+      opacity: var(--sub-opacity, 0);
+    }
+
+    .frame {
+      position: absolute;
+      inset: 8%;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      opacity: var(--frame-opacity, 0);
+      pointer-events: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body { min-height: 100vh; }
+      .title { transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage" id="stage">
+    <div class="frame" aria-hidden="true"></div>
+    <h1 class="title" id="title">Drift</h1>
+    <p class="sub">Parallax image inside type</p>
+  </div>
+
+  <script>
+    const stage = document.getElementById('stage');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function ease(t) {
+      return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    }
+
+    function lerp(a, b, t) {
+      return a + (b - a) * t;
+    }
+
+    function update() {
+      if (reduced) {
+        stage.style.setProperty('--sub-opacity', '0.7');
+        return;
+      }
+
+      const max = document.documentElement.scrollHeight - innerHeight;
+      const p = max > 0 ? ease(Math.min(1, scrollY / max)) : 0;
+
+      stage.style.setProperty('--mask-x', lerp(20, 80, p).toFixed(1) + '%');
+      stage.style.setProperty('--mask-y', lerp(25, 75, p).toFixed(1) + '%');
+      stage.style.setProperty('--track', lerp(0.06, -0.02, p).toFixed(3) + 'em');
+      stage.style.setProperty('--shift-y', lerp(12, -8, p).toFixed(1) + 'px');
+      stage.style.setProperty('--sub-opacity', Math.max(0, (p - 0.4) / 0.6).toFixed(3));
+      stage.style.setProperty('--frame-opacity', Math.max(0, (p - 0.2) / 0.8).toFixed(3));
+    }
+
+    let ticking = false;
+    addEventListener('scroll', () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        update();
+      });
+    }, { passive: true });
+
+    addEventListener('resize', update, { passive: true });
+    update();
+  </script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1276
+    slug: puzzles-jigsaw-piece-02
+    title: Fragment Lock Fit
+    category: puzzles
+    tags: puzzles, jigsaw
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1276 — Fragment Lock Fit</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#08080c;color:#ececf0;font-family:Outfit,sans-serif;padding:24px}
+    .game{text-align:center}
+    .game h2{font-family:Syne,sans-serif;font-size:1.3rem;margin:0 0 6px;letter-spacing:-.02em}
+    .game p{font-size:.78rem;color:rgba(236,236,240,.4);margin:0 0 20px}
+    .zone{display:flex;gap:24px;align-items:flex-start;justify-content:center;flex-wrap:wrap}
+    .slot{width:120px;height:120px;border:2px dashed rgba(255,255,255,.15);border-radius:4px;position:relative;transition:border-color .3s,background .3s}
+    .slot.over{border-color:rgba(0,200,150,.5);background:rgba(0,200,150,.05)}
+    .slot.filled{border-style:solid;border-color:rgba(0,200,150,.6)}
+    .pieces{display:flex;flex-direction:column;gap:10px}
+    .piece{width:100px;height:100px;border-radius:4px;cursor:grab;background:#14141c;border:1px solid rgba(255,255,255,.12);overflow:hidden;transition:transform .2s,box-shadow .2s}
+    .piece img{width:200%;height:200%;object-fit:cover;display:block}
+    .piece:nth-child(1) img{object-position:0 0}.piece:nth-child(2) img{object-position:100% 0}.piece:nth-child(3) img{object-position:0 100%}.piece:nth-child(4) img{object-position:100% 100%}
+    .piece:active{cursor:grabbing;transform:scale(1.05);box-shadow:0 8px 30px rgba(0,0,0,.4)}
+    .piece.locked{opacity:.4;pointer-events:none;animation:lock .4s ease}
+    .board-grid{display:grid;grid-template-columns:repeat(2,120px);gap:8px}
+    @keyframes lock{0%{transform:scale(1.1)}100%{transform:scale(1)}}
+    @media(prefers-reduced-motion:reduce){.piece{transition:none}.piece.locked{animation:none}}
+  </style>
+</head>
+<body>
+<div class="game">
+  <h2>Fragment lock</h2>
+  <p>Drag each piece to its matching slot</p>
+  <div class="zone">
+    <div class="board-grid" id="slots"></div>
+    <div class="pieces" id="pieces"></div>
+  </div>
+</div>
+<script>
+const slotsEl=document.getElementById('slots'),piecesEl=document.getElementById('pieces');
+for(let i=0;i<4;i++){const s=document.createElement('div');s.className='slot';s.dataset.i=i;slotsEl.appendChild(s);}
+for(let i=0;i<4;i++){const p=document.createElement('div');p.className='piece';p.draggable=true;p.dataset.i=i;p.innerHTML='<img src="../stock/media/16-9 Aspect Ratio(image).png" alt="">';piecesEl.appendChild(p);}
+let drag=null;
+document.querySelectorAll('.piece').forEach(p=>{p.addEventListener('dragstart',()=>drag=p);});
+document.querySelectorAll('.slot').forEach(s=>{s.addEventListener('dragover',e=>{e.preventDefault();s.classList.add('over');});s.addEventListener('dragleave',()=>s.classList.remove('over'));s.addEventListener('drop',e=>{e.preventDefault();s.classList.remove('over');if(drag&&drag.dataset.i===s.dataset.i&&!s.classList.contains('filled')){s.classList.add('filled');s.appendChild(drag);drag.classList.add('locked');drag.draggable=false;drag=null;}});});
+</script>
+</body>
+</html>

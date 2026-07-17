@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1683
+    slug: text-marquee-scramble-decode
+    title: Scramble Decode Marquee
+    category: text
+    tags: marquee, scramble, glitch, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1683 — Scramble Decode Marquee</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');
+
+    :root {
+      --bg: #0b0f0c;
+      --ink: #d8ffe0;
+      --hot: #39ff88;
+      --dim: rgba(216, 255, 224, 0.28);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 3px,
+          rgba(0, 0, 0, 0.22) 3px,
+          rgba(0, 0, 0, 0.22) 4px
+        );
+      z-index: 5;
+    }
+
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      gap: 1.5rem;
+      padding: 2rem;
+    }
+
+    .meta {
+      width: min(920px, 100%);
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--dim);
+    }
+
+    .meta span { color: var(--hot); }
+
+    .rail {
+      width: min(920px, 100%);
+      overflow: hidden;
+      border: 1px solid rgba(57, 255, 136, 0.25);
+      background: rgba(8, 18, 12, 0.85);
+      box-shadow: 0 0 0 1px rgba(57, 255, 136, 0.08), inset 0 0 40px rgba(57, 255, 136, 0.05);
+    }
+
+    .rail + .rail { margin-top: -1px; }
+
+    .track {
+      display: flex;
+      width: max-content;
+      animation: drift var(--spd, 18s) linear infinite;
+    }
+
+    .rail--rev .track { animation-direction: reverse; --spd: 24s; }
+
+    .token {
+      display: inline-flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.1rem 1.4rem;
+      font-size: clamp(1rem, 2.8vw, 1.55rem);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      border-right: 1px solid rgba(57, 255, 136, 0.15);
+    }
+
+    .token code {
+      font: inherit;
+      color: var(--hot);
+      text-shadow: 0 0 12px rgba(57, 255, 136, 0.45);
+    }
+
+    .token .ghost {
+      color: var(--dim);
+      font-weight: 400;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 0.55ch;
+      height: 1.1em;
+      margin-left: 0.15rem;
+      background: var(--hot);
+      animation: blink 0.9s steps(1) infinite;
+      vertical-align: -0.15em;
+    }
+
+    .status {
+      width: min(920px, 100%);
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--dim);
+    }
+
+    @keyframes drift { to { transform: translateX(-50%); } }
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .track, .cursor { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="meta">
+      <div>DEC / STREAM <span id="clock">00:00:00</span></div>
+      <div>CHANNEL <span>07-X</span></div>
+    </div>
+
+    <div>
+      <div class="rail">
+        <div class="track" id="trackA"></div>
+      </div>
+      <div class="rail rail--rev">
+        <div class="track" id="trackB"></div>
+      </div>
+    </div>
+
+    <p class="status">Scrambling payload<span class="cursor" aria-hidden="true"></span></p>
+  </div>
+
+  <script>
+    const glyphs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$%&*+<>/';
+    const phrases = [
+      'SIGNAL DECODED',
+      'PACKET HOLD',
+      'NO FIXED FORM',
+      'TEXT IN FLUX',
+      'ALWAYS BECOMING'
+    ];
+    const phrasesB = [
+      'BUFFER OVERFLOW',
+      'READ NEXT FRAME',
+      'CIPHER OPEN',
+      'LOOP INTACT',
+      'TRANSMIT NOW'
+    ];
+
+    function scramble(target, el) {
+      const chars = target.split('');
+      let frame = 0;
+      const total = chars.length * 3;
+      const id = setInterval(() => {
+        el.textContent = chars.map((ch, i) => {
+          if (ch === ' ') return ' ';
+          if (frame / 3 > i) return ch;
+          return glyphs[Math.floor(Math.random() * glyphs.length)];
+        }).join('');
+        frame++;
+        if (frame > total) {
+          clearInterval(id);
+          el.textContent = target;
+          setTimeout(() => scramble(target, el), 2200 + Math.random() * 1800);
+        }
+      }, 28);
+    }
+
+    function build(track, list) {
+      const html = list.map((p) =>
+        '<span class="token"><code data-live></code><span class="ghost">//' +
+        Math.random().toString(16).slice(2, 6).toUpperCase() +
+        '</span></span>'
+      ).join('');
+      track.innerHTML = html + html;
+      [...track.querySelectorAll('[data-live]')].forEach((el, i) => {
+        const phrase = list[i % list.length];
+        el.textContent = phrase;
+        setTimeout(() => scramble(phrase, el), 400 + i * 350);
+      });
+    }
+
+    build(document.getElementById('trackA'), phrases);
+    build(document.getElementById('trackB'), phrasesB);
+
+    const clock = document.getElementById('clock');
+    function tick() {
+      const d = new Date();
+      clock.textContent = [d.getHours(), d.getMinutes(), d.getSeconds()]
+        .map((n) => String(n).padStart(2, '0')).join(':');
+      requestAnimationFrame(tick);
+    }
+    tick();
+  </script>
+</body>
+</html>

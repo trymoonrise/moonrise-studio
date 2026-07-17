@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0240
+    slug: tables-sortable-header
+    title: Sortable Header Table
+    category: tables
+    tags: tables, sortable
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0240 — Sortable Header Table</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#f5f5f5;padding:2rem;align-items:flex-start}.tbl{width:100%;max-width:460px;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden}.tbl th{padding:12px 16px;background:#fafafa;text-align:left;font-size:.85rem;cursor:pointer;user-select:none}.tbl th:hover{background:#eee}.tbl td{padding:10px 16px;font-size:.9rem;border-top:1px solid #eee}
+  </style>
+</head>
+<body>
+<table class="tbl"><thead><tr><th data-s>Name ↕</th><th data-s>Score ↕</th></tr></thead><tbody id="tb"><tr><td>Alpha</td><td>95</td></tr><tr><td>Beta</td><td>82</td></tr><tr><td>Gamma</td><td>91</td></tr></tbody></table>
+<script>document.querySelectorAll('[data-s]').forEach(th=>th.onclick=()=>{const tb=document.getElementById('tb');const rows=[...tb.rows].sort((a,b)=>a.cells[0].textContent.localeCompare(b.cells[0].textContent));rows.forEach(r=>tb.appendChild(r));});</script>
+</body>
+</html>

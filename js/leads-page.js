@@ -1234,13 +1234,19 @@
       }
       void global.LeadSync?.markLeadBuilding?.(id, lead?.name);
       const params = new URLSearchParams({
+        from_finder: "1",
+        auto_generate: "1",
         lead_id: id,
         name: String(pick.businessName || lead.name || "").trim(),
-        category: String(lead.category || lead.categoryGroup || "").trim(),
+        category: String(pick.category || lead.category || lead.categoryGroup || "").trim(),
         phone: String(pick.phone || lead.phone || "").trim(),
-        address: String(lead.address || "").trim(),
+        address: String(pick.address || lead.address || "").trim(),
         maps: String(pick.mapsUrl || lead.mapsUrl || "").trim(),
       });
+      const website = String(pick.website || lead.website || lead.websiteUrl || "").trim();
+      const hours = String(pick.hours || lead.hours || "").trim();
+      if (website) params.set("website", website);
+      if (hours) params.set("hours", hours);
       try {
         const json = JSON.stringify(pick);
         const b64 = btoa(unescape(encodeURIComponent(json)))

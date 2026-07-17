@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0649
+    slug: navigation-sticky-nav-01
+    title: Sticky Nav 01
+    category: navigation
+    tags: navigation, sticky
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0649 — Sticky Nav 01</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Outfit:wght@300&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;background:#0e0e0e;color:#fff;font-family:Outfit,sans-serif}
+    .nav{position:sticky;top:0;z-index:10;display:flex;gap:2.5rem;align-items:baseline;padding:1.4rem clamp(1.25rem,4vw,3rem);background:#0e0e0e;border-bottom:1px solid transparent;transition:border-color .4s}
+    .nav.stuck{border-color:rgba(255,255,255,.08)}
+    .logo{font-family:Syne,sans-serif;font-weight:800;letter-spacing:-.04em}
+    .nav a{color:rgba(255,255,255,.35);text-decoration:none;font-size:.78rem;font-weight:300;letter-spacing:.14em;text-transform:uppercase;transition:color .3s}
+    .nav a:hover{color:#fff}
+    .count{margin-left:auto;font-size:.7rem;letter-spacing:.16em;color:rgba(255,255,255,.25);font-variant-numeric:tabular-nums}
+    .block{min-height:90vh;padding:4rem clamp(1.25rem,4vw,3rem);display:grid;align-content:end}
+    .block h2{margin:0;font-family:Syne,sans-serif;font-size:clamp(2rem,6vw,4rem);letter-spacing:-.05em;font-weight:800}
+    .block p{margin:1rem 0 0;max-width:28ch;color:rgba(255,255,255,.35);font-weight:300;line-height:1.7}
+  </style>
+</head>
+<body>
+  <nav class="nav" id="nav">
+    <div class="logo">STICK</div>
+    <a href="#">Work</a><a href="#">Lab</a><a href="#">Info</a>
+    <div class="count" id="count">00</div>
+  </nav>
+  <section class="block"><h2>Section one</h2><p>Scroll. The bar stays. The counter tracks how far you've gone.</p></section>
+  <section class="block"><h2>Section two</h2><p>Still here. Still almost nothing.</p></section>
+  <section class="block"><h2>Section three</h2><p>Extreme sticky. Extreme quiet.</p></section>
+  <script>
+    const nav=document.getElementById('nav'),count=document.getElementById('count');
+    addEventListener('scroll',()=>{
+      nav.classList.toggle('stuck',scrollY>8);
+      const max=document.body.scrollHeight-innerHeight;
+      count.textContent=String(Math.round((scrollY/max)*100)).padStart(2,'0');
+    },{passive:true});
+  </script>
+</body>
+</html>

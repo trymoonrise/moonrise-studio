@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0230
+    slug: tags-removable-tags
+    title: Removable Tags
+    category: tags
+    tags: tags, removable
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0230 — Removable Tags</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');*{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fafafa;color:#111;font-family:"DM Sans",system-ui,-apple-system,sans-serif;padding:2rem}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+    .kicker{text-align:center;margin:0 0 1.5rem;font-size:.62rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#888}
+    .tags{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:420px}
+    .tag{display:inline-flex;align-items:center;gap:8px;padding:7px 8px 7px 14px;border:1.5px solid #111;background:#fff;font-size:.82rem;font-weight:600;transition:opacity .22s,transform .22s}
+    .tag button{width:22px;height:22px;border:none;background:#111;color:#fff;cursor:pointer;font-size:.75rem;line-height:1;display:grid;place-items:center;transition:background .2s,color .2s}
+    .tag button:hover{background:#fff;color:#111;outline:1px solid #111}
+  </style>
+</head>
+<body>
+<div><p class="kicker">Removable</p><div class="tags" id="t"><span class="tag">Design <button type="button" data-r aria-label="Remove">×</button></span><span class="tag">React <button type="button" data-r aria-label="Remove">×</button></span><span class="tag">CSS <button type="button" data-r aria-label="Remove">×</button></span><span class="tag">Syne <button type="button" data-r aria-label="Remove">×</button></span></div></div>
+<script>document.querySelectorAll('[data-r]').forEach(b=>b.addEventListener('click',()=>{const t=b.closest('.tag');t.style.opacity='0';t.style.transform='scale(.85)';setTimeout(()=>t.remove(),220);}));</script>
+</body>
+</html>

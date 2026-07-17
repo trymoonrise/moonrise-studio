@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0508
+    slug: brutalist-harsh-type-05
+    title: Harsh Type 05
+    category: brutalist
+    tags: brutalist, harsh
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0508 — Harsh Type 05</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@500;700&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0a0a0a;overflow:hidden;font-family:'IBM Plex Mono',monospace;padding:2rem}
+    .stage{position:relative;width:min(640px,94vw)}
+    .slash{position:absolute;inset:-8% -4%;background:repeating-linear-gradient(-18deg,#ffee00 0 14px,#0a0a0a 14px 28px);clip-path:polygon(0 18%,100% 0,100% 82%,0 100%);opacity:.9;animation:jitter .12s steps(2) infinite;z-index:0}
+    .block{position:relative;z-index:1;background:#fff;border:6px solid #000;padding:1.5rem 1.25rem 1.75rem;transform:rotate(-2deg);box-shadow:18px 18px 0 #ff0033}
+    h1{margin:0;font-family:'Archivo Black',sans-serif;font-size:clamp(3rem,14vw,7.5rem);line-height:.82;letter-spacing:-.06em;text-transform:uppercase;color:#000;mix-blend-mode:multiply}
+    h1 span{display:block;animation:slam .9s cubic-bezier(.2,1.4,.3,1) both}
+    h1 span:nth-child(2){animation-delay:.08s;color:#ff0033}
+    h1 span:nth-child(3){animation-delay:.16s}
+    .meta{display:flex;justify-content:space-between;gap:1rem;margin-top:1.25rem;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;border-top:4px solid #000;padding-top:.75rem}
+    .stamp{position:absolute;right:-.5rem;top:-1rem;width:92px;height:92px;border:5px solid #ff0033;border-radius:50%;display:grid;place-items:center;font-family:'Archivo Black',sans-serif;font-size:.7rem;letter-spacing:.04em;color:#ff0033;transform:rotate(18deg);background:#fff;z-index:2;animation:spin-stamp 8s linear infinite}
+    @keyframes slam{from{transform:translateY(40px) skewX(12deg);opacity:0}to{transform:none;opacity:1}}
+    @keyframes jitter{50%{transform:translate(2px,-1px)}}
+    @keyframes spin-stamp{to{transform:rotate(378deg)}}
+    @media(prefers-reduced-motion:reduce){.slash,h1 span,.stamp{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="slash" aria-hidden="true"></div>
+    <div class="stamp">REJECT<br>SOFT</div>
+    <div class="block">
+      <h1><span>HARSH</span><span>TYPE</span><span>ATTACK</span></h1>
+      <div class="meta"><span>FILE 0508</span><span>NO KERNING · NO MERCY</span></div>
+    </div>
+  </div>
+</body>
+</html>

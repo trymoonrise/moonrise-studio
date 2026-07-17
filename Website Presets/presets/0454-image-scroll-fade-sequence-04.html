@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0454
+    slug: image-scroll-fade-sequence-04
+    title: Fade Sequence 04
+    category: image-scroll
+    tags: image-scroll, fade
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0454 — Fade Sequence 04</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#1a1410;color:#f5ebe0;font-family:Georgia,serif}.stage{min-height:100vh;display:grid;place-items:center;padding:2rem}.frame{position:fixed;inset:0;display:grid;place-items:center;opacity:var(--o,0);transition:opacity .6s ease;pointer-events:none}.frame.on{opacity:1;pointer-events:auto}.frame img{width:min(88vw,720px);aspect-ratio:16/10;object-fit:cover;border-radius:12px;box-shadow:0 30px 80px rgba(0,0,0,.5)}.cap{position:fixed;left:24px;bottom:24px;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(245,235,224,.5)}.spacer{height:400vh}
+  </style>
+</head>
+<body>
+<div class="stage"><p style="opacity:.6">Scroll through the sequence</p></div><div class="frame" data-i="0"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div><div class="frame" data-i="1"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div><div class="frame" data-i="2"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div><div class="frame" data-i="3"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div><div class="spacer" id="t"></div><div class="cap" id="cap">01 / 04</div>
+<script>const _el=document.querySelector('#t');function prog(){const r=_el.getBoundingClientRect();return Math.min(1,Math.max(0,-r.top/(r.height-innerHeight)));}const frames=[...document.querySelectorAll('.frame')],cap=document.getElementById('cap');addEventListener('scroll',()=>{const p=prog();const i=Math.min(frames.length-1,Math.floor(p*frames.length));frames.forEach((f,j)=>f.classList.toggle('on',j===i));cap.textContent=String(i+1).padStart(2,'0')+' / '+String(frames.length).padStart(2,'0');},{passive:true});</script>
+</body>
+</html>

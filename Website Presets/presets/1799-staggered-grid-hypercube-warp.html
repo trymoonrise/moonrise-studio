@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1799
+    slug: staggered-grid-hypercube-warp
+    title: Hypercube Warp Grid
+    category: animation
+    tags: grid, stagger, 3d, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1799 — Hypercube Warp Grid</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');*{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#040404;color:#fff;font-family:"DM Sans",system-ui,sans-serif;display:grid;place-items:center;overflow:hidden;padding:2rem}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.tile,.cell,.brick,.module,.card,.panel{opacity:1!important;transform:none!important;clip-path:none!important;filter:none!important}}
+    .wrap{width:min(860px,100%);perspective:1400px}
+    h1{margin:0 0 1.5rem;font-family:"Syne",system-ui,sans-serif;font-size:clamp(2rem,6vw,3.8rem);font-weight:800;letter-spacing:-.06em;text-align:center}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;transform-style:preserve-3d;transform:rotateX(18deg) rotateY(-12deg);animation:settle 1.4s cubic-bezier(.16,1,.3,1) forwards}
+    .face{min-height:150px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.12);padding:1.2rem;opacity:0;transform:translateZ(-120px) scale(.7);animation:pop .8s cubic-bezier(.16,1,.3,1) forwards;animation-delay:calc(var(--i)*90ms);position:relative}
+    .face b{font-family:"Syne",system-ui,sans-serif;font-size:1.4rem;font-weight:800}
+    .face span{display:block;margin-top:.35rem;font-size:.7rem;color:#666}
+    .face::after{content:'';position:absolute;inset:0;border:1px solid rgba(255,255,255,.05);transform:translateZ(12px);pointer-events:none}
+    @keyframes pop{to{opacity:1;transform:translateZ(0) scale(1)}}
+    @keyframes settle{to{transform:rotateX(8deg) rotateY(-6deg)}}
+    @media(max-width:560px){.grid{grid-template-columns:1fr;transform:none}}
+  </style>
+</head>
+<body>
+<main class="wrap"><h1>Hypercube warp</h1>
+    <section class="grid">
+      <div class="face" style="--i:1"><b>X</b><span>Axis lock</span></div><div class="face" style="--i:2"><b>Y</b><span>Depth fold</span></div><div class="face" style="--i:3"><b>Z</b><span>Z-index</span></div><div class="face" style="--i:4"><b>W</b><span>4th dim</span></div><div class="face" style="--i:5"><b>UV</b><span>Map warp</span></div><div class="face" style="--i:6"><b>QR</b><span>Code plane</span></div>
+    </section></main>
+
+</body>
+</html>

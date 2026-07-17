@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0368
+    slug: heroes-corporate-dark
+    title: Corporate Dark Hero
+    category: heroes
+    tags: heroes, landing, professional, dark
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0368 — Corporate Dark Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: clamp(2rem, 6vw, 4rem);
+      background:
+        radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.12), transparent 55%),
+        #0a0e16;
+      color: #e8edf5;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      text-align: center;
+    }
+
+    .hero {
+      width: min(680px, 100%);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      margin-bottom: 1.5rem;
+      padding: 0.4rem 0.85rem;
+      border-radius: 999px;
+      background: rgba(96, 165, 250, 0.1);
+      border: 1px solid rgba(96, 165, 250, 0.25);
+      color: #93c5fd;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-size: clamp(2.4rem, 5.5vw, 3.8rem);
+      font-weight: 700;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.1rem;
+    }
+
+    p {
+      color: #94a3b8;
+      font-size: 1.1rem;
+      line-height: 1.6;
+      max-width: 44ch;
+      margin: 0 auto 2.25rem;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 1.6rem;
+      border: none;
+      border-radius: 999px;
+      background: #3b82f6;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 14px 34px rgba(59, 130, 246, 0.32);
+      transition: transform 0.2s cubic-bezier(.22, .61, .36, 1);
+    }
+
+    .cta:hover {
+      transform: translateY(-2px);
+    }
+
+    .link {
+      color: #cbd5e1;
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .link:hover {
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <section class="hero">
+    <span class="eyebrow">Enterprise Platform</span>
+    <h1>Scale operations with confidence</h1>
+    <p>Secure infrastructure, real-time analytics, and dedicated support for global teams.</p>
+    <div class="actions">
+      <button class="cta" type="button">Request access →</button>
+      <a class="link" href="#">Talk to sales</a>
+    </div>
+  </section>
+</body>
+</html>

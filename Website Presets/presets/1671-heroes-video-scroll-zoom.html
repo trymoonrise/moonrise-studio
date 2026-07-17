@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1671
+    slug: heroes-video-scroll-zoom
+    title: Scroll Zoom Video Hero
+    category: heroes
+    tags: heroes, landing, video, scroll, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1671 — Scroll Zoom Video Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    
+    body{margin:0;min-height:220vh;background:#050505;color:#fff;font-family:system-ui,-apple-system,sans-serif}
+    .stage{position:sticky;top:0;height:100vh;overflow:hidden;display:grid;place-items:center}
+    video.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(var(--zoom,1.18));filter:brightness(var(--bright,.72))}
+    .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.25),rgba(0,0,0,.65))}
+    .copy{position:relative;text-align:center;padding:2rem;transform:translateY(var(--copy-y,24px));opacity:var(--copy-o,0)}
+    h1{font-size:clamp(2.2rem,6vw,3.6rem);font-weight:900;letter-spacing:-.03em}
+    p{margin-top:.75rem;color:rgba(255,255,255,.72);letter-spacing:.12em;text-transform:uppercase;font-size:.72rem}
+    @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}video{animation:none!important}}
+  </style>
+</head>
+<body>
+<div class="stage" id="stage"><video class="bg" src="../stock/media/heroes/abstract-16x9.mp4" autoplay muted loop playsinline aria-hidden="true"></video><div class="shade" aria-hidden="true"></div><div class="copy"><h1>Pull focus</h1><p>Scroll to zoom out</p></div></div>
+<script>const stage=document.getElementById('stage'),reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;function ease(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2}function lerp(a,b,t){return a+(b-a)*t}function update(){if(reduced){stage.style.setProperty('--zoom','1');stage.style.setProperty('--copy-o','1');stage.style.setProperty('--copy-y','0px');return}const max=document.documentElement.scrollHeight-innerHeight,p=max>0?ease(Math.min(1,scrollY/max)):0;stage.style.setProperty('--zoom',lerp(1.18,1,p).toFixed(3));stage.style.setProperty('--bright',lerp(.72,.92,p).toFixed(3));stage.style.setProperty('--copy-y',lerp(24,0,p).toFixed(1)+'px');stage.style.setProperty('--copy-o',Math.min(1,p*1.4).toFixed(3))}let ticking=false;addEventListener('scroll',()=>{if(ticking)return;ticking=true;requestAnimationFrame(()=>{ticking=false;update()})},{passive:true});addEventListener('resize',update,{passive:true});update();</script>
+</body>
+</html>

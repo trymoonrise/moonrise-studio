@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1693
+    slug: scroll-reveal-tunnel-fly
+    title: Tunnel Fly Scroll
+    category: animation
+    tags: scroll, reveal, 3d, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1693 — Tunnel Fly Scroll</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800&family=Exo+2:wght@400;600&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;background:#02040a;color:#dce9ff;font-family:'Exo 2',sans-serif;perspective:900px}
+    .hero{min-height:100vh;display:grid;place-items:center;text-align:center;padding:2rem;position:relative;z-index:2}
+    .hero h1{font-family:Orbitron,sans-serif;font-size:clamp(2.5rem,10vw,5.5rem);margin:0;letter-spacing:.08em}
+    .hero p{opacity:.45;margin-top:1rem;letter-spacing:.2em;text-transform:uppercase;font-size:.75rem}
+    .tunnel{height:400vh;position:relative}
+    .stage{
+      position:sticky;top:0;height:100vh;display:grid;place-items:center;
+      transform-style:preserve-3d;overflow:hidden;
+    }
+    .ring{
+      position:absolute;width:min(70vw,480px);aspect-ratio:1;border-radius:50%;
+      border:2px solid rgba(100,160,255,.25);
+      transform:translateZ(var(--z)) scale(var(--s,1));
+      box-shadow:0 0 40px rgba(80,140,255,.08),inset 0 0 40px rgba(80,140,255,.05);
+    }
+    .card{
+      position:relative;z-index:5;width:min(420px,86vw);padding:2rem;
+      background:rgba(10,16,32,.75);border:1px solid rgba(120,170,255,.25);
+      border-radius:20px;backdrop-filter:blur(12px);text-align:center;
+      transform:translateZ(80px);
+      box-shadow:0 30px 80px rgba(0,0,0,.45);
+    }
+    .card h2{font-family:Orbitron,sans-serif;font-size:clamp(1.2rem,3vw,1.8rem);margin:0 0 .75rem;letter-spacing:.06em}
+    .card p{margin:0;opacity:.6;line-height:1.6;font-size:.95rem}
+    .card .idx{display:block;margin-bottom:.75rem;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:#6cb0ff}
+    @media (prefers-reduced-motion:reduce){.ring{display:none}}
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div>
+      <h1>TUNNEL</h1>
+      <p>Fly through depth rings</p>
+    </div>
+  </header>
+  <div class="tunnel">
+    <div class="stage" id="stage">
+      <div class="ring" style="--z:-600px;--s:2.2"></div>
+      <div class="ring" style="--z:-400px;--s:1.7"></div>
+      <div class="ring" style="--z:-200px;--s:1.3"></div>
+      <div class="ring" style="--z:0px;--s:1"></div>
+      <div class="ring" style="--z:200px;--s:.7"></div>
+      <div class="card" id="card">
+        <span class="idx" id="idx">Sector 01</span>
+        <h2 id="title">Enter the tube</h2>
+        <p id="body">Scroll drives a continuous Z translation — rings rush past while the message updates at waypoints.</p>
+      </div>
+    </div>
+  </div>
+  <script>
+    const msgs=[
+      ['Sector 01','Enter the tube','Scroll drives a continuous Z translation — rings rush past while the message updates at waypoints.'],
+      ['Sector 02','Velocity rising','The sticky stage holds your eye while the tunnel content streams through depth.'],
+      ['Sector 03','Mid-flight','No fade-ins. You are moving through space — the reveal is the journey itself.'],
+      ['Sector 04','Exit vector','Slow down near the end and the rings thin out into open dark.']
+    ];
+    const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const tunnel=document.querySelector('.tunnel');
+    const rings=[...document.querySelectorAll('.ring')];
+    function tick(){
+      if(reduced)return;
+      const r=tunnel.getBoundingClientRect();
+      const total=tunnel.offsetHeight-innerHeight;
+      const p=Math.min(1,Math.max(0,-r.top/total));
+      const z=p*800;
+      rings.forEach((ring,i)=>{
+        const base=[-600,-400,-200,0,200][i];
+        const nz=base+z;
+        const s=1+(nz/-800)*.8;
+        ring.style.transform=`translateZ(${nz}px) scale(${Math.max(.3,s)})`;
+        ring.style.opacity=nz>-700&&nz<350?1:0.15;
+      });
+      const mi=Math.min(msgs.length-1,Math.floor(p*msgs.length));
+      document.getElementById('idx').textContent=msgs[mi][0];
+      document.getElementById('title').textContent=msgs[mi][1];
+      document.getElementById('body').textContent=msgs[mi][2];
+    }
+    tick();
+    addEventListener('scroll',tick,{passive:true});
+    addEventListener('resize',tick,{passive:true});
+  </script>
+</body>
+</html>

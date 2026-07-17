@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0722
+    slug: textareas-lined-textarea-09
+    title: Lined Textarea 09
+    category: textareas
+    tags: textareas, modern, experimental, exaggerated
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0722 — Lined Textarea 09</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fdf7e7;font-family:Inter,system-ui,sans-serif;overflow:hidden;padding:24px;color:#111}
+    textarea{font:inherit;border:0;outline:0;resize:none;background:transparent;color:inherit;width:100%}
+    button{font:inherit;border:0;cursor:pointer}
+    .scene{position:relative;width:min(520px,92vw)}
+    .paper{position:relative;border-radius:20px;background:repeating-linear-gradient(#fff9ed 0 35px,#d9caa7 36px 37px);padding:26px 28px 24px 54px;box-shadow:0 24px 60px rgba(88,64,22,.14);border:1px solid #e5d4ad}.paper::before{content:'';position:absolute;left:36px;top:0;bottom:0;width:2px;background:#ef9a9a}.area{min-height:230px;font:600 19px/37px Inter;color:#3f2f16;letter-spacing:-.03em}.area::placeholder{color:#b8a375}.pin{position:absolute;right:22px;top:18px;width:18px;height:18px;border-radius:50%;background:#111;box-shadow:0 0 0 8px rgba(0,0,0,.06);animation:tap 2.6s ease-in-out infinite}@keyframes tap{50%{transform:scale(.88)}}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <div class="scene"><section class="paper"><span class="pin" aria-hidden="true"></span><textarea class="area">Lined notes, but polished enough for a launch deck.</textarea></section></div>
+</body>
+</html>

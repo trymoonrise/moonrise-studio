@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1624
+    slug: 3d-mouse-prism-follow
+    title: 3D Prism Follow Mouse
+    category: 3d-mouse
+    tags: 3d, mouse, prism
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1624 — 3D Prism Follow Mouse</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#06070c;perspective:900px;overflow:hidden;cursor:none}
+    .cursor{position:fixed;width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 0 16px #6c8cff;pointer-events:none;z-index:10;left:var(--cx,50%);top:var(--cy,50%);transform:translate(-50%,-50%)}
+    .prism{position:relative;width:100px;height:180px;transform-style:preserve-3d;transform:translate3d(var(--x,0px),var(--y,0px),0) rotateX(var(--rx,10deg)) rotateY(var(--ry,0deg))}
+    .side{position:absolute;inset:0;width:100%;height:100%;border:1px solid rgba(255,255,255,.2)}
+    .a{background:linear-gradient(180deg,#6c8cffaa,#6c8cff22);transform:rotateY(0deg) translateZ(32px)}
+    .b{background:linear-gradient(180deg,#ff6bcbaa,#ff6bcb22);transform:rotateY(72deg) translateZ(32px)}
+    .c{background:linear-gradient(180deg,#7ee0c3aa,#7ee0c322);transform:rotateY(144deg) translateZ(32px)}
+    .d{background:linear-gradient(180deg,#ffd16caa,#ffd16c22);transform:rotateY(216deg) translateZ(32px)}
+    .e{background:linear-gradient(180deg,#b06cffaa,#b06cff22);transform:rotateY(288deg) translateZ(32px)}
+    .hint{position:fixed;bottom:1.4rem;font:700 .7rem Syne,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.35)}
+  </style>
+</head>
+<body>
+  <div class="cursor" id="cursor"></div>
+  <div class="prism" id="prism">
+    <div class="side a"></div><div class="side b"></div><div class="side c"></div>
+    <div class="side d"></div><div class="side e"></div>
+  </div>
+  <div class="hint">Prism follows you</div>
+  <script>
+    const prism=document.getElementById('prism'),cursor=document.getElementById('cursor');
+    let mx=0,my=0,x=0,y=0,rx=10,ry=0,spin=0;
+    addEventListener('pointermove',e=>{mx=e.clientX-innerWidth/2;my=e.clientY-innerHeight/2;cursor.style.setProperty('--cx',e.clientX+'px');cursor.style.setProperty('--cy',e.clientY+'px')});
+    (function loop(){
+      x+=(mx*.35-x)*.08;y+=(my*.35-y)*.08;ry+=(mx*.08-ry)*.08;rx+=(10-my*.04-rx)*.08;spin+=1.2;
+      prism.style.setProperty('--x',x+'px');prism.style.setProperty('--y',y+'px');
+      prism.style.setProperty('--rx',rx+'deg');prism.style.setProperty('--ry',(ry+spin)+'deg');
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>

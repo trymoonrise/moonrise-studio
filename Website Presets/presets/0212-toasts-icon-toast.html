@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0212
+    slug: toasts-icon-toast
+    title: Icon Toast
+    category: toasts
+    tags: toasts, icon
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0212 — Icon Toast</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#fff}.btn{padding:10px 20px;background:#111;color:#fff;border:none;border-radius:8px;cursor:pointer}.toast{position:fixed;bottom:2rem;right:2rem;background:#fff;border:1px solid #eee;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.1);transform:translateY(100px);opacity:0;transition:all .3s;font-size:.9rem}.toast.show{transform:none;opacity:1}.toast .ico{font-size:1.2rem}
+  </style>
+</head>
+<body>
+<button class="btn" id="b">Show</button><div class="toast" id="t"><span class="ico">✓</span>File uploaded</div>
+<script>document.getElementById('b').onclick=()=>{const t=document.getElementById('t');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);};</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0198
+    slug: popovers-click-popover
+    title: Click Popover
+    category: popovers
+    tags: popovers, click
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0198 — Click Popover</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#fafafa}.btn{padding:10px 20px;background:#fff;border:1px solid #ddd;border-radius:8px;cursor:pointer}.pop{position:absolute;background:#fff;border:1px solid #eee;border-radius:12px;padding:1rem;box-shadow:0 8px 24px rgba(0,0,0,.1);width:220px;display:none;z-index:5}.pop.show{display:block}.pop h4{margin-bottom:.5rem;font-size:.95rem}.pop p{font-size:.85rem;color:#666}
+  </style>
+</head>
+<body>
+<div style="position:relative"><button class="btn" id="b">Open</button><div class="pop" id="p"><h4>Popover Title</h4><p>Additional details appear here.</p></div></div>
+<script>document.getElementById('b').onclick=e=>{e.stopPropagation();document.getElementById('p').classList.toggle('show');};document.onclick=()=>document.getElementById('p').classList.remove('show');</script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0097
+    slug: rotate-scroll-text-helix
+    title: Text Helix Scroll
+    category: rotate-scroll
+    tags: rotate-scroll, helix
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0097 — Text Helix Scroll</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(ellipse at 50% 30%, #1a1a2e 0%, #0a0a0c 65%);
+      color: #fff;
+    }
+
+    .track { height: 420vh; }
+
+    .stage {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: grid;
+      place-items: center;
+      perspective: 900px;
+      overflow: hidden;
+    }
+
+    .helix {
+      display: flex;
+      gap: 0.08em;
+      transform-style: preserve-3d;
+    }
+
+    .char {
+      display: inline-block;
+      font-size: clamp(2.5rem, 9vw, 4.5rem);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      will-change: transform;
+      background: linear-gradient(180deg, #fff 0%, #a8b4ff 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: none;
+    }
+
+    .hint {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.72rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.3);
+      pointer-events: none;
+    }
+
+    .progress {
+      position: absolute;
+      bottom: 3.25rem;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(200px, 40vw);
+      height: 2px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #6c8cff, #ff6cb0);
+      border-radius: inherit;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .track { height: 100vh; }
+      .char { transform: none !important; }
+      .hint, .progress { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="track" id="track">
+    <div class="stage">
+      <div class="helix" id="helix">
+        <span class="char">H</span>
+        <span class="char">E</span>
+        <span class="char">L</span>
+        <span class="char">I</span>
+        <span class="char">X</span>
+      </div>
+      <div class="progress" aria-hidden="true"><div class="progress-fill" id="fill"></div></div>
+      <p class="hint">Scroll the full helix</p>
+    </div>
+  </div>
+
+  <script>
+    const track = document.getElementById('track');
+    const chars = [...document.querySelectorAll('.char')];
+    const fill = document.getElementById('fill');
+    const n = chars.length;
+    const TAU = Math.PI * 2;
+
+    function easeInOutQuad(t) {
+      return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    }
+
+    function update() {
+      const r = track.getBoundingClientRect();
+      const raw = Math.min(1, Math.max(0, -r.top / (r.height - innerHeight)));
+      const p = easeInOutQuad(raw);
+
+      chars.forEach((char, i) => {
+        const wave = p * TAU + (i / n) * TAU;
+        const ry = p * 360;
+        const tz = Math.cos(wave) * 110;
+        const ty = Math.sin(wave) * 44;
+        char.style.transform =
+          'rotateY(' + ry + 'deg) translateZ(' + tz + 'px) translateY(' + ty + 'px)';
+      });
+
+      fill.style.width = (raw * 100) + '%';
+    }
+
+    let ticking = false;
+    addEventListener('scroll', () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        update();
+      });
+    }, { passive: true });
+
+    addEventListener('resize', update, { passive: true });
+    update();
+  </script>
+</body>
+</html>

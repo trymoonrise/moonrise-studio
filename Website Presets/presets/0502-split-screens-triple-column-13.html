@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0502
+    slug: split-screens-triple-column-13
+    title: Triple Column 13
+    category: split-screens
+    tags: split-screens, experimental, mask, shapes
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0502 — Triple Column 13</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;overflow:hidden;font-family:Syne,sans-serif;background:#f8f7f2;color:#111}
+    .stage{min-height:100vh;display:grid;grid-template-columns:1fr 1fr 1fr;gap:0}
+.col{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:2rem;min-height:100vh;transition:flex .6s cubic-bezier(.22,1,.36,1)}
+.col:nth-child(1){background:#111;color:#f8f7f2;clip-path:polygon(0 0,100% 0,85% 100%,0 100%)}
+.col:nth-child(2){background:#d62828;color:#fff;clip-path:polygon(12% 0,100% 0,88% 100%,0 100%);margin:0 -6%}
+.col:nth-child(3){background:#fcbf49;color:#111;clip-path:polygon(12% 0,100% 0,100% 100%,0 100%)}
+.col::before{content:'';position:absolute;inset:0;background:linear-gradient(transparent 40%,rgba(0,0,0,.35));opacity:0;transition:opacity .4s}
+.col:hover::before{opacity:1}
+.col:hover{z-index:2}
+.num{font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.3em;text-transform:uppercase;opacity:.5;margin-bottom:.5rem;position:relative}
+.col h2{margin:0;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;letter-spacing:-.04em;position:relative}
+@media(max-width:700px){.stage{grid-template-columns:1fr}.col{clip-path:none!important;margin:0!important;min-height:33vh}}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="stage"><div class="col"><span class="num">01</span><h2>Past</h2></div><div class="col"><span class="num">02</span><h2>Present</h2></div><div class="col"><span class="num">03</span><h2>Future</h2></div></div>
+
+</body>
+</html>

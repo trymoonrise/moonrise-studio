@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0154
+    slug: toggles-ios-switch
+    title: iOS Toggle Switch
+    category: toggles
+    tags: toggles, ios
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0154 — iOS Toggle Switch</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#0d0d0f}.sw{position:relative;width:52px;height:30px;background:#333;border-radius:99px;cursor:pointer;transition:background .3s}.sw.on{background:#6c8cff}.knob{position:absolute;top:3px;left:3px;width:24px;height:24px;background:#fff;border-radius:50%;transition:transform .3s}.sw.on .knob{transform:translateX(22px)}label{color:#fff;margin-right:1rem;font-size:.9rem}
+  </style>
+</head>
+<body>
+<label>Notifications</label><div class="sw" id="s"><div class="knob"></div></div>
+<script>document.getElementById('s').onclick=function(){this.classList.toggle('on');};</script>
+</body>
+</html>

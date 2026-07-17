@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0229
+    slug: avatars-status-avatar
+    title: Status Avatar
+    category: avatars
+    tags: avatars, status, marquee, minimal
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0229 — Status Avatar</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700&family=DM+Mono:wght@400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#111;color:#f2f2f0;overflow:hidden;font-family:'DM Mono',monospace}
+    .stage{min-height:100vh;display:grid;place-items:center}
+    .wrap{position:relative;display:inline-block}
+    .av{width:72px;height:72px;border-radius:50%;border:1px solid rgba(255,255,255,.4);display:grid;place-items:center;font-family:Syne,sans-serif;font-weight:700;font-size:1.1rem;letter-spacing:.04em}
+    .dot{position:absolute;right:2px;bottom:2px;width:12px;height:12px;border-radius:50%;background:#c8f5a8;border:2px solid #111;animation:blink 2.4s ease-in-out infinite}
+    .ticker{margin-top:1.5rem;width:min(280px,80vw);overflow:hidden}
+    .track{display:flex;width:max-content;white-space:nowrap;animation:run 18s linear infinite;font-size:.6rem;letter-spacing:.4em;text-transform:uppercase;color:rgba(200,245,168,.7)}
+    @keyframes run{to{transform:translateX(-50%)}}
+    @keyframes blink{50%{opacity:.35}}
+    @media (prefers-reduced-motion:reduce){.track,.dot{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div>
+      <div class="wrap">
+        <div class="av">MK</div>
+        <span class="dot" aria-hidden="true"></span>
+      </div>
+      <div class="ticker"><div class="track"><span>Online · Available · Online · Available · </span><span>Online · Available · Online · Available · </span></div></div>
+    </div>
+  </div>
+</body>
+</html>

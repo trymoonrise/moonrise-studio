@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1785
+    slug: minimal-3d-slab-field
+    title: Slab Field Mouse
+    category: 3d-effects
+    tags: 3d, minimal, mouse, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1785 — Slab Field Mouse</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Outfit:wght@300&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0a0a0a;perspective:1100px;overflow:hidden;font-family:Outfit,sans-serif;color:#fff}
+    .field{position:relative;width:min(520px,90vw);height:340px;transform-style:preserve-3d;transform:rotateX(var(--rx,58deg)) rotateZ(var(--rz,-18deg))}
+    .slab{position:absolute;left:50%;top:50%;width:72px;height:72px;margin:-36px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.03);transform:translate3d(var(--x),var(--y),var(--z))}
+    .label{position:fixed;bottom:1.5rem;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;opacity:.35;font-weight:300}
+    .title{position:fixed;top:1.5rem;left:50%;translate:-50% 0;font-family:Syne,sans-serif;font-weight:800;letter-spacing:-.04em;font-size:1rem}
+  </style>
+</head>
+<body>
+  <div class="title">Slab field</div>
+  <div class="field" id="field"></div>
+  <div class="label">Tilt the plane</div>
+  <script>
+    const field=document.getElementById('field'),slabs=[];
+    for(let y=-2;y<=2;y++)for(let x=-2;x<=2;x++){
+      const el=document.createElement('div');el.className='slab';
+      el.style.setProperty('--x',(x*88)+'px');el.style.setProperty('--y',(y*88)+'px');el.style.setProperty('--z','0px');
+      field.appendChild(el);slabs.push({el,x,y,z:0});
+    }
+    let rx=58,rz=-18,trx=58,trz=-18,mx=0,my=0;
+    addEventListener('pointermove',e=>{mx=(e.clientX/innerWidth-.5)*2;my=(e.clientY/innerHeight-.5)*2;trx=50+my*16;trz=-18+mx*22});
+    (function loop(){
+      rx+=(trx-rx)*.1;rz+=(trz-rz)*.1;
+      field.style.setProperty('--rx',rx+'deg');field.style.setProperty('--rz',rz+'deg');
+      slabs.forEach(s=>{const d=Math.hypot(s.x-mx*2,s.y-my*2);s.z+=(Math.max(0,40-d*12)-s.z)*.15;s.el.style.setProperty('--z',s.z+'px')});
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0847
+    slug: toasts-action-toast-04
+    title: Split Action Toast
+    category: toasts
+    tags: toasts, action
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0847 — Split Action Toast</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #0c0e12;
+      font-family: 'Outfit', sans-serif;
+      color: #e8eaef;
+    }
+
+    .trigger {
+      padding: 0.85rem 1.6rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      background: transparent;
+      color: #e8eaef;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      display: flex;
+      align-items: stretch;
+      width: min(calc(100% - 2rem), 420px);
+      background: #141820;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateX(-50%) translateY(80px);
+      transition: opacity 0.35s, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: 20;
+    }
+
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .body {
+      flex: 1;
+      padding: 1rem 1.1rem;
+    }
+
+    .body h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-bottom: 0.2rem;
+    }
+
+    .body p { font-size: 0.78rem; color: rgba(232, 234, 239, 0.5); }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid rgba(255, 255, 255, 0.06);
+      transform: translateX(100%);
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1) 0.15s;
+    }
+
+    .toast.show .actions { transform: translateX(0); }
+
+    .actions button {
+      flex: 1;
+      padding: 0 1.2rem;
+      border: none;
+      background: transparent;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .actions .undo { color: #5eead4; }
+    .actions .undo:hover { background: rgba(94, 234, 212, 0.1); }
+    .actions .dismiss { color: rgba(232, 234, 239, 0.4); border-top: 1px solid rgba(255, 255, 255, 0.06); }
+    .actions .dismiss:hover { background: rgba(255, 255, 255, 0.04); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .toast, .actions { transition: none; }
+      .toast.show .actions { transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <button class="trigger" id="btn" type="button">Delete item</button>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <div class="body">
+      <h2>Record removed</h2>
+      <p>Project brief deleted from archive</p>
+    </div>
+    <div class="actions">
+      <button class="undo" type="button" id="undo">Undo</button>
+      <button class="dismiss" type="button" id="dismiss">Dismiss</button>
+    </div>
+  </div>
+
+  <script>
+    const btn = document.getElementById('btn');
+    const toast = document.getElementById('toast');
+    const undo = document.getElementById('undo');
+    const dismiss = document.getElementById('dismiss');
+    let timer;
+
+    function hide() {
+      toast.classList.remove('show');
+      clearTimeout(timer);
+    }
+
+    btn.addEventListener('click', () => {
+      clearTimeout(timer);
+      toast.classList.add('show');
+      timer = setTimeout(hide, 4000);
+    });
+
+    undo.addEventListener('click', () => {
+      toast.querySelector('h2').textContent = 'Restored';
+      toast.querySelector('p').textContent = 'Record recovered successfully';
+      setTimeout(hide, 1200);
+    });
+
+    dismiss.addEventListener('click', hide);
+  </script>
+</body>
+</html>

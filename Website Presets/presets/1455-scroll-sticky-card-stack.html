@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1455
+    slug: scroll-sticky-card-stack
+    title: Sticky Card Stack
+    category: scroll-stack
+    tags: scroll, stack, sticky
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1455 — Sticky Card Stack</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#f5f5f5;color:#111}.intro{height:40vh;display:grid;place-items:center;font-size:1.2rem;color:#888}.stack{max-width:360px;margin:0 auto;padding:0 1.5rem 50vh}.card{position:sticky;top:calc(10vh + var(--i)*12px);height:220px;margin-bottom:24px;border-radius:20px;display:grid;place-items:center;font-size:1.5rem;font-weight:800;color:#fff;box-shadow:0 12px 40px rgba(0,0,0,.12);transform-origin:center top}.card:nth-child(1){--i:0;background:#6c8cff}.card:nth-child(2){--i:1;background:#ff6cb0}.card:nth-child(3){--i:2;background:#6cffb8;color:#111}.card:nth-child(4){--i:3;background:#764ba2}.card:nth-child(5){--i:4;background:#f59e0b}
+  </style>
+</head>
+<body>
+<div class="intro">Scroll to stack cards</div><div class="stack"><div class="card">Design</div><div class="card">Build</div><div class="card">Ship</div><div class="card">Scale</div><div class="card">Win</div></div>
+
+</body>
+</html>

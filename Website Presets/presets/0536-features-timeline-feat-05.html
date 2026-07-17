@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0536
+    slug: features-timeline-feat-05
+    title: Timeline Feat 05
+    category: features
+    tags: features, timeline
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0536 — Timeline Feat 05</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0a0b10;color:#fff;font-family:Outfit,sans-serif;padding:2rem}
+    .wrap{width:min(720px,100%)}
+    h1{margin:0 0 2.5rem;font-family:Syne,sans-serif;font-size:clamp(1.8rem,4vw,2.6rem);letter-spacing:-.04em;font-weight:800}
+    .track{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+    .track::before{content:"";position:absolute;left:0;right:0;top:18px;height:1px;background:linear-gradient(90deg,#6c8cff,#7ee0c3,#ff6bcb,#ffd16c);opacity:.5;animation:flow 3s linear infinite;background-size:200% 100%}
+    .node{position:relative;padding-top:3rem}
+    .dot{position:absolute;top:12px;left:0;width:14px;height:14px;border-radius:50%;background:#0a0b10;border:2px solid #fff;box-shadow:0 0 0 4px #0a0b10;animation:pulse 2.4s ease-in-out infinite}
+    .node:nth-child(2) .dot{animation-delay:.3s;border-color:#7ee0c3}
+    .node:nth-child(3) .dot{animation-delay:.6s;border-color:#ff6bcb}
+    .node:nth-child(4) .dot{animation-delay:.9s;border-color:#ffd16c}
+    .yr{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;opacity:.4;margin:0 0 .4rem;font-weight:300}
+    h3{margin:0;font-family:Syne,sans-serif;font-size:1.05rem;letter-spacing:-.02em}
+    p{margin:.4rem 0 0;font-size:.8rem;opacity:.45;font-weight:300;line-height:1.45}
+    @keyframes flow{to{background-position:200% 0}}
+    @keyframes pulse{50%{transform:scale(1.25)}}
+    @media(max-width:640px){.track{grid-template-columns:1fr}.track::before{top:0;bottom:0;left:18px;right:auto;width:1px;height:auto}}
+    @media(prefers-reduced-motion:reduce){.dot,.track::before{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Timeline</h1>
+    <div class="track">
+      <div class="node"><div class="dot"></div><p class="yr">2023</p><h3>Spark</h3><p>First prototype in a weekend.</p></div>
+      <div class="node"><div class="dot"></div><p class="yr">2024</p><h3>Scale</h3><p>Systems that held under load.</p></div>
+      <div class="node"><div class="dot"></div><p class="yr">2025</p><h3>Polish</h3><p>Motion language locked in.</p></div>
+      <div class="node"><div class="dot"></div><p class="yr">2026</p><h3>Now</h3><p>Shipping the quiet version.</p></div>
+    </div>
+  </div>
+</body>
+</html>

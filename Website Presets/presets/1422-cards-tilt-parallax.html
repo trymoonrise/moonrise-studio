@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1422
+    slug: cards-tilt-parallax
+    title: Tilt Parallax Card
+    category: cards
+    tags: cards, tilt, parallax
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1422 — Tilt Parallax Card</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#0d0d0f;perspective:1000px;padding:2rem}.card{width:min(320px,90vw);padding:2rem;border-radius:20px;background:linear-gradient(145deg,#1a1a2e,#2a2a40);border:1px solid rgba(255,255,255,.08);color:#fff;transition:transform .12s ease-out;transform-style:preserve-3d}h3{font-size:1.3rem;margin-bottom:.5rem}.card p{color:#888;font-size:.9rem;transform:translateZ(20px)}
+  </style>
+</head>
+<body>
+<div class="card" id="c"><h3>Tilt Card</h3><p>Move your cursor to tilt with depth.</p></div>
+<script>const c=document.getElementById('c');c.onmousemove=e=>{const r=c.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5;const y=(e.clientY-r.top)/r.height-.5;c.style.transform='rotateY('+x*16+'deg) rotateX('+(-y*16)+'deg)';};c.onmouseleave=()=>c.style.transform='';</script>
+</body>
+</html>

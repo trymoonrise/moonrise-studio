@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1668
+    slug: heroes-video-split-demo
+    title: Split Demo Video Hero
+    category: heroes
+    tags: heroes, landing, video, split
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1668 — Split Demo Video Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    
+    body{margin:0;min-height:100vh;display:grid;place-items:center;padding:clamp(2rem,4vw,3rem);background:#f8fafc;color:#111827;font-family:system-ui,-apple-system,sans-serif}
+    .shell{width:min(1080px,100%)}
+    .hero{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:clamp(2rem,4vw,3rem);align-items:center}
+    .eyebrow{font-size:.68rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#4f46e5;margin-bottom:.85rem}
+    h1{font-size:clamp(2rem,3.8vw,2.8rem);font-weight:800;line-height:1.06;letter-spacing:-.04em;max-width:11ch;margin-bottom:.85rem}
+    p{color:#6b7280;line-height:1.6;max-width:34ch;margin-bottom:1.5rem}
+    .btn{padding:.68rem 1.15rem;border:none;border-radius:999px;background:#111827;color:#fff;font-weight:600;cursor:pointer}
+    .media{position:relative;border-radius:18px;overflow:hidden;box-shadow:0 24px 60px rgba(15,23,42,.12);border:1px solid rgba(17,24,39,.06)}
+    .media video{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;background:#000}
+    .badge{position:absolute;top:.85rem;left:.85rem;padding:.35rem .65rem;border-radius:999px;background:rgba(0,0,0,.72);color:#fff;font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+    @media(max-width:820px){.hero{grid-template-columns:1fr}}
+    @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}video{animation:none!important}}
+  </style>
+</head>
+<body>
+<div class="shell"><section class="hero"><div><span class="eyebrow">Product film</span><h1>See it in motion</h1><p>Split hero with a locally hosted demo reel beside your headline.</p><button class="btn" type="button">Get started</button></div><div class="media"><span class="badge">Live preview</span><video src="../stock/media/heroes/city-16x9.mp4" autoplay muted loop playsinline aria-label="Product demo"></video></div></section></div>
+
+</body>
+</html>

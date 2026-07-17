@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1430
+    slug: text-gradient-animate
+    title: Chromatic Shimmer Type
+    category: text
+    tags: text, gradient, animate
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1430 — Chromatic Shimmer Type</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#060608;color:#ececf2;font-family:Outfit,sans-serif;padding:32px;text-align:center}
+    .shimmer{font-family:Syne,sans-serif;font-size:clamp(2.4rem,7vw,4.5rem);font-weight:800;line-height:1;letter-spacing:-.05em;background:linear-gradient(120deg,#00c896 0%,#64b5ff 25%,#fff 50%,#ff6b8a 75%,#00c896 100%);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:flow 5s ease infinite}
+    .shimmer:hover{animation-duration:2s}
+    .sub{margin-top:16px;font-size:.85rem;color:rgba(236,236,242,.4);max-width:36ch;line-height:1.55}
+    .line{width:80px;height:2px;margin:24px auto 0;background:linear-gradient(90deg,transparent,#00c896,transparent);animation:linePulse 3s ease-in-out infinite}
+    @keyframes flow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+    @keyframes linePulse{0%,100%{opacity:.3;transform:scaleX(.6)}50%{opacity:1;transform:scaleX(1)}}
+    @media(prefers-reduced-motion:reduce){.shimmer,.line{animation:none;background-position:50% 50%}}
+  </style>
+</head>
+<body>
+<div>
+  <h1 class="shimmer">Shimmer type</h1>
+  <p class="sub">Animated gradient sweeps across editorial display type with chromatic shimmer.</p>
+  <div class="line" aria-hidden="true"></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1113
+    slug: bios-compact-bio-10
+    title: Inline Compact Bio Strip
+    category: bios
+    tags: bios, compact, inline, strip
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1113 — Inline Compact Bio Strip</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0b0c0f;color:#dfe3ea;font-family:Outfit,sans-serif;padding:2rem}
+    .bio{display:flex;align-items:center;gap:1.25rem;padding:1rem 1.5rem;background:#13151a;border:1px solid rgba(255,255,255,.07);border-radius:999px;max-width:520px;width:100%;transition:border-color .3s,transform .3s}
+    .bio:hover{border-color:rgba(56,189,248,.3);transform:translateX(4px)}
+    .av{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#1e3a5f,#38bdf8);display:grid;place-items:center;font-family:Syne,sans-serif;font-weight:800;font-size:1rem;flex-shrink:0;animation:av-pulse 3s ease infinite}
+    .text{flex:1;min-width:0}
+    .name{font-family:Syne,sans-serif;font-weight:700;font-size:1rem;letter-spacing:-.02em}
+    .desc{font-size:.78rem;color:rgba(223,227,234,.45);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+    .tags{display:flex;gap:.4rem}
+    .tag{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid rgba(255,255,255,.1);border-radius:999px;color:rgba(223,227,234,.5)}
+    .link{width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.1);display:grid;place-items:center;flex-shrink:0;transition:border-color .3s,background .3s;text-decoration:none}
+    .link svg{width:14px;height:14px;stroke:rgba(223,227,234,.5);fill:none;stroke-width:2;transition:stroke .3s,transform .3s}
+    .link:hover{border-color:#38bdf8;background:rgba(56,189,248,.08)}
+    .link:hover svg{stroke:#38bdf8;transform:translate(2px,-2px)}
+    @keyframes av-pulse{0%,100%{box-shadow:0 0 0 0 rgba(56,189,248,.2)}50%{box-shadow:0 0 0 6px rgba(56,189,248,0)}}
+    @media(max-width:480px){.tags{display:none}}
+    @media(prefers-reduced-motion:reduce){.av{animation:none}.bio:hover{transform:none}}
+  </style>
+</head>
+<body>
+  <article class="bio">
+    <div class="av">SR</div>
+    <div class="text">
+      <div class="name">Sofia Reyes</div>
+      <p class="desc">Design engineer · Building interfaces at the intersection of code and craft</p>
+    </div>
+    <div class="tags"><span class="tag">React</span><span class="tag">Design</span></div>
+    <a href="#" class="link" aria-label="Profile"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M17 7H9M17 7v8"/></svg></a>
+  </article>
+</body>
+</html>

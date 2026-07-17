@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1627
+    slug: 3d-mouse-card-flip-track
+    title: 3D Flip Track Mouse
+    category: 3d-mouse
+    tags: 3d, mouse, flip
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1627 — 3D Flip Track Mouse</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Outfit:wght@400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0e1018;perspective:1200px;font-family:Outfit,sans-serif;padding:2rem}
+    .card{width:min(260px,80vw);height:360px;position:relative;transform-style:preserve-3d;transform:rotateY(var(--ry,0deg)) rotateX(var(--rx,0deg));cursor:pointer}
+    .face{position:absolute;inset:0;border-radius:22px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:1.5rem;border:1px solid rgba(255,255,255,.12)}
+    .front{background:linear-gradient(160deg,#1a1f35,#0d101c);color:#fff}
+    .front::before{content:"";position:absolute;inset:-40%;background:conic-gradient(from 0deg,#6c8cff,#ff6bcb,#7ee0c3,#6c8cff);opacity:.3;filter:blur(30px)}
+    .back{background:linear-gradient(160deg,#6c8cff,#3d4fc8);color:#fff;transform:rotateY(180deg)}
+    .eyebrow{position:relative;font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;opacity:.65;margin:0 0 .35rem}
+    h2{position:relative;margin:0;font-family:Syne,sans-serif;font-size:1.7rem}
+    p{position:relative;margin:.5rem 0 0;font-size:.88rem;opacity:.85;line-height:1.45}
+    .hint{position:fixed;bottom:1.4rem;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.35);font-family:Syne,sans-serif}
+  </style>
+</head>
+<body>
+  <div class="card" id="card" role="button" tabindex="0" aria-label="Flip card">
+    <div class="face front"><p class="eyebrow">Front</p><h2>Track flip</h2><p>Mouse X rotates the card; click to lock a full flip.</p></div>
+    <div class="face back"><p class="eyebrow">Back</p><h2>Revealed</h2><p>The other side of the idea, still tracking your tilt.</p></div>
+  </div>
+  <div class="hint">Move X · click to flip</div>
+  <script>
+    const card=document.getElementById('card');let ry=0,rx=0,try_=0,trx=0,flipped=false;
+    addEventListener('pointermove',e=>{const x=(e.clientX/innerWidth-.5)*2;const y=(e.clientY/innerHeight-.5)*2;try_=(flipped?180:0)+x*35;trx=y*-12});
+    const toggle=()=>{flipped=!flipped;try_=(flipped?180:0)};
+    card.addEventListener('click',toggle);
+    card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle()}});
+    (function loop(){ry+=(try_-ry)*.1;rx+=(trx-rx)*.1;card.style.setProperty('--ry',ry+'deg');card.style.setProperty('--rx',rx+'deg');requestAnimationFrame(loop)})();
+  </script>
+</body>
+</html>

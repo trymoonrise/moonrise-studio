@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0728
+    slug: selects-custom-dropdown-02
+    title: Custom Listbox Dropdown
+    category: selects
+    tags: selects, custom
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0728 — Custom Listbox Dropdown</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #080a0e;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+      padding: 1.5rem;
+    }
+
+    .dropdown { width: min(300px, 92vw); position: relative; }
+
+    label {
+      display: block;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 0.6rem;
+    }
+
+    .trigger {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.85rem 1rem;
+      background: #111827;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      color: #e2e8f0;
+      font-size: 0.95rem;
+      transition: border-color 0.25s;
+    }
+
+    .trigger[aria-expanded="true"] {
+      border-color: #38bdf8;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    .list {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #111827;
+      border: 1px solid #38bdf8;
+      border-top: none;
+      border-radius: 0 0 10px 10px;
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: max-height 0.35s, opacity 0.25s;
+      z-index: 5;
+    }
+
+    .list.open {
+      max-height: 220px;
+      opacity: 1;
+      animation: listSlide 0.35s ease;
+    }
+
+    @keyframes listSlide {
+      from { transform: translateY(-4px); }
+      to { transform: translateY(0); }
+    }
+
+    .option {
+      display: block;
+      width: 100%;
+      padding: 0.7rem 1rem;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      text-align: left;
+      font-size: 0.9rem;
+      transition: background 0.15s, color 0.15s, padding-left 0.15s;
+    }
+
+    .option:hover, .option.selected {
+      background: #38bdf818;
+      color: #38bdf8;
+      padding-left: 1.25rem;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .list.open { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="dropdown">
+    <label id="lbl">Framework</label>
+    <button type="button" class="trigger" id="trigger" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="lbl">
+      <span id="value">React</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="list" id="list" role="listbox">
+      <button type="button" class="option selected" role="option">React</button>
+      <button type="button" class="option" role="option">Vue</button>
+      <button type="button" class="option" role="option">Svelte</button>
+      <button type="button" class="option" role="option">Solid</button>
+    </div>
+  </div>
+
+  <script>
+    const trigger = document.getElementById('trigger');
+    const list = document.getElementById('list');
+    const value = document.getElementById('value');
+    const options = list.querySelectorAll('.option');
+
+    function close() {
+      list.classList.remove('open');
+      trigger.setAttribute('aria-expanded', 'false');
+    }
+
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = !list.classList.contains('open');
+      list.classList.toggle('open', open);
+      trigger.setAttribute('aria-expanded', String(open));
+    });
+
+    options.forEach((opt) => {
+      opt.addEventListener('click', () => {
+        options.forEach((o) => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        value.textContent = opt.textContent;
+        close();
+      });
+    });
+
+    document.addEventListener('click', close);
+  </script>
+</body>
+</html>

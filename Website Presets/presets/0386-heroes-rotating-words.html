@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0386
+    slug: heroes-rotating-words
+    title: Rotating Words Hero
+    category: heroes
+    tags: heroes, landing, experimental, animation
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0386 — Rotating Words Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 2rem;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(108, 140, 255, 0.12), transparent 52%),
+        #0d0d0f;
+      color: #fff;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      text-align: center;
+    }
+
+    .hero {
+      width: min(640px, 100%);
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+    }
+
+    .slot {
+      display: inline-block;
+      vertical-align: bottom;
+      position: relative;
+      height: 1.14em;
+      min-width: 6.5ch;
+      overflow: hidden;
+      text-align: left;
+    }
+
+    .slot::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        180deg,
+        #0d0d0f 0%,
+        transparent 28%,
+        transparent 72%,
+        #0d0d0f 100%
+      );
+      pointer-events: none;
+    }
+
+    .track {
+      display: flex;
+      flex-direction: column;
+      will-change: transform;
+      transition: transform 0.7s cubic-bezier(.22, .61, .36, 1);
+    }
+
+    .track.is-spring {
+      transition: transform 0.85s cubic-bezier(.34, 1.45, .64, 1);
+    }
+
+    .track span {
+      height: 1.14em;
+      line-height: 1.14em;
+      background: linear-gradient(135deg, #8aa4ff 0%, #6c8cff 45%, #6cffb8 100%);
+      background-size: 200% 200%;
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      animation: shimmer 4s ease-in-out infinite;
+    }
+
+    .track span:nth-child(2) { animation-delay: -1s; }
+    .track span:nth-child(3) { animation-delay: -2s; }
+    .track span:nth-child(4) { animation-delay: -3s; }
+
+    @keyframes shimmer {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    p {
+      margin-top: 1.35rem;
+      color: #8b8b95;
+      font-size: 0.98rem;
+      line-height: 1.55;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .slot::after { display: none; }
+      .track { transition: none; }
+      .track span { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <h1>
+      We help you
+      <span class="slot" aria-live="polite">
+        <span class="track" id="track"></span>
+      </span>
+    </h1>
+    <p>Cycling emphasis keeps the hero feeling alive.</p>
+  </div>
+
+  <script>
+    const words = ['build', 'ship', 'scale', 'grow'];
+    const track = document.getElementById('track');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let index = 0;
+
+    track.innerHTML = words.map((word) => `<span>${word}</span>`).join('');
+
+    function go(next) {
+      index = next;
+      track.style.transform = `translateY(-${index * 1.14}em)`;
+      track.classList.toggle('is-spring', index % 2 === 0);
+    }
+
+    if (!reduced) {
+      setInterval(() => {
+        go((index + 1) % words.length);
+      }, 2600);
+    }
+  </script>
+</body>
+</html>

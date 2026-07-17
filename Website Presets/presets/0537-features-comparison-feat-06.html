@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0537
+    slug: features-comparison-feat-06
+    title: Comparison Feat 06
+    category: features
+    tags: features, comparison
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0537 — Comparison Feat 06</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f4f2ec;color:#111;font-family:Outfit,sans-serif;padding:2rem}
+    .wrap{width:min(760px,100%)}
+    h1{margin:0 0 1.75rem;font-family:Syne,sans-serif;font-size:clamp(1.8rem,4vw,2.6rem);letter-spacing:-.04em;font-weight:800;text-align:center}
+    .cols{display:grid;grid-template-columns:1fr auto 1fr;gap:0;align-items:stretch}
+    .col{padding:1.75rem;background:#fff;border:1px solid #e4e0d6}
+    .col.pro{border-color:#111;background:#111;color:#fff;transform:scale(1.03);z-index:1;box-shadow:0 24px 50px rgba(0,0,0,.15)}
+    .label{font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;opacity:.4;margin:0 0 1rem;font-weight:300}
+    .col.pro .label{opacity:.55}
+    h3{margin:0 0 1.25rem;font-family:Syne,sans-serif;font-size:1.4rem;letter-spacing:-.03em}
+    ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.75rem}
+    li{font-size:.88rem;font-weight:300;opacity:.7;padding-left:1.1rem;position:relative;line-height:1.4}
+    li::before{content:"";position:absolute;left:0;top:.55em;width:6px;height:1px;background:currentColor}
+    .vs{display:grid;place-items:center;padding:0 .75rem;font-family:Syne,sans-serif;font-weight:800;font-size:.75rem;letter-spacing:.1em;opacity:.35}
+    @media(max-width:640px){.cols{grid-template-columns:1fr}.vs{padding:1rem 0}.col.pro{transform:none}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Before / After</h1>
+    <div class="cols">
+      <div class="col">
+        <p class="label">Before</p>
+        <h3>Template</h3>
+        <ul><li>Generic cards</li><li>Stock icons</li><li>Flat sections</li><li>Forgettable</li></ul>
+      </div>
+      <div class="vs">VS</div>
+      <div class="col pro">
+        <p class="label">After</p>
+        <h3>Signature</h3>
+        <ul><li>Own composition</li><li>Alive motion</li><li>Clear hierarchy</li><li>Hard to copy</li></ul>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

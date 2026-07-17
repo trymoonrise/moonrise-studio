@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1510
+    slug: menu-fullscreen-blur-glass
+    title: Blur Glass Menu
+    category: navigation
+    tags: menu, hamburger, fullscreen, blur
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1510 — Blur Glass Menu</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Outfit:wght@300&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#1a1814;color:#f5f0e8;font-family:Outfit,sans-serif;overflow:hidden}
+    .scene{position:fixed;inset:0;background:
+      radial-gradient(circle at 20% 30%,rgba(255,255,255,.12),transparent 40%),
+      radial-gradient(circle at 80% 70%,rgba(255,255,255,.08),transparent 35%),
+      #1a1814;z-index:0}
+    .top{position:relative;z-index:40;display:flex;justify-content:space-between;align-items:center;padding:1.5rem clamp(1.25rem,4vw,3rem)}
+    .logo{font-family:Syne,sans-serif;font-weight:800;letter-spacing:-.04em}
+    .burger{width:28px;height:12px;border:0;background:transparent;cursor:pointer;padding:0;display:flex;flex-direction:column;justify-content:space-between;color:inherit;z-index:50}
+    .burger i{display:block;height:1px;background:currentColor;transition:transform .5s cubic-bezier(.22,1,.36,1)}
+    .burger.open i:first-child{transform:translateY(5.5px) rotate(45deg)}
+    .burger.open i:last-child{transform:translateY(-5.5px) rotate(-45deg)}
+    .glass{position:fixed;inset:0;z-index:30;display:grid;place-items:center;background:rgba(255,255,255,.06);backdrop-filter:blur(0px) saturate(1);-webkit-backdrop-filter:blur(0px);opacity:0;pointer-events:none;transition:opacity .4s,backdrop-filter .6s,-webkit-backdrop-filter .6s}
+    .glass.open{opacity:1;pointer-events:auto;backdrop-filter:blur(28px) saturate(1.2);-webkit-backdrop-filter:blur(28px) saturate(1.2)}
+    .glass nav{text-align:center}
+    .glass a{display:block;font-family:Syne,sans-serif;font-size:clamp(2.2rem,8vw,5rem);font-weight:800;letter-spacing:-.05em;color:#fff;text-decoration:none;line-height:1.05;opacity:0;transform:translateY(16px);transition:opacity .5s,transform .5s cubic-bezier(.22,1,.36,1)}
+    .glass.open a{opacity:1;transform:none}
+    .glass.open a:nth-child(1){transition-delay:.1s}.glass.open a:nth-child(2){transition-delay:.18s}
+    .glass.open a:nth-child(3){transition-delay:.26s}.glass.open a:nth-child(4){transition-delay:.34s}
+    .glass a:hover{opacity:.4}
+    .page{position:relative;z-index:1;height:70vh;display:grid;place-items:center;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;font-weight:300;opacity:.4}
+    @media(prefers-reduced-motion:reduce){.glass,.glass a,.burger i{transition:none}}
+  </style>
+</head>
+<body>
+  <div class="scene" aria-hidden="true"></div>
+  <div class="top">
+    <div class="logo">GLASS</div>
+    <button class="burger" id="burger" aria-label="Menu" aria-expanded="false"><i></i><i></i></button>
+  </div>
+  <div class="glass" id="glass">
+    <nav><a href="#">See</a><a href="#">Through</a><a href="#">Almost</a><a href="#">Nothing</a></nav>
+  </div>
+  <div class="page">Frost the void</div>
+  <script>
+    const b=document.getElementById('burger'),g=document.getElementById('glass');
+    b.addEventListener('click',()=>{const on=g.classList.toggle('open');b.classList.toggle('open',on);b.setAttribute('aria-expanded',String(on))});
+  </script>
+</body>
+</html>

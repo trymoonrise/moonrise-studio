@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0510
+    slug: brutalist-checker-block-07
+    title: Checker Block 07
+    category: brutalist
+    tags: brutalist, checker
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0510 — Checker Block 07</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@600&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#e8e4d9;overflow:hidden;font-family:'IBM Plex Mono',monospace;padding:2rem}
+    .wrap{position:relative;width:min(480px,92vw)}
+    .board{display:grid;grid-template-columns:repeat(8,1fr);aspect-ratio:1;border:8px solid #000;box-shadow:20px 20px 0 #000;overflow:hidden}
+    .cell{aspect-ratio:1;background:#fff}
+    .cell:nth-child(odd){background:#000}
+    .board .cell:nth-child(8n+1),.board .cell:nth-child(8n+3),.board .cell:nth-child(8n+5),.board .cell:nth-child(8n+7){background:#fff}
+    .board .row-odd .cell:nth-child(even),.board .cell.dark{background:#000}
+    .overlay{position:absolute;inset:12%;background:#ff0033;border:6px solid #000;display:grid;place-items:center;padding:1rem;transform:rotate(-6deg);animation:slam-in .7s cubic-bezier(.2,1.5,.3,1) both;box-shadow:12px 12px 0 #000}
+    h1{margin:0;font-family:'Archivo Black',sans-serif;font-size:clamp(2rem,9vw,3.6rem);line-height:.85;text-transform:uppercase;letter-spacing:-.04em;color:#fff;text-align:center}
+    .tag{position:absolute;bottom:-1.2rem;left:0;right:0;text-align:center;font-size:.7rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+    @keyframes slam-in{from{transform:rotate(-6deg) scale(1.4);opacity:0}to{transform:rotate(-6deg) scale(1);opacity:1}}
+    @media(prefers-reduced-motion:reduce){.overlay{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="board" id="board"></div>
+    <div class="overlay"><h1>CHECK<br>ER<br>BLOCK</h1></div>
+    <div class="tag">Wrong squares · right attitude</div>
+  </div>
+  <script>
+    const board=document.getElementById('board');
+    for(let i=0;i<64;i++){
+      const c=document.createElement('div');
+      c.className='cell';
+      const row=Math.floor(i/8),col=i%8;
+      if((row+col)%2)c.style.background='#000';
+      else c.style.background='#fff';
+      // glitch a few cells
+      if(i%11===0){c.style.background='#ff0033';c.style.animation=`pulse ${.4+Math.random()}s steps(2) infinite`}
+      board.appendChild(c);
+    }
+    const style=document.createElement('style');
+    style.textContent='@keyframes pulse{50%{filter:invert(1)}}';
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>

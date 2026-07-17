@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1662
+    slug: heroes-mask-stacked-scroll
+    title: Stacked Mask Scroll Hero
+    category: heroes
+    tags: heroes, landing, image, experimental, scroll
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1662 — Stacked Mask Scroll Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      margin: 0;
+      min-height: 320vh;
+      background: #000;
+      color: #fff;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    .stage {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .bg {
+      position: absolute;
+      inset: 0;
+    }
+
+    .bg img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.22;
+    }
+
+    .word {
+      position: absolute;
+      margin: 0;
+      padding: 0 1rem;
+      font-size: clamp(3.5rem, 13vw, 10rem);
+      font-weight: 900;
+      text-transform: uppercase;
+      line-height: 0.88;
+      text-align: center;
+      background-image: url('../stock/media/16-9 Aspect Ratio(image).png');
+      background-size: cover;
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      opacity: 0;
+      transform: scale(0.92);
+      will-change: transform, opacity, background-position;
+    }
+
+    .word:nth-child(2) { background-position: 30% 40%; }
+    .word:nth-child(3) { background-position: 70% 55%; }
+    .word:nth-child(4) { background-position: 50% 75%; }
+
+    .label {
+      position: absolute;
+      bottom: 2.75rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body { min-height: 100vh; }
+      .word { opacity: 1; transform: none; }
+      .word:not(:first-of-type) { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage" id="stage">
+    <div class="bg" aria-hidden="true">
+      <img src="../stock/media/16-9 Aspect Ratio(image).png" alt="">
+    </div>
+    <h2 class="word">Wild</h2>
+    <h2 class="word">Free</h2>
+    <h2 class="word">Lost</h2>
+    <span class="label" id="label">01 — Wild</span>
+  </div>
+
+  <script>
+    const stage = document.getElementById('stage');
+    const words = [...document.querySelectorAll('.word')];
+    const label = document.getElementById('label');
+    const labels = ['01 — Wild', '02 — Free', '03 — Lost'];
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function ease(t) {
+      return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    }
+
+    function update() {
+      if (reduced) return;
+
+      const max = document.documentElement.scrollHeight - innerHeight;
+      const p = max > 0 ? scrollY / max : 0;
+      const segment = 1 / words.length;
+
+      words.forEach((word, i) => {
+        const start = i * segment;
+        const end = (i + 1) * segment;
+        const local = Math.min(1, Math.max(0, (p - start) / segment));
+        const enter = ease(Math.min(1, local / 0.45));
+        const exit = i < words.length - 1
+          ? ease(Math.min(1, Math.max(0, (local - 0.55) / 0.45)))
+          : 0;
+        const opacity = Math.max(0, enter * (1 - exit));
+        const scale = 0.9 + opacity * 0.1;
+
+        word.style.opacity = opacity.toFixed(3);
+        word.style.transform = `scale(${scale.toFixed(3)})`;
+      });
+
+      const active = Math.min(words.length - 1, Math.floor(p / segment + 0.001));
+      label.textContent = labels[active];
+    }
+
+    let ticking = false;
+    addEventListener('scroll', () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        update();
+      });
+    }, { passive: true });
+
+    addEventListener('resize', update, { passive: true });
+    update();
+  </script>
+</body>
+</html>

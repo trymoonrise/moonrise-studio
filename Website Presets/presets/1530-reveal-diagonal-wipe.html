@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1530
+    slug: reveal-diagonal-wipe
+    title: Diagonal Wipe Reveal
+    category: reveals
+    tags: reveal, diagonal, wipe
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1530 — Diagonal Wipe Reveal</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:100vh;overflow:hidden}.scene{position:relative;height:100vh;background:url('../stock/media/16-9 Aspect Ratio(image).png') center/cover;display:grid;place-items:center}.scene h1{color:#fff;font-size:3rem;font-weight:900;z-index:1}.wipe{position:absolute;inset:-50%;background:#0d0d0f;animation:diag 1.4s cubic-bezier(.22,.61,.36,1) forwards}@keyframes diag{from{transform:translateX(-30%) translateY(30%) rotate(-45deg)}to{transform:translateX(130%) translateY(-30%) rotate(-45deg)}}
+  </style>
+</head>
+<body>
+<div class="scene"><div class="wipe"></div><h1>Wipe</h1></div>
+
+</body>
+</html>

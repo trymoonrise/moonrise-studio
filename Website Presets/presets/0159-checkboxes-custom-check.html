@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0159
+    slug: checkboxes-custom-check
+    title: Custom Styled Check
+    category: checkboxes
+    tags: checkboxes, custom
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0159 — Custom Styled Check</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#0d0d0f}.cb{display:flex;align-items:center;gap:12px;cursor:pointer;color:#fff}.box{width:22px;height:22px;border:2px solid #6c8cff;border-radius:6px;display:grid;place-items:center;transition:background .2s}input{display:none}input:checked+.box{background:#6c8cff}.box::after{content:"✓";color:#fff;font-size:.8rem;opacity:0}input:checked+.box::after{opacity:1}
+  </style>
+</head>
+<body>
+<label class="cb"><input type="checkbox"><span class="box"></span>Accept terms</label>
+
+</body>
+</html>

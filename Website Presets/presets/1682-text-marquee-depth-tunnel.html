@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1682
+    slug: text-marquee-depth-tunnel
+    title: Depth Tunnel Marquee
+    category: text
+    tags: marquee, tunnel, experimental, 3d
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1682 — Depth Tunnel Marquee</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@500&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow: hidden;
+      background: #050507;
+      color: #f2efe8;
+      font-family: 'Bebas Neue', sans-serif;
+    }
+
+    .tunnel {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      perspective: 900px;
+      transform-style: preserve-3d;
+    }
+
+    .layer {
+      position: absolute;
+      width: 140%;
+      left: -20%;
+      overflow: hidden;
+      transform: translateZ(var(--z)) scale(var(--s));
+      opacity: var(--o);
+      filter: blur(var(--blur));
+      border-block: 1px solid rgba(242, 239, 232, 0.08);
+      will-change: transform;
+    }
+
+    .track {
+      display: flex;
+      width: max-content;
+      white-space: nowrap;
+      animation: slide var(--spd) linear infinite;
+      animation-direction: var(--dir, normal);
+    }
+
+    .word {
+      padding: 0.15em 0.55em;
+      font-size: clamp(3.5rem, 12vw, 9rem);
+      line-height: 0.85;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .layer:nth-child(odd) .word {
+      color: transparent;
+      -webkit-text-stroke: 1.5px rgba(242, 239, 232, 0.55);
+    }
+
+    .layer:nth-child(3) .word {
+      color: #ff4d2e;
+      -webkit-text-stroke: 0;
+    }
+
+    .layer:nth-child(5) .word {
+      color: #8fd3ff;
+      -webkit-text-stroke: 0;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(1.4rem, 4vw, 2.8rem);
+      letter-spacing: 0.18em;
+    }
+
+    .hud {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .hud p {
+      margin: 0;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: rgba(242, 239, 232, 0.45);
+    }
+
+    .hud h1 {
+      margin: 0.5rem 0 0;
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      letter-spacing: 0.08em;
+    }
+
+    .fog {
+      position: fixed;
+      inset: 0;
+      z-index: 5;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 70% 50% at 50% 50%, transparent 20%, #050507 78%),
+        linear-gradient(to bottom, #050507, transparent 20%, transparent 80%, #050507);
+    }
+
+    @keyframes slide {
+      to { transform: translateX(-50%); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .track { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="tunnel" id="tunnel">
+    <div class="layer" style="--z:-420px;--s:1.55;--o:0.18;--blur:3px;--spd:28s;top:8%"><div class="track" data-words="DEPTH FIELD / VOID SIGNAL /"></div></div>
+    <div class="layer" style="--z:-280px;--s:1.35;--o:0.32;--blur:2px;--spd:22s;--dir:reverse;top:26%"><div class="track" data-words="NEAR / FAR / NEAR / FAR /"></div></div>
+    <div class="layer" style="--z:-120px;--s:1.15;--o:0.7;--blur:0;--spd:16s;top:44%"><div class="track" data-words="ENTER THE LOOP / KEEP GOING /"></div></div>
+    <div class="layer" style="--z:40px;--s:1;--o:0.9;--blur:0;--spd:12s;--dir:reverse;top:62%"><div class="track" data-words="TUNNEL VISION / TYPE SPACE /"></div></div>
+    <div class="layer" style="--z:160px;--s:0.88;--o:1;--blur:0;--spd:9s;top:78%"><div class="track" data-words="FOCUS · BLUR · FOCUS · BLUR ·"></div></div>
+
+    <div class="hud">
+      <p>Perspective scroll</p>
+      <h1>Tunnel</h1>
+    </div>
+  </div>
+  <div class="fog" aria-hidden="true"></div>
+
+  <script>
+    document.querySelectorAll('[data-words]').forEach((track) => {
+      const text = track.dataset.words;
+      const chunk = text.split('/').filter(Boolean).map((w) =>
+        '<span class="word">' + w.trim() + '</span>'
+      ).join('');
+      track.innerHTML = chunk + chunk;
+    });
+
+    const tunnel = document.getElementById('tunnel');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    addEventListener('pointermove', (e) => {
+      if (reduced) return;
+      const x = (e.clientX / innerWidth - 0.5) * 18;
+      const y = (e.clientY / innerHeight - 0.5) * -12;
+      tunnel.style.transform = 'rotateY(' + x + 'deg) rotateX(' + y + 'deg)';
+    }, { passive: true });
+  </script>
+</body>
+</html>

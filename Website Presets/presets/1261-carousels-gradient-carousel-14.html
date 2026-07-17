@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1261
+    slug: carousels-gradient-carousel-14
+    title: Gradient Carousel 14
+    category: carousels
+    tags: carousels, animated, modern, interactive
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1261 — Gradient Carousel 14</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0b0b12;font-family:'DM Sans',system-ui,sans-serif;color:#fff;overflow:hidden;padding:24px}
+    button{font:inherit;border:0;cursor:pointer;background:transparent;color:inherit}
+    .wrap{width:min(520px,92vw);position:relative}.wash{position:absolute;inset:-40px;border-radius:40px;filter:blur(40px);opacity:.55;transition:background 1s ease;pointer-events:none}.stage{position:relative;aspect-ratio:16/10;border-radius:28px;overflow:hidden;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);backdrop-filter:blur(12px)}.slide{position:absolute;inset:0;opacity:0;transform:scale(1.05);transition:opacity .8s,transform 1s cubic-bezier(.22,1,.36,1)}.slide.on{opacity:1;transform:scale(1)}.slide img{width:100%;height:100%;object-fit:cover;mix-blend-mode:luminosity;opacity:.85}.copy{position:absolute;left:24px;bottom:24px;z-index:2;font-family:Syne,sans-serif}.copy small{display:block;font-size:.65rem;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:6px}.copy b{font-size:1.5rem;letter-spacing:-.04em}.dots{display:flex;gap:8px;justify-content:center;margin-top:18px}.dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.2);transition:transform .3s,background .3s}.dot.on{background:#fff;transform:scale(1.25)}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="wrap"><div class="wash" id="wash"></div><div class="stage">
+<div class="slide on"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""><div class="copy"><small>Tone</small><b>Aurora</b></div></div>
+<div class="slide"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt="" style="filter:hue-rotate(80deg)"><div class="copy"><small>Tone</small><b>Ember</b></div></div>
+<div class="slide"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt="" style="filter:hue-rotate(180deg)"><div class="copy"><small>Tone</small><b>Tide</b></div></div>
+<div class="slide"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt="" style="filter:hue-rotate(260deg)"><div class="copy"><small>Tone</small><b>Violet</b></div></div>
+</div><div class="dots" id="dots"></div></div>
+<script>
+const slides=[...document.querySelectorAll('.slide')],wash=document.getElementById('wash'),dots=document.getElementById('dots'),colors=['linear-gradient(135deg,#22d3ee,#818cf8)','linear-gradient(135deg,#fb7185,#fbbf24)','linear-gradient(135deg,#34d399,#60a5fa)','linear-gradient(135deg,#c084fc,#f472b6)'];let i=0;slides.forEach((_,n)=>{const d=document.createElement('button');d.className='dot'+(n===0?' on':'');d.onclick=()=>go(n);dots.appendChild(d);});function go(n){i=(n+slides.length)%slides.length;slides.forEach((s,k)=>s.classList.toggle('on',k===i));[...dots.children].forEach((d,k)=>d.classList.toggle('on',k===i));wash.style.background=colors[i];}go(0);setInterval(()=>go(i+1),3400);
+</script>
+</body>
+</html>

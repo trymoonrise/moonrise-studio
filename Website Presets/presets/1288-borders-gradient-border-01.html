@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1288
+    slug: borders-gradient-border-01
+    title: Spectral Frame Edge
+    category: borders
+    tags: borders, gradient
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1288 — Spectral Frame Edge</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#060608;color:#ececf2;font-family:Outfit,sans-serif;padding:32px}
+    .card{position:relative;width:min(380px,90vw);padding:3px;border-radius:8px;background:linear-gradient(135deg,#00c896,#0088ff,#ff3366,#00c896);background-size:300% 300%;animation:shift 6s ease infinite}
+    .inner{background:#0e0e14;border-radius:6px;padding:32px 28px;position:relative}
+    .inner h2{font-family:Syne,sans-serif;font-size:1.6rem;margin:0 0 10px;letter-spacing:-.03em}
+    .inner p{margin:0;font-size:.88rem;color:rgba(236,236,242,.5);line-height:1.55}
+    .badge{position:absolute;top:-12px;right:20px;padding:6px 12px;background:#060608;font:600 .6rem Outfit,sans-serif;letter-spacing:.15em;text-transform:uppercase;border:1px solid rgba(255,255,255,.15)}
+    .glow{position:absolute;inset:-20px;border-radius:16px;background:inherit;filter:blur(24px);opacity:.25;z-index:-1;animation:shift 6s ease infinite}
+    @keyframes shift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+    @media(prefers-reduced-motion:reduce){.card,.glow{animation:none}}
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="glow" aria-hidden="true"></div>
+  <div class="inner">
+    <span class="badge">Gradient</span>
+    <h2>Spectral frame</h2>
+    <p>Animated conic gradient border wraps content in a living spectral edge.</p>
+  </div>
+</div>
+</body>
+</html>

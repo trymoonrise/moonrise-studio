@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0650
+    slug: navigation-pill-nav-02
+    title: Pill Nav 02
+    category: navigation
+    tags: navigation, pill
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0650 — Pill Nav 02</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700&family=Outfit:wght@300&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f4f2ec;font-family:Outfit,sans-serif}
+    .dock{display:flex;align-items:center;gap:.15rem;padding:.35rem;background:#fff;border-radius:999px;box-shadow:0 1px 0 rgba(0,0,0,.06),0 20px 50px rgba(0,0,0,.06)}
+    .dock a{padding:.65rem 1.1rem;border-radius:999px;text-decoration:none;color:#111;font-size:.78rem;font-weight:300;letter-spacing:.1em;text-transform:uppercase;opacity:.4;transition:opacity .3s,background .35s,color .35s}
+    .dock a.active{opacity:1;background:#111;color:#fff;font-family:Syne,sans-serif;font-weight:700;letter-spacing:-.01em;text-transform:none;font-size:.85rem}
+    .dock a:not(.active):hover{opacity:.8}
+  </style>
+</head>
+<body>
+  <nav class="dock" id="dock">
+    <a class="active" href="#">Now</a>
+    <a href="#">Soon</a>
+    <a href="#">Later</a>
+    <a href="#">Never</a>
+  </nav>
+  <script>
+    const links=[...document.querySelectorAll('#dock a')];
+    links.forEach(a=>a.addEventListener('click',e=>{e.preventDefault();links.forEach(l=>l.classList.remove('active'));a.classList.add('active')}));
+  </script>
+</body>
+</html>

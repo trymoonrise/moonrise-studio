@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0702
+    slug: inputs-icon-input-02
+    title: Prefix Icon Search Field
+    category: inputs
+    tags: inputs, icon
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0702 — Prefix Icon Search Field</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #080a0e;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+      padding: 1.5rem;
+    }
+
+    .field-wrap { width: min(400px, 92vw); }
+
+    label {
+      display: block;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 0.6rem;
+    }
+
+    .field {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0 1rem;
+      height: 52px;
+      background: #111827;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .field:focus-within {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 3px #38bdf822;
+      animation: fieldFocus 0.4s ease;
+    }
+
+    @keyframes fieldFocus {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.01); }
+      100% { transform: scale(1); }
+    }
+
+    .icon {
+      color: #64748b;
+      flex-shrink: 0;
+      transition: color 0.25s, transform 0.25s;
+    }
+
+    .field:focus-within .icon {
+      color: #38bdf8;
+      transform: scale(1.1);
+      animation: iconPulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes iconPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    .field input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 0.95rem;
+      color: #e2e8f0;
+    }
+
+    .field input::placeholder { color: #475569; }
+
+    .kbd {
+      font-size: 0.7rem;
+      padding: 0.2rem 0.45rem;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 4px;
+      color: #64748b;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .field:focus-within { animation: none; }
+      .field:focus-within .icon { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="field-wrap">
+    <label for="search">Search workspace</label>
+    <div class="field">
+      <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3"/></svg>
+      <input type="search" id="search" placeholder="Files, docs, people…" autocomplete="off">
+      <kbd class="kbd">⌘K</kbd>
+    </div>
+  </div>
+</body>
+</html>

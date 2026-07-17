@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1703
+    slug: animation-shatter-assemble
+    title: Shatter Assemble
+    category: animation
+    tags: animation, shatter, assemble, glitch
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1693 — Shatter Assemble</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Anton&family=DM+Mono:wght@500&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #0b0b0f;
+      overflow: hidden;
+      cursor: pointer;
+      font-family: Anton, sans-serif;
+    }
+
+    .frame {
+      position: relative;
+      width: min(88vw, 520px);
+      aspect-ratio: 16 / 9;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+      background: #15151c;
+    }
+
+    .shard {
+      position: absolute;
+      display: grid;
+      place-items: center;
+      color: #f4f1ea;
+      font-size: clamp(2.5rem, 8vw, 4.5rem);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      background: #1c1c26;
+      overflow: hidden;
+      will-change: transform, opacity;
+    }
+
+    .shard span {
+      position: absolute;
+      white-space: nowrap;
+    }
+
+    .hint {
+      position: fixed;
+      bottom: 1.5rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: rgba(244, 241, 234, 0.35);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .shard { transform: none !important; opacity: 1 !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="frame" id="frame" aria-label="ASSEMBLE"></div>
+  <p class="hint">Click to shatter & rebuild</p>
+
+  <script>
+    const frame = document.getElementById('frame');
+    const text = 'ASSEMBLE';
+    const cols = 4;
+    const rows = 3;
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let shards = [];
+
+    function build() {
+      frame.innerHTML = '';
+      shards = [];
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const s = document.createElement('div');
+          s.className = 'shard';
+          const left = (c / cols) * 100;
+          const top = (r / rows) * 100;
+          const w = 100 / cols;
+          const h = 100 / rows;
+          s.style.left = left + '%';
+          s.style.top = top + '%';
+          s.style.width = w + '%';
+          s.style.height = h + '%';
+
+          const span = document.createElement('span');
+          span.textContent = text;
+          span.style.left = (-left / w * 100) + '%';
+          span.style.top = (-top / h * 100) + '%';
+          span.style.width = (100 / w * 100) + '%';
+          span.style.height = (100 / h * 100) + '%';
+          span.style.display = 'grid';
+          span.style.placeItems = 'center';
+          s.appendChild(span);
+          frame.appendChild(s);
+          shards.push(s);
+        }
+      }
+    }
+
+    function scatter() {
+      shards.forEach((s) => {
+        const dx = (Math.random() - 0.5) * 280;
+        const dy = (Math.random() - 0.5) * 220;
+        const rot = (Math.random() - 0.5) * 60;
+        s.style.transition = 'none';
+        s.style.transform = 'translate(' + dx + 'px,' + dy + 'px) rotate(' + rot + 'deg) scale(0.85)';
+        s.style.opacity = '0.35';
+      });
+    }
+
+    function assemble() {
+      shards.forEach((s, i) => {
+        s.style.transition = 'transform 0.7s cubic-bezier(0.22, 1.2, 0.36, 1) ' + (i * 0.03) + 's, opacity 0.5s ease ' + (i * 0.03) + 's';
+        s.style.transform = 'none';
+        s.style.opacity = '1';
+      });
+    }
+
+    function cycle() {
+      if (reduced) return;
+      scatter();
+      requestAnimationFrame(() => requestAnimationFrame(assemble));
+    }
+
+    build();
+    if (!reduced) {
+      scatter();
+      setTimeout(assemble, 80);
+    }
+    addEventListener('click', cycle);
+  </script>
+</body>
+</html>

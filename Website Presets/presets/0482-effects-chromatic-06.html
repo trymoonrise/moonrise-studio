@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0482
+    slug: effects-chromatic-06
+    title: Chromatic Type Collision
+    category: effects
+    tags: effects, chromatic
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0482 — Chromatic Type Collision</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Mono:wght@500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#f4ff00;overflow:hidden;display:grid;place-items:center;font-family:'Archivo Black',sans-serif}
+    .stage{position:relative;width:min(900px,94vw);height:min(520px,75vh);display:grid;place-items:center;isolation:isolate}
+    .word{position:absolute;margin:0;font-size:clamp(3.8rem,15vw,9rem);line-height:.78;letter-spacing:-.09em;text-transform:uppercase;color:#050505;animation:impact 5s cubic-bezier(.22,1,.36,1) infinite}
+    .word::before,.word::after{content:attr(data-text);position:absolute;inset:0;mix-blend-mode:multiply;pointer-events:none}
+    .word::before{color:#00e5ff;transform:translate(-8px,4px);clip-path:polygon(0 0,100% 0,100% 48%,0 62%);animation:channel-a 2.8s steps(2,end) infinite}
+    .word::after{color:#ff145b;transform:translate(8px,-4px);clip-path:polygon(0 58%,100% 44%,100% 100%,0 100%);animation:channel-b 3.2s steps(2,end) infinite}
+    .rail{position:absolute;left:-20%;right:-20%;top:12%;overflow:hidden;border-block:3px solid #050505;transform:rotate(-8deg);background:#f4ff00}
+    .track{display:flex;width:max-content;white-space:nowrap;animation:run 13s linear infinite;font:500 .72rem 'DM Mono',monospace;letter-spacing:.3em;text-transform:uppercase;padding:.55rem;color:#050505}
+    .index{position:absolute;left:2%;bottom:4%;font:500 .65rem 'DM Mono',monospace;letter-spacing:.22em;text-transform:uppercase}
+    .disc{position:absolute;width:90px;height:90px;border:8px solid #050505;border-radius:50%;right:4%;bottom:3%;animation:spin 7s linear infinite}
+    .disc::after{content:'';position:absolute;inset:20px;background:#ff145b;border-radius:50%;box-shadow:18px 0 0 #00e5ff}
+    @keyframes impact{0%,18%,100%{transform:scale(.86) rotate(-3deg)}28%,78%{transform:scale(1) rotate(0)}}
+    @keyframes channel-a{50%{transform:translate(14px,-5px)}}
+    @keyframes channel-b{50%{transform:translate(-14px,6px)}}
+    @keyframes run{to{transform:translateX(-50%)}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @media(prefers-reduced-motion:reduce){.word,.word::before,.word::after,.track,.disc{animation:none}}
+  </style>
+</head>
+<body>
+<main class="stage">
+  <div class="rail" aria-hidden="true"><div class="track"><span>RGB collision / type fracture / RGB collision / type fracture / </span><span>RGB collision / type fracture / RGB collision / type fracture / </span></div></div>
+  <h1 class="word" data-text="Chromatic">Chromatic</h1>
+  <span class="index">2D channel collision / 0482</span>
+  <span class="disc" aria-hidden="true"></span>
+</main>
+
+</body>
+</html>

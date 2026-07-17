@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0638
+    slug: menus-hamburger-menu-03
+    title: Morph Slide Hamburger
+    category: menus
+    tags: menus, hamburger
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0638 — Morph Slide Hamburger</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #080a0e;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #1e293b;
+      background: #0c1018;
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.1rem;
+      letter-spacing: -0.02em;
+    }
+
+    .burger {
+      width: 48px;
+      height: 48px;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      background: #111827;
+      display: grid;
+      place-items: center;
+      position: relative;
+      z-index: 30;
+      transition: border-color 0.3s;
+    }
+
+    .burger:hover, .burger.open { border-color: #fbbf24; }
+
+    .lines {
+      width: 22px;
+      height: 14px;
+      position: relative;
+    }
+
+    .lines span {
+      display: block;
+      height: 2px;
+      background: #e2e8f0;
+      border-radius: 2px;
+      position: absolute;
+      left: 0;
+      right: 0;
+      transition: transform 0.35s, top 0.35s, opacity 0.25s;
+    }
+
+    .lines span:nth-child(1) { top: 0; }
+    .lines span:nth-child(2) { top: 6px; }
+    .lines span:nth-child(3) { top: 12px; }
+
+    .burger.open .lines span:nth-child(1) { top: 6px; transform: rotate(45deg); background: #fbbf24; }
+    .burger.open .lines span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .burger.open .lines span:nth-child(3) { top: 6px; transform: rotate(-45deg); background: #fbbf24; }
+
+    .hero {
+      padding: 3rem 1.5rem;
+      max-width: 520px;
+    }
+
+    .hero h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 0.75rem;
+    }
+
+    .hero p { color: #64748b; line-height: 1.6; }
+
+    .nav-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: min(320px, 88vw);
+      height: 100%;
+      background: #0f1419;
+      border-left: 1px solid #1e293b;
+      transform: translateX(100%);
+      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: 25;
+      padding: 5rem 1.5rem 2rem;
+    }
+
+    .nav-panel.open { transform: translateX(0); }
+
+    .nav-panel nav a {
+      display: block;
+      padding: 1rem 0;
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 1.25rem;
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      border-bottom: 1px solid #1e293b;
+      opacity: 0;
+      transform: translateX(20px);
+      transition: color 0.2s, opacity 0.4s, transform 0.4s;
+    }
+
+    .nav-panel.open nav a {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .nav-panel nav a:nth-child(1) { transition-delay: 0.08s; }
+    .nav-panel nav a:nth-child(2) { transition-delay: 0.14s; }
+    .nav-panel nav a:nth-child(3) { transition-delay: 0.2s; }
+    .nav-panel nav a:nth-child(4) { transition-delay: 0.26s; }
+
+    .nav-panel nav a:hover { color: #fbbf24; }
+
+    .backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s;
+      z-index: 20;
+    }
+
+    .backdrop.open { opacity: 1; pointer-events: auto; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .nav-panel nav a { opacity: 1; transform: none; transition: color 0.2s; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <span class="logo">Aperture</span>
+    <button type="button" class="burger" id="burger" aria-expanded="false" aria-label="Toggle menu">
+      <span class="lines"><span></span><span></span><span></span></span>
+    </button>
+  </header>
+  <main class="hero">
+    <h1>Mobile-first navigation</h1>
+    <p>Hamburger morphs to close icon while a slide-in panel reveals staggered menu links.</p>
+  </main>
+
+  <div class="backdrop" id="backdrop"></div>
+  <aside class="nav-panel" id="panel" aria-hidden="true">
+    <nav aria-label="Mobile">
+      <a href="#">Work</a>
+      <a href="#">Studio</a>
+      <a href="#">Journal</a>
+      <a href="#">Contact</a>
+    </nav>
+  </aside>
+
+  <script>
+    const burger = document.getElementById('burger');
+    const panel = document.getElementById('panel');
+    const backdrop = document.getElementById('backdrop');
+    let open = false;
+
+    function toggle() {
+      open = !open;
+      burger.classList.toggle('open', open);
+      burger.setAttribute('aria-expanded', String(open));
+      panel.classList.toggle('open', open);
+      backdrop.classList.toggle('open', open);
+      panel.setAttribute('aria-hidden', String(!open));
+    }
+
+    burger.addEventListener('click', toggle);
+    backdrop.addEventListener('click', toggle);
+    panel.querySelectorAll('a').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); if (open) toggle(); }));
+  </script>
+</body>
+</html>

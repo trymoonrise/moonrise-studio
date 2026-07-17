@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0665
+    slug: accordions-animated-plus-04
+    title: Liquid Plus Accordion
+    category: accordions
+    tags: accordions, liquid, plus
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0665 — Liquid Plus Accordion</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700&family=Outfit:wght@400;500;600&display=swap');
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:#071018;padding:2rem;font-family:Outfit,sans-serif;color:#dff6ff}
+.acc{width:min(460px,100%);display:flex;flex-direction:column;gap:.5rem}
+.item{border-radius:16px;background:rgba(20,40,55,.6);border:1px solid rgba(100,200,255,.15);overflow:hidden}
+.trigger{width:100%;padding:1rem 1.15rem;border:0;background:none;color:inherit;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font:600 .95rem Outfit,sans-serif}
+.plus{width:28px;height:28px;border-radius:50%;background:#123;position:relative;transition:background .35s,transform .45s cubic-bezier(.22,1,.36,1)}
+.plus::before,.plus::after{content:"";position:absolute;background:#7dd3fc;border-radius:2px;transition:transform .4s,opacity .3s}
+.plus::before{width:12px;height:2px;left:8px;top:13px}
+.plus::after{width:2px;height:12px;left:13px;top:8px}
+.item.open .plus{background:#7dd3fc;transform:rotate(90deg)}
+.item.open .plus::before,.item.open .plus::after{background:#071018}
+.item.open .plus::after{opacity:0}
+.panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows .45s cubic-bezier(.22,1,.36,1)}
+.panel>div{overflow:hidden}
+.panel p{margin:0;padding:0 1.15rem 1.1rem;color:#7aa8bc;font-size:.9rem;line-height:1.6}
+.item.open .panel{grid-template-rows:1fr}
+  </style>
+</head>
+<body>
+<div class="acc">
+  <div class="item open"><button class="trigger"><span>Fluid expand</span><div class="plus"></div></button><div class="panel"><div><p>The plus liquefies into a minus as the panel opens.</p></div></div></div>
+  <div class="item"><button class="trigger"><span>Cool cyan tone</span><div class="plus"></div></button><div class="panel"><div><p>Night-ocean palette — distinct from the classic white FAQ.</p></div></div></div>
+  <div class="item"><button class="trigger"><span>Independent panels</span><div class="plus"></div></button><div class="panel"><div><p>Open several at once when comparing details.</p></div></div></div>
+</div>
+<script>document.querySelectorAll('.trigger').forEach(b=>b.onclick=()=>b.parentElement.classList.toggle('open'));</script>
+</body>
+</html>

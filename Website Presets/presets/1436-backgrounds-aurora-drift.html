@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1436
+    slug: backgrounds-aurora-drift
+    title: Aurora Drift Background
+    category: backgrounds
+    tags: backgrounds, aurora, drift
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1436 — Aurora Drift Background</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');body{margin:0;min-height:100vh;display:grid;place-items:center;overflow:hidden;position:relative;background:#060608;color:#fff;font-family:"DM Sans",system-ui,-apple-system,sans-serif}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+    .sheet{position:absolute;width:140%;height:50%;left:-20%;filter:blur(50px);opacity:.4;animation:driftX 16s ease-in-out infinite alternate;background:linear-gradient(105deg,transparent 10%,rgba(200,200,210,.5) 35%,rgba(140,140,150,.35) 50%,rgba(220,220,230,.45) 65%,transparent 90%)}
+    .sheet--1{top:5%;animation-duration:14s}
+    .sheet--2{top:28%;opacity:.28;animation-duration:20s;animation-direction:alternate-reverse;transform:skewY(-3deg)}
+    .sheet--3{top:48%;opacity:.2;animation-duration:18s;height:35%}
+    @keyframes driftX{from{transform:translateX(-6%)}to{transform:translateX(6%)}}
+    .stars{position:absolute;inset:0;background-image:radial-gradient(1px 1px at 20% 30%,#fff,transparent),radial-gradient(1px 1px at 70% 20%,#fff,transparent),radial-gradient(1.5px 1.5px at 40% 70%,#fff,transparent),radial-gradient(1px 1px at 85% 60%,#fff,transparent);opacity:.35;animation:twinkle 4s ease-in-out infinite alternate}
+    @keyframes twinkle{to{opacity:.55}}
+    
+.label{position:relative;z-index:2;text-align:center;padding:2rem;pointer-events:none}
+.kicker{margin:0 0 .75rem;font-size:.65rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;opacity:.45}
+h1{margin:0;font-family:"Syne",system-ui,sans-serif;font-size:clamp(1.85rem,5vw,2.85rem);font-weight:800;letter-spacing:-.045em;line-height:1.05}
+.sub{margin:.7rem 0 0;font-size:.9rem;opacity:.5;font-weight:400}
+  </style>
+</head>
+<body>
+<div class="stars" aria-hidden="true"></div><div class="sheet sheet--1" aria-hidden="true"></div><div class="sheet sheet--2" aria-hidden="true"></div><div class="sheet sheet--3" aria-hidden="true"></div><div class="label"><p class="kicker">Background</p><h1>Aurora drift</h1><p class="sub">Night sky in soft motion.</p></div>
+
+</body>
+</html>

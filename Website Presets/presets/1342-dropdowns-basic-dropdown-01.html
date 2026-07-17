@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1342
+    slug: dropdowns-basic-dropdown-01
+    title: Terminal Select Menu
+    category: dropdowns
+    tags: dropdowns, basic
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1342 — Terminal Select Menu</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#08080c;color:#ececf0;font-family:Outfit,sans-serif;padding:24px}
+    button{font:inherit;border:0;cursor:pointer;background:transparent;color:inherit}
+    .dropdown{position:relative;width:min(280px,90vw)}
+    .trigger{width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border:1px solid rgba(255,255,255,.15);border-radius:3px;background:#111116;font:500 .85rem Outfit,sans-serif;transition:border-color .25s,background .25s}
+    .trigger:hover{border-color:rgba(255,255,255,.3);background:#16161e}
+    .trigger svg{width:14px;height:14px;transition:transform .3s}
+    .dropdown.open .trigger svg{transform:rotate(180deg)}
+    .menu{position:absolute;top:calc(100% + 6px);left:0;right:0;background:#111116;border:1px solid rgba(255,255,255,.12);border-radius:3px;overflow:hidden;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .25s,transform .25s}
+    .dropdown.open .menu{opacity:1;transform:none;pointer-events:auto}
+    .menu button{display:block;width:100%;padding:12px 16px;text-align:left;font-size:.82rem;color:rgba(236,236,240,.7);transition:background .2s,color .2s;border-bottom:1px solid rgba(255,255,255,.05)}
+    .menu button:last-child{border-bottom:0}
+    .menu button:hover{background:rgba(0,200,150,.1);color:#fff}
+    .menu button.on{color:#00c896}
+    .blink{display:inline-block;width:6px;height:10px;background:#00c896;margin-left:8px;animation:cur 1s step-end infinite;vertical-align:middle}
+    @keyframes cur{50%{opacity:0}}
+    @media(prefers-reduced-motion:reduce){.menu,.trigger svg{transition:none}.blink{animation:none}}
+  </style>
+</head>
+<body>
+<div class="dropdown" id="dd">
+  <button class="trigger" id="trigger" type="button"><span id="label">Select region</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+  <div class="menu" id="menu">
+    <button data-v="us-east" type="button">US East</button>
+    <button data-v="eu-west" type="button">EU West</button>
+    <button data-v="ap-south" type="button">AP South</button>
+    <button data-v="sa-east" type="button">SA East</button>
+  </div>
+</div>
+<script>
+const dd=document.getElementById('dd'),trigger=document.getElementById('trigger'),label=document.getElementById('label');
+trigger.onclick=()=>dd.classList.toggle('open');
+document.querySelectorAll('.menu button').forEach(b=>{b.onclick=()=>{document.querySelectorAll('.menu button').forEach(x=>x.classList.remove('on'));b.classList.add('on');label.innerHTML=b.textContent+'<span class="blink"></span>';dd.classList.remove('open');};});
+document.addEventListener('click',e=>{if(!dd.contains(e.target))dd.classList.remove('open');});
+</script>
+</body>
+</html>

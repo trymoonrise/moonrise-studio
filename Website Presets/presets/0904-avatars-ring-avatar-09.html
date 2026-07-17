@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0904
+    slug: avatars-ring-avatar-09
+    title: Ring Avatar 09
+    category: avatars
+    tags: avatars, ring, marquee, minimal
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0904 — Ring Avatar 09</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&family=DM+Mono:wght@400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#111;overflow:hidden;font-family:'DM Mono',monospace}
+    .stage{min-height:100vh;display:grid;place-items:center}
+    .rings{position:relative;width:160px;height:160px;display:grid;place-items:center}
+    .r{position:absolute;border-radius:50%;border:1px solid rgba(255,255,255,.18)}
+    .r1{inset:0}
+    .r2{inset:18px;border-style:dashed;animation:spin 28s linear infinite}
+    .r3{inset:36px}
+    .av{width:56px;height:56px;border-radius:50%;background:#f0eee8;color:#111;display:grid;place-items:center;font-family:'Instrument Serif',serif;font-style:italic;font-size:1.25rem;z-index:1}
+    .band{position:absolute;left:-40%;width:180%;top:50%;overflow:hidden;transform:translateY(-50%);pointer-events:none}
+    .track{display:flex;width:max-content;white-space:nowrap;animation:run 36s linear infinite;font-size:.5rem;letter-spacing:.4em;text-transform:uppercase;color:rgba(255,255,255,.22)}
+    @keyframes run{to{transform:translateX(-50%)}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @media (prefers-reduced-motion:reduce){.track,.r2{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="rings">
+      <div class="r r1"></div>
+      <div class="r r2"></div>
+      <div class="r r3"></div>
+      <div class="band" aria-hidden="true"><div class="track"><span>Ring · Orbit · Ring · Orbit · Ring · Orbit · </span><span>Ring · Orbit · Ring · Orbit · Ring · Orbit · </span></div></div>
+      <div class="av">R</div>
+    </div>
+  </div>
+</body>
+</html>

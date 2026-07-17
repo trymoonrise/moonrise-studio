@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0783
+    slug: forms-signup-form-05
+    title: Onboarding Signup Flow
+    category: forms
+    tags: forms, signup
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0783 — Onboarding Signup Flow</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #080a0e;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+      padding: 1.5rem;
+    }
+
+    .signup {
+      width: min(440px, 94vw);
+      background: #0f1419;
+      border: 1px solid #1e293b;
+      border-radius: 14px;
+      padding: 1.75rem;
+    }
+
+    .steps {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .step-dot {
+      flex: 1;
+      height: 3px;
+      background: #1e293b;
+      border-radius: 2px;
+      transition: background 0.4s;
+    }
+
+    .step-dot.active { background: #fbbf24; animation: stepGlow 0.5s ease; }
+    .step-dot.done { background: #00d4aa; }
+
+    @keyframes stepGlow {
+      50% { box-shadow: 0 0 8px #fbbf24; }
+    }
+
+    .step-panel {
+      display: none;
+      animation: panelIn 0.4s ease;
+    }
+
+    .step-panel.active { display: block; }
+
+    @keyframes panelIn {
+      from { opacity: 0; transform: translateX(16px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 800;
+      margin-bottom: 0.35rem;
+    }
+
+    .sub { font-size: 0.85rem; color: #64748b; margin-bottom: 1.25rem; }
+
+    .field { margin-bottom: 1rem; }
+
+    label {
+      display: block;
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-bottom: 0.35rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #e2e8f0;
+      outline: none;
+    }
+
+    input:focus { border-color: #fbbf24; }
+
+    .actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 0.8rem;
+      border-radius: 8px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      border: none;
+      transition: transform 0.2s;
+    }
+
+    .btn:hover { transform: translateY(-2px); }
+
+    .btn-back {
+      background: transparent;
+      border: 1px solid #334155;
+      color: #94a3b8;
+    }
+
+    .btn-next {
+      background: #fbbf24;
+      color: #080a0e;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .step-panel.active { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <form class="signup" id="signup">
+    <div class="steps">
+      <div class="step-dot active" data-i="0"></div>
+      <div class="step-dot" data-i="1"></div>
+      <div class="step-dot" data-i="2"></div>
+    </div>
+
+    <div class="step-panel active" data-step="0">
+      <h2>Create account</h2>
+      <p class="sub">Step 1 of 3 — Your details</p>
+      <div class="field">
+        <label for="name">Full name</label>
+        <input type="text" id="name" placeholder="Jane Doe">
+      </div>
+      <div class="field">
+        <label for="email">Work email</label>
+        <input type="email" id="email" placeholder="jane@company.com">
+      </div>
+      <div class="actions">
+        <button type="button" class="btn btn-next" data-next>Continue →</button>
+      </div>
+    </div>
+
+    <div class="step-panel" data-step="1">
+      <h2>Set password</h2>
+      <p class="sub">Step 2 of 3 — Secure your account</p>
+      <div class="field">
+        <label for="pw">Password</label>
+        <input type="password" id="pw" placeholder="Min. 8 characters">
+      </div>
+      <div class="field">
+        <label for="pw2">Confirm password</label>
+        <input type="password" id="pw2" placeholder="Repeat password">
+      </div>
+      <div class="actions">
+        <button type="button" class="btn btn-back" data-prev>← Back</button>
+        <button type="button" class="btn btn-next" data-next>Continue →</button>
+      </div>
+    </div>
+
+    <div class="step-panel" data-step="2">
+      <h2>You're all set</h2>
+      <p class="sub">Step 3 of 3 — Review and launch</p>
+      <p style="font-size:0.9rem;color:#94a3b8;line-height:1.6">Your workspace will be provisioned instantly. Click finish to enter the dashboard.</p>
+      <div class="actions">
+        <button type="button" class="btn btn-back" data-prev>← Back</button>
+        <button type="submit" class="btn btn-next">Finish setup</button>
+      </div>
+    </div>
+  </form>
+
+  <script>
+    let step = 0;
+    const panels = document.querySelectorAll('.step-panel');
+    const dots = document.querySelectorAll('.step-dot');
+
+    function go(n) {
+      step = Math.max(0, Math.min(2, n));
+      panels.forEach((p, i) => p.classList.toggle('active', i === step));
+      dots.forEach((d, i) => {
+        d.classList.toggle('active', i === step);
+        d.classList.toggle('done', i < step);
+      });
+    }
+
+    document.querySelectorAll('[data-next]').forEach((b) => b.addEventListener('click', () => go(step + 1)));
+    document.querySelectorAll('[data-prev]').forEach((b) => b.addEventListener('click', () => go(step - 1)));
+    document.getElementById('signup').addEventListener('submit', (e) => e.preventDefault());
+  </script>
+</body>
+</html>

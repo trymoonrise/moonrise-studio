@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0399
+    slug: cursor-trails-gradient-comet-04
+    title: Gradient Comet 04
+    category: cursor-trails
+    tags: cursor-trails, gradient
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0399 — Gradient Comet 04</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{background:#100c18;margin:0}canvas{position:fixed;inset:0}
+  </style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>const c=document.getElementById('c'),g=c.getContext('2d');function r(){c.width=innerWidth;c.height=innerHeight;}r();addEventListener('resize',r);let mx=0,my=0,tx=0,ty=0;addEventListener('mousemove',e=>{tx=e.clientX;ty=e.clientY;});function l(){mx+=(tx-mx)*.15;my+=(ty-my)*.15;g.fillStyle='rgba(0,0,0,.12)';g.fillRect(0,0,c.width,c.height);const gr=g.createRadialGradient(mx,my,0,mx,my,60);gr.addColorStop(0,'#a78bfa');gr.addColorStop(1,'transparent');g.fillStyle=gr;g.fillRect(mx-60,my-60,120,120);requestAnimationFrame(l);}l();</script>
+</body>
+</html>

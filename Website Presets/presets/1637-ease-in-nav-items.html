@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1637
+    slug: ease-in-nav-items
+    title: Nav Items Stagger Ease
+    category: ease-in
+    tags: ease-in, nav, stagger, professional
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1637 — Nav Items Stagger Ease</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:100vh;background:#0d0d0f;display:grid;place-items:center;font-family:system-ui,sans-serif}.nav{display:flex;gap:2rem}.link{color:#888;text-decoration:none;font-size:.95rem;font-weight:500;opacity:0;transform:translateY(-12px);animation:down .6s cubic-bezier(.22,.61,.36,1) forwards}.link:nth-child(1){animation-delay:.1s}.link:nth-child(2){animation-delay:.18s}.link:nth-child(3){animation-delay:.26s}.link:nth-child(4){animation-delay:.34s}.link:nth-child(5){animation-delay:.42s}.link:hover{color:#fff}@keyframes down{to{opacity:1;transform:none}}
+  </style>
+</head>
+<body>
+<nav class="nav"><a class="link" href="#">Work</a><a class="link" href="#">Studio</a><a class="link" href="#">Services</a><a class="link" href="#">Journal</a><a class="link" href="#">Contact</a></nav>
+
+</body>
+</html>

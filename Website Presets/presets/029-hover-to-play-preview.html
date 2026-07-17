@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 029
+    slug: hover-to-play-preview
+    title: Hover To Play Preview
+    category: video
+    tags: hover, play
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>029 — Hover To Play Preview</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    
+    body{display:grid;place-items:center;min-height:100vh;background:#0d0d0f;padding:2rem}
+    .thumb{position:relative;width:min(90vw,500px);aspect-ratio:16/9;border-radius:12px;overflow:hidden;cursor:pointer}
+    .thumb img,.thumb video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .3s}
+    .thumb video{opacity:0}.thumb:hover video{opacity:1}.thumb:hover img{opacity:0}
+    .play{position:absolute;inset:0;display:grid;place-items:center;z-index:1;pointer-events:none}
+    .play span{width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.9);display:grid;place-items:center;font-size:1.5rem}
+    
+  </style>
+</head>
+<body>
+<div class="thumb" id="t"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""><video src="../stock/media/16-9 Aspect Ratio(video).mp4" muted loop playsinline></video><div class="play"><span>▶</span></div></div>
+<script>
+    const t=document.getElementById('t'),v=t.querySelector('video');
+    t.addEventListener('mouseenter',()=>v.play());t.addEventListener('mouseleave',()=>{v.pause();v.currentTime=0;});
+    </script>
+</body>
+</html>

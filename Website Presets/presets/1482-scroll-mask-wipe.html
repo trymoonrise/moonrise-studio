@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1482
+    slug: scroll-mask-wipe
+    title: Mask Wipe on Scroll
+    category: scroll-effects
+    tags: scroll, mask, wipe
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1482 — Mask Wipe on Scroll</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#000;color:#fff}.scene{height:250vh;position:relative}.sticky{position:sticky;top:0;height:100vh;overflow:hidden}.layer{position:absolute;inset:0;display:grid;place-items:center;font-size:3rem;font-weight:900}.back{background:linear-gradient(135deg,#333,#111)}.front{background:linear-gradient(135deg,#6c8cff,#764ba2);clip-path:inset(0 0 0 0)}
+  </style>
+</head>
+<body>
+<div class="scene"><div class="sticky"><div class="layer back">Before</div><div class="layer front" id="f">After</div></div></div>
+<script>const scene=document.querySelector('.scene'),f=document.getElementById('f');addEventListener('scroll',()=>{const r=scene.getBoundingClientRect();const p=Math.min(1,Math.max(0,-r.top/(r.height-window.innerHeight)));f.style.clipPath='inset(0 0 '+((1-p)*100)+'% 0)';},{passive:true});</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0448
+    slug: scroll-animations-color-shift-12
+    title: Color Shift 12
+    category: scroll-animations
+    tags: scroll-animations, color
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0448 — Color Shift 12</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:240vh;background:hsl(var(--h,210) 70% 6%);color:#fff;font-family:system-ui}.center{position:sticky;top:0;height:100vh;display:grid;place-items:center;text-align:center;padding:2rem}h1{font-size:clamp(2.2rem,7vw,4.6rem);letter-spacing:-.05em}p{color:rgba(255,255,255,.7);margin-top:.75rem}
+  </style>
+</head>
+<body>
+<div id="t" style="height:240vh"><div class="center"><div><h1>Color Shift</h1><p>Hue rotates as you scroll.</p></div></div></div>
+<script>const _el=document.querySelector('#t');function prog(){const r=_el.getBoundingClientRect();return Math.min(1,Math.max(0,-r.top/(r.height-innerHeight)));}addEventListener('scroll',()=>{const p=prog();document.body.style.setProperty('--h',String(210+p*420));},{passive:true});</script>
+</body>
+</html>

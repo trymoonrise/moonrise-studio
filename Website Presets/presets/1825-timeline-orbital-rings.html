@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1825
+    slug: timeline-orbital-rings
+    title: Orbital Rings Timeline
+    category: timeline
+    tags: timeline, orbital, rings, insane
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1825 — Orbital Rings Timeline</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700&family=Outfit:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#04050a;color:#fff;font-family:Outfit,sans-serif;display:grid;place-items:center;overflow:hidden}
+    .sys{position:relative;width:min(520px,92vw);height:min(520px,92vw)}
+    .core{position:absolute;left:50%;top:50%;translate:-50% -50%;width:88px;height:88px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff8,#1a2a40 50%,#0a1018);box-shadow:0 0 60px rgba(108,180,255,.35),inset 0 0 30px rgba(255,255,255,.1);display:grid;place-items:center;text-align:center;z-index:5;padding:.5rem}
+    .core strong{font-family:Syne,sans-serif;font-size:.85rem;display:block}
+    .core span{font-size:.65rem;color:#8ab;letter-spacing:.06em}
+    .orbit{position:absolute;left:50%;top:50%;translate:-50% -50%;border:1px solid rgba(255,255,255,.08);border-radius:50%;animation:spin var(--d) linear infinite}
+    .planet{position:absolute;top:0;left:50%;translate:-50% -50%;width:36px;height:36px;border-radius:50%;border:none;cursor:pointer;background:var(--c);box-shadow:0 0 20px color-mix(in srgb,var(--c) 60%,transparent);transition:transform .3s,box-shadow .3s}
+    .planet:hover,.planet.on{transform:translate(-50%,-50%) scale(1.35);box-shadow:0 0 36px var(--c)}
+    .info{position:fixed;bottom:8%;left:50%;translate:-50% 0;text-align:center;width:min(360px,90vw)}
+    .info h3{font-family:Syne,sans-serif;margin:0 0 .35rem;font-size:1.3rem}
+    .info p{margin:0;color:#889;font-size:.9rem}
+    @keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+    @media(prefers-reduced-motion:reduce){.orbit{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="sys" id="sys">
+    <div class="core"><strong id="ct">Now</strong><span>orbit select</span></div>
+  </div>
+  <div class="info" id="info"><h3>Select a world</h3><p>Click a planet to jump eras</p></div>
+  <script>
+    const eras=[
+      {t:'Spark',d:'The first orbit — raw possibility.',c:'#34d399',r:120,d:'22s'},
+      {t:'Forge',d:'Heat and pressure shape the craft.',c:'#fbbf24',r:170,d:'28s'},
+      {t:'Pulse',d:'Users arrive; the system wakes.',c:'#60a5fa',r:220,d:'34s'},
+      {t:'Nova',d:'Breakout moment — gravity shifts.',c:'#f472b6',r:270,d:'40s'}
+    ];
+    const sys=document.getElementById('sys'),info=document.getElementById('info'),ct=document.getElementById('ct');
+    eras.forEach((e,i)=>{
+      const o=document.createElement('div');
+      o.className='orbit';
+      o.style.width=o.style.height=e.r*2+'px';
+      o.style.setProperty('--d',e.d);
+      o.style.animationDirection=i%2?'reverse':'normal';
+      const p=document.createElement('button');
+      p.className='planet';
+      p.style.setProperty('--c',e.c);
+      p.setAttribute('aria-label',e.t);
+      p.onclick=ev=>{
+        ev.stopPropagation();
+        document.querySelectorAll('.planet').forEach(x=>x.classList.remove('on'));
+        p.classList.add('on');
+        ct.textContent=e.t;
+        info.innerHTML=`<h3>${e.t}</h3><p>${e.d}</p>`;
+      };
+      o.appendChild(p);
+      sys.appendChild(o);
+    });
+  </script>
+</body>
+</html>

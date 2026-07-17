@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0496
+    slug: split-screens-color-block-07
+    title: Color Block 07
+    category: split-screens
+    tags: split-screens, experimental, mask, shapes
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0496 — Color Block 07</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;overflow:hidden;font-family:Syne,sans-serif;background:#fff;color:#111}
+    .stage{min-height:100vh;display:grid;grid-template-columns:repeat(4,1fr)}
+.block{display:grid;place-items:center;position:relative;overflow:hidden;transition:transform .5s cubic-bezier(.22,1,.36,1),filter .5s}
+.block:nth-child(1){background:#111;color:#fff;clip-path:polygon(0 0,100% 0,90% 100%,0 100%)}
+.block:nth-child(2){background:#ff6b4a;clip-path:polygon(8% 0,100% 0,100% 100%,0 100%);margin-left:-4%}
+.block:nth-child(3){background:#2a9d8f;color:#fff;clip-path:polygon(0 0,100% 0,100% 100%,10% 100%)}
+.block:nth-child(4){background:#e9c46a;clip-path:polygon(0 0,100% 0,100% 100%,0 85%);margin-left:-4%}
+.block h2{font-size:clamp(1.5rem,4vw,2.5rem);font-weight:800;letter-spacing:-.04em;margin:0;writing-mode:vertical-rl;transform:rotate(180deg);transition:transform .5s}
+.block:hover{transform:scale(1.02);z-index:2;filter:saturate(1.2)}
+.block:hover h2{transform:rotate(180deg) translateY(-10px)}
+@media(max-width:700px){.stage{grid-template-columns:1fr 1fr}.block{clip-path:none!important;margin:0!important;min-height:50vh}.block h2{writing-mode:horizontal-tb;transform:none}}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="stage"><div class="block"><h2>Ink</h2></div><div class="block"><h2>Heat</h2></div><div class="block"><h2>Sea</h2></div><div class="block"><h2>Sun</h2></div></div>
+
+</body>
+</html>

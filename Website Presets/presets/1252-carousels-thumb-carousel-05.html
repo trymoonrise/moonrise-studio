@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1252
+    slug: carousels-thumb-carousel-05
+    title: Thumb Carousel 05
+    category: carousels
+    tags: carousels, animated, modern, interactive
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1252 — Thumb Carousel 05</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f0eee8;font-family:'DM Sans',system-ui,sans-serif;color:#111;overflow:hidden;padding:24px}
+    button{font:inherit;border:0;cursor:pointer;background:transparent;color:inherit}
+    .wrap{width:min(520px,92vw)}.main{aspect-ratio:16/10;border-radius:24px;overflow:hidden;position:relative;box-shadow:0 24px 60px rgba(0,0,0,.12)}.main img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.08);transition:opacity .6s ease,transform .9s cubic-bezier(.22,1,.36,1)}.main img.on{opacity:1;transform:scale(1)}.thumbs{display:flex;gap:10px;margin-top:14px}.thumb{flex:1;aspect-ratio:16/10;border-radius:14px;overflow:hidden;opacity:.45;transform:scale(.96);transition:opacity .35s,transform .35s,box-shadow .35s;border:2px solid transparent}.thumb.on{opacity:1;transform:scale(1);box-shadow:0 8px 24px rgba(0,0,0,.15);border-color:#111}.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="wrap"><div class="main" id="main">
+<img class="on" src="../stock/media/16-9 Aspect Ratio(image).png" alt="">
+<img src="../stock/media/16-9 Aspect Ratio(image).png" alt="" style="filter:hue-rotate(50deg)">
+<img src="../stock/media/16-9 Aspect Ratio(image).png" alt="" style="filter:hue-rotate(130deg)">
+<img src="../stock/media/16-9 Aspect Ratio(image).png" alt="" style="filter:hue-rotate(210deg)">
+</div><div class="thumbs" id="thumbs">
+<button class="thumb on"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></button>
+<button class="thumb"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt="" style="filter:hue-rotate(50deg)"></button>
+<button class="thumb"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt="" style="filter:hue-rotate(130deg)"></button>
+<button class="thumb"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt="" style="filter:hue-rotate(210deg)"></button>
+</div></div>
+<script>
+const mains=[...document.querySelectorAll('#main img')],thumbs=[...document.querySelectorAll('.thumb')];let i=0;function go(n){i=n;mains.forEach((m,k)=>m.classList.toggle('on',k===i));thumbs.forEach((t,k)=>t.classList.toggle('on',k===i));}thumbs.forEach((t,n)=>t.onclick=()=>go(n));setInterval(()=>go((i+1)%mains.length),3500);
+</script>
+</body>
+</html>

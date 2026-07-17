@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1514
+    slug: hero-mouse-text-magnetic
+    title: Magnetic Text Hero
+    category: heroes
+    tags: heroes, mouse, text, magnetic
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1514 — Magnetic Text Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:100vh;background:#000;color:#fff;display:grid;place-items:center;overflow:hidden}h1{font-size:clamp(3rem,10vw,7rem);font-weight:900;display:flex;gap:.05em;cursor:default}.ch{display:inline-block;transition:transform .15s ease-out}
+  </style>
+</head>
+<body>
+<h1 id="h"><span class="ch">M</span><span class="ch">A</span><span class="ch">G</span><span class="ch">N</span><span class="ch">E</span><span class="ch">T</span><span class="ch">I</span><span class="ch">C</span></h1>
+<script>const h=document.getElementById('h');h.onmousemove=e=>{const r=h.getBoundingClientRect();[...h.children].forEach(ch=>{const cr=ch.getBoundingClientRect();const x=(e.clientX-(cr.left+cr.width/2))*.15;const y=(e.clientY-(cr.top+cr.height/2))*.15;ch.style.transform='translate('+x+'px,'+y+'px)';});};h.onmouseleave=()=>[...h.children].forEach(ch=>ch.style.transform='');</script>
+</body>
+</html>

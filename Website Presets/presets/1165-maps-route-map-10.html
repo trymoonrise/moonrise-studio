@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1165
+    slug: maps-route-map-10
+    title: Route Map 10
+    category: maps
+    tags: maps, route
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1165 — Route Map 10</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;margin:0;padding:2rem;background:#f4f5f8;font-family:system-ui,-apple-system,sans-serif}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}.embed{position:relative;width:100%;overflow:hidden;background:#0a0a0c}.embed iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block} .embed--16x9{aspect-ratio:16/9} .embed--9x16{aspect-ratio:9/16} .embed--4x5{aspect-ratio:4/5} .map-embed{position:absolute;inset:0;width:100%;height:100%;max-width:none;border:0;display:block}.panel{width:min(100%,560px);border-radius:20px;overflow:hidden;background:#fff;border:1px solid #e5e7eb;box-shadow:0 20px 50px rgba(15,23,42,.1)}.bar{display:flex;gap:.65rem;padding:1rem 1.1rem;border-bottom:1px solid #f0f2f5}.field{flex:1;padding:.65rem .8rem;border-radius:10px;border:1px solid #e5e7eb;font-size:.84rem;font-family:inherit}.go{padding:.65rem 1rem;border:none;border-radius:10px;background:#111827;color:#fff;font-weight:700;font-size:.82rem;cursor:pointer}.map-stage{position:relative;height:300px}
+  </style>
+</head>
+<body>
+<div class="panel"><div class="bar"><input class="field" id="from" value="Times Square, New York" aria-label="From"><input class="field" id="to" value="Central Park, New York" aria-label="To"><button class="go" id="go" type="button">Route</button></div><div class="map-stage"><iframe class="map-embed" src="https://www.google.com/maps?q=Times%20Square%20to%20Central%20Park%2C%20New%20York&hl=en&z=13&output=embed" title="Route map" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div></div>
+<script>function embedUrl(q,z){return 'https://www.google.com/maps?q='+encodeURIComponent(q)+'&hl=en&z='+z+'&output=embed';}function mapsUrl(q){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q);}document.getElementById('go').onclick=()=>{const from=document.getElementById('from').value.trim(),to=document.getElementById('to').value.trim();document.querySelector('.map-embed').src=embedUrl(from+' to '+to,13);};</script>
+</body>
+</html>

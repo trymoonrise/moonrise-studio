@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1041
+    slug: cta-banner-cta-03
+    title: Glitch Signal Banner CTA
+    category: cta
+    tags: cta, banner, glitch, signal
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1041 — Glitch Signal Banner CTA</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#060608;color:#f0f2f5;font-family:Outfit,sans-serif;padding:2rem}
+    .banner{width:min(800px,100%);display:flex;align-items:center;justify-content:space-between;gap:2rem;padding:1.5rem 2rem;background:linear-gradient(135deg,#0f1117,#141820);border:1px solid rgba(255,255,255,.06);border-radius:8px;position:relative;overflow:hidden}
+    .banner::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.15) 2px,rgba(0,0,0,.15) 4px);pointer-events:none;animation:scanlines 8s linear infinite}
+    .copy{position:relative;z-index:1}
+    .glitch{font-family:Syne,sans-serif;font-size:clamp(1.2rem,3vw,1.6rem);font-weight:800;letter-spacing:-.03em;position:relative}
+    .glitch::before,.glitch::after{content:attr(data-text);position:absolute;top:0;left:0;width:100%;height:100%}
+    .glitch::before{color:#ef4444;animation:glitch-a 3s infinite;clip-path:inset(20% 0 60% 0)}
+    .glitch::after{color:#38bdf8;animation:glitch-b 3s infinite;clip-path:inset(60% 0 10% 0)}
+    .sub{font-size:.8rem;color:rgba(240,242,245,.45);margin-top:.35rem}
+    .btn{position:relative;z-index:1;padding:.75rem 1.6rem;background:#f0f2f5;color:#060608;border:none;border-radius:4px;font-family:Syne,sans-serif;font-weight:700;font-size:.85rem;cursor:pointer;white-space:nowrap;transition:transform .3s,box-shadow .3s}
+    .btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(240,242,245,.15)}
+    @keyframes scanlines{to{background-position:0 4px}}
+    @keyframes glitch-a{0%,100%{transform:translate(0)}20%{transform:translate(-3px,1px)}40%{transform:translate(3px,-1px)}60%{transform:translate(-2px,0)}}
+    @keyframes glitch-b{0%,100%{transform:translate(0)}20%{transform:translate(3px,-1px)}40%{transform:translate(-3px,1px)}60%{transform:translate(2px,0)}}
+    @media(max-width:520px){.banner{flex-direction:column;text-align:center}}
+    @media(prefers-reduced-motion:reduce){.banner::before,.glitch::before,.glitch::after{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="banner">
+    <div class="copy">
+      <h2 class="glitch" data-text="Limited beta access open">Limited beta access open</h2>
+      <p class="sub">48 hours remaining · 127 spots left</p>
+    </div>
+    <button class="btn">Claim spot</button>
+  </div>
+</body>
+</html>

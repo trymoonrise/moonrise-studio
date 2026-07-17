@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0468
+    slug: rotate-scroll-cube-rotate-05
+    title: Cube Rotate 05
+    category: rotate-scroll
+    tags: rotate-scroll, cube
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0468 — Cube Rotate 05</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#05070b;color:#e6f3ff;font-family:system-ui;perspective:900px}.track{height:240vh}.sticky{position:sticky;top:0;height:100vh;display:grid;place-items:center}.cube{width:220px;height:220px;position:relative;transform-style:preserve-3d;transform:rotateX(var(--x,20deg)) rotateY(var(--y,30deg))}.f{position:absolute;inset:0;background:rgba(56,189,248,.14);border:1px solid rgba(56,189,248,.35);display:grid;place-items:center;font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:.75rem}.f:nth-child(1){transform:translateZ(110px)}.f:nth-child(2){transform:rotateY(90deg) translateZ(110px)}.f:nth-child(3){transform:rotateY(180deg) translateZ(110px)}.f:nth-child(4){transform:rotateY(-90deg) translateZ(110px)}.f:nth-child(5){transform:rotateX(90deg) translateZ(110px)}.f:nth-child(6){transform:rotateX(-90deg) translateZ(110px)}
+  </style>
+</head>
+<body>
+<div class="track" id="t"><div class="sticky"><div class="cube" id="c"><div class="f">Face 1</div><div class="f">Face 2</div><div class="f">Face 3</div><div class="f">Face 4</div><div class="f">Face 5</div><div class="f">Face 6</div></div></div></div>
+<script>const _el=document.querySelector('#t');function prog(){const r=_el.getBoundingClientRect();return Math.min(1,Math.max(0,-r.top/(r.height-innerHeight)));}const c=document.getElementById('c');addEventListener('scroll',()=>{const p=prog();c.style.setProperty('--x',20+p*320+'deg');c.style.setProperty('--y',30+p*420+'deg');},{passive:true});</script>
+</body>
+</html>

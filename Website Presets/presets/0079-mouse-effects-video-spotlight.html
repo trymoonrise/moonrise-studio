@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0079
+    slug: mouse-effects-video-spotlight
+    title: Video Spotlight Follow
+    category: mouse-effects
+    tags: mouse-effects, video
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0079 — Video Spotlight Follow</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:100vh;background:#000;overflow:hidden;cursor:none}
+    .wrap{position:fixed;inset:0}
+    video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+    .spot{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle 140px at var(--x,50%) var(--y,50%),transparent 0%,rgba(0,0,0,.92) 100%)}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <video src="../stock/media/16-9 Aspect Ratio(video).mp4" autoplay muted loop playsinline></video>
+  <div class="spot" id="s"></div>
+</div>
+<script>
+    const s=document.getElementById('s');
+    function move(x,y){
+      s.style.setProperty('--x',x+'px');
+      s.style.setProperty('--y',y+'px');
+    }
+    move(innerWidth/2,innerHeight/2);
+    addEventListener('mousemove',e=>move(e.clientX,e.clientY));
+    addEventListener('resize',()=>move(innerWidth/2,innerHeight/2));
+    </script>
+</body>
+</html>

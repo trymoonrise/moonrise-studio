@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0721
+    slug: textareas-dark-textarea-08
+    title: Dark Textarea 08
+    category: textareas
+    tags: textareas, modern, experimental, exaggerated
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0721 — Dark Textarea 08</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#000;font-family:Inter,system-ui,sans-serif;overflow:hidden;padding:24px;color:#fff}
+    textarea{font:inherit;border:0;outline:0;resize:none;background:transparent;color:inherit;width:100%}
+    button{font:inherit;border:0;cursor:pointer}
+    .scene{position:relative;width:min(520px,92vw)}
+    .void{position:relative;border-radius:36px;padding:2px;background:conic-gradient(from var(--a,0deg),#fff,#444,#fff);animation:spin 7s linear infinite}.inner{border-radius:34px;background:#050505;padding:26px;border:1px solid #181818}.label{font:800 11px 'JetBrains Mono';letter-spacing:.3em;text-transform:uppercase;color:#777;margin-bottom:22px}.area{min-height:220px;font-size:28px;line-height:1.08;font-weight:800;letter-spacing:-.06em;color:#fff}.area::placeholder{color:#333}.foot{margin-top:18px;color:#666;font:600 12px 'JetBrains Mono'}@keyframes spin{to{--a:360deg}}@property --a{syntax:'<angle>';inherits:false;initial-value:0deg}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <div class="scene"><section class="void"><div class="inner"><p class="label">Dark mode maximal</p><textarea class="area" placeholder="Write into the void.">A black textarea with a living edge.</textarea><p class="foot">focus / type / glow</p></div></section></div>
+</body>
+</html>

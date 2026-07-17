@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 010
+    slug: staggered-grid
+    title: Staggered Grid
+    category: animation
+    tags: grid, stagger
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>010 — Staggered Grid</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');*{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#050505;color:#fff;font-family:"DM Sans",system-ui,sans-serif;padding:clamp(1.25rem,4vw,3rem);overflow-x:hidden}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.tile,.cell,.brick,.module,.card,.panel{opacity:1!important;transform:none!important;clip-path:none!important;filter:none!important}}
+    .stage{width:min(1120px,100%);margin:0 auto;position:relative}
+    .intro{display:flex;align-items:flex-end;justify-content:space-between;gap:2rem;margin-bottom:clamp(1.5rem,4vw,2.75rem)}
+    h1{margin:0;font-family:"Syne",system-ui,sans-serif;font-size:clamp(2.8rem,9vw,6.5rem);font-weight:800;letter-spacing:-.07em;line-height:.85;max-width:9ch}
+    h1 span{display:inline-block;opacity:0;transform:translateY(40px);animation:up .7s cubic-bezier(.16,1,.3,1) forwards}
+    h1 span:nth-child(1){animation-delay:.05s}h1 span:nth-child(2){animation-delay:.12s}h1 span:nth-child(3){animation-delay:.19s}
+    .intro p{margin:0;max-width:22ch;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:#666;opacity:0;animation:up .7s .35s forwards}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);grid-auto-rows:clamp(64px,8vw,110px);gap:10px;perspective:1400px}
+    .tile{position:relative;overflow:hidden;background:#111;border:1px solid #1a1a1a;opacity:0;transform:translateY(60px) rotateX(18deg) scale(.9);transform-origin:center bottom;animation:arrive .9s cubic-bezier(.16,1,.3,1) forwards;isolation:isolate}
+    .tile::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.08),transparent 50%);opacity:0;transition:opacity .4s;z-index:2;pointer-events:none}
+    .tile::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.75));opacity:0;transition:opacity .4s;z-index:1;pointer-events:none}
+    .tile img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.1);transform:scale(1.2);transition:transform 1s cubic-bezier(.16,1,.3,1),filter .5s}
+    .meta{position:absolute;z-index:3;left:1rem;right:1rem;bottom:.85rem;display:flex;justify-content:space-between;align-items:end;opacity:0;transform:translateY(14px);transition:opacity .4s,transform .5s cubic-bezier(.16,1,.3,1)}
+    .meta strong{font-family:"Syne",system-ui,sans-serif;font-size:clamp(1rem,2vw,1.5rem);font-weight:700;letter-spacing:-.03em}
+    .meta span{font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:#aaa}
+    .tile:hover{z-index:4;border-color:#333}.tile:hover::before,.tile:hover::after{opacity:1}.tile:hover img{transform:scale(1);filter:grayscale(0) contrast(1)}.tile:hover .meta{opacity:1;transform:none}
+    .tile:nth-child(1){grid-column:span 5;grid-row:span 3;animation-delay:.08s}
+    .tile:nth-child(2){grid-column:span 3;grid-row:span 2;animation-delay:.16s}
+    .tile:nth-child(3){grid-column:span 4;grid-row:span 3;animation-delay:.24s}
+    .tile:nth-child(4){grid-column:span 3;grid-row:span 3;animation-delay:.32s}
+    .tile:nth-child(5){grid-column:span 2;grid-row:span 2;animation-delay:.4s}
+    .tile:nth-child(6){grid-column:span 4;grid-row:span 2;animation-delay:.48s}
+    .tile:nth-child(7){grid-column:span 3;grid-row:span 3;animation-delay:.56s}
+    .tile:nth-child(8){grid-column:span 5;grid-row:span 2;animation-delay:.64s}
+    .tile:nth-child(9){grid-column:span 4;grid-row:span 3;animation-delay:.72s}
+    .tile:nth-child(10){grid-column:span 3;grid-row:span 2;animation-delay:.8s}
+    @keyframes up{to{opacity:1;transform:none}}
+    @keyframes arrive{to{opacity:1;transform:none}}
+    @media(max-width:720px){.intro{flex-direction:column;align-items:flex-start}.grid{grid-template-columns:1fr 1fr;grid-auto-rows:140px}.tile:nth-child(n){grid-column:span 1;grid-row:span 1}.tile:nth-child(1),.tile:nth-child(4),.tile:nth-child(9){grid-column:span 2}}
+  </style>
+</head>
+<body>
+<div class="stage"><header class="intro"><h1><span>Visual</span> <span>rhythm</span><span>.</span></h1><p>Extreme stagger. Monochrome frames. Kinetic entry.</p></header>
+    <main class="grid">
+      <figure class="tile"><img src="https://images.unsplash.com/photo-1511818966892-d7d671e672a2?auto=format&fit=crop&w=1200&q=80" alt=""><figcaption class="meta"><strong>Form</strong><span>01</span></figcaption></figure>
+      <figure class="tile"><img src="https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&w=900&q=80" alt=""><figcaption class="meta"><strong>Still</strong><span>02</span></figcaption></figure>
+      <figure class="tile"><img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1100&q=80" alt=""><figcaption class="meta"><strong>Edge</strong><span>03</span></figcaption></figure>
+      <figure class="tile"><img src="https://images.unsplash.com/photo-1449157291145-7efd050a4d0e?auto=format&fit=crop&w=900&q=80" alt=""><figcaption class="meta"><strong>Rise</strong><span>04</span></figcaption></figure>
+      <figure class="tile"><img src="https://images.unsplash.com/photo-1523726491678-bf852e717f6a?auto=format&fit=crop&w=700&q=80" alt=""><figcaption class="meta"><strong>Make</strong><span>05</span></figcaption></figure>
+      <figure class="tile"><img src="https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1000&q=80" alt=""><figcaption class="meta"><strong>Void</strong><span>06</span></figcaption></figure>
+      <figure class="tile"><img src="https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=900&q=80" alt=""><figcaption class="meta"><strong>Grid</strong><span>07</span></figcaption></figure>
+      <figure class="tile"><img src="https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1100&q=80" alt=""><figcaption class="meta"><strong>Path</strong><span>08</span></figcaption></figure>
+      <figure class="tile"><img src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1000&q=80" alt=""><figcaption class="meta"><strong>Space</strong><span>09</span></figcaption></figure>
+      <figure class="tile"><img src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=80" alt=""><figcaption class="meta"><strong>Room</strong><span>10</span></figcaption></figure>
+    </main></div>
+
+</body>
+</html>

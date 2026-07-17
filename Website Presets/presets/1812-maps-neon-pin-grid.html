@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1812
+    slug: maps-neon-pin-grid
+    title: Neon Pin Grid
+    category: maps
+    tags: maps, embed, experimental, widgets, motion
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1812 — Neon Pin Grid</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;padding:1.5rem;overflow:hidden;background:#050505;color:#fff;font-family:Syne,sans-serif}
+    iframe{border:0;width:100%;height:100%;display:block}
+    button{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit}
+    .wrap{width:min(560px,94vw)}.stage{position:relative;aspect-ratio:16/10;border-radius:20px;overflow:hidden;border:1px solid #222}
+.stage iframe{filter:brightness(.45) contrast(1.2) saturate(0)}
+.grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,0,128,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,200,.1) 1px,transparent 1px);background-size:40px 40px;mix-blend-mode:screen;pointer-events:none;animation:drift 20s linear infinite}
+.pin{position:absolute;width:12px;height:12px;border-radius:50%;background:#ff2d95;box-shadow:0 0 16px #ff2d95,0 0 40px #ff2d95;transform:translate(-50%,-50%);animation:pulse 2s ease-out infinite}
+.pin:nth-child(2){animation-delay:.3s;background:#00ffc8;box-shadow:0 0 16px #00ffc8}.pin:nth-child(3){animation-delay:.6s}.pin:nth-child(4){animation-delay:.9s;background:#00ffc8;box-shadow:0 0 16px #00ffc8}
+.hud{margin-top:.9rem;display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:#ff2d95}
+@keyframes pulse{0%{box-shadow:0 0 0 0 currentColor}100%{box-shadow:0 0 0 18px transparent}}
+@keyframes drift{to{background-position:40px 40px}}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="wrap"><div class="stage"><iframe src="https://www.google.com/maps?q=Hong%20Kong&hl=en&z=12&output=embed" title="Neon map" loading="lazy"></iframe><div class="grid"></div>
+<button class="pin" style="top:40%;left:55%"></button><button class="pin" style="top:58%;left:35%"></button><button class="pin" style="top:30%;left:70%"></button><button class="pin" style="top:65%;left:60%"></button>
+</div><div class="hud"><span>Neon grid</span><span>HK · night</span></div></div>
+
+</body>
+</html>

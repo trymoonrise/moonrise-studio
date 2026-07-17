@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0445
+    slug: scroll-animations-image-zoom-scroll-09
+    title: Image Zoom Scroll 09
+    category: scroll-animations
+    tags: scroll-animations, image
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0445 — Image Zoom Scroll 09</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#000;color:#fff;font-family:system-ui}.track{height:240vh}.sticky{position:sticky;top:0;height:100vh;overflow:hidden}.bg{position:absolute;inset:0;background:url('../stock/media/16-9 Aspect Ratio(image).png') center/cover;transform:scale(var(--s,1));filter:brightness(.6) saturate(1.2)}.shade{position:absolute;inset:0;background:radial-gradient(600px circle at 50% 40%,transparent 0%,rgba(0,0,0,.82) 70%)}.copy{position:relative;z-index:1;height:100%;display:grid;place-items:center;text-align:center;padding:2rem}h1{font-size:clamp(2.2rem,7vw,4.5rem);letter-spacing:-.05em}p{color:rgba(255,255,255,.7);margin-top:.75rem}
+  </style>
+</head>
+<body>
+<div class="track" id="t"><div class="sticky"><div class="bg" id="bg"></div><div class="shade"></div><div class="copy"><div><h1>Zoom.</h1><p>Scroll drives the camera.</p></div></div></div></div>
+<script>const _el=document.querySelector('#t');function prog(){const r=_el.getBoundingClientRect();return Math.min(1,Math.max(0,-r.top/(r.height-innerHeight)));}const bg=document.getElementById('bg');addEventListener('scroll',()=>{const p=prog();bg.style.setProperty('--s',String(1+p*.65));},{passive:true});</script>
+</body>
+</html>

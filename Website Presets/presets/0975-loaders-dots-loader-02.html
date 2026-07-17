@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0975
+    slug: loaders-dots-loader-02
+    title: Morse Signal Dots Loader
+    category: loaders
+    tags: loaders, dots, morse, signal
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0975 — Morse Signal Dots Loader</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0a0a0a;color:#e5e5e5;font-family:Outfit,sans-serif}
+    .loader{text-align:center}
+    .dots{display:flex;gap:12px;justify-content:center;margin-bottom:1.5rem}
+    .dot{width:12px;height:12px;border-radius:50%;background:#22d3ee;animation:morse 2.4s ease-in-out infinite}
+    .dot:nth-child(1){animation-delay:0s}
+    .dot:nth-child(2){animation-delay:.3s;width:12px}
+    .dot:nth-child(3){animation-delay:.6s}
+    .dot:nth-child(4){animation-delay:1.2s;width:28px;border-radius:6px}
+    .dot:nth-child(5){animation-delay:1.5s}
+    .dot:nth-child(6){animation-delay:1.8s;width:28px;border-radius:6px}
+    .label{font-family:Syne,sans-serif;font-size:.75rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(229,229,229,.35);animation:blink-text 2.4s step-end infinite}
+    .wave{display:flex;gap:3px;justify-content:center;margin-top:1rem;height:24px;align-items:flex-end}
+    .bar{width:3px;background:rgba(34,211,238,.3);border-radius:2px;animation:wave 1s ease-in-out infinite}
+    .bar:nth-child(1){animation-delay:0s;height:8px}
+    .bar:nth-child(2){animation-delay:.1s;height:14px}
+    .bar:nth-child(3){animation-delay:.2s;height:20px}
+    .bar:nth-child(4){animation-delay:.3s;height:12px}
+    .bar:nth-child(5){animation-delay:.4s;height:18px}
+    @keyframes morse{0%,100%{opacity:.2;transform:scale(.8)}20%,40%{opacity:1;transform:scale(1)}60%{opacity:.2;transform:scale(.8)}}
+    @keyframes blink-text{50%{opacity:.3}}
+    @keyframes wave{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
+    @media(prefers-reduced-motion:reduce){.dot,.label,.bar{animation:none;opacity:1;transform:none}}
+  </style>
+</head>
+<body>
+  <div class="loader">
+    <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+    <p class="label">Transmitting</p>
+    <div class="wave"><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span></div>
+  </div>
+</body>
+</html>

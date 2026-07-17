@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0807
+    slug: popovers-menu-popover-03
+    title: Command Menu Popover
+    category: popovers
+    tags: popovers, menu
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0807 — Command Menu Popover</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #080a0e;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+      padding: 1.5rem;
+    }
+
+    .anchor { position: relative; }
+
+    .more-btn {
+      width: 40px;
+      height: 40px;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      background: #111827;
+      color: #94a3b8;
+      font-size: 1.25rem;
+      line-height: 1;
+      transition: border-color 0.2s, color 0.2s, transform 0.2s;
+    }
+
+    .more-btn:hover, .more-btn[aria-expanded="true"] {
+      border-color: #fbbf24;
+      color: #fbbf24;
+      transform: rotate(90deg);
+    }
+
+    .menu-pop {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      min-width: 200px;
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 0.35rem;
+      opacity: 0;
+      transform: translateY(-6px) scale(0.95);
+      pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s;
+      z-index: 10;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .menu-pop.open {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+      animation: menuPop 0.25s ease;
+    }
+
+    @keyframes menuPop {
+      from { clip-path: inset(0 0 100% 0 round 10px); }
+      to { clip-path: inset(0 0 0 0 round 10px); }
+    }
+
+    .menu-pop button {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 0.55rem 0.75rem;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      color: #cbd5e1;
+      font-size: 0.85rem;
+      text-align: left;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .menu-pop button:hover { background: #fbbf2418; color: #fbbf24; }
+    .menu-pop button.danger:hover { background: #f8717118; color: #f87171; }
+
+    .menu-pop kbd {
+      font-size: 0.65rem;
+      color: #475569;
+    }
+
+    .divider {
+      height: 1px;
+      background: #1e293b;
+      margin: 0.25rem 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .menu-pop.open { animation: none; }
+      .more-btn:hover { transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="anchor">
+    <button type="button" class="more-btn" id="more" aria-expanded="false" aria-haspopup="true" aria-label="More actions">⋯</button>
+    <div class="menu-pop" id="menu" role="menu">
+      <button type="button" role="menuitem">Edit <kbd>E</kbd></button>
+      <button type="button" role="menuitem">Duplicate <kbd>⌘D</kbd></button>
+      <button type="button" role="menuitem">Share link</button>
+      <div class="divider"></div>
+      <button type="button" class="danger" role="menuitem">Delete <kbd>⌫</kbd></button>
+    </div>
+  </div>
+
+  <script>
+    const more = document.getElementById('more');
+    const menu = document.getElementById('menu');
+
+    more.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = !menu.classList.contains('open');
+      menu.classList.toggle('open', open);
+      more.setAttribute('aria-expanded', String(open));
+    });
+
+    document.addEventListener('click', () => {
+      menu.classList.remove('open');
+      more.setAttribute('aria-expanded', 'false');
+    });
+  </script>
+</body>
+</html>

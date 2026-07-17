@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1297
+    slug: borders-minimal-border-10
+    title: Minimal Border 10
+    category: borders
+    tags: borders, minimal
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1297 — Minimal Border 10</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fafafa;font-family:"DM Sans",system-ui,-apple-system,sans-serif;padding:2rem;color:#111}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+    .line-box{position:relative;width:min(100%,300px);padding:2.5rem 2rem;text-align:center}
+    .line-box::before{content:'';position:absolute;inset:0;border:1px solid #ddd}
+    .trace{position:absolute;background:#111;animation:trace 3s ease-in-out infinite}
+    .trace--h{height:1px;width:40px;top:0;left:0;animation-name:traceH}
+    .trace--v{width:1px;height:40px;top:0;right:0;animation-name:traceV;animation-delay:.75s}
+    @keyframes traceH{0%,100%{left:0;top:0}25%{left:calc(100% - 40px);top:0}50%{left:calc(100% - 40px);top:calc(100% - 1px)}75%{left:0;top:calc(100% - 1px)}}
+    @keyframes traceV{0%,100%{top:0;right:0}25%{top:calc(100% - 40px);right:0}50%{top:calc(100% - 40px);right:calc(100% - 1px)}75%{top:0;right:calc(100% - 1px)}}
+    h2{font-family:"Syne",system-ui,sans-serif;font-size:1.3rem;font-weight:800;letter-spacing:-.03em;margin:0 0 .3rem}
+    p{margin:0;color:#888;font-size:.86rem}
+  </style>
+</head>
+<body>
+<div class="line-box"><span class="trace trace--h" aria-hidden="true"></span><span class="trace trace--v" aria-hidden="true"></span><h2>Hairline</h2><p>A single pixel travels.</p></div>
+
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1470
+    slug: scroll-snap-card-carousel
+    title: Snap Card Carousel
+    category: scroll-sections
+    tags: scroll, snap, carousel
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1470 — Snap Card Carousel</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#0d0d0f;color:#fff;min-height:100vh;display:grid;place-items:center}.carousel{display:flex;gap:20px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2rem 10vw;width:100%;scrollbar-width:none}.carousel::-webkit-scrollbar{display:none}.card{flex:0 0 min(80vw,400px);aspect-ratio:4/5;scroll-snap-align:center;border-radius:24px;background:linear-gradient(160deg,var(--a),var(--b));display:grid;place-items:center;font-size:2rem;font-weight:800;box-shadow:0 20px 60px rgba(0,0,0,.4)}.card:nth-child(1){--a:#6c8cff;--b:#4a5fd4}.card:nth-child(2){--a:#ff6cb0;--b:#d44a8a}.card:nth-child(3){--a:#6cffb8;--b:#3ad4a0;color:#111}.card:nth-child(4){--a:#f59e0b;--b:#d97706;color:#111}.card:nth-child(5){--a:#764ba2;--b:#5a3a8a}
+  </style>
+</head>
+<body>
+<div class="carousel"><div class="card">I</div><div class="card">II</div><div class="card">III</div><div class="card">IV</div><div class="card">V</div></div>
+
+</body>
+</html>

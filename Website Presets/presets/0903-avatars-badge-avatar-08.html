@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0903
+    slug: avatars-badge-avatar-08
+    title: Badge Avatar 08
+    category: avatars
+    tags: avatars, badge, marquee, minimal
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0903 — Badge Avatar 08</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700&family=DM+Mono:wght@400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#f2f0ea;overflow:hidden;font-family:'DM Mono',monospace}
+    .stage{min-height:100vh;display:grid;place-items:center;gap:1.75rem}
+    .wrap{position:relative;display:inline-block}
+    .av{width:64px;height:64px;border-radius:50%;border:1px solid #111;display:grid;place-items:center;font-family:Syne,sans-serif;font-weight:700;font-size:1rem;background:#f2f0ea}
+    .badge{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#111;color:#f2f0ea;font-size:.55rem;display:grid;place-items:center;letter-spacing:.04em}
+    .ticker{width:min(260px,75vw);overflow:hidden;border-top:1px solid rgba(0,0,0,.12);padding-top:.85rem}
+    .track{display:flex;width:max-content;white-space:nowrap;animation:run 22s linear infinite;font-size:.55rem;letter-spacing:.32em;text-transform:uppercase;color:rgba(0,0,0,.4)}
+    @keyframes run{to{transform:translateX(-50%)}}
+    @media (prefers-reduced-motion:reduce){.track{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="wrap">
+      <div class="av">YO</div>
+      <span class="badge">3</span>
+    </div>
+    <div class="ticker"><div class="track"><span>3 unread · Badge · 3 unread · Badge · </span><span>3 unread · Badge · 3 unread · Badge · </span></div></div>
+  </div>
+</body>
+</html>

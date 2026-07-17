@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1787
+    slug: minimal-3d-fold-plane
+    title: Fold Plane Click
+    category: 3d-effects
+    tags: 3d, minimal, fold, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1787 — Fold Plane Click</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Outfit:wght@300&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#111;perspective:1200px;font-family:Outfit,sans-serif;color:#fff}
+    .sheet{width:min(360px,86vw);height:220px;position:relative;transform-style:preserve-3d;transform:rotateX(12deg);cursor:pointer}
+    .half{position:absolute;top:0;bottom:0;width:50%;background:#f5f5f3;color:#111;display:grid;place-items:center;font-family:Syne,sans-serif;font-weight:800;font-size:1.4rem;letter-spacing:-.04em;transition:transform 1s cubic-bezier(.22,1,.36,1)}
+    .left{left:0;transform-origin:right center;border-right:1px solid #ddd}
+    .right{right:0;transform-origin:left center}
+    .sheet.open .left{transform:rotateY(-105deg)}
+    .sheet.open .right{transform:rotateY(105deg)}
+    .void{position:absolute;inset:20% 30%;border:1px solid rgba(255,255,255,.15);transform:translateZ(-40px)}
+    .label{position:fixed;bottom:1.5rem;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;opacity:.35;font-weight:300}
+  </style>
+</head>
+<body>
+  <div class="sheet" id="sheet" role="button" tabindex="0" aria-pressed="false">
+    <div class="void" aria-hidden="true"></div>
+    <div class="half left">OPEN</div>
+    <div class="half right">FOLD</div>
+  </div>
+  <div class="label">Click to fold</div>
+  <script>
+    const s=document.getElementById('sheet');
+    const toggle=()=>{const on=s.classList.toggle('open');s.setAttribute('aria-pressed',String(on))};
+    s.addEventListener('click',toggle);
+    s.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle()}});
+  </script>
+</body>
+</html>

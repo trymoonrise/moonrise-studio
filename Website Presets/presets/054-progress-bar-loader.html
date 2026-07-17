@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 054
+    slug: progress-bar-loader
+    title: Progress Bar Loader
+    category: loading
+    tags: progress, bar
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>054 — Progress Bar Loader</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    
+    body{display:grid;place-items:center;min-height:100vh;background:#111}
+    .wrap{width:min(80vw,400px);text-align:center}
+    .bar{height:4px;background:#2a2a32;border-radius:2px;overflow:hidden;margin-bottom:1rem}
+    .fill{height:100%;background:#6c8cff;width:0;transition:width .1s;border-radius:2px}
+    p{color:#888;font-size:.9rem}
+    
+  </style>
+</head>
+<body>
+<div class="wrap"><div class="bar"><div class="fill" id="f"></div></div><p id="t">0%</p></div>
+<script>
+    const f=document.getElementById('f'),t=document.getElementById('t');let p=0;
+    const iv=setInterval(()=>{p+=Math.random()*8;if(p>=100){p=100;clearInterval(iv)}f.style.width=p+'%';t.textContent=Math.floor(p)+'%';},200);
+    </script>
+</body>
+</html>

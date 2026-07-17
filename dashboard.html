@@ -25,24 +25,24 @@
         <div class="ms-dash-metrics" aria-label="Key metrics">
           <div class="ms-dash-metric ms-dash-metric--goal" id="stat-goal-wrap">
             <span class="ms-dash-metric-label">Goal</span>
-            <button type="button" class="ms-dash-metric-value ms-dash-goal-display" id="stat-goal" title="Click to edit goal" aria-label="Sales goal, click to edit">1,000</button>
-            <input class="ms-dash-goal-input" id="stat-goal-input" type="number" inputmode="numeric" min="1" max="1000000" step="1" value="1000" aria-label="Edit sales goal" hidden>
+            <button type="button" class="ms-dash-metric-value ms-dash-goal-display" id="stat-goal" title="Click to edit commission goal" aria-label="Commission goal $1,000, click to edit">$1,000</button>
+            <input class="ms-dash-goal-input" id="stat-goal-input" type="number" inputmode="numeric" min="1" max="1000000" step="1" value="1000" aria-label="Edit commission goal" hidden>
           </div>
           <div class="ms-dash-metric">
-            <span class="ms-dash-metric-label">Published</span>
-            <strong class="ms-dash-metric-value" id="stat-published">0</strong>
+            <span class="ms-dash-metric-label">Commission</span>
+            <strong class="ms-dash-metric-value" id="stat-commission">$0</strong>
           </div>
         </div>
 
         <div class="ms-dash-ring-wrap">
-          <div class="ms-dash-ring" role="img" aria-labelledby="stat-close-label">
+          <div class="ms-dash-ring" role="img" aria-labelledby="stat-goal-pct-label">
             <svg class="ms-dash-ring-svg" viewBox="0 0 280 280" aria-hidden="true">
               <circle class="ms-dash-ring-track" cx="140" cy="140" r="118" fill="none" />
-              <circle class="ms-dash-ring-prog" id="stat-close-ring" cx="140" cy="140" r="118" fill="none" pathLength="100" />
+              <circle class="ms-dash-ring-prog" id="stat-goal-ring" cx="140" cy="140" r="118" fill="none" pathLength="100" />
             </svg>
             <div class="ms-dash-ring-center">
-              <span class="ms-dash-ring-value" id="stat-close">0%</span>
-              <span class="ms-dash-stat-label" id="stat-close-label">Close rate</span>
+              <span class="ms-dash-ring-value" id="stat-goal-pct">0%</span>
+              <span class="ms-dash-stat-label" id="stat-goal-pct-label">of goal</span>
             </div>
           </div>
         </div>
@@ -71,19 +71,31 @@
         </div>
       </section>
 
-      <section class="ms-dash-card ms-dash-island" aria-label="Recent projects">
+      <section class="ms-dash-card ms-dash-island ms-dash-projects-card" aria-label="Recent projects">
         <button type="button" class="ms-dash-island-toggle" id="dash-projects-toggle" aria-expanded="false" aria-controls="dash-projects-panel">
           <span class="ms-dash-island-title">Recent projects</span>
           <span class="ms-dash-island-count" id="dash-projects-count">0 projects</span>
         </button>
         <div class="ms-dash-island-panel" id="dash-projects-panel" hidden>
-          <div class="ms-dash-list ms-dash-list--plain" id="dash-projects-list">
-            <div class="ms-dash-empty"><p>No projects yet.</p></div>
-          </div>
+          <div class="ms-dash-previews" id="dash-projects-list"></div>
         </div>
       </section>
     </div>
   </div>
+
+  <dialog class="ms-clients-dialog" id="dash-project-delete-dialog" aria-labelledby="dash-project-delete-title">
+    <div class="ms-clients-dialog-panel ms-clients-dialog-panel--compact">
+      <header class="ms-clients-dialog-head">
+        <h2 class="ms-clients-dialog-title" id="dash-project-delete-title">Delete project</h2>
+      </header>
+      <p class="ms-clients-dialog-warning" id="dash-project-delete-message" aria-live="polite"></p>
+      <p class="ms-clients-dialog-error" id="dash-project-delete-error" hidden role="alert"></p>
+      <div class="ms-clients-dialog-actions">
+        <button type="button" class="ms-clients-dialog-back" id="dash-project-delete-cancel">Cancel</button>
+        <button type="button" class="ms-btn ms-btn-danger ms-clients-dialog-next" id="dash-project-delete-submit">Delete</button>
+      </div>
+    </div>
+  </dialog>
 
   <script src="js/config.js"></script>
   <script src="js/supabase-client.js"></script>

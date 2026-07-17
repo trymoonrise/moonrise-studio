@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1558
+    slug: loader-fullscreen-fade
+    title: Fullscreen Fade Loader
+    category: loading
+    tags: loading, fullscreen, fade
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1558 — Fullscreen Fade Loader</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:100vh;background:#0d0d0f;color:#fff;font-family:system-ui,sans-serif}.screen{position:fixed;inset:0;display:grid;place-items:center;background:#0d0d0f;z-index:10;animation:exit 3s cubic-bezier(.22,.61,.36,1) forwards}@keyframes exit{0%,70%{opacity:1}100%{opacity:0;pointer-events:none}}.center{text-align:center}.ring{width:40px;height:40px;border:2px solid #333;border-top-color:#6c8cff;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1.5rem}@keyframes spin{to{transform:rotate(360deg)}}h2{font-size:1.1rem;font-weight:600}.content{min-height:100vh;display:grid;place-items:center;background:linear-gradient(135deg,#1a1a2e,#6c8cff);color:#fff;font-size:2rem;font-weight:800}
+  </style>
+</head>
+<body>
+<div class="screen"><div class="center"><div class="ring"></div><h2>Loading</h2></div></div><div class="content">Welcome</div>
+
+</body>
+</html>

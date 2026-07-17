@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 016
+    slug: parallax-hero-layers
+    title: Parallax Hero Layers
+    category: scroll
+    tags: parallax, hero
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>016 — Parallax Hero Layers</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Manrope:wght@400;500;600&display=swap');
+
+    :root {
+      --bg: #08090b;
+      --ink: #f5f4f1;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Manrope, sans-serif;
+    }
+
+    /* Tall track — no overflow here or sticky breaks */
+    .hero {
+      height: 240vh;
+      position: relative;
+    }
+
+    .stage {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      width: 100%;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .layer {
+      position: absolute;
+      inset: -22%;
+      background-size: cover;
+      background-position: center;
+      will-change: transform, opacity, filter;
+    }
+
+    .l1 {
+      background-image: url('../stock/media/16-9 Aspect Ratio(image).png');
+      opacity: 0.42;
+      transform: scale(1.14);
+      filter: saturate(0.9) contrast(1.05);
+    }
+
+    .l-mid {
+      inset: -10%;
+      z-index: 1;
+      background:
+        radial-gradient(ellipse 80% 55% at 50% 40%, transparent 20%, rgba(8, 9, 11, 0.35) 100%);
+      pointer-events: none;
+    }
+
+    .l2 {
+      inset: 0;
+      z-index: 1;
+      background:
+        linear-gradient(to top, var(--bg) 0%, transparent 52%),
+        linear-gradient(to bottom, rgba(8, 9, 11, 0.35), transparent 28%);
+    }
+
+    .veil {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      background: var(--bg);
+      opacity: 0;
+      pointer-events: none;
+      will-change: opacity;
+    }
+
+    .content {
+      position: relative;
+      z-index: 3;
+      text-align: center;
+      padding: 1.5rem;
+      will-change: transform, opacity, filter;
+    }
+
+    .kicker {
+      margin: 0 0 1rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: rgba(245, 244, 241, 0.42);
+      will-change: transform, opacity;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: Syne, sans-serif;
+      font-size: clamp(2.6rem, 8vw, 5.4rem);
+      font-weight: 800;
+      letter-spacing: -0.055em;
+      line-height: 0.92;
+      will-change: transform, opacity;
+    }
+
+    .sub {
+      margin: 1.1rem 0 0;
+      color: rgba(245, 244, 241, 0.55);
+      font-size: 1rem;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      will-change: transform, opacity;
+    }
+
+    .cue {
+      position: absolute;
+      bottom: 1.75rem;
+      left: 50%;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.45rem;
+      transform: translateX(-50%);
+      color: rgba(245, 244, 241, 0.35);
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      will-change: opacity, transform;
+      pointer-events: none;
+    }
+
+    .cue__line {
+      width: 1px;
+      height: 28px;
+      background: linear-gradient(to bottom, rgba(245, 244, 241, 0.45), transparent);
+      transform-origin: top center;
+      animation: cue-pulse 2.2s ease-in-out infinite;
+    }
+
+    @keyframes cue-pulse {
+      0%, 100% { transform: scaleY(0.55); opacity: 0.35; }
+      50% { transform: scaleY(1); opacity: 1; }
+    }
+
+    .scroll {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 2rem;
+      opacity: 0;
+      transform: translateY(48px);
+      will-change: opacity, transform;
+    }
+
+    .scroll__label {
+      margin: 0 0 0.65rem;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(245, 244, 241, 0.32);
+    }
+
+    .scroll h2 {
+      margin: 0;
+      font-family: Syne, sans-serif;
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      color: rgba(245, 244, 241, 0.72);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hero { height: 100vh; }
+      .cue__line { animation: none; }
+      .layer, .content, .kicker, h1, .sub, .veil, .cue, .scroll {
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <section class="hero" id="hero">
+    <div class="stage">
+      <div class="layer l1" id="layer"></div>
+      <div class="layer l-mid" id="mid" aria-hidden="true"></div>
+      <div class="layer l2" id="shade"></div>
+      <div class="content" id="content">
+        <p class="kicker" id="kicker">Depth</p>
+        <h1 id="title">Parallax Depth</h1>
+        <p class="sub" id="sub">Scroll to explore</p>
+      </div>
+      <div class="cue" id="cue" aria-hidden="true">
+        <span>Scroll</span>
+        <span class="cue__line"></span>
+      </div>
+      <div class="veil" id="veil" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <section class="scroll" id="next">
+    <p class="scroll__label">Continued</p>
+    <h2>Keep scrolling</h2>
+  </section>
+
+  <script>
+    const hero = document.getElementById('hero');
+    const layer = document.getElementById('layer');
+    const mid = document.getElementById('mid');
+    const shade = document.getElementById('shade');
+    const content = document.getElementById('content');
+    const kicker = document.getElementById('kicker');
+    const title = document.getElementById('title');
+    const sub = document.getElementById('sub');
+    const veil = document.getElementById('veil');
+    const cue = document.getElementById('cue');
+    const next = document.getElementById('next');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let current = 0;
+    let target = 0;
+    let raf = 0;
+
+    function clamp(n, min, max) {
+      return Math.min(Math.max(n, min), max);
+    }
+
+    function easeInOutCubic(t) {
+      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    function easeOutCubic(t) {
+      return 1 - Math.pow(1 - t, 3);
+    }
+
+    function easeInCubic(t) {
+      return t * t * t;
+    }
+
+    function fadeOut(p, start, end) {
+      const t = clamp((p - start) / (end - start), 0, 1);
+      return 1 - easeInOutCubic(t);
+    }
+
+    function fadeIn(p, start, end) {
+      const t = clamp((p - start) / (end - start), 0, 1);
+      return easeOutCubic(t);
+    }
+
+    function readTarget() {
+      const rect = hero.getBoundingClientRect();
+      const range = Math.max(rect.height - innerHeight, 1);
+      target = clamp(-rect.top / range, 0, 1);
+    }
+
+    function paint(p) {
+      const range = Math.max(hero.offsetHeight - innerHeight, 1);
+      const y = p * range;
+      const lift = easeOutCubic(p);
+      const settle = easeInCubic(p);
+
+      // Far layers lag down; near type lifts out
+      layer.style.transform =
+        'translate3d(0,' + (y * 0.38) + 'px,0) scale(' + (1.14 + lift * 0.18) + ')';
+      layer.style.filter =
+        'saturate(' + (0.9 - settle * 0.15) + ') contrast(1.05) brightness(' + (1 - settle * 0.35) + ')';
+      layer.style.opacity = 0.42 * fadeOut(p, 0.2, 1);
+
+      mid.style.transform = 'translate3d(0,' + (y * 0.22) + 'px,0) scale(' + (1 + lift * 0.06) + ')';
+      mid.style.opacity = 0.7 + settle * 0.3;
+
+      shade.style.transform = 'translate3d(0,' + (y * 0.12) + 'px,0)';
+      shade.style.opacity = 0.55 + settle * 0.45;
+
+      kicker.style.transform = 'translate3d(0,' + (-y * 0.18) + 'px,0)';
+      title.style.transform =
+        'translate3d(0,' + (-y * 0.52) + 'px,0) scale(' + (1 - lift * 0.05) + ')';
+      title.style.letterSpacing = (-0.055 - lift * 0.01) + 'em';
+      sub.style.transform = 'translate3d(0,' + (-y * 0.78) + 'px,0)';
+
+      const kickerOp = fadeOut(p, 0.04, 0.62);
+      const titleOp = fadeOut(p, 0.08, 0.78);
+      const subOp = fadeOut(p, 0.12, 0.88);
+      const groupOp = fadeOut(p, 0.06, 0.84);
+
+      kicker.style.opacity = kickerOp;
+      title.style.opacity = titleOp;
+      sub.style.opacity = subOp * 0.95;
+      content.style.opacity = groupOp;
+      content.style.filter = 'blur(' + ((1 - groupOp) * 10) + 'px)';
+      content.style.transform = 'translate3d(0,' + (-y * 0.08) + 'px,0)';
+
+      const sceneFade = fadeIn(p, 0.42, 1);
+      veil.style.opacity = sceneFade;
+
+      const cueOut = fadeOut(p, 0, 0.18);
+      cue.style.opacity = cueOut;
+      cue.style.transform = 'translateX(-50%) translateY(' + ((1 - cueOut) * 12) + 'px)';
+
+      const nextIn = fadeIn(p, 0.55, 1);
+      next.style.opacity = nextIn;
+      next.style.transform = 'translateY(' + ((1 - nextIn) * 48) + 'px)';
+    }
+
+    function tick() {
+      const ease = reduced ? 1 : 0.12;
+      current += (target - current) * ease;
+      if (Math.abs(target - current) < 0.00015) current = target;
+      paint(current);
+      if (current !== target) {
+        raf = requestAnimationFrame(tick);
+      } else {
+        raf = 0;
+      }
+    }
+
+    function requestTick() {
+      readTarget();
+      if (reduced) {
+        current = target;
+        paint(current);
+        return;
+      }
+      if (!raf) raf = requestAnimationFrame(tick);
+    }
+
+    readTarget();
+    paint(0);
+    addEventListener('scroll', requestTick, { passive: true });
+    addEventListener('resize', requestTick, { passive: true });
+  </script>
+</body>
+</html>

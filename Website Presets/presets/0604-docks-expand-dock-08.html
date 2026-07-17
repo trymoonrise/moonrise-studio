@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0604
+    slug: docks-expand-dock-08
+    title: Expand Dock 08
+    category: docks
+    tags: docks, expand
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0604 — Expand Dock 08</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0e1018;font-family:Outfit,sans-serif}
+    .dock{display:flex;align-items:center;gap:4px;padding:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:999px}
+    .btn{display:flex;align-items:center;gap:.5rem;height:44px;padding:0 12px;border:none;border-radius:999px;background:transparent;color:rgba(255,255,255,.45);cursor:pointer;font:inherit;font-size:.78rem;font-weight:500;overflow:hidden;max-width:44px;transition:max-width .45s cubic-bezier(.22,1,.36,1),background .3s,color .3s,padding .45s}
+    .btn svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8}
+    .btn span{opacity:0;white-space:nowrap;transition:opacity .3s}
+    .btn:hover,.btn.active{max-width:140px;padding:0 14px 0 12px;color:#fff}
+    .btn.active{background:#6c8cff;box-shadow:0 8px 24px rgba(108,140,255,.35)}
+    .btn:hover span,.btn.active span{opacity:1}
+  </style>
+</head>
+<body>
+  <nav class="dock" aria-label="Expand dock">
+    <button class="btn active" aria-label="Home"><svg viewBox="0 0 24 24"><path d="M4 10.5L12 4l8 6.5V20h-5v-5H9v5H4z"/></svg><span>Home</span></button>
+    <button class="btn" aria-label="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3"/></svg><span>Search</span></button>
+    <button class="btn" aria-label="Library"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span>Library</span></button>
+    <button class="btn" aria-label="Profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg><span>Profile</span></button>
+  </nav>
+  <script>
+    const btns=[...document.querySelectorAll('.btn')];
+    btns.forEach(b=>b.addEventListener('click',()=>{btns.forEach(x=>x.classList.remove('active'));b.classList.add('active')}));
+  </script>
+</body>
+</html>

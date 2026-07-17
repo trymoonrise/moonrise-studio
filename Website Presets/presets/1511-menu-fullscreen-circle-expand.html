@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1511
+    slug: menu-fullscreen-circle-expand
+    title: Circle Expand Menu
+    category: navigation
+    tags: menu, hamburger, fullscreen, circle
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1511 — Circle Expand Menu</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Outfit:wght@300&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#fafafa;color:#111;font-family:Outfit,sans-serif;overflow:hidden}
+    .top{display:flex;justify-content:space-between;align-items:center;padding:1.5rem clamp(1.25rem,4vw,3rem);position:relative;z-index:40}
+    .logo{font-family:Syne,sans-serif;font-weight:800;letter-spacing:-.04em}
+    .orb{width:44px;height:44px;border-radius:50%;border:1px solid #111;background:transparent;cursor:pointer;padding:0;position:relative;z-index:50;transition:background .4s,border-color .4s}
+    .orb.open{background:#fff;border-color:#fff}
+    .orb i{position:absolute;left:12px;right:12px;height:1px;background:#111;top:50%;transition:transform .45s cubic-bezier(.22,1,.36,1),background .3s}
+    .orb i:first-child{transform:translateY(-4px)}.orb i:last-child{transform:translateY(4px)}
+    .orb.open i{background:#111}
+    .orb.open i:first-child{transform:rotate(45deg)}.orb.open i:last-child{transform:rotate(-45deg)}
+    .bloom{position:fixed;inset:0;z-index:30;background:#111;clip-path:circle(0% at calc(100% - 2.6rem) 2.4rem);transition:clip-path .75s cubic-bezier(.22,1,.36,1);display:grid;place-items:center;pointer-events:none}
+    .bloom.open{clip-path:circle(150% at calc(100% - 2.6rem) 2.4rem);pointer-events:auto}
+    .bloom nav{text-align:center}
+    .bloom a{display:block;font-family:Syne,sans-serif;font-size:clamp(2.2rem,8vw,5rem);font-weight:800;letter-spacing:-.05em;color:#fff;text-decoration:none;line-height:1.05;opacity:0;transform:scale(.92);transition:opacity .5s,transform .5s cubic-bezier(.22,1,.36,1)}
+    .bloom.open a{opacity:1;transform:none}
+    .bloom.open a:nth-child(1){transition-delay:.2s}.bloom.open a:nth-child(2){transition-delay:.28s}
+    .bloom.open a:nth-child(3){transition-delay:.36s}.bloom.open a:nth-child(4){transition-delay:.44s}
+    .bloom a:hover{opacity:.4}
+    .page{height:70vh;display:grid;place-items:center;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;font-weight:300;color:#999}
+    @media(prefers-reduced-motion:reduce){.bloom,.bloom a,.orb i{transition:none}}
+  </style>
+</head>
+<body>
+  <div class="top">
+    <div class="logo">ORB</div>
+    <button class="orb" id="orb" aria-label="Menu" aria-expanded="false"><i></i><i></i></button>
+  </div>
+  <div class="bloom" id="bloom">
+    <nav><a href="#">Expand</a><a href="#">Fill</a><a href="#">Cover</a><a href="#">Close</a></nav>
+  </div>
+  <div class="page">Circle blooms</div>
+  <script>
+    const o=document.getElementById('orb'),b=document.getElementById('bloom');
+    o.addEventListener('click',()=>{const on=b.classList.toggle('open');o.classList.toggle('open',on);o.setAttribute('aria-expanded',String(on))});
+  </script>
+</body>
+</html>

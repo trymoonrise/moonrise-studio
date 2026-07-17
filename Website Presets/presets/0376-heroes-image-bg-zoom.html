@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0376
+    slug: heroes-image-bg-zoom
+    title: Image BG Zoom Hero
+    category: heroes
+    tags: heroes, landing, image, background
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0376 — Image BG Zoom Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      position: relative;
+      display: grid;
+      place-items: center;
+      padding: 2rem;
+      overflow: hidden;
+      color: #fff;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      text-align: center;
+    }
+
+    .bg {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+    }
+
+    .bg img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      animation: zoom 24s ease-in-out infinite alternate;
+      will-change: transform;
+    }
+
+    .shade {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background:
+        linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.55) 100%),
+        radial-gradient(circle at 50% 20%, rgba(0, 0, 0, 0.1), transparent 55%);
+    }
+
+    .hero {
+      position: relative;
+      width: min(480px, 100%);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      margin-bottom: 1rem;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+    }
+
+    h1 {
+      font-size: clamp(2.1rem, 5vw, 3.2rem);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+      margin-bottom: 0.85rem;
+    }
+
+    p {
+      color: rgba(255, 255, 255, 0.78);
+      font-size: 0.98rem;
+      line-height: 1.55;
+      max-width: 34ch;
+      margin: 0 auto 1.5rem;
+    }
+
+    .btn {
+      padding: 0.68rem 1.2rem;
+      border: none;
+      border-radius: 999px;
+      background: #fff;
+      color: #111827;
+      font-family: inherit;
+      font-size: 0.86rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+      transition: transform 0.2s cubic-bezier(.22, .61, .36, 1);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    @keyframes zoom {
+      from { transform: scale(1); }
+      to { transform: scale(1.08); }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true">
+    <img src="../stock/media/16-9 Aspect Ratio(image).png" alt="">
+  </div>
+  <div class="shade" aria-hidden="true"></div>
+
+  <section class="hero">
+    <span class="eyebrow">Travel experiences</span>
+    <h1>Explore without limits</h1>
+    <p>Discover destinations crafted for travelers who want more than a checklist.</p>
+    <button class="btn" type="button">Plan your trip</button>
+  </section>
+</body>
+</html>

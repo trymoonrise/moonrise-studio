@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0313
+    slug: numbers-odometer
+    title: Odometer Style
+    category: numbers
+    tags: numbers, odometer
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0313 — Odometer Style</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 2rem;
+      background: #0d0d0f;
+      font-family: ui-monospace, "Cascadia Code", "Segoe UI Mono", monospace;
+    }
+
+    .odo {
+      display: flex;
+      gap: 6px;
+    }
+
+    .digit {
+      position: relative;
+      width: 52px;
+      height: 72px;
+      overflow: hidden;
+      border-radius: 10px;
+      background: linear-gradient(180deg, #1f2238 0%, #141628 100%);
+      border: 1px solid rgba(108, 255, 184, 0.18);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        0 12px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .digit::before,
+    .digit::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 18px;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .digit::before {
+      top: 0;
+      background: linear-gradient(180deg, rgba(13, 13, 15, 0.55), transparent);
+    }
+
+    .digit::after {
+      bottom: 0;
+      background: linear-gradient(0deg, rgba(13, 13, 15, 0.55), transparent);
+    }
+
+    .val {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-size: 2.1rem;
+      font-weight: 900;
+      color: #6cffb8;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .val.in {
+      animation: rollIn 0.45s cubic-bezier(.22, .61, .36, 1) forwards;
+    }
+
+    .val.out {
+      animation: rollOut 0.45s cubic-bezier(.22, .61, .36, 1) forwards;
+    }
+
+    @keyframes rollIn {
+      from {
+        transform: translateY(100%);
+        opacity: 0.35;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes rollOut {
+      from {
+        transform: translateY(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateY(-100%);
+        opacity: 0.35;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="odo" id="odo"></div>
+
+  <script>
+    const odo = document.getElementById('odo');
+    const digits = Array.from({ length: 4 }, () => {
+      const cell = document.createElement('div');
+      cell.className = 'digit';
+      odo.appendChild(cell);
+      return cell;
+    });
+
+    let value = 1024;
+
+    function setDigit(cell, char, animate) {
+      const current = cell.querySelector('.val');
+      if (current && current.textContent === char) return;
+
+      if (!current || !animate) {
+        cell.innerHTML = `<span class="val${animate ? ' in' : ''}">${char}</span>`;
+        return;
+      }
+
+      const next = document.createElement('span');
+      next.className = 'val in';
+      next.textContent = char;
+      current.classList.add('out');
+      cell.appendChild(next);
+
+      current.addEventListener('animationend', () => current.remove(), { once: true });
+      next.addEventListener('animationend', () => next.classList.remove('in'), { once: true });
+    }
+
+    function render(next, animate) {
+      const str = String(next).padStart(4, '0');
+      digits.forEach((cell, i) => setDigit(cell, str[i], animate));
+    }
+
+    render(value, false);
+
+    setInterval(() => {
+      value += 1;
+      render(value, true);
+    }, 1000);
+  </script>
+</body>
+</html>

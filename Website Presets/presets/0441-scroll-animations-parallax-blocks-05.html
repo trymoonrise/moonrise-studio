@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0441
+    slug: scroll-animations-parallax-blocks-05
+    title: Parallax Blocks 05
+    category: scroll-animations
+    tags: scroll-animations, parallax
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0441 — Parallax Blocks 05</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#07141a;color:#d9fbff;font-family:system-ui}.track{height:260vh}.scene{position:sticky;top:0;height:100vh;overflow:hidden}.grid{position:absolute;inset:0;background-image:linear-gradient(rgba(217,251,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(217,251,255,.08) 1px,transparent 1px);background-size:44px 44px;mask-image:radial-gradient(circle at 50% 40%,#000 0%,transparent 70%)}.blk{position:absolute;width:240px;height:140px;border-radius:18px;filter:drop-shadow(0 20px 60px rgba(0,0,0,.45));transform:translate3d(var(--x,0),var(--y,0),0) rotate(var(--r,0deg));will-change:transform}.a{background:linear-gradient(135deg,#38bdf8,#60a5fa)}.b{background:linear-gradient(135deg,#34d399,#a7f3d0)}.c{background:linear-gradient(135deg,#fb7185,#f97316)}.label{position:relative;z-index:1;display:grid;place-items:center;height:100vh;text-align:center}.label h1{font-size:clamp(2.2rem,7vw,4.2rem);letter-spacing:-.05em}.label p{color:rgba(217,251,255,.65);margin-top:.75rem}
+  </style>
+</head>
+<body>
+<div class="track" id="t"><div class="scene"><div class="grid"></div><div class="blk a" id="a"></div><div class="blk b" id="b"></div><div class="blk c" id="c"></div><div class="label"><div><h1>Parallax Blocks</h1><p>Depth without 3D libraries.</p></div></div></div></div>
+<script>const _el=document.querySelector('#t');function prog(){const r=_el.getBoundingClientRect();return Math.min(1,Math.max(0,-r.top/(r.height-innerHeight)));}const a=document.getElementById('a'),b=document.getElementById('b'),c=document.getElementById('c');addEventListener('scroll',()=>{const p=prog();a.style.setProperty('--x',-220+p*520+'px');a.style.setProperty('--y',120-p*220+'px');a.style.setProperty('--r',-18+p*40+'deg');b.style.setProperty('--x',180-p*380+'px');b.style.setProperty('--y',220-p*340+'px');b.style.setProperty('--r',14-p*28+'deg');c.style.setProperty('--x',-20+Math.sin(p*Math.PI)*160+'px');c.style.setProperty('--y',340-p*460+'px');c.style.setProperty('--r',p*60+'deg');},{passive:true});</script>
+</body>
+</html>

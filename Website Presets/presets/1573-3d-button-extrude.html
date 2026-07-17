@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1573
+    slug: 3d-button-extrude
+    title: 3D Extrude Button
+    category: 3d-effects
+    tags: 3d, button, extrude
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1573 — 3D Extrude Button</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0b0c12;perspective:800px;font-family:Syne,sans-serif}
+    .btn{position:relative;border:none;background:transparent;cursor:pointer;transform-style:preserve-3d;transform:rotateX(18deg);padding:0}
+    .face{display:grid;place-items:center;padding:1.1rem 2.4rem;font-size:1.15rem;font-weight:800;letter-spacing:.04em;color:#fff;background:linear-gradient(160deg,#6c8cff,#3d5cff);border-radius:14px;transform:translateZ(18px);transition:transform .18s cubic-bezier(.16,1,.3,1);box-shadow:0 0 0 1px rgba(255,255,255,.15)}
+    .depth{position:absolute;inset:0;border-radius:14px;background:#1e2d8a;transform:translateZ(0);box-shadow:0 20px 40px rgba(60,80,200,.35)}
+    .btn:hover .face{transform:translateZ(28px)}
+    .btn:active .face{transform:translateZ(6px)}
+    .btn:active .depth{filter:brightness(.85)}
+    .edge{position:absolute;left:0;right:0;bottom:0;height:18px;background:linear-gradient(#2a3eb0,#1a2870);transform-origin:top;transform:rotateX(-90deg);border-radius:0 0 14px 14px}
+    @media(prefers-reduced-motion:reduce){.face{transition:none}}
+  </style>
+</head>
+<body>
+  <button class="btn" type="button">
+    <span class="depth" aria-hidden="true"></span>
+    <span class="edge" aria-hidden="true"></span>
+    <span class="face">LAUNCH</span>
+  </button>
+</body>
+</html>

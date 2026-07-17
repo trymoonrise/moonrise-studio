@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1601
+    slug: 3d-mouse-grid-wave
+    title: 3D Grid Mouse Wave
+    category: 3d-mouse
+    tags: 3d, mouse, grid, wave
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1601 — 3D Grid Mouse Wave</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#06070c;perspective:900px;overflow:hidden}
+    .hint{position:fixed;bottom:1.4rem;font:700 .7rem Syne,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.35)}
+    .grid{display:grid;grid-template-columns:repeat(10,28px);gap:8px;transform:rotateX(55deg) rotateZ(-18deg);transform-style:preserve-3d}
+    .cell{width:28px;height:28px;border-radius:6px;background:linear-gradient(145deg,#6c8cff,#3147c8);transform:translateZ(0);box-shadow:0 8px 16px rgba(0,0,0,.35);transition:background .2s}
+    @media(max-width:520px){.grid{grid-template-columns:repeat(8,22px);gap:6px}.cell{width:22px;height:22px}}
+  </style>
+</head>
+<body>
+  <div class="grid" id="grid"></div>
+  <div class="hint">Wave the field</div>
+  <script>
+    const grid=document.getElementById('grid'),cols=matchMedia('(max-width:520px)').matches?8:10,rows=8;
+    const cells=[];
+    for(let i=0;i<cols*rows;i++){const c=document.createElement('div');c.className='cell';grid.appendChild(c);cells.push({el:c,x:i%cols,y:Math.floor(i/cols),z:0,tz:0})}
+    let mx=cols/2,my=rows/2;
+    addEventListener('pointermove',e=>{
+      const r=grid.getBoundingClientRect();
+      mx=((e.clientX-r.left)/r.width)*cols;
+      my=((e.clientY-r.top)/r.height)*rows;
+    });
+    (function loop(){
+      cells.forEach(c=>{
+        const d=Math.hypot(c.x-mx,c.y-my);
+        c.tz=Math.max(0,70-d*14);
+        c.z+=(c.tz-c.z)*.18;
+        const hue=210+c.z*1.2;
+        c.el.style.transform=`translateZ(${c.z}px)`;
+        c.el.style.background=`linear-gradient(145deg,hsl(${hue} 90% 65%),hsl(${hue+20} 80% 40%))`;
+      });
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>

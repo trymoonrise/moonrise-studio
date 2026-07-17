@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1610
+    slug: 3d-mouse-anchor-rotate
+    title: 3D Anchor Rotate Scene
+    category: 3d-mouse
+    tags: 3d, mouse, anchor, rotate
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1610 — 3D Anchor Rotate Scene</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Outfit:wght@400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#050508;perspective:1100px;overflow:hidden;font-family:Outfit,sans-serif}
+    .scene{position:fixed;inset:0;display:grid;place-items:center;transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg))}
+    .anchor{position:relative;width:min(320px,84vw);padding:2.5rem;border-radius:24px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);color:#fff;text-align:center;backdrop-filter:blur(10px);transform:translateZ(40px);box-shadow:0 30px 60px rgba(0,0,0,.4)}
+    .anchor h2{margin:0;font-family:Syne,sans-serif;font-size:1.8rem;letter-spacing:-.03em}
+    .anchor p{margin:.6rem 0 0;color:rgba(255,255,255,.55);font-size:.9rem}
+    .sat{position:absolute;width:70px;height:70px;border-radius:16px;border:1px solid rgba(255,255,255,.2);left:50%;top:50%;margin:-35px}
+    .s1{background:linear-gradient(145deg,#6c8cff,#3147c8);transform:translate3d(-180px,-90px,80px)}
+    .s2{background:linear-gradient(145deg,#ff6bcb,#a31f6e);transform:translate3d(170px,-60px,-40px)}
+    .s3{background:linear-gradient(145deg,#7ee0c3,#1f8a6e);transform:translate3d(-120px,110px,-70px)}
+    .s4{background:linear-gradient(145deg,#ffd16c,#b07a12);transform:translate3d(140px,100px,60px)}
+    .hint{position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%);font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.35);font-family:Syne,sans-serif;z-index:2}
+  </style>
+</head>
+<body>
+  <div class="scene" id="scene">
+    <div class="sat s1" aria-hidden="true"></div>
+    <div class="sat s2" aria-hidden="true"></div>
+    <div class="sat s3" aria-hidden="true"></div>
+    <div class="sat s4" aria-hidden="true"></div>
+    <div class="anchor"><h2>Anchor point</h2><p>The whole constellation rotates around the center card.</p></div>
+  </div>
+  <div class="hint">Rotate the scene</div>
+  <script>
+    const s=document.getElementById('scene');let tx=0,ty=0,cx=0,cy=0;
+    addEventListener('pointermove',e=>{tx=(e.clientX/innerWidth-.5)*40;ty=-(e.clientY/innerHeight-.5)*28});
+    (function loop(){cx+=(tx-cx)*.1;cy+=(ty-cy)*.1;s.style.setProperty('--rx',cy+'deg');s.style.setProperty('--ry',cx+'deg');requestAnimationFrame(loop)})();
+  </script>
+</body>
+</html>

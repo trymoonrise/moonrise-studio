@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1645
+    slug: ease-in-scale-fade-grid
+    title: Scale Fade Grid Ease
+    category: ease-in
+    tags: ease-in, grid, scale, professional
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1645 — Scale Fade Grid Ease</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#fafafa;padding:2rem}.grid{display:grid;grid-template-columns:repeat(2,120px);gap:12px}.cell{aspect-ratio:1;border-radius:12px;background:#fff;border:1px solid #e5e5e5;box-shadow:0 2px 8px rgba(0,0,0,.04);opacity:0;transform:scale(.88);animation:up .65s cubic-bezier(.22,.61,.36,1) forwards}.cell:nth-child(1){animation-delay:.05s}.cell:nth-child(2){animation-delay:.12s}.cell:nth-child(3){animation-delay:.19s}.cell:nth-child(4){animation-delay:.26s}@keyframes up{to{opacity:1;transform:none}}
+  </style>
+</head>
+<body>
+<div class="grid"><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div></div>
+
+</body>
+</html>

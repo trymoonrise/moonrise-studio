@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0677
+    slug: checkboxes-card-checkboxes-03
+    title: Selectable Plan Cards
+    category: checkboxes
+    tags: checkboxes, card
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0677 — Selectable Plan Cards</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #0a0c10;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+      padding: 1.5rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+      width: min(540px, 94vw);
+    }
+
+    .plan {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .plan input {
+      position: absolute;
+      opacity: 0;
+    }
+
+    .card {
+      padding: 1.25rem;
+      background: #111827;
+      border: 2px solid #1e293b;
+      border-radius: 12px;
+      transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+      height: 100%;
+    }
+
+    .plan:hover .card {
+      border-color: #334155;
+      transform: translateY(-3px);
+    }
+
+    .plan input:checked + .card {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 1px #38bdf8, 0 12px 32px #38bdf822;
+      animation: cardSelect 0.4s ease;
+    }
+
+    @keyframes cardSelect {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.03); }
+      100% { transform: scale(1); }
+    }
+
+    .badge {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid #334155;
+      display: grid;
+      place-items: center;
+      transition: border-color 0.3s, background 0.3s;
+    }
+
+    .plan input:checked ~ .badge {
+      background: #38bdf8;
+      border-color: #38bdf8;
+    }
+
+    .badge svg {
+      width: 12px;
+      height: 12px;
+      stroke: #080a0e;
+      stroke-width: 3;
+      fill: none;
+      opacity: 0;
+      transform: scale(0);
+      transition: opacity 0.2s, transform 0.25s;
+    }
+
+    .plan input:checked ~ .badge svg {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .tier {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 0.5rem;
+    }
+
+    .price {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 800;
+      margin-bottom: 0.35rem;
+    }
+
+    .price span { font-size: 0.85rem; font-weight: 500; color: #64748b; }
+
+    .desc { font-size: 0.8rem; color: #94a3b8; line-height: 1.5; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .plan input:checked + .card { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="grid" role="group" aria-label="Select plans">
+    <label class="plan">
+      <input type="checkbox" name="plan">
+      <div class="card">
+        <div class="tier">Starter</div>
+        <div class="price">$12<span>/mo</span></div>
+        <p class="desc">5 projects, basic analytics</p>
+      </div>
+      <span class="badge"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></span>
+    </label>
+    <label class="plan">
+      <input type="checkbox" name="plan" checked>
+      <div class="card">
+        <div class="tier">Pro</div>
+        <div class="price">$49<span>/mo</span></div>
+        <p class="desc">Unlimited projects, priority support</p>
+      </div>
+      <span class="badge"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></span>
+    </label>
+    <label class="plan">
+      <input type="checkbox" name="plan">
+      <div class="card">
+        <div class="tier">Enterprise</div>
+        <div class="price">Custom</div>
+        <p class="desc">Dedicated infra, SLA, SSO</p>
+      </div>
+      <span class="badge"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></span>
+    </label>
+  </div>
+</body>
+</html>

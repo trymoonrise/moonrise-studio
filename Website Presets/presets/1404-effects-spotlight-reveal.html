@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1404
+    slug: effects-spotlight-reveal
+    title: Spotlight Reveal
+    category: effects
+    tags: effects, spotlight, reveal
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1404 — Spotlight Reveal</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:100vh;background:#000;cursor:none}.bg{position:fixed;inset:0;background:url('../stock/media/16-9 Aspect Ratio(image).png') center/cover;filter:brightness(.25)}.spot{position:fixed;width:200px;height:200px;border-radius:50%;background:url('../stock/media/16-9 Aspect Ratio(image).png') center/cover;transform:translate(-50%,-50%);pointer-events:none;box-shadow:0 0 60px 20px rgba(0,0,0,.8)}
+  </style>
+</head>
+<body>
+<div class="bg"></div><div class="spot" id="s"></div>
+<script>document.addEventListener('mousemove',e=>{const s=document.getElementById('s');s.style.left=e.clientX+'px';s.style.top=e.clientY+'px';});</script>
+</body>
+</html>

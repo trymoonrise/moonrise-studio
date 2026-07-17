@@ -4,7 +4,7 @@
  * Cold loads only pull the first page; more rows arrive as the user scrolls.
  */
 (function (global) {
-  const CACHE_KEY = "lpc_leads_cache_v15";
+  const CACHE_KEY = "lpc_leads_cache_v16";
   /** Serve cached leads without a full table download for this long. */
   const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
   /** After this age, do a cheap HEAD count check (not a full refetch) when opening Business Finder. */
@@ -71,13 +71,16 @@
     const mapsUrl = String(row["hfpxzc href"] || row.maps_url || row.mapsUrl || "").trim();
     const name = String(row["qBF1Pd"] || row.business_name || row.name || "").trim();
     const lcr4fd = String(row["lcr4fd href"] || row.website_url || row.website || "").trim();
-    const booking = String(row.booking_url || row.bookingUrl || "").trim();
-    const website =
-      (global.LeadCsvFormat?.resolveWebsiteUrl
+    const website = global.LeadCsvFormat?.resolveLeadWebsite
+      ? global.LeadCsvFormat.resolveLeadWebsite(row)
+      : global.LeadCsvFormat?.resolveWebsiteUrl
         ? global.LeadCsvFormat.resolveWebsiteUrl(row)
-        : "") ||
-      lcr4fd ||
-      booking;
+        : lcr4fd;
+    const hasWebsite = global.LeadCsvFormat?.resolveLeadHasWebsite
+      ? global.LeadCsvFormat.resolveLeadHasWebsite({ ...row, website })
+      : global.LeadCsvFormat?.isValidWebsiteUrl
+        ? global.LeadCsvFormat.isValidWebsiteUrl(website)
+        : website !== "";
     return {
       id: row.id,
       name,
@@ -88,7 +91,7 @@
       mapsUrl,
       website,
       hours: String(row["W4Efsd 3"] || row.hours || row.city_state_zip || "").trim(),
-      hasWebsite: row.has_website === true || website !== "",
+      hasWebsite,
       rating: null,
       reviewCount: null,
       formatValid: false,
@@ -1011,7 +1014,7 @@
     if (websiteFilter === "with") {
       query = query.eq("has_website", true);
     } else if (websiteFilter === "without") {
-      query = query.or("has_website.eq.false,has_website.is.null");
+      query = query.eq("has_website", false);
     }
 
     const { data, error } = await query.order("id", { ascending: true }).limit(limit);

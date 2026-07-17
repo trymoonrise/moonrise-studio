@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0377
+    slug: heroes-video-cinematic
+    title: Cinematic Video Hero
+    category: heroes
+    tags: heroes, landing, video, background
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0377 — Cinematic Video Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      position: relative;
+      color: #fff;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    video {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -2;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.72) 0%,
+        rgba(0, 0, 0, 0.18) 48%,
+        rgba(0, 0, 0, 0.42) 100%
+      );
+    }
+
+    .wrap {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: clamp(2rem, 5vw, 3.5rem) clamp(1.5rem, 5vw, 3rem);
+    }
+
+    .hero {
+      width: min(520px, 100%);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      margin-bottom: 0.85rem;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.68);
+    }
+
+    h1 {
+      font-size: clamp(2.1rem, 5vw, 3.4rem);
+      font-weight: 800;
+      line-height: 1.04;
+      letter-spacing: -0.04em;
+      max-width: 11ch;
+      margin-bottom: 0.75rem;
+    }
+
+    p {
+      color: rgba(255, 255, 255, 0.76);
+      font-size: 0.98rem;
+      line-height: 1.55;
+      max-width: 36ch;
+      margin-bottom: 1.35rem;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 1.15rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 0.68rem 1.15rem;
+      border: none;
+      border-radius: 999px;
+      background: #fff;
+      color: #111827;
+      font-family: inherit;
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.24);
+      transition: transform 0.2s cubic-bezier(.22, .61, .36, 1);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .link {
+      color: rgba(255, 255, 255, 0.82);
+      font-size: 0.84rem;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .link:hover {
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <video src="../stock/media/16-9 Aspect Ratio(video).mp4" autoplay muted loop playsinline aria-hidden="true"></video>
+  <div class="overlay" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <section class="hero">
+      <span class="eyebrow">Cinematic reel</span>
+      <h1>Stories in motion</h1>
+      <p>Full-screen video backgrounds that set the tone before a single word is read.</p>
+      <div class="actions">
+        <button class="btn" type="button">Watch reel</button>
+        <a class="link" href="#">Learn more →</a>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

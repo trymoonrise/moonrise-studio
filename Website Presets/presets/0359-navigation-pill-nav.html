@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0359
+    slug: navigation-pill-nav
+    title: Pill Navigation
+    category: navigation
+    tags: navigation, pill
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0359 — Pill Navigation</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700&family=Outfit:wght@300;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#111;font-family:Outfit,sans-serif}
+    .pill{position:relative;display:flex;gap:0;padding:6px;border:1px solid rgba(255,255,255,.12);border-radius:999px;background:rgba(255,255,255,.03)}
+    .pill a{position:relative;z-index:1;padding:.7rem 1.35rem;color:rgba(255,255,255,.4);text-decoration:none;font-size:.78rem;font-weight:300;letter-spacing:.12em;text-transform:uppercase;transition:color .35s;border-radius:999px}
+    .pill a.active,.pill a:hover{color:#fff}
+    .thumb{position:absolute;top:6px;bottom:6px;left:6px;width:var(--w,80px);border-radius:999px;background:#fff;transition:transform .45s cubic-bezier(.22,1,.36,1),width .45s cubic-bezier(.22,1,.36,1);transform:translateX(var(--x,0px));z-index:0;mix-blend-mode:exclusion}
+    @media(prefers-reduced-motion:reduce){.thumb,a{transition:none}}
+  </style>
+</head>
+<body>
+  <nav class="pill" id="pill">
+    <div class="thumb" id="thumb" aria-hidden="true"></div>
+    <a class="active" href="#">One</a>
+    <a href="#">Two</a>
+    <a href="#">Three</a>
+    <a href="#">Four</a>
+  </nav>
+  <script>
+    const pill=document.getElementById('pill'),thumb=document.getElementById('thumb'),links=[...pill.querySelectorAll('a')];
+    function move(el){
+      const r=pill.getBoundingClientRect(),a=el.getBoundingClientRect();
+      thumb.style.setProperty('--x',(a.left-r.left-6)+'px');
+      thumb.style.setProperty('--w',a.width+'px');
+    }
+    move(links[0]);
+    links.forEach(a=>a.addEventListener('click',e=>{e.preventDefault();links.forEach(l=>l.classList.remove('active'));a.classList.add('active');move(a)}));
+    links.forEach(a=>a.addEventListener('pointerenter',()=>move(a)));
+    pill.addEventListener('pointerleave',()=>move(pill.querySelector('.active')));
+  </script>
+</body>
+</html>

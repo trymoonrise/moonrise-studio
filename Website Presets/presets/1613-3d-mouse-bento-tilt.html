@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1613
+    slug: 3d-mouse-bento-tilt
+    title: 3D Bento Mouse Tilt
+    category: 3d-mouse
+    tags: 3d, mouse, bento
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1613 — 3D Bento Mouse Tilt</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Outfit:wght@400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0a0b12;perspective:1000px;font-family:Outfit,sans-serif;padding:2rem}
+    .bento{display:grid;grid-template-columns:1.2fr 1fr;grid-template-rows:1fr 1fr;gap:12px;width:min(420px,90vw);height:320px;transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg))}
+    .cell{border-radius:18px;padding:1.1rem;color:#fff;border:1px solid rgba(255,255,255,.12);display:flex;flex-direction:column;justify-content:flex-end;transform:translateZ(var(--z,20px));box-shadow:0 16px 30px rgba(0,0,0,.3)}
+    .cell h3{margin:0;font-family:Syne,sans-serif;font-size:1.1rem}
+    .cell p{margin:.25rem 0 0;font-size:.75rem;opacity:.75}
+    .a{grid-row:1/3;background:linear-gradient(160deg,#6c8cff,#3147c8);--z:40px}
+    .b{background:linear-gradient(160deg,#ff6bcb,#a31f6e);--z:20px}
+    .c{background:linear-gradient(160deg,#7ee0c3,#1f8a6e);--z:55px}
+  </style>
+</head>
+<body>
+  <div class="bento" id="bento">
+    <div class="cell a"><h3>Hero</h3><p>Primary block</p></div>
+    <div class="cell b"><h3>Pulse</h3><p>Accent</p></div>
+    <div class="cell c"><h3>Lift</h3><p>Highest Z</p></div>
+  </div>
+  <script>
+    const b=document.getElementById('bento');let rx=0,ry=0,trx=0,try_=0;
+    b.addEventListener('pointermove',e=>{const r=b.getBoundingClientRect();const x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;try_=(x-.5)*22;trx=(.5-y)*16});
+    b.addEventListener('pointerleave',()=>{trx=0;try_=0});
+    (function loop(){rx+=(trx-rx)*.12;ry+=(try_-ry)*.12;b.style.setProperty('--rx',rx+'deg');b.style.setProperty('--ry',ry+'deg');requestAnimationFrame(loop)})();
+  </script>
+</body>
+</html>

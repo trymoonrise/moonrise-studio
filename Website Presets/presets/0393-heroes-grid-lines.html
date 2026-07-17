@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0393
+    slug: heroes-grid-lines
+    title: Grid Lines Hero
+    category: heroes
+    tags: heroes, landing, experimental, grid
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0393 — Grid Lines Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    
+    body{
+      min-height:100vh;
+      margin:0;
+      background:#050507;
+      color:#fff;
+      position:relative;
+      display:grid;
+      place-items:center;
+      padding:2rem;
+      text-align:center;
+      font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+      overflow:hidden;
+    }
+    body::before{
+      content:'';
+      position:fixed;
+      inset:0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+      background-size:56px 56px;
+      mask-image:radial-gradient(ellipse at center, black 22%, transparent 70%);
+      opacity:.9;
+    }
+    body::after{
+      content:'';
+      position:fixed;
+      inset:-20%;
+      background:radial-gradient(circle at 50% 0%, rgba(108,140,255,.14), transparent 55%);
+      filter:blur(30px);
+      opacity:.75;
+      z-index:0;
+      pointer-events:none;
+    }
+    .wrap{position:relative;z-index:1}
+    h1{
+      font-size:clamp(1.6rem,3.6vw,2.4rem);
+      font-weight:700;
+      letter-spacing:-.03em;
+      opacity:.95;
+    }
+    p{
+      margin-top:.9rem;
+      color:rgba(255,255,255,.5);
+      font-size:.72rem;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+    }
+  </style>
+</head>
+<body>
+<div class="wrap"><h1>Precision built</h1><p>grid overlay</p></div>
+
+</body>
+</html>

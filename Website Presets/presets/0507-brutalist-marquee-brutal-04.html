@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0507
+    slug: brutalist-marquee-brutal-04
+    title: Marquee Brutal 04
+    category: brutalist
+    tags: brutalist, marquee
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0507 — Marquee Brutal 04</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@600&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow: hidden;
+      background: #111;
+      font-family: 'Bebas Neue', sans-serif;
+    }
+
+    .hazard {
+      position: fixed;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          -45deg,
+          #111 0 18px,
+          #ffcc00 18px 36px
+        );
+      opacity: 0.15;
+      animation: hazard-shift 2s linear infinite;
+      pointer-events: none;
+    }
+
+    .x {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: grid;
+      place-items: center;
+    }
+
+    .slash {
+      position: absolute;
+      width: 160vmax;
+      height: clamp(4.5rem, 14vw, 8rem);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      border: 5px solid #000;
+      box-shadow: 12px 12px 0 #000;
+    }
+
+    .slash--a {
+      transform: rotate(-28deg);
+      background: #ff003c;
+      z-index: 2;
+    }
+
+    .slash--b {
+      transform: rotate(28deg);
+      background: #00e5ff;
+      z-index: 1;
+    }
+
+    .slash--c {
+      transform: rotate(0deg) translateY(38vh);
+      background: #c8ff00;
+      width: 100vw;
+      height: 3rem;
+      z-index: 3;
+      box-shadow: 0 8px 0 #000;
+    }
+
+    .slash--d {
+      transform: rotate(0deg) translateY(-38vh);
+      background: #fff;
+      width: 100vw;
+      height: 3rem;
+      z-index: 3;
+      box-shadow: 0 8px 0 #000;
+    }
+
+    .track {
+      display: flex;
+      white-space: nowrap;
+      animation: go 7s linear infinite;
+      font-size: clamp(2.8rem, 10vw, 6.5rem);
+      letter-spacing: 0.04em;
+      line-height: 1;
+      color: #000;
+      will-change: transform;
+    }
+
+    .slash--b .track {
+      animation-direction: reverse;
+      animation-duration: 5.5s;
+    }
+
+    .slash--c .track,
+    .slash--d .track {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: clamp(0.9rem, 2.5vw, 1.3rem);
+      letter-spacing: 0.3em;
+      animation-duration: 12s;
+    }
+
+    .slash--d .track { animation-direction: reverse; }
+
+    .word {
+      display: inline-block;
+      padding: 0 0.5em;
+      animation: flip-hit 2.4s steps(1) infinite;
+    }
+
+    .word:nth-child(2n) { animation-delay: -0.6s; }
+    .word:nth-child(3n) { animation-delay: -1.2s; }
+
+    .center-mark {
+      position: relative;
+      z-index: 5;
+      width: clamp(100px, 20vw, 160px);
+      height: clamp(100px, 20vw, 160px);
+      display: grid;
+      place-items: center;
+      background: #000;
+      color: #fff;
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      letter-spacing: 0.05em;
+      border: 6px solid #fff;
+      box-shadow: 0 0 0 6px #000, 16px 16px 0 #ff003c;
+      animation: mark-punch 1.5s steps(1) infinite;
+      text-align: center;
+      line-height: 0.9;
+    }
+
+    @keyframes go {
+      to { transform: translateX(-50%); }
+    }
+
+    @keyframes hazard-shift {
+      to { background-position: 50px 0; }
+    }
+
+    @keyframes flip-hit {
+      0%, 85%, 100% { transform: none; filter: none; }
+      87% { transform: scaleY(0.2) skewX(20deg); }
+      90% { transform: scaleX(1.4) rotate(-4deg); filter: invert(1); }
+      93% { transform: translateY(-8px); }
+    }
+
+    @keyframes mark-punch {
+      0%, 80%, 100% { transform: scale(1) rotate(0); }
+      82% { transform: scale(1.15) rotate(-6deg); }
+      86% { transform: scale(0.9) rotate(4deg); }
+      90% { transform: scale(1.05); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .track, .word, .center-mark, .hazard { animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="hazard" aria-hidden="true"></div>
+  <div class="x">
+    <div class="slash slash--d">
+      <div class="track">
+        <span class="word">CAUTION</span><span class="word">///</span><span class="word">WORK ZONE</span><span class="word">///</span><span class="word">CAUTION</span><span class="word">///</span><span class="word">WORK ZONE</span><span class="word">///</span>
+        <span class="word">CAUTION</span><span class="word">///</span><span class="word">WORK ZONE</span><span class="word">///</span><span class="word">CAUTION</span><span class="word">///</span><span class="word">WORK ZONE</span><span class="word">///</span>
+      </div>
+    </div>
+    <div class="slash slash--a">
+      <div class="track">
+        <span class="word">BRUTAL</span><span class="word">04</span><span class="word">IMPACT</span><span class="word">TYPE</span>
+        <span class="word">BRUTAL</span><span class="word">04</span><span class="word">IMPACT</span><span class="word">TYPE</span>
+      </div>
+    </div>
+    <div class="slash slash--b">
+      <div class="track">
+        <span class="word">COLLISION</span><span class="word">COURSE</span><span class="word">COLLISION</span><span class="word">COURSE</span>
+        <span class="word">COLLISION</span><span class="word">COURSE</span><span class="word">COLLISION</span><span class="word">COURSE</span>
+      </div>
+    </div>
+    <div class="slash slash--c">
+      <div class="track">
+        <span class="word">DO NOT CROSS</span><span class="word">******</span><span class="word">DO NOT CROSS</span><span class="word">******</span>
+        <span class="word">DO NOT CROSS</span><span class="word">******</span><span class="word">DO NOT CROSS</span><span class="word">******</span>
+      </div>
+    </div>
+    <div class="center-mark">X<br>04</div>
+  </div>
+</body>
+</html>

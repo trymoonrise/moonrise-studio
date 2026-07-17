@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1046
+    slug: cta-image-cta-08
+    title: Image Cta 08
+    category: cta
+    tags: cta, image
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1046 — Image Cta 08</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');body{margin:0;min-height:100vh;display:grid;place-items:center;background:#eee;font-family:"DM Sans",system-ui,-apple-system,sans-serif;padding:2rem}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+    .cta{position:relative;width:min(100%,420px);aspect-ratio:4/5;overflow:hidden;background:#111}
+    .bars{position:absolute;inset:0;display:flex}
+    .bar{flex:1;background:#1a1a1a;transform-origin:bottom;animation:rise 2.8s ease-in-out infinite}
+    .bar:nth-child(1){animation-delay:0s;background:#111}.bar:nth-child(2){animation-delay:.15s;background:#1c1c1c}
+    .bar:nth-child(3){animation-delay:.3s;background:#141414}.bar:nth-child(4){animation-delay:.45s;background:#222}
+    .bar:nth-child(5){animation-delay:.6s;background:#181818}
+    @keyframes rise{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
+    .overlay{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:1.75rem;background:linear-gradient(transparent 40%,rgba(0,0,0,.85))}
+    h2{font-family:"Syne",system-ui,sans-serif;color:#fff;font-size:1.7rem;font-weight:800;letter-spacing:-.03em;margin:0 0 .5rem}
+    p{color:rgba(255,255,255,.65);margin:0 0 1.15rem;font-size:.88rem}
+    .btn{align-self:flex-start;padding:10px 20px;border:1px solid #fff;background:transparent;color:#fff;font:inherit;font-size:.82rem;font-weight:600;cursor:pointer;transition:background .25s,color .25s}
+    .btn:hover{background:#fff;color:#111}
+  </style>
+</head>
+<body>
+<div class="cta"><div class="bars" aria-hidden="true"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div><div class="overlay"><h2>See the work</h2><p>Motion as medium — not decoration.</p><button class="btn" type="button">View gallery</button></div></div>
+
+</body>
+</html>

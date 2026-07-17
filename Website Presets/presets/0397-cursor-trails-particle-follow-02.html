@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0397
+    slug: cursor-trails-particle-follow-02
+    title: Particle Follow 02
+    category: cursor-trails
+    tags: cursor-trails, particle
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0397 — Particle Follow 02</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#0b1210}#d{position:fixed;width:12px;height:12px;background:#6cffb8;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);box-shadow:0 0 20px #6cffb8
+  </style>
+</head>
+<body>
+<div id="d"></div>
+<script>const d=document.getElementById('d');let mx=innerWidth/2,my=innerHeight/2,x=mx,y=my;addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});function a(){x+=(mx-x)*.13;y+=(my-y)*.13;d.style.left=x+'px';d.style.top=y+'px';requestAnimationFrame(a);}a();</script>
+</body>
+</html>

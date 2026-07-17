@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1611
+    slug: 3d-mouse-stack-shift
+    title: 3D Stack Mouse Shift
+    category: 3d-mouse
+    tags: 3d, mouse, stack
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1611 — 3D Stack Mouse Shift</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Outfit:wght@400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0a0b12;perspective:1100px;overflow:hidden;font-family:Outfit,sans-serif}
+    .stack{position:relative;width:240px;height:320px;transform-style:preserve-3d;transform:rotateX(16deg) rotateY(var(--ry,-16deg))}
+    .card{position:absolute;inset:0;border-radius:18px;padding:1.4rem;color:#fff;display:flex;flex-direction:column;justify-content:flex-end;border:1px solid rgba(255,255,255,.15);transform:translateZ(calc(var(--i)*-36px)) translateX(calc(var(--i)*var(--shift,8px))) translateY(calc(var(--i)*12px))}
+    .card h3{margin:0;font-family:Syne,sans-serif;font-size:1.35rem}
+    .card p{margin:.3rem 0 0;font-size:.8rem;opacity:.8}
+    .c0{background:linear-gradient(160deg,#6c8cff,#3147c8);z-index:4;--i:0}
+    .c1{background:linear-gradient(160deg,#ff6bcb,#a31f6e);z-index:3;--i:1}
+    .c2{background:linear-gradient(160deg,#7ee0c3,#1f8a6e);z-index:2;--i:2}
+    .c3{background:linear-gradient(160deg,#ffd16c,#b07a12);z-index:1;--i:3}
+    .hint{position:fixed;bottom:1.4rem;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.35);font-family:Syne,sans-serif}
+  </style>
+</head>
+<body>
+  <div class="stack" id="stack">
+    <div class="card c3"><h3>04</h3><p>Deepest</p></div>
+    <div class="card c2"><h3>03</h3><p>Mid</p></div>
+    <div class="card c1"><h3>02</h3><p>Near</p></div>
+    <div class="card c0"><h3>01</h3><p>Front</p></div>
+  </div>
+  <div class="hint">Shift the stack</div>
+  <script>
+    const stack=document.getElementById('stack');let ry=-16,try_=-16,shift=8,tshift=8;
+    addEventListener('pointermove',e=>{const x=(e.clientX/innerWidth-.5)*2;try_=x*-28;tshift=8+x*28});
+    (function loop(){ry+=(try_-ry)*.1;shift+=(tshift-shift)*.1;stack.style.setProperty('--ry',ry+'deg');stack.style.setProperty('--shift',shift+'px');requestAnimationFrame(loop)})();
+  </script>
+</body>
+</html>

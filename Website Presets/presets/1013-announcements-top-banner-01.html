@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1013
+    slug: announcements-top-banner-01
+    title: Top Banner 01
+    category: announcements
+    tags: announcements, banner
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1013 — Top Banner 01</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@600;700&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#f6f4ef;font-family:Manrope,sans-serif}
+    .tunnel{
+      position:fixed;top:0;left:0;right:0;height:3.4rem;z-index:20;overflow:hidden;
+      background:#111;display:flex;align-items:center;
+    }
+    .marquee{
+      display:flex;width:max-content;
+      animation:marquee var(--dur,28s) linear infinite;
+      will-change:transform;
+    }
+    .marquee:hover{animation-play-state:paused}
+    .segment{
+      display:flex;align-items:center;flex-shrink:0;
+      color:#fff;font-size:.82rem;font-weight:700;letter-spacing:.04em;
+    }
+    .segment span{padding:0 1.5rem;opacity:.9}
+    .segment span em{font-style:normal;color:#7ee0c3}
+    .page{padding:5rem 1.5rem;text-align:center;color:#999}
+    @keyframes marquee{to{transform:translate3d(-50%,0,0)}}
+    @media (prefers-reduced-motion:reduce){.marquee{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="tunnel" role="status">
+    <div class="marquee" id="marquee">
+      <div class="segment" id="segA">
+        <span>New pricing <em>starts Monday</em></span><span>•</span><span>Early access unlocked</span><span>•</span><span>Invite your team free</span><span>•</span>
+      </div>
+      <div class="segment" id="segB" aria-hidden="true"></div>
+    </div>
+  </div>
+  <p class="page">Seamless top ticker — no loop jump.</p>
+  <script>
+    const segB=document.getElementById('segB');
+    segB.innerHTML=document.getElementById('segA').innerHTML;
+    const marquee=document.getElementById('marquee');
+    const w=document.getElementById('segA').offsetWidth;
+    const pxPerSec=42;
+    marquee.style.setProperty('--dur',(w/pxPerSec)+'s');
+  </script>
+</body>
+</html>

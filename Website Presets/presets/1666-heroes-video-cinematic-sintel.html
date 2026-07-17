@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1666
+    slug: heroes-video-cinematic-sintel
+    title: Cinematic Sintel Video Hero
+    category: heroes
+    tags: heroes, landing, video, cinematic
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1666 — Cinematic Sintel Video Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    
+    body{margin:0;min-height:100vh;position:relative;color:#fff;font-family:system-ui,-apple-system,sans-serif;overflow:hidden}
+    video.bg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;filter:brightness(.82) saturate(1.08)}
+    .grain{position:fixed;inset:0;z-index:-1;opacity:.08;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+    .vignette{position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,.55) 100%)}
+    .wrap{min-height:100vh;display:grid;place-items:center;text-align:center;padding:2rem}
+    h1{font-size:clamp(2.5rem,7vw,4.5rem);font-weight:900;letter-spacing:-.04em;text-transform:uppercase;line-height:.95}
+  .sub{margin-top:1rem;font-size:.78rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.55)}
+    @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}video{animation:none!important}}
+  </style>
+</head>
+<body>
+<video class="bg" src="../stock/media/heroes/forest-16x9.mp4" autoplay muted loop playsinline aria-hidden="true"></video><div class="grain" aria-hidden="true"></div><div class="vignette" aria-hidden="true"></div><div class="wrap"><h1>Epic<br>Motion</h1><p class="sub">Cinematic reel</p></div>
+
+</body>
+</html>

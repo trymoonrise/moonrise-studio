@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0215
+    slug: alerts-warning-alert
+    title: Warning Alert
+    category: alerts
+    tags: alerts, warning
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0215 — Warning Alert</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Mono:wght@500&display=swap');
+
+    :root {
+      --amber: #ffb000;
+      --black: #14100a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      padding: 2rem;
+      background: #1a150c;
+      font-family: 'Archivo Black', sans-serif;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: -20%;
+      background: repeating-linear-gradient(
+        45deg,
+        var(--amber) 0 40px,
+        var(--black) 40px 80px
+      );
+      opacity: 0.06;
+      animation: crawl 3s linear infinite;
+    }
+
+    .strobe {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(255, 176, 0, 0.18), transparent 60%);
+      animation: strobe 1.1s steps(1) infinite;
+      pointer-events: none;
+    }
+
+    .alert {
+      position: relative;
+      width: min(100%, 480px);
+      background: var(--black);
+      border: 3px solid var(--amber);
+      color: #fff3d6;
+      overflow: hidden;
+      box-shadow: 0 0 0 3px var(--black), 0 0 60px rgba(255, 176, 0, 0.35);
+      transform: rotate(-1.5deg);
+      animation: shake-in 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+    }
+
+    .tape {
+      height: 26px;
+      background: repeating-linear-gradient(
+        45deg,
+        var(--amber) 0 22px,
+        var(--black) 22px 44px
+      );
+      animation: crawl 2s linear infinite;
+    }
+
+    .body {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      padding: 1.4rem 1.5rem;
+    }
+
+    .bang {
+      flex-shrink: 0;
+      width: 60px;
+      height: 60px;
+      display: grid;
+      place-items: center;
+      font-size: 2.6rem;
+      color: var(--amber);
+      animation: flash 0.8s ease-in-out infinite;
+      text-shadow: 0 0 20px rgba(255, 176, 0, 0.8);
+    }
+
+    .tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.34em;
+      text-transform: uppercase;
+      color: var(--amber);
+    }
+
+    .title {
+      display: block;
+      margin: 0.2rem 0 0.4rem;
+      font-size: 1.5rem;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      line-height: 0.95;
+    }
+
+    .msg {
+      margin: 0;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.82rem;
+      line-height: 1.5;
+      color: rgba(255, 243, 214, 0.7);
+    }
+
+    .countdown {
+      font-variant-numeric: tabular-nums;
+      color: var(--amber);
+    }
+
+    @keyframes crawl { to { background-position: 62px 0; } }
+    @keyframes strobe { 0%, 60% { opacity: 0.4; } 61%, 100% { opacity: 1; } }
+    @keyframes flash { 50% { opacity: 0.35; transform: scale(0.94); } }
+    @keyframes shake-in {
+      0% { opacity: 0; transform: rotate(-1.5deg) translateX(-16px); }
+      20% { transform: rotate(-1.5deg) translateX(12px); }
+      40% { transform: rotate(-1.5deg) translateX(-8px); }
+      60% { transform: rotate(-1.5deg) translateX(5px); }
+      100% { opacity: 1; transform: rotate(-1.5deg) translateX(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body::before, .strobe, .tape, .bang, .alert { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="strobe" aria-hidden="true"></div>
+  <div class="alert" role="alert">
+    <div class="tape" aria-hidden="true"></div>
+    <div class="body">
+      <div class="bang" aria-hidden="true">⚠</div>
+      <div>
+        <span class="tag">Caution · Action required</span>
+        <strong class="title">Session expiring</strong>
+        <p class="msg">Your secure session ends in <span class="countdown" id="cd">05:00</span>. Save your work before the lockout triggers.</p>
+      </div>
+    </div>
+    <div class="tape" aria-hidden="true"></div>
+  </div>
+
+  <script>
+    let t = 300;
+    const cd = document.getElementById('cd');
+    setInterval(() => {
+      if (t > 0) t--;
+      const m = String(Math.floor(t / 60)).padStart(2, '0');
+      const s = String(t % 60).padStart(2, '0');
+      cd.textContent = m + ':' + s;
+    }, 1000);
+  </script>
+</body>
+</html>

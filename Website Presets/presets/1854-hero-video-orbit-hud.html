@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1854
+    slug: hero-video-orbit-hud
+    title: Orbit HUD Video Hero
+    category: hero
+    tags: hero, video, interactive, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1854 — Orbit HUD Video Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;overflow:hidden;background:#050505;color:#fff;font-family:Syne,sans-serif}
+    video{display:block}
+    button{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit}
+    .stage{position:relative;min-height:100vh;overflow:hidden}
+video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.5)}
+.hud{position:absolute;inset:0;z-index:2;pointer-events:none}
+.ring{position:absolute;left:50%;top:50%;width:min(420px,70vw);height:min(420px,70vw);margin:calc(min(420px,70vw)/-2);border:1px dashed rgba(255,255,255,.25);border-radius:50%;animation:spin 28s linear infinite}
+.ring i{position:absolute;padding:.45rem .7rem;border-radius:999px;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);font:500 .6rem 'DM Mono',monospace;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
+.ring i:nth-child(1){top:-14px;left:50%;transform:translateX(-50%)}
+.ring i:nth-child(2){right:-30px;top:50%;transform:translateY(-50%)}
+.ring i:nth-child(3){bottom:-14px;left:50%;transform:translateX(-50%)}
+.ring i:nth-child(4){left:-40px;top:50%;transform:translateY(-50%)}
+.copy{position:relative;z-index:3;min-height:100vh;display:grid;place-items:center;text-align:center}
+h1{font-size:clamp(2.2rem,6vw,4rem);font-weight:800;letter-spacing:-.05em;margin:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="stage"><video src="../stock/media/16-9 Aspect Ratio(video).mp4" autoplay muted loop playsinline></video><div class="hud"><div class="ring"><i>ISO 400</i><i>24fps</i><i>REC</i><i>4K</i></div></div><div class="copy"><h1>Camera HUD</h1></div></div>
+
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0625
+    slug: folder-dropdown-breadcrumb-path-03
+    title: Path Segment Navigator
+    category: folder-dropdown
+    tags: folder-dropdown, breadcrumb
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0625 — Path Segment Navigator</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #080a0e;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+      padding: 1.5rem;
+    }
+
+    .path-bar {
+      width: min(520px, 94vw);
+    }
+
+    .label {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 0.75rem;
+    }
+
+    .crumbs {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.5rem;
+      background: #0f1419;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+    }
+
+    .crumb-wrap { position: relative; }
+
+    .crumb {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.5rem 0.75rem;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      color: #94a3b8;
+      font-size: 0.85rem;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .crumb:hover, .crumb[aria-expanded="true"] {
+      background: #1e293b;
+      color: #38bdf8;
+    }
+
+    .crumb.current { color: #38bdf8; font-weight: 600; pointer-events: none; }
+
+    .sep {
+      color: #334155;
+      font-size: 0.75rem;
+      user-select: none;
+    }
+
+    .dropdown {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      min-width: 180px;
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 0.35rem;
+      opacity: 0;
+      transform: translateY(-6px) scale(0.96);
+      pointer-events: none;
+      transition: opacity 0.25s, transform 0.25s;
+      z-index: 5;
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .dropdown.open {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+      animation: dropIn 0.3s ease;
+    }
+
+    @keyframes dropIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .dropdown button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 0.55rem 0.75rem;
+      border: none;
+      border-radius: 5px;
+      background: transparent;
+      color: #cbd5e1;
+      font-size: 0.85rem;
+      transition: background 0.15s, transform 0.15s;
+    }
+
+    .dropdown button:hover {
+      background: #38bdf822;
+      color: #38bdf8;
+      transform: translateX(3px);
+    }
+
+    .preview {
+      margin-top: 1.25rem;
+      padding: 1rem;
+      background: #0c1018;
+      border: 1px dashed #334155;
+      border-radius: 8px;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      color: #64748b;
+      animation: pathGlow 4s ease-in-out infinite;
+    }
+
+    @keyframes pathGlow {
+      0%, 100% { border-color: #334155; }
+      50% { border-color: #38bdf866; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .preview { animation: none; }
+      .dropdown.open { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="path-bar">
+    <div class="label">Current location</div>
+    <nav class="crumbs" aria-label="Folder path">
+      <div class="crumb-wrap">
+        <button type="button" class="crumb" data-dd="root">Workspace ▾</button>
+        <div class="dropdown" id="dd-root">
+          <button type="button" data-seg="Acme Corp">Acme Corp</button>
+          <button type="button" data-seg="Personal">Personal</button>
+          <button type="button" data-seg="Archive">Archive</button>
+        </div>
+      </div>
+      <span class="sep">/</span>
+      <div class="crumb-wrap">
+        <button type="button" class="crumb" data-dd="proj">Projects ▾</button>
+        <div class="dropdown" id="dd-proj">
+          <button type="button" data-seg="Brand Refresh">Brand Refresh</button>
+          <button type="button" data-seg="Platform v2">Platform v2</button>
+          <button type="button" data-seg="Research">Research</button>
+        </div>
+      </div>
+      <span class="sep">/</span>
+      <span class="crumb current" id="leaf">Assets</span>
+    </nav>
+    <div class="preview" id="preview">/ Workspace / Projects / Assets</div>
+  </div>
+
+  <script>
+    const state = { root: 'Workspace', proj: 'Projects', leaf: 'Assets' };
+    const preview = document.getElementById('preview');
+    let openDd = null;
+
+    function render() {
+      preview.textContent = `/ ${state.root} / ${state.proj} / ${state.leaf}`;
+    }
+
+    function closeAll() {
+      document.querySelectorAll('.dropdown').forEach((d) => d.classList.remove('open'));
+      document.querySelectorAll('.crumb[data-dd]').forEach((c) => c.setAttribute('aria-expanded', 'false'));
+      openDd = null;
+    }
+
+    document.querySelectorAll('.crumb[data-dd]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.dd;
+        const dd = document.getElementById(`dd-${id}`);
+        if (openDd === dd) { closeAll(); return; }
+        closeAll();
+        dd.classList.add('open');
+        btn.setAttribute('aria-expanded', 'true');
+        openDd = dd;
+      });
+    });
+
+    document.querySelectorAll('.dropdown button').forEach((opt) => {
+      opt.addEventListener('click', () => {
+        const wrap = opt.closest('.dropdown');
+        const key = wrap.id.replace('dd-', '');
+        state[key] = opt.dataset.seg;
+        render();
+        closeAll();
+      });
+    });
+
+    document.addEventListener('click', closeAll);
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1597
+    slug: 3d-card-cylinder-scroll
+    title: 3D Cylinder Card Scroll
+    category: 3d-effects
+    tags: 3d, cylinder, scroll
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1597 — 3D Cylinder Card Scroll</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;background:#06070c;color:#fff;font-family:Outfit,sans-serif}
+    .pin{height:480vh}
+    .stage{position:sticky;top:0;height:100vh;display:grid;place-items:center;perspective:1600px;overflow:hidden}
+    .cylinder{position:relative;width:min(220px,48vw);height:min(300px,62vw);transform-style:preserve-3d;will-change:transform}
+    .face{position:absolute;inset:0;border-radius:18px;background:linear-gradient(160deg,var(--a),var(--b));display:grid;place-items:center;padding:1.25rem;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.4),inset 0 0 0 1px rgba(255,255,255,.1);backface-visibility:hidden;transform:rotateX(calc(var(--i)*60deg)) translateZ(210px)}
+    .face b{font-family:Syne,sans-serif;font-size:clamp(1.4rem,4vw,2rem);letter-spacing:-.05em}
+    .face span{display:block;margin-top:.5rem;font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;opacity:.6}
+    .hud{position:absolute;right:1.5rem;top:50%;transform:translateY(-50%);font-family:Syne,sans-serif;font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;opacity:.4;writing-mode:vertical-rl}
+    .floor{position:absolute;width:min(640px,90vw);height:180px;border-radius:50%;background:radial-gradient(ellipse,rgba(108,140,255,.15),transparent 65%);transform:translateY(180px) rotateX(80deg);pointer-events:none}
+    .intro{position:absolute;top:1.5rem;left:50%;transform:translateX(-50%);font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;opacity:.4}
+    @media(prefers-reduced-motion:reduce){.cylinder{transform:rotateX(-20deg)!important}}
+  </style>
+</head>
+<body>
+  <div class="pin">
+    <div class="stage">
+      <p class="intro">Scroll · cylinder rotates on X</p>
+      <div class="floor" aria-hidden="true"></div>
+      <div class="cylinder" id="cyl">
+        <div class="face" style="--i:0;--a:#ff4d6d;--b:#5a1020"><b>North</b><span>00°</span></div>
+        <div class="face" style="--i:1;--a:#6c8cff;--b:#1a2a6e"><b>Rise</b><span>60°</span></div>
+        <div class="face" style="--i:2;--a:#7ee0c3;--b:#14503f"><b>Flux</b><span>120°</span></div>
+        <div class="face" style="--i:3;--a:#ffd16c;--b:#7a4a10"><b>South</b><span>180°</span></div>
+        <div class="face" style="--i:4;--a:#c084fc;--b:#4c1d95"><b>Drift</b><span>240°</span></div>
+        <div class="face" style="--i:5;--a:#38bdf8;--b:#0c4a6e"><b>Loop</b><span>300°</span></div>
+      </div>
+      <div class="hud" id="hud">0°</div>
+    </div>
+  </div>
+  <script>
+    const cyl=document.getElementById('cyl');
+    const hud=document.getElementById('hud');
+    const pin=document.querySelector('.pin');
+    const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function tick(){
+      const r=pin.getBoundingClientRect();
+      const total=Math.max(pin.offsetHeight-innerHeight,1);
+      const p=Math.min(1,Math.max(0,-r.top/total));
+      const deg=p*360;
+      if(!reduced) cyl.style.transform=`rotateX(${-deg}deg)`;
+      hud.textContent=Math.round(deg)+'°';
+    }
+    tick();
+    addEventListener('scroll',tick,{passive:true});
+    addEventListener('resize',tick,{passive:true});
+  </script>
+</body>
+</html>

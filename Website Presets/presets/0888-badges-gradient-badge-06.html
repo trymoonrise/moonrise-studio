@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0888
+    slug: badges-gradient-badge-06
+    title: Gradient Badge 06
+    category: badges
+    tags: badges, gradient
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0888 — Gradient Badge 06</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&display=swap');
+
+    * { box-sizing: border-box; }
+    body {
+      display: grid; place-items: center; min-height: 100vh;
+      background: #08060f; font-family: Outfit, sans-serif; overflow: hidden;
+    }
+
+    .badge {
+      position: relative;
+      padding: 1rem 1.8rem;
+      border-radius: 18px;
+      font-size: 1.1rem; font-weight: 700;
+      letter-spacing: 0.04em;
+      color: #fff;
+      overflow: hidden;
+      isolation: isolate;
+      box-shadow: 0 20px 50px rgba(120, 40, 200, 0.4);
+    }
+
+    .aurora {
+      position: absolute; inset: -60%;
+      z-index: -1;
+      background:
+        radial-gradient(circle at 20% 30%, #ff2d9b, transparent 40%),
+        radial-gradient(circle at 80% 20%, #7c3aed, transparent 45%),
+        radial-gradient(circle at 50% 80%, #06b6d4, transparent 40%);
+      filter: blur(12px);
+      animation: swirl 8s linear infinite;
+    }
+
+    .badge span { position: relative; z-index: 1; }
+
+    @keyframes swirl { to { transform: rotate(360deg) scale(1.15); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .aurora { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="badge">
+    <div class="aurora" aria-hidden="true"></div>
+    <span>✦ Aurora Pass</span>
+  </div>
+</body>
+</html>

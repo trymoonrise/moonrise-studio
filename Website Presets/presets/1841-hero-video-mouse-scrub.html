@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1841
+    slug: hero-video-mouse-scrub
+    title: Mouse Scrub Video Hero
+    category: hero
+    tags: hero, video, interactive, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1841 — Mouse Scrub Video Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;overflow:hidden;background:#050505;color:#fff;font-family:Syne,sans-serif}
+    video{display:block}
+    button{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit}
+    .stage{position:relative;min-height:100vh;display:grid;place-items:end start;padding:clamp(2rem,5vw,4rem)}
+video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+.shade{position:absolute;inset:0;background:linear-gradient(transparent 40%,rgba(0,0,0,.75));z-index:1}
+.copy{position:relative;z-index:2;max-width:18ch}
+h1{font-size:clamp(2.5rem,7vw,5rem);font-weight:800;letter-spacing:-.06em;margin:0 0 .75rem;line-height:.95}
+.bar{width:min(320px,70vw);height:4px;background:rgba(255,255,255,.2);border-radius:99px;overflow:hidden;margin-top:1.25rem}
+.fill{height:100%;width:0;background:#fff;border-radius:inherit}
+.meta{font:500 .65rem 'DM Mono',monospace;letter-spacing:.2em;text-transform:uppercase;opacity:.55;margin-top:.6rem}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="stage" id="s"><video id="v" src="../stock/media/16-9 Aspect Ratio(video).mp4" muted playsinline></video><div class="shade"></div><div class="copy"><h1>Scrub the timeline</h1><div class="bar"><div class="fill" id="f"></div></div><p class="meta" id="m">0%</p></div></div>
+<script>const v=document.getElementById('v'),f=document.getElementById('f'),m=document.getElementById('m'),s=document.getElementById('s');v.addEventListener('loadedmetadata',()=>{});s.onmousemove=e=>{if(!v.duration)return;const p=Math.min(1,Math.max(0,e.clientX/innerWidth));v.currentTime=p*v.duration;f.style.width=(p*100)+'%';m.textContent=Math.round(p*100)+'%'};</script>
+</body>
+</html>

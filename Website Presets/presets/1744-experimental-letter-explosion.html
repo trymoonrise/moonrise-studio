@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1744
+    slug: experimental-letter-explosion
+    title: Letter Explosion Grid
+    category: experimental
+    tags: experimental, explode, letters, grid
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1744 — Letter Explosion Grid</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#050505;display:grid;place-items:center;overflow:hidden;font-family:Anton,sans-serif;cursor:pointer;color:#f4f1ea}
+    .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.4rem;width:min(90vw,420px)}
+    .cell{aspect-ratio:1;display:grid;place-items:center;font-size:clamp(1.6rem,6vw,2.8rem);background:#151515;border:2px solid #333;transition:transform .6s cubic-bezier(.2,1.4,.3,1),background .3s,color .3s}
+    .cell.boom{background:#ff0033;color:#fff;border-color:#ff0033}
+    .hint{position:fixed;bottom:1.3rem;font-family:monospace;font-size:.65rem;letter-spacing:.24em;text-transform:uppercase;color:rgba(244,241,234,.35)}
+  </style>
+</head>
+<body>
+  <div class="grid" id="grid" aria-label="BOOM"></div>
+  <p class="hint">Click to detonate</p>
+  <script>
+    const letters='B O O M !'.split(' ');
+    const grid=document.getElementById('grid');
+    const cells=[];
+    for(let i=0;i<25;i++){
+      const c=document.createElement('div');
+      c.className='cell';
+      c.textContent=letters[i%letters.length];
+      grid.appendChild(c);
+      cells.push(c);
+    }
+    function boom(){
+      cells.forEach((c,i)=>{
+        const a=Math.random()*Math.PI*2;
+        const d=40+Math.random()*160;
+        c.style.transform=`translate(${Math.cos(a)*d}px,${Math.sin(a)*d}px) rotate(${(Math.random()-.5)*80}deg) scale(${.7+Math.random()*1.2})`;
+        c.classList.add('boom');
+        setTimeout(()=>{c.style.transform='';c.classList.remove('boom');},900+i*12);
+      });
+    }
+    boom();
+    addEventListener('click',boom);
+  </script>
+</body>
+</html>

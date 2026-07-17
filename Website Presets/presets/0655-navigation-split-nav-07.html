@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0655
+    slug: navigation-split-nav-07
+    title: Split Nav 07
+    category: navigation
+    tags: navigation, split
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0655 — Split Nav 07</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Outfit:wght@300&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#fafafa;color:#111;font-family:Outfit,sans-serif}
+    nav{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:1.5rem clamp(1.25rem,4vw,3rem);gap:1rem}
+    .left,.right{display:flex;gap:1.75rem}
+    .right{justify-content:flex-end}
+    .left a,.right a{text-decoration:none;color:#111;font-size:.75rem;font-weight:300;letter-spacing:.14em;text-transform:uppercase;opacity:.35;transition:opacity .3s}
+    .left a:hover,.right a:hover{opacity:1}
+    .logo{font-family:Syne,sans-serif;font-weight:800;letter-spacing:-.04em;font-size:1.1rem}
+    .stage{height:70vh;display:grid;place-items:center}
+    .stage h1{margin:0;font-family:Syne,sans-serif;font-size:clamp(2.5rem,8vw,5rem);letter-spacing:-.05em;font-weight:800;text-align:center;line-height:.95}
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="left"><a href="#">Work</a><a href="#">Studio</a></div>
+    <div class="logo">SPLIT</div>
+    <div class="right"><a href="#">Journal</a><a href="#">Contact</a></div>
+  </nav>
+  <div class="stage"><h1>Left / Right<br>Nothing middle</h1></div>
+</body>
+</html>

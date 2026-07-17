@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0796
+    slug: tooltips-dark-tip-05
+    title: Dark Tip 05
+    category: tooltips
+    tags: tooltips, dark
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0796 — Dark Tip 05</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');*{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#050505;color:#fff;font-family:"DM Sans",system-ui,-apple-system,sans-serif;padding:2rem;position:relative;overflow:hidden}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.tip,.pop{opacity:1!important;transform:none!important;visibility:visible!important}}
+    body::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:48px 48px;pointer-events:none}
+    .wrap{position:relative;z-index:1}
+    .btn{padding:12px 28px;border:1px solid #2a2a2a;background:#111;color:#fff;font-family:"DM Sans",system-ui,-apple-system,sans-serif;font-size:.86rem;font-weight:600;cursor:pointer;transition:border-color .25s}
+    .btn:hover{border-color:#666}
+    .tip{position:absolute;bottom:calc(100% + 12px);left:50%;translate:-50% 6px;padding:8px 14px;background:#fff;color:#050505;font-size:.78rem;font-weight:600;letter-spacing:.02em;white-space:nowrap;opacity:0;visibility:hidden;box-shadow:0 12px 40px rgba(0,0,0,.45);transition:opacity .28s,translate .28s cubic-bezier(.22,1,.36,1),visibility .28s}
+    .wrap:hover .tip{opacity:1;visibility:visible;translate:-50% 0}
+  </style>
+</head>
+<body>
+<div class="wrap"><button class="btn" type="button">Dark surface</button><div class="tip" role="tooltip">High-contrast tip</div></div>
+
+</body>
+</html>

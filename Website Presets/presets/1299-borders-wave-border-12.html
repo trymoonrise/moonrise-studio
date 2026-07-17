@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1299
+    slug: borders-wave-border-12
+    title: Wave Border 12
+    category: borders
+    tags: borders, wave
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1299 — Wave Border 12</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0d0d0d;font-family:"DM Sans",system-ui,-apple-system,sans-serif;padding:2rem;color:#fff}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+    .wrap{position:relative;width:min(100%,320px)}
+    svg{display:block;width:100%;height:auto}
+    .wave{fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-dasharray:8 6;animation:wave 6s linear infinite}
+    @keyframes wave{to{stroke-dashoffset:-56}}
+    .content{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:2rem}
+    h2{font-family:"Syne",system-ui,sans-serif;font-size:1.35rem;font-weight:800;letter-spacing:-.03em;margin:0 0 .35rem}
+    p{margin:0;color:#888;font-size:.86rem}
+  </style>
+</head>
+<body>
+<div class="wrap"><svg viewBox="0 0 320 200" aria-hidden="true"><path class="wave" d="M8,24 C40,8 72,40 104,24 S168,8 200,24 S264,40 296,24 L312,24 L312,176 C280,192 248,160 216,176 S152,192 120,176 S56,160 24,176 L8,176 Z"/></svg><div class="content"><h2>Wave edge</h2><p>Organic SVG perimeter.</p></div></div>
+
+</body>
+</html>

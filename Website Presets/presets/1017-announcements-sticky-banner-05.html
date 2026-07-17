@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1017
+    slug: announcements-sticky-banner-05
+    title: Sticky Banner 05
+    category: announcements
+    tags: announcements, sticky
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1017 — Sticky Banner 05</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;background:#101218;color:#fff;font-family:Manrope,sans-serif}
+    .sticky{
+      position:sticky;top:0;z-index:30;height:3.6rem;overflow:hidden;perspective:900px;
+      border-bottom:1px solid rgba(255,255,255,.08);background:rgba(16,18,24,.85);backdrop-filter:blur(14px);
+    }
+    .layers{position:relative;height:100%;transform-style:preserve-3d}
+    .layer{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:.75rem;font-size:.88rem;font-weight:600}
+    .l1{transform:translateZ(30px)}
+    .l2{transform:translateZ(0);opacity:.2;filter:blur(1px)}
+    .chip{padding:.2rem .5rem;border-radius:999px;background:rgba(126,224,195,.15);color:#7ee0c3;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase}
+    .content{padding:2rem 1.5rem 60vh;max-width:40rem;margin:0 auto;color:rgba(255,255,255,.55);line-height:1.7}
+    .content h1{color:#fff;font-size:clamp(1.8rem,4vw,2.6rem);margin:0 0 1rem}
+    @media (prefers-reduced-motion:reduce){.l2{filter:none;opacity:.15}}
+  </style>
+</head>
+<body>
+  <div class="sticky" role="status">
+    <div class="layers">
+      <div class="layer l2" aria-hidden="true"><span class="chip">Pinned</span> Security update shipping tonight</div>
+      <div class="layer l1"><span class="chip">Pinned</span> Security update shipping tonight</div>
+    </div>
+  </div>
+  <main class="content">
+    <h1>Sticky depth banner</h1>
+    <p>Scroll the page — the announcement stays locked while a ghost layer drifts in parallax behind the live message.</p>
+    <p>Keep scrolling to feel the layered sticky plane hold its place at the top of the viewport.</p>
+  </main>
+</body>
+</html>

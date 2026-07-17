@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1481
+    slug: scroll-parallax-split
+    title: Parallax Split Scroll
+    category: scroll-effects
+    tags: scroll, parallax, split
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1481 — Parallax Split Scroll</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#111;color:#fff}.split{display:grid;grid-template-columns:1fr 1fr;min-height:300vh}.col{position:sticky;top:0;height:100vh;display:grid;place-items:center;overflow:hidden}.col--l{background:#6c8cff}.col--r{background:#ff6cb0}.col img{width:120%;height:120%;object-fit:cover;will-change:transform}.col--l img{transform:translateY(var(--y,0))}.col--r img{transform:translateY(calc(var(--y,0) * -1))}
+  </style>
+</head>
+<body>
+<div class="split"><div class="col col--l"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div><div class="col col--r"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt="" style="filter:hue-rotate(60deg)"></div></div>
+<script>addEventListener('scroll',()=>{const y=scrollY*.15;document.querySelectorAll('.col').forEach(c=>c.style.setProperty('--y',y+'px'));},{passive:true});</script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0350
+    slug: borders-gradient-border
+    title: Gradient Border
+    category: borders
+    tags: borders, gradient
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0350 — Gradient Border</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0a0a0a;color:#fff;font-family:"DM Sans",system-ui,-apple-system,sans-serif;padding:2rem;overflow:hidden}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+    .frame{position:relative;width:min(100%,320px);padding:2px;border-radius:20px;background:linear-gradient(120deg,#fff,#888,#fff,#444);background-size:300% 300%;animation:flow 5s ease infinite}
+    @keyframes flow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+    .inner{padding:2.25rem 2rem;border-radius:18px;background:#0a0a0a;text-align:center;position:relative}
+    .inner::before{content:'';position:absolute;inset:12px;border:1px solid rgba(255,255,255,.06);border-radius:12px;pointer-events:none}
+    .tag{font-size:.65rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#666;margin-bottom:.9rem}
+    h2{font-family:"Syne",system-ui,sans-serif;font-size:clamp(1.5rem,4vw,2rem);font-weight:800;letter-spacing:-.04em;margin:0 0 .5rem}
+    p{margin:0;color:#888;font-size:.9rem;line-height:1.5}
+  </style>
+</head>
+<body>
+<div class="frame"><div class="inner"><div class="tag">Edge</div><h2>Gradient frame</h2><p>Monochrome spectrum in motion.</p></div></div>
+
+</body>
+</html>

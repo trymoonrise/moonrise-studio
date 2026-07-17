@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1050
+    slug: cta-video-cta-12
+    title: Video Cta 12
+    category: cta
+    tags: cta, video
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1050 — Video Cta 12</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0d0d0d;color:#fff;font-family:"DM Sans",system-ui,-apple-system,sans-serif;padding:2rem}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+    .stage{width:min(100%,560px);text-align:center}
+    .screen{position:relative;aspect-ratio:16/9;background:#161616;border:1px solid #2a2a2a;overflow:hidden;margin-bottom:1.5rem}
+    .scan{position:absolute;left:0;right:0;height:40%;background:linear-gradient(transparent,rgba(255,255,255,.06),transparent);animation:scan 3.2s ease-in-out infinite}
+    @keyframes scan{0%{top:-40%}100%{top:100%}}
+    .play{position:absolute;inset:0;display:grid;place-items:center}
+    .play button{width:56px;height:56px;border-radius:50%;border:1.5px solid #fff;background:transparent;color:#fff;cursor:pointer;display:grid;place-items:center;transition:background .25s,transform .25s}
+    .play button:hover{background:rgba(255,255,255,.1);transform:scale(1.06)}
+    .play svg{width:18px;height:18px;margin-left:2px;fill:currentColor}
+    h2{font-family:"Syne",system-ui,sans-serif;font-size:1.55rem;font-weight:800;letter-spacing:-.03em;margin:0 0 .5rem}
+    p{color:#888;margin:0 0 1.25rem;font-size:.92rem}
+    .btn{padding:11px 24px;border:none;background:#fff;color:#0d0d0d;font:inherit;font-weight:700;font-size:.84rem;cursor:pointer}
+  </style>
+</head>
+<body>
+<div class="stage"><div class="screen"><div class="scan" aria-hidden="true"></div><div class="play"><button type="button" aria-label="Play preview"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button></div></div><h2>Watch the walkthrough</h2><p>Ninety seconds. Zero fluff.</p><button class="btn" type="button">Book a demo</button></div>
+
+</body>
+</html>

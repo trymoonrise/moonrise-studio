@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0826
+    slug: dialogs-drawer-dialog-09
+    title: Drawer Dialog 09
+    category: dialogs
+    tags: dialogs, drawer
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0826 — Drawer Dialog 09</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#100c18}.btn{padding:10px 24px;background:#a78bfa;color:#100c18;border:none;border-radius:8px;cursor:pointer}.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;place-items:center;z-index:10}.overlay.open{display:grid}.dlg{background:#1a1424;color:#ede8ff;border-radius:16px;padding:2rem;width:min(90vw,360px);border:1px solid #a78bfa}
+  </style>
+</head>
+<body>
+<button class="btn" id="o">Open</button><div class="overlay" id="ov"><div class="dlg"><h3>Drawer Dialog 439</h3><p style="color:#9080b0;margin:1rem 0;font-size:.9rem">Dialog content here</p><button class="btn" id="c">Close</button></div></div>
+<script>document.getElementById('o').onclick=()=>document.getElementById('ov').classList.add('open');document.getElementById('c').onclick=()=>document.getElementById('ov').classList.remove('open');</script>
+</body>
+</html>

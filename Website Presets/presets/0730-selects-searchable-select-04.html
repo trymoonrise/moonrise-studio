@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0730
+    slug: selects-searchable-select-04
+    title: Fuzzy Search Combobox
+    category: selects
+    tags: selects, searchable
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0730 — Fuzzy Search Combobox</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #0a0c10;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+      padding: 1.5rem;
+    }
+
+    .combo { width: min(360px, 92vw); position: relative; }
+
+    label {
+      display: block;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 0.6rem;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0 1rem;
+      height: 48px;
+      background: #111827;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      transition: border-color 0.3s;
+    }
+
+    .search-box:focus-within { border-color: #fbbf24; }
+
+    .search-box input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 0.95rem;
+      color: #e2e8f0;
+    }
+
+    .results {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      max-height: 200px;
+      overflow-y: auto;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-6px);
+      transition: opacity 0.25s, transform 0.25s;
+      z-index: 5;
+    }
+
+    .results.open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+      animation: resultsIn 0.3s ease;
+    }
+
+    @keyframes resultsIn {
+      from { clip-path: inset(0 0 100% 0); }
+      to { clip-path: inset(0 0 0 0); }
+    }
+
+    .result {
+      display: block;
+      width: 100%;
+      padding: 0.65rem 1rem;
+      border: none;
+      background: transparent;
+      color: #cbd5e1;
+      text-align: left;
+      font-size: 0.9rem;
+      transition: background 0.15s;
+    }
+
+    .result:hover, .result.highlight {
+      background: #fbbf2418;
+      color: #fbbf24;
+    }
+
+    .result mark {
+      background: #fbbf2444;
+      color: #fbbf24;
+      border-radius: 2px;
+    }
+
+    .empty {
+      padding: 1rem;
+      text-align: center;
+      color: #64748b;
+      font-size: 0.85rem;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .results.open { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="combo">
+    <label for="q">Assign to</label>
+    <div class="search-box">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3"/></svg>
+      <input type="text" id="q" placeholder="Search team members…" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="results">
+    </div>
+    <div class="results" id="results" role="listbox"></div>
+  </div>
+
+  <script>
+    const people = ['Alex Chen', 'Jordan Lee', 'Sam Rivera', 'Taylor Kim', 'Morgan Blake', 'Casey Wu'];
+    const q = document.getElementById('q');
+    const results = document.getElementById('results');
+
+    function highlight(text, query) {
+      if (!query) return text;
+      const i = text.toLowerCase().indexOf(query.toLowerCase());
+      if (i === -1) return text;
+      return text.slice(0, i) + '<mark>' + text.slice(i, i + query.length) + '</mark>' + text.slice(i + query.length);
+    }
+
+    function render() {
+      const query = q.value.trim();
+      const matches = people.filter((p) => p.toLowerCase().includes(query.toLowerCase()));
+      results.innerHTML = matches.length
+        ? matches.map((p) => `<button type="button" class="result" role="option">${highlight(p, query)}</button>`).join('')
+        : '<div class="empty">No matches found</div>';
+      results.classList.toggle('open', query.length > 0);
+      q.setAttribute('aria-expanded', String(query.length > 0));
+      results.querySelectorAll('.result').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          q.value = btn.textContent;
+          results.classList.remove('open');
+        });
+      });
+    }
+
+    q.addEventListener('input', render);
+    q.addEventListener('focus', render);
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.combo')) results.classList.remove('open');
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0740
+    slug: sliders-range-slider-01
+    title: Dual Handle Range Slider
+    category: sliders
+    tags: sliders, range
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0740 — Dual Handle Range Slider</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #080a0e;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+      padding: 1.5rem;
+    }
+
+    .slider-wrap { width: min(400px, 92vw); }
+
+    .head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+
+    .values {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #00d4aa;
+      animation: valueTick 0.3s ease;
+    }
+
+    @keyframes valueTick {
+      50% { transform: scale(1.05); }
+    }
+
+    .track-wrap {
+      position: relative;
+      height: 6px;
+      background: #1e293b;
+      border-radius: 3px;
+    }
+
+    .fill {
+      position: absolute;
+      height: 100%;
+      background: linear-gradient(90deg, #00d4aa, #38bdf8);
+      border-radius: 3px;
+      transition: left 0.1s, width 0.1s;
+      animation: fillGlow 3s ease-in-out infinite;
+    }
+
+    @keyframes fillGlow {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.85; }
+    }
+
+    input[type="range"] {
+      position: absolute;
+      width: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      appearance: none;
+      background: transparent;
+      pointer-events: none;
+      margin: 0;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      border: 3px solid #00d4aa;
+      cursor: pointer;
+      pointer-events: auto;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+      box-shadow: 0 0 12px #00d4aa66;
+    }
+
+    .ticks {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.75rem;
+      font-size: 0.7rem;
+      color: #475569;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .fill { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="slider-wrap">
+    <div class="head">
+      <label>Price range</label>
+      <span class="values" id="vals">$200 – $800</span>
+    </div>
+    <div class="track-wrap">
+      <div class="fill" id="fill"></div>
+      <input type="range" id="min" min="0" max="1000" value="200">
+      <input type="range" id="max" min="0" max="1000" value="800">
+    </div>
+    <div class="ticks"><span>$0</span><span>$500</span><span>$1000</span></div>
+  </div>
+
+  <script>
+    const min = document.getElementById('min');
+    const max = document.getElementById('max');
+    const fill = document.getElementById('fill');
+    const vals = document.getElementById('vals');
+
+    function update() {
+      let lo = +min.value, hi = +max.value;
+      if (lo > hi) [lo, hi] = [hi, lo];
+      const pct = (v) => (v / 1000) * 100;
+      fill.style.left = pct(lo) + '%';
+      fill.style.width = (pct(hi) - pct(lo)) + '%';
+      vals.textContent = `$${lo} – $${hi}`;
+      vals.style.animation = 'none';
+      vals.offsetHeight;
+      vals.style.animation = '';
+    }
+
+    min.addEventListener('input', update);
+    max.addEventListener('input', update);
+    update();
+  </script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1859
+    slug: hero-video-particle-play
+    title: Particle Burst Play Hero
+    category: hero
+    tags: hero, video, interactive, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1859 — Particle Burst Play Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;overflow:hidden;background:#050505;color:#fff;font-family:Syne,sans-serif}
+    video{display:block}
+    button{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit}
+    .stage{position:relative;min-height:100vh;overflow:hidden}
+video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.45);transition:filter .6s}
+.stage.playing video{filter:brightness(.85)}
+.ui{position:relative;z-index:2;min-height:100vh;display:grid;place-items:center;text-align:center}
+h1{font-size:clamp(2.5rem,8vw,5rem);font-weight:800;letter-spacing:-.06em;margin:0 0 1.5rem;transition:opacity .4s}
+.stage.playing h1{opacity:0}
+.play{width:96px;height:96px;border-radius:50%;border:1px solid rgba(255,255,255,.4);display:grid;place-items:center;font-size:1.5rem;background:rgba(0,0,0,.3);backdrop-filter:blur(10px);position:relative;z-index:3;transition:transform .3s,opacity .4s}
+.stage.playing .play{opacity:0;transform:scale(1.4);pointer-events:none}
+.burst{position:absolute;inset:0;pointer-events:none;z-index:2}
+.p{position:absolute;width:6px;height:6px;border-radius:50%;background:#fff;left:50%;top:50%;opacity:0}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="stage" id="s"><video id="v" src="../stock/media/16-9 Aspect Ratio(video).mp4" muted loop playsinline></video><div class="burst" id="burst"></div><div class="ui"><h1>Ignite</h1><button class="play" id="play" aria-label="Play">▶</button></div></div>
+<script>const s=document.getElementById('s'),v=document.getElementById('v'),play=document.getElementById('play'),burst=document.getElementById('burst');
+play.onclick=()=>{burst.innerHTML='';for(let i=0;i<28;i++){const p=document.createElement('span');p.className='p';const a=Math.random()*Math.PI*2,d=40+Math.random()*160;p.style.background=['#fff','#6c8cff','#ff6cb0'][i%3];burst.appendChild(p);requestAnimationFrame(()=>{p.style.transition='transform .7s cubic-bezier(.22,1,.36,1),opacity .7s';p.style.transform='translate('+(Math.cos(a)*d)+'px,'+(Math.sin(a)*d)+'px)';p.style.opacity='0'})}s.classList.add('playing');v.play()};</script>
+</body>
+</html>

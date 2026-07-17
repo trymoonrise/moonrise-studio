@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1429
+    slug: text-scramble-decode
+    title: Scramble Decode Text
+    category: text
+    tags: text, scramble, decode
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1429 — Scramble Decode Text</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#0d0d0f;color:#6c8cff;font-family:monospace;font-size:clamp(1.5rem,4vw,2.5rem);font-weight:700}
+  </style>
+</head>
+<body>
+<span id="t">DECODING...</span>
+<script>const target='HELLO WORLD',chars='!@#$%^&*ABCDEFGHIJKLMNOPQRSTUVWXYZ';let iter=0;const el=document.getElementById('t');const iv=setInterval(()=>{el.textContent=target.split('').map((c,i)=>i<iter?c:chars[Math.floor(Math.random()*chars.length)]).join('');if(++iter>target.length)clearInterval(iv);},50);</script>
+</body>
+</html>

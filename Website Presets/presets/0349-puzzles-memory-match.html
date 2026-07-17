@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0349
+    slug: puzzles-memory-match
+    title: Memory Match
+    category: puzzles
+    tags: puzzles, memory
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0349 — Memory Match</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 2rem;
+      background:
+        radial-gradient(circle at 18% 16%, rgba(108, 140, 255, 0.16), transparent 34%),
+        radial-gradient(circle at 84% 84%, rgba(255, 108, 176, 0.12), transparent 36%),
+        #0d0d0f;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: #fff;
+    }
+
+    .game {
+      width: min(100%, 400px);
+      padding: 1.5rem;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.38);
+      backdrop-filter: blur(18px);
+    }
+
+    .head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .eyebrow {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #6c8cff;
+      margin-bottom: 0.3rem;
+    }
+
+    h2 {
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .stats {
+      display: flex;
+      gap: 0.75rem;
+      font-size: 0.78rem;
+      color: #9ca3af;
+      white-space: nowrap;
+    }
+
+    .stats strong {
+      color: #fff;
+      font-weight: 800;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
+
+    .card {
+      aspect-ratio: 1;
+      border: none;
+      padding: 0;
+      background: none;
+      cursor: pointer;
+      perspective: 700px;
+      border-radius: 14px;
+    }
+
+    .card:disabled {
+      cursor: default;
+    }
+
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.55s cubic-bezier(.22, .61, .36, 1);
+    }
+
+    .card.is-flipped .card-inner,
+    .card.is-matched .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .face {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+    }
+
+    .face-front {
+      background: linear-gradient(145deg, #7c96ff, #536df0);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .face-front::after {
+      content: '';
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.22);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    }
+
+    .face-back {
+      transform: rotateY(180deg);
+      background: linear-gradient(145deg, #1e2240, #12141f);
+      border: 1px solid rgba(108, 140, 255, 0.28);
+      color: #6c8cff;
+    }
+
+    .face-back svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .card.is-matched .face-back {
+      color: #6cffb8;
+      border-color: rgba(108, 255, 184, 0.45);
+      box-shadow: 0 0 0 1px rgba(108, 255, 184, 0.2), 0 12px 30px rgba(108, 255, 184, 0.18);
+    }
+
+    .card.is-matched {
+      pointer-events: none;
+    }
+
+    .card.is-wrong .card-inner {
+      animation: wobble 0.45s cubic-bezier(.22, .61, .36, 1);
+    }
+
+    @keyframes wobble {
+      0%, 100% { transform: rotateY(180deg); }
+      25% { transform: rotateY(180deg) translateX(-3px); }
+      75% { transform: rotateY(180deg) translateX(3px); }
+    }
+
+    .footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .status {
+      font-size: 0.82rem;
+      color: #9ca3af;
+    }
+
+    .status.is-win {
+      color: #6cffb8;
+      font-weight: 700;
+    }
+
+    .btn {
+      padding: 0.55rem 0.85rem;
+      border: none;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.16);
+    }
+  </style>
+</head>
+<body>
+  <div class="game">
+    <header class="head">
+      <div>
+        <div class="eyebrow">Puzzle</div>
+        <h2>Memory Match</h2>
+      </div>
+      <div class="stats">
+        <span>Moves <strong id="moves">0</strong></span>
+        <span>Pairs <strong id="pairs">0/4</strong></span>
+      </div>
+    </header>
+
+    <div class="grid" id="grid" aria-label="Memory match board"></div>
+
+    <div class="footer">
+      <div class="status" id="status">Flip two cards to find matching icons.</div>
+      <button class="btn" id="restart" type="button">Restart</button>
+    </div>
+  </div>
+
+  <script>
+    const ICONS = {
+      star: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+      palette: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.672 0-.437-.18-.835-.437-1.184-.29-.353-.438-.764-.438-1.184 0-.926.722-1.672 1.648-1.672H16c3.314 0 6-2.686 6-6 0-4.5-4.5-8-10-8z"/></svg>',
+      rocket: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>',
+      gem: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>'
+    };
+
+    const PAIRS = Object.keys(ICONS);
+    const gridEl = document.getElementById('grid');
+    const movesEl = document.getElementById('moves');
+    const pairsEl = document.getElementById('pairs');
+    const statusEl = document.getElementById('status');
+
+    let first = null;
+    let lock = false;
+    let moves = 0;
+    let matched = 0;
+
+    function shuffle(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function createCard(id) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'card';
+      btn.dataset.id = id;
+      btn.setAttribute('aria-label', 'Hidden card');
+      btn.innerHTML = `
+        <div class="card-inner">
+          <div class="face face-front" aria-hidden="true"></div>
+          <div class="face face-back">${ICONS[id]}</div>
+        </div>
+      `;
+      btn.addEventListener('click', () => flipCard(btn));
+      return btn;
+    }
+
+    function buildBoard() {
+      gridEl.innerHTML = '';
+      shuffle([...PAIRS, ...PAIRS]).forEach((id) => {
+        gridEl.appendChild(createCard(id));
+      });
+    }
+
+    function updateStats() {
+      movesEl.textContent = String(moves);
+      pairsEl.textContent = `${matched}/${PAIRS.length}`;
+    }
+
+    function flipCard(card) {
+      if (lock || card.classList.contains('is-flipped') || card.classList.contains('is-matched')) return;
+
+      card.classList.add('is-flipped');
+      card.setAttribute('aria-label', `${card.dataset.id} card`);
+
+      if (!first) {
+        first = card;
+        statusEl.textContent = 'Pick another card.';
+        statusEl.classList.remove('is-win');
+        return;
+      }
+
+      if (first === card) return;
+
+      moves += 1;
+      updateStats();
+      lock = true;
+
+      if (first.dataset.id === card.dataset.id) {
+        [first, card].forEach((el) => {
+          el.classList.add('is-matched');
+          el.disabled = true;
+        });
+        matched += 1;
+        updateStats();
+        first = null;
+        lock = false;
+
+        if (matched === PAIRS.length) {
+          statusEl.textContent = `You won in ${moves} moves!`;
+          statusEl.classList.add('is-win');
+        } else {
+          statusEl.textContent = 'Nice match — keep going.';
+        }
+        return;
+      }
+
+      [first, card].forEach((el) => el.classList.add('is-wrong'));
+      statusEl.textContent = 'No match — flipping back.';
+
+      setTimeout(() => {
+        [first, card].forEach((el) => {
+          el.classList.remove('is-flipped', 'is-wrong');
+          el.setAttribute('aria-label', 'Hidden card');
+        });
+        first = null;
+        lock = false;
+        statusEl.textContent = 'Flip two cards to find matching icons.';
+      }, 850);
+    }
+
+    function restart() {
+      first = null;
+      lock = false;
+      moves = 0;
+      matched = 0;
+      updateStats();
+      statusEl.textContent = 'Flip two cards to find matching icons.';
+      statusEl.classList.remove('is-win');
+      buildBoard();
+    }
+
+    document.getElementById('restart').addEventListener('click', restart);
+    updateStats();
+    buildBoard();
+  </script>
+</body>
+</html>

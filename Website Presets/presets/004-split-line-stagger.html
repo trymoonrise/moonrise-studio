@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 004
+    slug: split-line-stagger
+    title: Split Line Stagger
+    category: text
+    tags: stagger, typography
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>004 — Split Line Stagger</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    
+    body{display:grid;place-items:center;min-height:100vh;background:#fafafa;color:#111}
+    .lines{font-size:clamp(2rem,6vw,4.5rem);font-weight:700;line-height:1.15;text-align:center}
+    .line{overflow:hidden;line-height:1.15;padding:.12em 0}
+    .line span{display:block;transform:translateY(110%);animation:up .7s cubic-bezier(.16,1,.3,1) forwards}
+    .line:nth-child(1) span{animation-delay:.1s}.line:nth-child(2) span{animation-delay:.25s}.line:nth-child(3) span{animation-delay:.4s}
+    @keyframes up{to{transform:translateY(0)}}
+    
+  </style>
+</head>
+<body>
+<div class="lines"><div class="line"><span>Think</span></div><div class="line"><span>Bigger</span></div><div class="line"><span>Together</span></div></div>
+
+</body>
+</html>

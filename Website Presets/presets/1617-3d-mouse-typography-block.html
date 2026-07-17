@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1617
+    slug: 3d-mouse-typography-block
+    title: 3D Typography Mouse Block
+    category: 3d-mouse
+    tags: 3d, mouse, typography
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1617 — 3D Typography Mouse Block</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#07080e;perspective:900px;overflow:hidden;font-family:Syne,sans-serif}
+    .block{position:relative;transform-style:preserve-3d;transform:rotateX(var(--rx,12deg)) rotateY(var(--ry,-18deg));font-size:clamp(3.5rem,14vw,8rem);font-weight:800;letter-spacing:-.05em;line-height:.85;color:#fff}
+    .block span{position:absolute;inset:0;display:block;transform:translateZ(calc(var(--z)*1px));color:var(--c);-webkit-text-stroke:1px rgba(255,255,255,.06);pointer-events:none;user-select:none}
+    .block .top{position:relative;color:#fff;transform:translateZ(32px);text-shadow:0 0 40px rgba(108,140,255,.45)}
+    .hint{position:fixed;bottom:1.4rem;font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.35)}
+  </style>
+</head>
+<body>
+  <div class="block" id="block" aria-label="BLOCK"><span class="top">BLOCK</span></div>
+  <div class="hint">Extrude with the mouse</div>
+  <script>
+    const block=document.getElementById('block');
+    const colors=['#12183a','#1a2250','#24306e','#3147c8','#4a64e0','#6c8cff'];
+    colors.forEach((c,i)=>{const s=document.createElement('span');s.textContent='BLOCK';s.style.setProperty('--z',i*5);s.style.setProperty('--c',c);block.insertBefore(s,block.firstChild)});
+    let rx=12,ry=-18,trx=12,try_=-18,depth=1,td=1;
+    addEventListener('pointermove',e=>{const x=(e.clientX/innerWidth-.5)*2;const y=(e.clientY/innerHeight-.5)*2;try_=x*-35;trx=12+y*-18;td=1+Math.abs(x)*.8});
+    (function loop(){rx+=(trx-rx)*.1;ry+=(try_-ry)*.1;depth+=(td-depth)*.1;
+      block.style.setProperty('--rx',rx+'deg');block.style.setProperty('--ry',ry+'deg');
+      [...block.querySelectorAll('span:not(.top)')].forEach((s,i)=>s.style.setProperty('--z',i*5*depth));
+      requestAnimationFrame(loop)})();
+  </script>
+</body>
+</html>

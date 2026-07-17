@@ -73,6 +73,8 @@
   const METHODS = METHOD_DEFS.map((m) => m.id);
   const METHOD_LABELS = Object.fromEntries(METHOD_DEFS.map((m) => [m.id, m.label]));
   const DRAFT_KEY = "ms_finance_payout_draft_v1";
+  const pageParams = new URLSearchParams(location.search);
+  const isOnboarding = pageParams.get("onboarding") === "1";
 
   const state = { step: 1, saved: false };
   /** Last known payout profile (DB or draft) for autofill / Edit. */
@@ -349,6 +351,8 @@
       phoneCountry: phoneCountry || undefined,
       methods: normalizeMethods(p.methods),
       completedAt: p.completedAt || p.completed_at || "",
+      onboardingStatus: String(p.onboardingStatus || p.onboarding_status || ""),
+      skippedAt: p.skippedAt || p.skipped_at || "",
     };
   }
 
@@ -373,6 +377,8 @@
           phoneCountry: p.phoneCountry || phoneCountryIso,
           methods: p.methods,
           completedAt: p.completedAt || "",
+          onboardingStatus: p.onboardingStatus || "",
+          skippedAt: p.skippedAt || "",
           updatedAt: new Date().toISOString(),
         })
       );
@@ -417,6 +423,8 @@
       phoneCountry: a.phoneCountry || b.phoneCountry,
       methods,
       completedAt: a.completedAt || b.completedAt,
+      onboardingStatus: a.onboardingStatus || b.onboardingStatus,
+      skippedAt: a.skippedAt || b.skippedAt,
     };
   }
 
@@ -744,6 +752,8 @@
       ...readContact(),
       methods: readMethods(),
       completedAt: new Date().toISOString(),
+      onboardingStatus: "complete",
+      skippedAt: "",
     };
   }
 
@@ -780,7 +790,7 @@
     state.saved = false;
   }
 
-  async function persistPayoutProfile(profile) {
+  async function persistPayoutProfile(profile, options) {
     const user = await window.StudioAuth.getUser();
     if (!user) throw new Error("Sign in required");
 
@@ -830,10 +840,50 @@
     }
 
     const saved = normalizeProfile(data?.payout_profile);
-    if (!saved.email && !saved.phone && !enabledMethods(saved.methods).length) {
+    if (
+      options?.requireComplete !== false &&
+      !saved.email &&
+      !saved.phone &&
+      !enabledMethods(saved.methods).length
+    ) {
       throw new Error("Save did not stick. Refresh and try again.");
     }
     return saved;
+  }
+
+  function nextDestination() {
+    const raw = pageParams.get("next") || "dashboard.html";
+    try {
+      const url = new URL(raw, location.href);
+      if (url.origin !== location.origin) return "dashboard.html";
+      return url.pathname.split("/").pop() + url.search + url.hash;
+    } catch (_) {
+      return "dashboard.html";
+    }
+  }
+
+  async function skipOnboarding() {
+    const buttons = document.querySelectorAll(".ms-fin-skip");
+    buttons.forEach((btn) => {
+      btn.disabled = true;
+    });
+    setError("");
+    try {
+      const draft = normalizeProfile({
+        ...cachedProfile,
+        ...readContact(),
+        methods: readMethods(),
+      });
+      cachedProfile = draft;
+      writeDraft(draft);
+      window.StudioAuth?.setFinanceOnboardingSoftSkip?.(true);
+      location.replace(nextDestination());
+    } catch (e) {
+      setError(e.message || "Could not skip setup");
+      buttons.forEach((btn) => {
+        btn.disabled = false;
+      });
+    }
   }
 
   async function saveProfile() {
@@ -861,9 +911,11 @@
       next.completedAt = profile.completedAt || next.completedAt;
       cachedProfile = next;
       writeDraft(next);
+      window.StudioAuth?.setFinanceOnboardingSoftSkip?.(false);
       setOk("Profile saved.");
       window.StudioToast?.clear?.();
       showSaved(next);
+      if (isOnboarding) location.replace(nextDestination());
     } catch (e) {
       setError(e.message || "Could not save profile");
     } finally {
@@ -910,6 +962,9 @@
     document.getElementById("fin-back-3")?.addEventListener("click", () => setStep(2));
     document.getElementById("fin-save")?.addEventListener("click", saveProfile);
     document.getElementById("fin-edit")?.addEventListener("click", () => showWizard(1));
+    document.querySelectorAll(".ms-fin-skip").forEach((btn) => {
+      btn.addEventListener("click", skipOnboarding);
+    });
 
     document.getElementById("fin-methods")?.addEventListener("change", (e) => {
       const toggle = e.target?.closest?.("[data-method-toggle]");
@@ -921,6 +976,13 @@
   async function boot() {
     renderMethods();
     bind();
+    document.querySelectorAll(".ms-fin-skip").forEach((btn) => {
+      btn.hidden = !isOnboarding;
+    });
+    if (isOnboarding) {
+      document.body.classList.add("ms-fin-onboarding-mode");
+      document.title = "Payout setup · Moonrise Studio";
+    }
 
     const wizard = document.getElementById("fin-wizard");
     const saved = document.getElementById("fin-saved");

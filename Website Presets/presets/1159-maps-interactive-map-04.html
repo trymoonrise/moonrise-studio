@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1159
+    slug: maps-interactive-map-04
+    title: Pan Grid Map
+    category: maps
+    tags: maps, interactive, pan
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1159 — Pan Grid Map</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700&family=Outfit:wght@400;500;600&display=swap');*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0a0c10;font-family:Outfit,sans-serif;color:#fff}.frame{width:min(400px,92vw);height:280px;border-radius:12px;overflow:hidden;border:1px solid #222;cursor:grab;position:relative}.grid{width:200%;height:200%;background:repeating-linear-gradient(0deg,#1a2836 0 1px,transparent 1px 40px),repeating-linear-gradient(90deg,#1a2836 0 1px,transparent 1px 40px),#0e141c;position:absolute;left:-25%;top:-25%;transition:none}.hint{position:absolute;bottom:10px;left:50%;translate:-50% 0;font-size:.7rem;color:#567;letter-spacing:.1em;text-transform:uppercase;pointer-events:none}
+  </style>
+</head>
+<body>
+<div class="frame" id="f"><div class="grid" id="g"></div><div class="hint">Drag to pan</div></div>
+<script>const f=document.getElementById('f'),g=document.getElementById('g');let ox=0,oy=0,dx=0,dy=0,drag=false,sx,sy;
+f.onpointerdown=e=>{drag=true;sx=e.clientX;sy=e.clientY;f.setPointerCapture(e.pointerId);f.style.cursor='grabbing'};
+f.onpointermove=e=>{if(!drag)return;dx=ox+(e.clientX-sx);dy=oy+(e.clientY-sy);g.style.transform=`translate(${dx}px,${dy}px)`};
+f.onpointerup=()=>{drag=false;ox=dx;oy=dy;f.style.cursor='grab'};</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0474
+    slug: rotate-scroll-twist-columns-11
+    title: Twist Columns 11
+    category: rotate-scroll
+    tags: rotate-scroll, twist
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0474 — Twist Columns 11</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;background:#0a0a0c;color:#fff;font-family:system-ui;perspective:1200px}.track{height:280vh}.sticky{position:sticky;top:0;height:100vh;display:flex;align-items:center;justify-content:center;gap:clamp(8px,2vw,20px);padding:2rem}.col{flex:1;max-width:180px;transform-style:preserve-3d;transform:rotateY(var(--ry,0deg))}.col img{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:12px;box-shadow:0 16px 50px rgba(0,0,0,.5)}.col:nth-child(2){transform:rotateY(var(--ry2,0deg))}.col:nth-child(3){transform:rotateY(var(--ry3,0deg))}
+  </style>
+</head>
+<body>
+<div class="track" id="t"><div class="sticky"><div class="col" data-i="0"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div><div class="col" data-i="1"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div><div class="col" data-i="2"><img src="../stock/media/16-9 Aspect Ratio(image).png" alt=""></div></div></div>
+<script>const _el=document.querySelector('#t');function prog(){const r=_el.getBoundingClientRect();return Math.min(1,Math.max(0,-r.top/(r.height-innerHeight)));}const cols=[...document.querySelectorAll('.col')];addEventListener('scroll',()=>{const p=prog();cols.forEach((c,i)=>{const ry=(i-1)*p*45;c.style.setProperty('--ry',ry+'deg');if(i===1)c.style.setProperty('--ry2',ry+'deg');if(i===2)c.style.setProperty('--ry3',ry+'deg');});},{passive:true});</script>
+</body>
+</html>

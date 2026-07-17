@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1686
+    slug: text-marquee-vertical-stack
+    title: Vertical Stack Marquee
+    category: text
+    tags: marquee, vertical, stack, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1686 — Vertical Stack Marquee</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+    :root {
+      --bg: #16130f;
+      --paper: #efe7d6;
+      --rust: #e4572e;
+      --gold: #e8b84a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--paper);
+      font-family: Oswald, sans-serif;
+    }
+
+    .layout {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0;
+    }
+
+    .col {
+      position: relative;
+      overflow: hidden;
+      border-right: 1px solid rgba(239, 231, 214, 0.08);
+      mask-image: linear-gradient(#0000, #000 12%, #000 88%, #0000);
+      -webkit-mask-image: linear-gradient(#0000, #000 12%, #000 88%, #0000);
+    }
+
+    .col:last-child { border-right: 0; }
+
+    .col:nth-child(2),
+    .col:nth-child(4) {
+      background: rgba(239, 231, 214, 0.03);
+    }
+
+    .col:nth-child(3) {
+      background: var(--paper);
+      color: var(--bg);
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      animation: rise var(--spd, 18s) linear infinite;
+      will-change: transform;
+    }
+
+    .col:nth-child(even) .stack {
+      animation-name: fall;
+      animation-duration: var(--spd, 22s);
+    }
+
+    .item {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      padding: 1.4rem 0;
+      font-size: clamp(1.6rem, 4vw, 3.2rem);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .col:nth-child(1) .item { color: var(--rust); }
+    .col:nth-child(2) .item {
+      color: transparent;
+      -webkit-text-stroke: 1.5px var(--paper);
+    }
+    .col:nth-child(4) .item {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: clamp(0.85rem, 1.8vw, 1.2rem);
+      letter-spacing: 0.28em;
+      color: var(--gold);
+    }
+    .col:nth-child(5) .item { opacity: 0.45; }
+
+    .mark {
+      position: fixed;
+      left: 50%;
+      bottom: 1.2rem;
+      z-index: 5;
+      transform: translateX(-50%);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: rgba(239, 231, 214, 0.4);
+      background: rgba(22, 19, 15, 0.7);
+      padding: 0.45rem 0.8rem;
+      backdrop-filter: blur(8px);
+    }
+
+    @keyframes rise {
+      from { transform: translateY(0); }
+      to { transform: translateY(-50%); }
+    }
+
+    @keyframes fall {
+      from { transform: translateY(-50%); }
+      to { transform: translateY(0); }
+    }
+
+    @media (max-width: 700px) {
+      .layout { grid-template-columns: repeat(3, 1fr); }
+      .col:nth-child(4),
+      .col:nth-child(5) { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .stack { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout" id="layout"></div>
+  <p class="mark">Vertical infinite · 1686</p>
+
+  <script>
+    const columns = [
+      { words: ['Rise', 'Climb', 'Ascend', 'Lift'], spd: '16s' },
+      { words: ['Stack', 'Layer', 'Column', 'Spine'], spd: '21s' },
+      { words: ['Type', 'Flows', 'Upward', 'Forever'], spd: '13s' },
+      { words: ['01', '02', '03', '04', '05'], spd: '26s' },
+      { words: ['Hold', 'Drift', 'Repeat', 'Again'], spd: '19s' }
+    ];
+
+    const layout = document.getElementById('layout');
+    layout.innerHTML = columns.map((col) => {
+      const items = col.words.map((w) => '<span class="item">' + w + '</span>').join('');
+      return '<div class="col"><div class="stack" style="--spd:' + col.spd + '">' +
+        items + items + '</div></div>';
+    }).join('');
+  </script>
+</body>
+</html>

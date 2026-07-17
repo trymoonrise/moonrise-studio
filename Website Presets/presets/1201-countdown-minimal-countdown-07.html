@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1201
+    slug: countdown-minimal-countdown-07
+    title: Minimal Countdown 07
+    category: countdown
+    tags: countdown, minimal
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1201 — Minimal Countdown 07</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');*{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fafafa;color:#111;font-family:"DM Sans",system-ui,-apple-system,sans-serif;padding:2rem}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.marq-track{animation:none!important}}
+    .row{display:flex;align-items:baseline;gap:clamp(.5rem,2vw,1.25rem);font-family:"Syne",system-ui,sans-serif;font-weight:800;letter-spacing:-.06em;font-variant-numeric:tabular-nums}
+    .row .v{font-size:clamp(2.5rem,10vw,5.5rem);line-height:1}
+    .row .sep{font-size:clamp(1.5rem,5vw,2.5rem);color:#ccc;font-weight:600}
+    .row .u{font-size:.55rem;letter-spacing:.16em;text-transform:uppercase;color:#aaa;font-family:"DM Sans",sans-serif;font-weight:600;align-self:flex-end;margin-bottom:.55rem}
+    .line{width:100%;max-width:420px;height:1px;background:#e5e5e5;margin:1.5rem auto 0;position:relative;overflow:hidden}
+    .line i{position:absolute;left:0;top:0;height:100%;width:40%;background:#111;animation:sweep 3s ease-in-out infinite}
+    @keyframes sweep{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
+  </style>
+</head>
+<body>
+<div><div class="row">
+      <span class="v" id="d">07</span><span class="u">d</span>
+      <span class="sep">:</span>
+      <span class="v" id="h">12</span><span class="u">h</span>
+      <span class="sep">:</span>
+      <span class="v" id="m">30</span><span class="u">m</span>
+      <span class="sep">:</span>
+      <span class="v" id="s">00</span><span class="u">s</span>
+    </div><div class="line" aria-hidden="true"><i></i></div></div>
+<script>const end=Date.now()+7*864e5+12*36e5+34*6e4+56e3;const $=id=>document.getElementById(id);function tick(){let t=Math.max(0,end-Date.now());const D=String(Math.floor(t/864e5)).padStart(2,'0'),H=String(Math.floor(t/36e5%24)).padStart(2,'0'),M=String(Math.floor(t/6e4%60)).padStart(2,'0'),S=String(Math.floor(t/1e3%60)).padStart(2,'0');$('d')&&($('d').textContent=D);$('h')&&($('h').textContent=H);$('m')&&($('m').textContent=M);$('s')&&($('s').textContent=S);}tick();setInterval(tick,1000);</script>
+</body>
+</html>

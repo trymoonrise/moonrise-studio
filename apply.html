@@ -18,11 +18,14 @@
       <img src="doc/MoonriseLogo.png" alt="" width="36" height="36">
       <div>
         <strong>Moonrise Studio</strong>
-        <div class="ms-muted" style="font-size:0.85rem">AI web production for freelancers</div>
       </div>
     </div>
 
-    <div class="ms-auth-tabs" role="tablist">
+    <p class="ms-muted" id="auth-locate-lead" hidden style="margin:0 0 0.85rem;font-size:0.9rem;line-height:1.4">
+      Sign in or create an account to locate your order.
+    </p>
+
+    <div class="ms-auth-tabs" role="tablist" id="auth-tabs">
       <button type="button" class="ms-auth-tab is-active" data-mode="signin">Sign in</button>
       <button type="button" class="ms-auth-tab" data-mode="signup">Sign up</button>
     </div>
@@ -32,11 +35,11 @@
         <label class="ms-label" for="handle">Handle</label>
         <input class="ms-input" id="handle" name="handle" placeholder="yourname" autocomplete="username">
       </div>
-      <div class="ms-field">
+      <div class="ms-field" id="email-field">
         <label class="ms-label" for="email">Email</label>
         <input class="ms-input" id="email" name="email" type="email" required autocomplete="email">
       </div>
-      <div class="ms-field">
+      <div class="ms-field" id="password-field">
         <label class="ms-label" for="password">Password</label>
         <input class="ms-input" id="password" name="password" type="password" required minlength="8" autocomplete="current-password" aria-describedby="pw-strength-label pw-hint">
         <div class="ms-pw-meter" id="pw-meter" hidden>
@@ -56,9 +59,22 @@
           <p class="ms-pw-hint" id="pw-hint">Use a unique password — avoid names, dates, or common words.</p>
         </div>
       </div>
+      <div class="ms-field" id="password-confirm-field" hidden>
+        <label class="ms-label" for="password-confirm">Confirm password</label>
+        <input class="ms-input" id="password-confirm" name="password_confirm" type="password" minlength="8" autocomplete="new-password">
+      </div>
+      <p class="ms-auth-forgot-wrap" id="forgot-wrap">
+        <button type="button" class="ms-auth-forgot" id="forgot-link">Forgot password?</button>
+      </p>
       <button class="ms-btn" type="submit" id="auth-submit" style="width:100%">Sign in</button>
+      <p class="ms-auth-home-wrap">
+        <a class="ms-auth-home" href="index.html">← Back to home</a>
+      </p>
       <p class="ms-error" id="auth-error" hidden></p>
       <p class="ms-muted" id="auth-hint" style="margin-top:0.75rem;font-size:0.85rem"></p>
+      <p class="ms-auth-back-wrap" id="back-wrap" hidden>
+        <button type="button" class="ms-auth-forgot" id="back-to-signin">Back to sign in</button>
+      </p>
     </form>
   </div>
 
@@ -71,27 +87,79 @@
   <script src="js/auth.js"></script>
   <script>
     (async function () {
-      const session = await StudioAuth.getSession();
-      if (session) {
-        const params = new URLSearchParams(location.search);
-        location.replace(params.get("next") || "dashboard.html");
-        return;
+      const params = new URLSearchParams(location.search);
+      const nextUrl = params.get("next") || "dashboard.html";
+      const isLocate = params.get("intent") === "locate";
+      async function continueAfterAuth() {
+        if (isLocate) {
+          location.replace(nextUrl);
+          return;
+        }
+        window.StudioAuth.setFinanceOnboardingSoftSkip?.(false);
+        const destination = await StudioAuth.financeOnboardingRedirect(nextUrl);
+        location.replace(destination);
+      }
+      if (isLocate) {
+        const locateLead = document.getElementById("auth-locate-lead");
+        if (locateLead) locateLead.hidden = false;
+        document.title = "Locate My Order · Moonrise Studio";
+      }
+      let mode = params.get("mode") === "signup" ? "signup"
+        : params.get("mode") === "forgot" ? "forgot"
+        : params.get("mode") === "recover" ? "recover"
+        : "signin";
+      let recoveryPending = mode === "recover"
+        || sessionStorage.getItem("ms_pw_recovery") === "1"
+        || !!params.get("code")
+        || /type=recovery/i.test(location.hash + location.search);
+      if (params.get("code") || /type=recovery/i.test(location.hash + location.search)) {
+        mode = "recover";
       }
 
-      let mode = new URLSearchParams(location.search).get("mode") === "signup" ? "signup" : "signin";
       const form = document.getElementById("auth-form");
       const err = document.getElementById("auth-error");
       const hint = document.getElementById("auth-hint");
       const submit = document.getElementById("auth-submit");
       const handleField = document.getElementById("handle-field");
+      const passwordField = document.getElementById("password-field");
+      const passwordConfirmField = document.getElementById("password-confirm-field");
       const passwordInput = document.getElementById("password");
+      const passwordConfirm = document.getElementById("password-confirm");
+      const emailInput = document.getElementById("email");
       const pwMeter = document.getElementById("pw-meter");
       const pwFill = document.getElementById("pw-fill");
       const pwLabel = document.getElementById("pw-strength-label");
+      const authTabs = document.getElementById("auth-tabs");
+      const forgotWrap = document.getElementById("forgot-wrap");
+      const backWrap = document.getElementById("back-wrap");
       const COMMON = new Set([
         "password", "password1", "12345678", "qwerty123", "moonrise", "admin123",
         "letmein1", "welcome1", "iloveyou", "abc12345", "passw0rd",
       ]);
+
+      const sb = StudioAuth.getClient?.();
+      if (sb?.auth?.onAuthStateChange) {
+        sb.auth.onAuthStateChange((event) => {
+          if (event === "PASSWORD_RECOVERY") {
+            recoveryPending = true;
+            sessionStorage.setItem("ms_pw_recovery", "1");
+            setMode("recover");
+          }
+        });
+      }
+
+      const session = await StudioAuth.getSession();
+      if (recoveryPending && !session && (params.get("code") || mode === "recover")) {
+        for (let i = 0; i < 12 && !(await StudioAuth.getSession()); i++) {
+          await new Promise((r) => setTimeout(r, 150));
+        }
+      }
+      const sessionNow = await StudioAuth.getSession();
+      if (sessionNow && !recoveryPending && mode !== "recover" && mode !== "forgot") {
+        await continueAfterAuth();
+        return;
+      }
+      if (recoveryPending && sessionNow) mode = "recover";
 
       function scorePassword(pw) {
         const value = String(pw || "");
@@ -120,7 +188,7 @@
       }
 
       function updatePasswordMeter() {
-        if (mode !== "signup") return;
+        if (mode !== "signup" && mode !== "recover") return;
         const result = scorePassword(passwordInput.value);
         pwFill.style.width = (passwordInput.value ? Math.max(12, result.percent) : 0) + "%";
         pwMeter.dataset.level = passwordInput.value ? result.level : "empty";
@@ -138,25 +206,59 @@
         return result;
       }
 
+      function setOpen(el, open, instant) {
+        if (window.StudioMotion?.setOpen) {
+          window.StudioMotion.setOpen(el, open, { instant: !!instant });
+        } else {
+          el.hidden = !open;
+        }
+      }
+
       function setMode(next, instant) {
         mode = next;
         document.querySelectorAll(".ms-auth-tab").forEach((b) =>
           b.classList.toggle("is-active", b.dataset.mode === mode)
         );
         const showSignup = mode === "signup";
-        if (window.StudioMotion?.setOpen) {
-          window.StudioMotion.setOpen(handleField, showSignup, { instant: !!instant });
-          window.StudioMotion.setOpen(pwMeter, showSignup, { instant: !!instant });
-        } else {
-          handleField.hidden = !showSignup;
-          pwMeter.hidden = !showSignup;
-        }
-        passwordInput.minLength = showSignup ? 8 : 6;
-        passwordInput.autocomplete = showSignup ? "new-password" : "current-password";
-        submit.textContent = showSignup ? "Create account" : "Sign in";
+        const showForgot = mode === "forgot";
+        const showRecover = mode === "recover";
+        const showPassword = !showForgot;
+        const showMeter = showSignup || showRecover;
+        const showConfirm = showRecover;
+        const showTabs = mode === "signin" || mode === "signup";
+
+        authTabs.hidden = !showTabs;
+        forgotWrap.hidden = mode !== "signin";
+        backWrap.hidden = !(showForgot || showRecover);
+
+        setOpen(handleField, showSignup, instant);
+        setOpen(passwordField, showPassword, instant);
+        setOpen(passwordConfirmField, showConfirm, instant);
+        setOpen(pwMeter, showMeter, instant);
+
+        emailInput.required = !showRecover;
+        emailInput.closest(".ms-field").hidden = showRecover;
+        passwordInput.required = showPassword;
+        passwordConfirm.required = showConfirm;
+        passwordInput.minLength = showSignup || showRecover ? 8 : 6;
+        passwordInput.autocomplete =
+          showSignup || showRecover ? "new-password" : "current-password";
+
+        if (showForgot) submit.textContent = "Send reset link";
+        else if (showRecover) submit.textContent = "Set new password";
+        else if (showSignup) submit.textContent = "Create account";
+        else submit.textContent = "Sign in";
+
         err.hidden = true;
-        hint.textContent = "";
-        if (showSignup) updatePasswordMeter();
+        if (showForgot) {
+          hint.textContent = "We’ll email you a link to reset your password.";
+        } else if (showRecover) {
+          hint.textContent = "Choose a new password for your account.";
+        } else {
+          hint.textContent = "";
+        }
+
+        if (showMeter) updatePasswordMeter();
         else {
           pwFill.style.width = "0%";
           pwMeter.dataset.level = "empty";
@@ -165,6 +267,14 @@
 
       document.querySelectorAll(".ms-auth-tab").forEach((btn) => {
         btn.addEventListener("click", () => setMode(btn.dataset.mode));
+      });
+      document.getElementById("forgot-link").addEventListener("click", () => {
+        setMode("forgot");
+      });
+      document.getElementById("back-to-signin").addEventListener("click", () => {
+        sessionStorage.removeItem("ms_pw_recovery");
+        recoveryPending = false;
+        setMode("signin");
       });
 
       passwordInput.addEventListener("input", updatePasswordMeter);
@@ -179,8 +289,9 @@
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
         showAuthError("");
-        hint.textContent = "";
-        if (mode === "signup") {
+        if (mode !== "forgot") hint.textContent = "";
+
+        if (mode === "signup" || mode === "recover") {
           const strength = updatePasswordMeter();
           if (!strength.ok) {
             showAuthError(
@@ -190,25 +301,41 @@
             return;
           }
         }
+        if (mode === "recover" && passwordInput.value !== passwordConfirm.value) {
+          showAuthError("Passwords do not match");
+          passwordConfirm.focus();
+          return;
+        }
+
         submit.disabled = true;
         try {
-          if (mode === "signup") {
+          if (mode === "forgot") {
+            await StudioAuth.requestPasswordReset(form.email.value);
+            sessionStorage.setItem("ms_pw_recovery", "1");
+            hint.textContent = "Check your email for a reset link. You can close this tab.";
+            window.StudioToast?.success?.("Reset link sent");
+          } else if (mode === "recover") {
+            await StudioAuth.setPassword(passwordInput.value);
+            sessionStorage.removeItem("ms_pw_recovery");
+            recoveryPending = false;
+            window.StudioToast?.success?.("Password updated");
+            location.replace(nextUrl);
+            return;
+          } else if (mode === "signup") {
             const data = await StudioAuth.signUp(
               form.email.value,
               form.password.value,
               form.handle.value
             );
             if (data?.session) {
-              const params = new URLSearchParams(location.search);
-              location.replace(params.get("next") || "dashboard.html");
+              await continueAfterAuth();
               return;
             }
             hint.textContent = "Check your email to confirm, then sign in.";
             setMode("signin");
           } else {
             await StudioAuth.signIn(form.email.value, form.password.value);
-            const params = new URLSearchParams(location.search);
-            location.replace(params.get("next") || "dashboard.html");
+            await continueAfterAuth();
           }
         } catch (ex) {
           showAuthError(ex.message || "Auth failed");

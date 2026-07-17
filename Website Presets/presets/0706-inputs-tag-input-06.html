@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0706
+    slug: inputs-tag-input-06
+    title: Chip Tag Composer
+    category: inputs
+    tags: inputs, tag
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0706 — Chip Tag Composer</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #0a0c10;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+      padding: 1.5rem;
+    }
+
+    .composer { width: min(440px, 94vw); }
+
+    label {
+      display: block;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 0.6rem;
+    }
+
+    .box {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding: 0.65rem;
+      min-height: 52px;
+      background: #111827;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      transition: border-color 0.3s;
+    }
+
+    .box:focus-within {
+      border-color: #00d4aa;
+      animation: boxGlow 2s ease-in-out infinite;
+    }
+
+    @keyframes boxGlow {
+      0%, 100% { box-shadow: 0 0 0 0 #00d4aa00; }
+      50% { box-shadow: 0 0 12px 0 #00d4aa22; }
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.55rem 0.3rem 0.75rem;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      animation: chipIn 0.3s ease;
+    }
+
+    @keyframes chipIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .chip button {
+      width: 16px;
+      height: 16px;
+      border: none;
+      background: transparent;
+      color: #64748b;
+      font-size: 1rem;
+      line-height: 1;
+      padding: 0;
+      transition: color 0.2s;
+    }
+
+    .chip button:hover { color: #f87171; }
+
+    .box input {
+      flex: 1;
+      min-width: 100px;
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 0.9rem;
+      color: #e2e8f0;
+      padding: 0.25rem;
+    }
+
+    .hint {
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+      color: #475569;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .box:focus-within { animation: none; }
+      .chip { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="composer">
+    <label for="tagInput">Add tags</label>
+    <div class="box" id="box">
+      <input type="text" id="tagInput" placeholder="Type and press Enter…">
+    </div>
+    <p class="hint">Press Enter or comma to add · Backspace on empty removes last tag</p>
+  </div>
+
+  <script>
+    const box = document.getElementById('box');
+    const input = document.getElementById('tagInput');
+    const tags = ['design', 'frontend'];
+
+    function render() {
+      box.querySelectorAll('.chip').forEach((c) => c.remove());
+      tags.forEach((t, i) => {
+        const chip = document.createElement('span');
+        chip.className = 'chip';
+        chip.innerHTML = `${t}<button type="button" aria-label="Remove ${t}">×</button>`;
+        chip.querySelector('button').onclick = () => { tags.splice(i, 1); render(); };
+        box.insertBefore(chip, input);
+      });
+    }
+
+    function addTag(raw) {
+      const t = raw.trim().replace(/,$/, '');
+      if (t && !tags.includes(t)) { tags.push(t); render(); }
+      input.value = '';
+    }
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTag(input.value); }
+      if (e.key === 'Backspace' && !input.value && tags.length) { tags.pop(); render(); }
+    });
+
+    render();
+  </script>
+</body>
+</html>

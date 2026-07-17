@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0511
+    slug: brutalist-stamp-card-08
+    title: Stamp Card 08
+    category: brutalist
+    tags: brutalist, stamp
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0511 — Stamp Card 08</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@500;700&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#d6cfc0;font-family:'IBM Plex Mono',monospace;padding:2rem}
+    .card{position:relative;width:min(380px,90vw);background:#f5f0e6;border:5px solid #000;padding:2rem 1.5rem 2.5rem;box-shadow:16px 16px 0 #000;transform:rotate(1.5deg)}
+    .card::before{content:"";position:absolute;inset:10px;border:2px dashed #000;opacity:.35;pointer-events:none}
+    h1{margin:0;font-family:'Archivo Black',sans-serif;font-size:clamp(2.2rem,8vw,3.4rem);line-height:.9;text-transform:uppercase;letter-spacing:-.03em}
+    p{margin:1rem 0 0;font-size:.85rem;line-height:1.5;max-width:28ch}
+    .stamps{position:absolute;inset:0;pointer-events:none}
+    .seal{position:absolute;width:110px;height:110px;border:5px double #c00;border-radius:50%;display:grid;place-items:center;text-align:center;font-family:'Archivo Black',sans-serif;font-size:.65rem;letter-spacing:.06em;color:#c00;text-transform:uppercase;background:rgba(245,240,230,.85);animation:stamp .7s cubic-bezier(.2,1.6,.3,1) both}
+    .seal:nth-child(1){top:8%;right:6%;transform:rotate(12deg);animation-delay:.1s}
+    .seal:nth-child(2){bottom:18%;left:8%;transform:rotate(-18deg);border-color:#000;color:#000;animation-delay:.35s}
+    .seal:nth-child(3){bottom:6%;right:14%;transform:rotate(28deg);width:86px;height:86px;font-size:.55rem;animation-delay:.55s}
+    .barcode{margin-top:2rem;height:36px;background:repeating-linear-gradient(90deg,#000 0 3px,transparent 3px 7px,#000 7px 8px,transparent 8px 12px);opacity:.85}
+    @keyframes stamp{from{transform:scale(2.2) rotate(40deg);opacity:0}to{opacity:1}}
+    @media(prefers-reduced-motion:reduce){.seal{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="stamps" aria-hidden="true">
+      <div class="seal">APPROVED<br>BRUTAL</div>
+      <div class="seal">VOID IF<br>PRETTY</div>
+      <div class="seal">PAID</div>
+    </div>
+    <h1>Stamp<br>Card</h1>
+    <p>Official paperwork for unofficial aesthetics. Ink smudges encouraged.</p>
+    <div class="barcode" aria-hidden="true"></div>
+  </div>
+</body>
+</html>

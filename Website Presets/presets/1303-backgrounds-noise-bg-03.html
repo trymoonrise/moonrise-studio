@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1303
+    slug: backgrounds-noise-bg-03
+    title: Grain Drift Background
+    category: backgrounds
+    tags: backgrounds, noise, grain
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1303 — Grain Drift Background</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#1a1510;overflow:hidden;font-family:system-ui,sans-serif}.grain{position:fixed;inset:-50%;width:200%;height:200%;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");opacity:.18;animation:drift 8s steps(10) infinite;pointer-events:none;mix-blend-mode:overlay}.label{position:relative;z-index:1;color:#c4a574;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase}@keyframes drift{to{transform:translate(2%,3%)}}
+  </style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div><div class="label">Grain drift</div>
+
+</body>
+</html>

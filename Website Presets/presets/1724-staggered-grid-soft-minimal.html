@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1754
+    slug: staggered-grid-soft-minimal
+    title: Soft Minimal Grid
+    category: animation
+    tags: grid, stagger, minimal, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1754 — Soft Minimal Grid</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:#f6f7f2;color:#1d211b;font-family:Inter,system-ui,sans-serif;padding:2rem;display:grid;place-items:center}.wrap{width:min(920px,100%)}header{display:flex;justify-content:space-between;gap:1rem;align-items:end;margin-bottom:1.25rem}h1{margin:0;font-size:clamp(2.2rem,6vw,5rem);letter-spacing:-.08em;line-height:.9}p{margin:0;max-width:24ch;color:#72776b;font-size:.86rem;line-height:1.55}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}.card{min-height:160px;border-radius:28px;background:#fff;border:1px solid #e4e7dd;box-shadow:0 14px 40px rgba(40,50,30,.06);padding:1rem;display:flex;align-items:end;opacity:0;transform:translateY(24px);animation:soft .7s ease forwards;animation-delay:calc(var(--i)*80ms)}.card.tall{min-height:340px}.card.wide{grid-column:span 2}.card b{font-size:1.05rem;letter-spacing:-.03em}.card:hover{background:#eef2e7;transform:translateY(-4px);transition:background .25s,transform .25s}@keyframes soft{to{opacity:1;transform:none}}@media(max-width:720px){header{display:block}.grid{grid-template-columns:1fr}.card.wide{grid-column:auto}.card.tall{min-height:180px}}@media(prefers-reduced-motion:reduce){.card{opacity:1;transform:none;animation:none}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header><h1>Quiet grid</h1><p>Professional stagger with no visual noise — soft cards only.</p></header>
+    <section class="grid">
+      <div class="card tall" style="--i:1"><b>Strategy</b></div>
+      <div class="card" style="--i:2"><b>Brand</b></div>
+      <div class="card wide" style="--i:3"><b>Product direction</b></div>
+      <div class="card" style="--i:4"><b>Systems</b></div>
+      <div class="card" style="--i:5"><b>Research</b></div>
+      <div class="card tall" style="--i:6"><b>Launch</b></div>
+      <div class="card wide" style="--i:7"><b>Operations</b></div>
+    </section>
+  </main>
+</body>
+</html>

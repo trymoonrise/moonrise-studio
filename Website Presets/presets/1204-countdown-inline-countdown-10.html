@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1204
+    slug: countdown-inline-countdown-10
+    title: Inline Countdown 10
+    category: countdown
+    tags: countdown, inline
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1204 — Inline Countdown 10</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Syne:wght@600;700;800&display=swap');*{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fff;color:#111;font-family:"DM Sans",system-ui,-apple-system,sans-serif;padding:2rem}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.marq-track{animation:none!important}}
+    .line{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:.65rem 1rem;font-size:clamp(1rem,2.5vw,1.25rem);max-width:36ch;text-align:center;line-height:1.5}
+    .line strong{font-family:"Syne",system-ui,sans-serif;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;border-bottom:2px solid #111;padding:0 2px}
+    .ticker{margin-top:2.5rem;overflow:hidden;width:min(100%,520px);border-top:1px solid #eee;padding-top:1rem}
+    .marq-track{display:flex;gap:2rem;width:max-content;animation:scroll 20s linear infinite;font-size:.65rem;letter-spacing:.16em;text-transform:uppercase;color:#aaa;font-weight:600}
+    @keyframes scroll{to{transform:translateX(-50%)}}
+  </style>
+</head>
+<body>
+<div><p class="line">Sale ends in <strong id="d">04</strong> days <strong id="h">06</strong> hrs <strong id="m">12</strong> min <strong id="s">30</strong> sec</p>
+    <div class="ticker" aria-hidden="true"><div class="marq-track"><span>Inline · Sentence time · Inline · Sentence time · </span><span>Inline · Sentence time · Inline · Sentence time · </span></div></div></div>
+<script>const end=Date.now()+4*864e5+12*36e5+34*6e4+56e3;const $=id=>document.getElementById(id);function tick(){let t=Math.max(0,end-Date.now());const D=String(Math.floor(t/864e5)).padStart(2,'0'),H=String(Math.floor(t/36e5%24)).padStart(2,'0'),M=String(Math.floor(t/6e4%60)).padStart(2,'0'),S=String(Math.floor(t/1e3%60)).padStart(2,'0');$('d')&&($('d').textContent=D);$('h')&&($('h').textContent=H);$('m')&&($('m').textContent=M);$('s')&&($('s').textContent=S);}tick();setInterval(tick,1000);</script>
+</body>
+</html>

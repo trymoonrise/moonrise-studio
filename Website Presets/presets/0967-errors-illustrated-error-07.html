@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0967
+    slug: errors-illustrated-error-07
+    title: Illustrated Error 07
+    category: errors
+    tags: errors, illustrated
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0967 — Illustrated Error 07</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;padding:2rem;background:#1a1040;font-family:Fredoka,sans-serif;color:#fff;text-align:center}
+    .ill{width:min(320px,80vw);margin:0 auto 1.5rem;animation:bounce-ill 2s ease-in-out infinite}
+    svg{width:100%;height:auto;overflow:visible}
+    .bot{transform-origin:160px 180px;animation:shake-bot 0.5s ease-in-out infinite}
+    .eye{animation:blink-eye 3s step-end infinite}
+    .arm-l{transform-origin:80px 140px;animation:flail-l .4s ease-in-out infinite alternate}
+    .arm-r{transform-origin:240px 140px;animation:flail-r .4s ease-in-out infinite alternate}
+    .spark{animation:zap .3s ease-in-out infinite;transform-origin:center}
+    .smoke-p{animation:smoke-up 2s ease-out infinite}
+    h1{margin:0 0 .5rem;font-size:clamp(1.8rem,5vw,2.6rem);font-weight:700}
+    p{margin:0 0 1.5rem;opacity:.7;max-width:28ch;margin-inline:auto;font-weight:600}
+    button{appearance:none;border:0;background:#ff6bcb;color:#1a1040;padding:.85rem 1.8rem;border-radius:999px;font:700 .9rem Fredoka,sans-serif;cursor:pointer;animation:wiggle-btn 1s ease-in-out infinite}
+    @keyframes bounce-ill{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
+    @keyframes shake-bot{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes blink-eye{0%,90%,100%{opacity:1}92%{opacity:0}}
+    @keyframes flail-l{from{transform:rotate(-40deg)}to{transform:rotate(20deg)}}
+    @keyframes flail-r{from{transform:rotate(40deg)}to{transform:rotate(-20deg)}}
+    @keyframes zap{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(1.3)}}
+    @keyframes smoke-up{0%{opacity:.8;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-40px) scale(1.5)}}
+    @keyframes wiggle-btn{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+    @media (prefers-reduced-motion:reduce){.ill,.bot,.eye,.arm-l,.arm-r,.spark,.smoke-p,button{animation:none}}
+  </style>
+</head>
+<body>
+  <div>
+    <div class="ill" aria-hidden="true">
+      <svg viewBox="0 0 320 280" fill="none">
+        <ellipse class="smoke-p" cx="160" cy="40" rx="30" ry="18" fill="#9b8ec4" opacity=".5"/>
+        <ellipse class="smoke-p" cx="140" cy="20" rx="20" ry="12" fill="#9b8ec4" opacity=".3" style="animation-delay:.4s"/>
+        <g class="bot">
+          <rect x="100" y="100" width="120" height="100" rx="20" fill="#7c5cbf"/>
+          <rect x="115" y="120" width="90" height="50" rx="10" fill="#2a1a50"/>
+          <circle class="eye" cx="140" cy="145" r="10" fill="#ff6bcb"/>
+          <circle class="eye" cx="180" cy="145" r="10" fill="#ff6bcb" style="animation-delay:.1s"/>
+          <path d="M145 165 Q160 155 175 165" stroke="#ff6bcb" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <g class="arm-l"><rect x="50" y="130" width="55" height="16" rx="8" fill="#9b7ad4"/></g>
+          <g class="arm-r"><rect x="215" y="130" width="55" height="16" rx="8" fill="#9b7ad4"/></g>
+          <rect x="125" y="200" width="20" height="40" rx="6" fill="#5a3d9a"/>
+          <rect x="175" y="200" width="20" height="40" rx="6" fill="#5a3d9a"/>
+        </g>
+        <g class="spark" fill="#ffe66d">
+          <path d="M260 80 L268 100 L288 92 L272 108 L290 120 L268 118 L270 140 L258 120 L238 128 L250 110 L232 98 L254 100 Z"/>
+        </g>
+        <g class="spark" fill="#ff6bcb" style="animation-delay:.15s">
+          <path d="M50 70 L56 84 L72 78 L60 90 L74 100 L56 98 L58 114 L48 100 L32 106 L42 92 L28 82 L46 84 Z"/>
+        </g>
+      </svg>
+    </div>
+    <h1>Robot has feelings now</h1>
+    <p>And those feelings are mostly error codes and mild existential dread.</p>
+    <button type="button">Comfort the robot</button>
+  </div>
+</body>
+</html>

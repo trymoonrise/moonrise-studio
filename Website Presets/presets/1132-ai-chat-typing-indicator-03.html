@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1132
+    slug: ai-chat-typing-indicator-03
+    title: Waveform Typing Indicator
+    category: ai-chat
+    tags: ai-chat, typing, waveform, indicator
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1132 — Waveform Typing Indicator</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0c0d11;color:#e0e4ea;font-family:Outfit,sans-serif;padding:2rem}
+    .wrap{text-align:center}
+    .bubble{display:inline-flex;align-items:center;gap:1rem;padding:1rem 1.5rem;background:#141820;border:1px solid rgba(255,255,255,.08);border-radius:20px;border-bottom-left-radius:4px}
+    .wave{display:flex;align-items:center;gap:3px;height:28px}
+    .bar{width:3px;border-radius:2px;background:#38bdf8;animation:wave 1.2s ease-in-out infinite}
+    .bar:nth-child(1){height:8px;animation-delay:0s}
+    .bar:nth-child(2){height:16px;animation-delay:.1s}
+    .bar:nth-child(3){height:24px;animation-delay:.2s}
+    .bar:nth-child(4){height:14px;animation-delay:.3s}
+    .bar:nth-child(5){height:20px;animation-delay:.4s}
+    .bar:nth-child(6){height:10px;animation-delay:.5s}
+    .bar:nth-child(7){height:18px;animation-delay:.6s}
+    .status{font-size:.75rem;color:rgba(224,228,234,.4);margin-top:1rem;letter-spacing:.08em}
+    .status span{color:#38bdf8;animation:fade-label 2s ease infinite}
+    @keyframes wave{0%,100%{transform:scaleY(.3);opacity:.4}50%{transform:scaleY(1);opacity:1}}
+    @keyframes fade-label{0%,100%{opacity:1}50%{opacity:.5}}
+    @media(prefers-reduced-motion:reduce){.bar,.status span{animation:none;opacity:1;transform:none}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="bubble">
+      <div class="wave"><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span></div>
+    </div>
+    <p class="status">Assistant is <span>composing</span> a response</p>
+  </div>
+</body>
+</html>

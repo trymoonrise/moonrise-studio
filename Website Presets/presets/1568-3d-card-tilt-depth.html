@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1568
+    slug: 3d-card-tilt-depth
+    title: 3D Tilt Depth Card
+    category: 3d-effects
+    tags: 3d, card, tilt
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1568 — 3D Tilt Depth Card</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Outfit:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0b0c12;perspective:900px;font-family:Outfit,sans-serif;padding:2rem}
+    .card{width:min(320px,90vw);height:420px;position:relative;border-radius:24px;transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .12s ease-out;background:linear-gradient(160deg,#161a2c,#0d101c);border:1px solid rgba(255,255,255,.1);overflow:hidden;box-shadow:0 30px 60px rgba(0,0,0,.45)}
+    .shine{position:absolute;inset:0;background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.25),transparent 45%);pointer-events:none;mix-blend-mode:soft-light;z-index:4}
+    .layer{position:absolute;inset:0;transform-style:preserve-3d;pointer-events:none}
+    .blob{position:absolute;border-radius:50%;filter:blur(2px)}
+    .b1{width:160px;height:160px;background:#6c8cff;top:10%;left:10%;opacity:.55;transform:translateZ(40px)}
+    .b2{width:120px;height:120px;background:#ff6bcb;bottom:15%;right:8%;opacity:.45;transform:translateZ(70px)}
+    .b3{width:80px;height:80px;background:#7ee0c3;top:40%;left:45%;opacity:.4;transform:translateZ(100px)}
+    .content{position:relative;z-index:3;height:100%;padding:1.75rem;display:flex;flex-direction:column;justify-content:flex-end;color:#fff;transform:translateZ(50px)}
+    .eyebrow{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;opacity:.65;margin:0 0 .4rem}
+    h2{margin:0;font-family:Syne,sans-serif;font-size:2rem;letter-spacing:-.03em}
+    p{margin:.5rem 0 0;font-size:.9rem;line-height:1.5;opacity:.8}
+    @media(prefers-reduced-motion:reduce){.card{transition:none}}
+  </style>
+</head>
+<body>
+  <div class="card" id="card">
+    <div class="layer">
+      <div class="blob b1"></div>
+      <div class="blob b2"></div>
+      <div class="blob b3"></div>
+    </div>
+    <div class="shine"></div>
+    <div class="content">
+      <p class="eyebrow">Depth map</p>
+      <h2>Tilt me</h2>
+      <p>Pointer-driven layers float at different Z depths with a live specular.</p>
+    </div>
+  </div>
+  <script>
+    const card=document.getElementById('card');
+    card.addEventListener('pointermove',(e)=>{
+      const r=card.getBoundingClientRect();
+      const x=(e.clientX-r.left)/r.width;
+      const y=(e.clientY-r.top)/r.height;
+      card.style.setProperty('--ry',((x-.5)*28)+'deg');
+      card.style.setProperty('--rx',((.5-y)*22)+'deg');
+      card.style.setProperty('--mx',(x*100)+'%');
+      card.style.setProperty('--my',(y*100)+'%');
+    });
+    card.addEventListener('pointerleave',()=>{
+      card.style.setProperty('--rx','0deg');
+      card.style.setProperty('--ry','0deg');
+    });
+  </script>
+</body>
+</html>

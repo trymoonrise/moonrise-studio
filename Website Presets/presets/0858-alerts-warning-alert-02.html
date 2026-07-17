@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0858
+    slug: alerts-warning-alert-02
+    title: Hazard Strip Alert
+    category: alerts
+    tags: alerts, warning
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0858 — Hazard Strip Alert</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      padding: 2rem;
+      background: #0e0c08;
+      font-family: 'Outfit', sans-serif;
+      color: #f5f0e8;
+    }
+
+    .alert {
+      width: min(100%, 460px);
+      background: #161410;
+      border: 1px solid rgba(251, 191, 36, 0.25);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .tape {
+      height: 28px;
+      background: repeating-linear-gradient(
+        -45deg,
+        #fbbf24,
+        #fbbf24 8px,
+        #0e0c08 8px,
+        #0e0c08 16px
+      );
+      background-size: 22px 22px;
+      animation: slide 1.2s linear infinite;
+    }
+
+    @keyframes slide { to { background-position: 22px 0; } }
+
+    .body {
+      padding: 1.2rem 1.3rem;
+    }
+
+    .body h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fcd34d;
+      margin-bottom: 0.4rem;
+    }
+
+    .body p {
+      font-size: 0.85rem;
+      color: rgba(245, 240, 232, 0.65);
+      line-height: 1.55;
+      margin-bottom: 1rem;
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.6rem;
+    }
+
+    .actions button {
+      padding: 0.55rem 1rem;
+      border-radius: 6px;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .primary {
+      border: none;
+      background: #fbbf24;
+      color: #0e0c08;
+    }
+
+    .ghost {
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      background: transparent;
+      color: rgba(252, 211, 77, 0.8);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .tape { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="alert" role="alert">
+    <div class="tape" aria-hidden="true"></div>
+    <div class="body">
+      <h2>Storage threshold reached</h2>
+      <p>Your workspace is at 92% capacity. Uploads may fail if usage exceeds the limit within 48 hours.</p>
+      <div class="actions">
+        <button class="primary" type="button">Upgrade plan</button>
+        <button class="ghost" type="button">Review usage</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0499
+    slug: split-screens-zigzag-split-10
+    title: Zigzag Split 10
+    category: split-screens
+    tags: split-screens, experimental, mask, shapes
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0499 — Zigzag Split 10</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;overflow:hidden;font-family:Syne,sans-serif;background:#0c0c0c;color:#fff}
+    .stage{position:relative;min-height:100vh;overflow:hidden}
+.z{position:absolute;inset:0;display:grid;place-items:center}
+.z.a{background:#f4f1ea;color:#111;clip-path:polygon(0 0,100% 0,100% 18%,70% 32%,100% 48%,65% 62%,100% 78%,60% 90%,100% 100%,0 100%);animation:za 1.3s cubic-bezier(.22,1,.36,1) both}
+.z.b{background:#0c0c0c;clip-path:polygon(100% 0,100% 100%,0 100%,0 90%,40% 78%,0 62%,35% 48%,0 32%,30% 18%,0 0);animation:zb 1.3s .1s cubic-bezier(.22,1,.36,1) both}
+.z h1{font-size:clamp(2.5rem,9vw,5.5rem);font-weight:800;letter-spacing:-.06em;margin:0;max-width:6ch;line-height:.9}
+@keyframes za{from{clip-path:polygon(0 0,0 0,0 18%,0 32%,0 48%,0 62%,0 78%,0 90%,0 100%,0 100%)}}
+@keyframes zb{from{clip-path:polygon(100% 0,100% 100%,100% 100%,100% 90%,100% 78%,100% 62%,100% 48%,100% 32%,100% 18%,100% 0)}}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="stage"><div class="z a"><h1>Zig zag left</h1></div><div class="z b"><h1>Zig zag right</h1></div></div>
+
+</body>
+</html>

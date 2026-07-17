@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0653
+    slug: navigation-centered-nav-05
+    title: Centered Nav 05
+    category: navigation
+    tags: navigation, centered
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0653 — Centered Nav 05</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Outfit:wght@300&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#fff;color:#111;font-family:Outfit,sans-serif}
+    header{padding:2.5rem 1.5rem 0;text-align:center}
+    .logo{font-family:Syne,sans-serif;font-weight:800;font-size:clamp(1.8rem,5vw,2.6rem);letter-spacing:-.05em;margin:0 0 2rem}
+    nav{display:flex;justify-content:center;gap:2.5rem;flex-wrap:wrap}
+    nav a{position:relative;text-decoration:none;color:#111;font-size:.75rem;font-weight:300;letter-spacing:.18em;text-transform:uppercase;opacity:.35;transition:opacity .3s}
+    nav a:hover{opacity:1}
+    nav a::before{content:"";position:absolute;left:50%;bottom:-10px;width:4px;height:4px;border-radius:50%;background:#111;transform:translateX(-50%) scale(0);transition:transform .35s cubic-bezier(.22,1,.36,1)}
+    nav a:hover::before,nav a.active::before{transform:translateX(-50%) scale(1)}
+    nav a.active{opacity:1}
+    .hero{height:60vh;display:grid;place-items:center;color:#ccc;font-weight:300;letter-spacing:.2em;text-transform:uppercase;font-size:.7rem}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">CENTER</div>
+    <nav>
+      <a class="active" href="#">Work</a>
+      <a href="#">Studio</a>
+      <a href="#">Journal</a>
+      <a href="#">Contact</a>
+    </nav>
+  </header>
+  <div class="hero">Balanced void</div>
+</body>
+</html>

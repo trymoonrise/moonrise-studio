@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0497
+    slug: split-screens-video-text-08
+    title: Video Text 08
+    category: split-screens
+    tags: split-screens, experimental, mask, shapes
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0497 — Video Text 08</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;overflow:hidden;font-family:Syne,sans-serif;background:#000;color:#fff}
+    .stage{position:relative;min-height:100vh;overflow:hidden}
+.video{position:absolute;inset:0}
+.video video{width:100%;height:100%;object-fit:cover;filter:brightness(.55) contrast(1.1)}
+.mask-text{position:absolute;inset:0;display:grid;place-items:center;z-index:2;background:#000;mix-blend-mode:multiply}
+.mask-text h1{
+  margin:0;font-size:clamp(4rem,18vw,12rem);font-weight:800;letter-spacing:-.08em;
+  color:#fff;mix-blend-mode:screen;
+  -webkit-text-stroke:0;
+  background:url('../stock/media/16-9 Aspect Ratio(video).mp4');
+}
+.type{
+  position:absolute;inset:0;display:grid;place-items:center;z-index:3;pointer-events:none;
+}
+.type h1{
+  margin:0;font-size:clamp(3.5rem,16vw,10rem);font-weight:800;letter-spacing:-.08em;line-height:.85;text-align:center;
+  color:transparent;-webkit-text-stroke:2px rgba(255,255,255,.9);
+  mix-blend-mode:difference;
+}
+.split-bar{position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(255,255,255,.3);z-index:4;animation:grow 1.2s cubic-bezier(.22,1,.36,1) both}
+.tag{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);z-index:5;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;opacity:.5}
+@keyframes grow{from{transform:scaleX(0)}}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="stage"><div class="video"><video src="../stock/media/16-9 Aspect Ratio(video).mp4" autoplay muted loop playsinline></video></div><div class="type"><h1>VIDEO<br>TEXT</h1></div><div class="split-bar" aria-hidden="true"></div><span class="tag">Masked cinema</span></div>
+
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1578
+    slug: 3d-text-wave-perspective
+    title: 3D Wave Text
+    category: 3d-effects
+    tags: 3d, text, wave
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1578 — 3D Wave Text</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#08090e;perspective:700px;overflow:hidden;font-family:Syne,sans-serif}
+    .wave{display:flex;gap:.02em;transform-style:preserve-3d;transform:rotateX(12deg);font-size:clamp(2.5rem,10vw,6rem);font-weight:800;letter-spacing:-.03em;color:#fff}
+    .wave span{display:inline-block;transform-style:preserve-3d;animation:wave 2.4s ease-in-out infinite;text-shadow:0 10px 30px rgba(108,140,255,.35)}
+    @keyframes wave{
+      0%,100%{transform:translateY(0) translateZ(0) rotateX(0)}
+      50%{transform:translateY(-28px) translateZ(40px) rotateX(-18deg)}
+    }
+    @media(prefers-reduced-motion:reduce){.wave span{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="wave" id="wave" aria-label="WAVEFORM"></div>
+  <script>
+    const word='WAVEFORM';
+    const el=document.getElementById('wave');
+    [...word].forEach((ch,i)=>{
+      const s=document.createElement('span');
+      s.textContent=ch;
+      s.style.animationDelay=(i*.12)+'s';
+      el.appendChild(s);
+    });
+  </script>
+</body>
+</html>

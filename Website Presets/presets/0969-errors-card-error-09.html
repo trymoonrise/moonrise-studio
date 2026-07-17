@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0969
+    slug: errors-card-error-09
+    title: Card Error 09
+    category: errors
+    tags: errors, card
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0969 — Card Error 09</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#e8e4dc;perspective:1000px;font-family:Outfit,sans-serif}
+    .origami{
+      width:min(340px,85vw);height:220px;position:relative;transform-style:preserve-3d;
+      animation:fold-crash 4s ease-in-out infinite;
+    }
+    .face{
+      position:absolute;inset:0;background:#fff;border:2px solid #111;border-radius:16px;
+      padding:1.75rem;display:flex;flex-direction:column;justify-content:center;
+      box-shadow:0 20px 50px rgba(0,0,0,.12);backface-visibility:hidden;
+    }
+    .face--back{
+      background:#111;color:#fff;transform:rotateY(180deg);
+      align-items:center;text-align:center;
+    }
+    .badge{display:inline-block;align-self:start;padding:.25rem .6rem;background:#ff3b5c;color:#fff;font-size:.65rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;border-radius:4px;margin-bottom:.75rem}
+    h2{margin:0 0 .4rem;font-size:1.4rem;font-weight:800;letter-spacing:-.02em;color:#111}
+    p{margin:0;font-size:.85rem;color:#666;line-height:1.5}
+    .face--back h2{color:#fff;font-size:2rem}
+    .face--back p{color:rgba(255,255,255,.5)}
+    @keyframes fold-crash{
+      0%,15%{transform:rotateY(0) rotateX(0) scale(1)}
+      35%{transform:rotateY(90deg) rotateX(20deg) scale(.9)}
+      50%{transform:rotateY(180deg) rotateX(0) scale(1)}
+      65%{transform:rotateY(180deg) rotateX(-15deg) scale(.95)}
+      80%,100%{transform:rotateY(360deg) rotateX(0) scale(1)}
+    }
+    @media (prefers-reduced-motion:reduce){.origami{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="origami" role="alert">
+    <div class="face">
+      <span class="badge">Error</span>
+      <h2>Payment failed</h2>
+      <p>Your card was declined by the universe itself. Try a different dimension.</p>
+    </div>
+    <div class="face face--back">
+      <h2>💀</h2>
+      <p>Card folded into oblivion</p>
+    </div>
+  </div>
+</body>
+</html>

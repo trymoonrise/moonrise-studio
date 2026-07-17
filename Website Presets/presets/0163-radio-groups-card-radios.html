@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0163
+    slug: radio-groups-card-radios
+    title: Card Radio Select
+    category: radio-groups
+    tags: radio-groups, card
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0163 — Card Radio Select</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{display:grid;place-items:center;min-height:100vh;background:#f5f5f5;padding:2rem}.grid{display:flex;gap:12px}.card{padding:1.5rem;border:2px solid #ddd;border-radius:12px;cursor:pointer;min-width:100px;text-align:center}input{display:none}input:checked+.card{border-color:#6c8cff;background:#f0f4ff;font-weight:600}
+  </style>
+</head>
+<body>
+<div class="grid"><label><input type="radio" name="plan" checked><div class="card">Free</div></label><label><input type="radio" name="plan" ><div class="card">Pro</div></label><label><input type="radio" name="plan" ><div class="card">Team</div></label></div>
+
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0616
+    slug: sidebars-tabbed-sidebar-07
+    title: Tabbed Sidebar 07
+    category: sidebars
+    tags: sidebars, tabbed
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0616 — Tabbed Sidebar 07</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    body{margin:0;min-height:100vh;display:flex;background:#0b1210}.sb{width:200px;background:#121a16;color:#e0f0e8;padding:1.5rem 1rem;border-right:1px solid #7a9a8833}.sb a{display:block;padding:10px;color:#7a9a88;text-decoration:none;font-size:.9rem;border-radius:6px}.sb a:hover,.sb a.on{background:#6cffb822;color:#6cffb8}.main{flex:1;padding:2rem;color:#e0f0e8}
+  </style>
+</head>
+<body>
+<aside class="sb"><a href="#" class="on">Dashboard</a><a href="#" class="">Projects</a><a href="#" class="">Settings</a><a href="#" class="">Help</a></aside><main class="main"><h2 style="color:#6cffb8">Tabbed Sidebar 227</h2></main>
+<script>document.querySelectorAll('.sb a').forEach(a=>a.onclick=e=>{e.preventDefault();document.querySelectorAll('.sb a').forEach(x=>x.classList.remove('on'));a.classList.add('on');});</script>
+</body>
+</html>

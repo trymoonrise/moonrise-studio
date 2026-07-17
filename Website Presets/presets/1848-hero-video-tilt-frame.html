@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1848
+    slug: hero-video-tilt-frame
+    title: Tilt Frame Video Hero
+    category: hero
+    tags: hero, video, interactive, experimental
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1848 — Tilt Frame Video Hero</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;overflow:hidden;background:#050505;color:#fff;font-family:Syne,sans-serif}
+    video{display:block}
+    button{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit}
+    .wrap{min-height:100vh;display:grid;place-items:center;perspective:1200px;padding:2rem;background:#111}
+.card{width:min(720px,94vw);aspect-ratio:16/10;border-radius:28px;overflow:hidden;position:relative;transform-style:preserve-3d;box-shadow:0 40px 100px rgba(0,0,0,.5);transition:transform .1s ease-out;border:1px solid rgba(255,255,255,.12)}
+.card video{width:100%;height:100%;object-fit:cover}
+.plate{position:absolute;left:20px;bottom:20px;right:20px;padding:1.1rem 1.25rem;border-radius:18px;background:rgba(0,0,0,.55);backdrop-filter:blur(14px);transform:translateZ(50px)}
+.plate b{display:block;font-size:clamp(1.4rem,3vw,2rem);letter-spacing:-.04em}
+.plate span{font:500 .6rem 'DM Mono',monospace;letter-spacing:.2em;text-transform:uppercase;opacity:.55}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="wrap"><div class="card" id="c"><video src="../stock/media/16-9 Aspect Ratio(video).mp4" autoplay muted loop playsinline></video><div class="plate"><span>Interactive frame</span><b>Tilt the cinema</b></div></div></div>
+<script>const c=document.getElementById('c');c.onmousemove=e=>{const r=c.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;c.style.transform='rotateY('+(x*12)+'deg) rotateX('+(-y*10)+'deg)'};c.onmouseleave=()=>c.style.transform='';</script>
+</body>
+</html>

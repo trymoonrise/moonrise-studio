@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 0226
+    slug: avatars-initials-avatar
+    title: Initials Avatar
+    category: avatars
+    tags: avatars, initials, marquee, minimal
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0226 — Initials Avatar</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#f4f4f1;color:#111;overflow:hidden;font-family:'DM Mono',monospace}
+    .band{position:fixed;left:0;right:0;overflow:hidden;border-block:1px solid rgba(0,0,0,.08)}
+    .band.top{top:0}
+    .band.bot{bottom:0}
+    .track{display:flex;width:max-content;white-space:nowrap;animation:run 40s linear infinite;font-size:.65rem;letter-spacing:.35em;text-transform:uppercase;color:rgba(0,0,0,.35);padding:.85rem 0}
+    .band.bot .track{animation-direction:reverse;animation-duration:48s}
+    .stage{min-height:100vh;display:grid;place-items:center}
+    .av{width:88px;height:88px;border-radius:50%;border:1px solid #111;display:grid;place-items:center;font-family:'Instrument Serif',serif;font-size:1.85rem;font-style:italic;background:#f4f4f1;letter-spacing:.04em}
+    .label{margin-top:1.25rem;text-align:center;font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(0,0,0,.4)}
+    @keyframes run{to{transform:translateX(-50%)}}
+    @media (prefers-reduced-motion:reduce){.track{animation:none}}
+  </style>
+</head>
+<body>
+  <div class="band top"><div class="track"><span>Ava Bloom · Ava Bloom · Ava Bloom · Ava Bloom · </span><span>Ava Bloom · Ava Bloom · Ava Bloom · Ava Bloom · </span></div></div>
+  <div class="band bot"><div class="track"><span>Initials · Presence · Initials · Presence · </span><span>Initials · Presence · Initials · Presence · </span></div></div>
+  <div class="stage">
+    <div>
+      <div class="av">AB</div>
+      <p class="label">Initials</p>
+    </div>
+  </div>
+</body>
+</html>

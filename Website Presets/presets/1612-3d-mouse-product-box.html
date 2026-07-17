@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    @preset
+    id: 1612
+    slug: 3d-mouse-product-box
+    title: 3D Product Box Mouse
+    category: 3d-mouse
+    tags: 3d, mouse, product
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1612 — 3D Product Box Mouse</title>
+  <style>
+    @import url('../shared/preset-reset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Outfit:wght@400&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0b0c12;perspective:1000px;font-family:Outfit,sans-serif;overflow:hidden}
+    .box{width:180px;height:220px;position:relative;transform-style:preserve-3d;transform:rotateX(var(--rx,-18deg)) rotateY(var(--ry,28deg))}
+    .face{position:absolute;display:grid;place-items:center;color:#fff;font-family:Syne,sans-serif;font-weight:800;border:1px solid rgba(255,255,255,.2)}
+    .front{inset:0;background:linear-gradient(160deg,#6c8cff,#3147c8);transform:translateZ(50px);font-size:1.4rem}
+    .back{inset:0;background:#1a1f35;transform:rotateY(180deg) translateZ(50px)}
+    .right{width:100px;height:220px;right:-50px;top:0;background:linear-gradient(160deg,#4a64e0,#24306e);transform:rotateY(90deg) translateZ(90px)}
+    .left{width:100px;height:220px;left:-50px;top:0;background:linear-gradient(160deg,#3d5cff,#1a2250);transform:rotateY(-90deg) translateZ(90px)}
+    .top{width:180px;height:100px;top:-50px;left:0;background:linear-gradient(160deg,#8aa4ff,#4a64e0);transform:rotateX(90deg) translateZ(110px)}
+    .bottom{width:180px;height:100px;bottom:-50px;left:0;background:#111;transform:rotateX(-90deg) translateZ(110px)}
+    .label{position:fixed;bottom:1.4rem;text-align:center;color:rgba(255,255,255,.5);font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;font-family:Syne,sans-serif}
+  </style>
+</head>
+<body>
+  <div class="box" id="box">
+    <div class="face front">NOVA</div>
+    <div class="face back"></div>
+    <div class="face right"></div>
+    <div class="face left"></div>
+    <div class="face top"></div>
+    <div class="face bottom"></div>
+  </div>
+  <div class="label">Inspect the product</div>
+  <script>
+    const box=document.getElementById('box');let rx=-18,ry=28,trx=-18,try_=28;
+    addEventListener('pointermove',e=>{const x=(e.clientX/innerWidth-.5)*2;const y=(e.clientY/innerHeight-.5)*2;try_=x*50;trx=y*-35});
+    (function loop(){rx+=(trx-rx)*.1;ry+=(try_-ry)*.1;box.style.setProperty('--rx',rx+'deg');box.style.setProperty('--ry',ry+'deg');requestAnimationFrame(loop)})();
+  </script>
+</body>
+</html>
