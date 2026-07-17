@@ -3898,6 +3898,62 @@
     setPublishEnabled();
   }
 
+  function workerUnreachableMessage(base, cause) {
+    const url = String(base || "").replace(/\/$/, "") || "the Moonrise worker";
+    const isLocal = /localhost|127\.0\.0\.1|\[::1\]|:8787/i.test(url);
+    const detail = cause ? " (" + String(cause).replace(/^Error:\s*/i, "") + ")" : "";
+    if (isLocal) {
+      return (
+        "Can't reach the local Moonrise worker at " +
+        url +
+        ". Start it with: cd moonrise-studio/worker && npm start — or run localStorage.setItem('ms_use_local_worker','0') and refresh to use the cloud API." +
+        detail
+      );
+    }
+    return (
+      "Can't reach the Moonrise API at " +
+      url +
+      ". Hard-refresh and try again. If you're on a VPN or flaky network, reconnect and retry." +
+      detail
+    );
+  }
+
+  async function pingWorker(base, signal) {
+    let lastErr = null;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      if (signal?.aborted) {
+        const err = new Error("Aborted");
+        err.name = "AbortError";
+        throw err;
+      }
+      const ctrl = new AbortController();
+      const timer = window.setTimeout(() => ctrl.abort(), 15000);
+      const onParentAbort = () => ctrl.abort();
+      signal?.addEventListener("abort", onParentAbort);
+      try {
+        const health = await fetch(base + "/health", {
+          method: "GET",
+          cache: "no-store",
+          signal: ctrl.signal,
+        });
+        if (!health.ok) throw new Error("Worker health check failed (" + health.status + ")");
+        return true;
+      } catch (e) {
+        if (signal?.aborted || (e?.name === "AbortError" && signal?.aborted)) {
+          const err = new Error("Aborted");
+          err.name = "AbortError";
+          throw err;
+        }
+        lastErr = e;
+        await new Promise((resolve) => window.setTimeout(resolve, 350 * (attempt + 1)));
+      } finally {
+        window.clearTimeout(timer);
+        signal?.removeEventListener("abort", onParentAbort);
+      }
+    }
+    throw lastErr || new Error("Worker unreachable");
+  }
+
   async function authHeaders() {
     const session = await window.StudioAuth.getSession();
     if (!session?.access_token) throw new Error("Sign in required");
@@ -4020,15 +4076,10 @@
       const base = workerUrl();
       if (!base) throw new Error("Worker URL is not configured.");
       try {
-        const health = await fetch(base + "/health", { method: "GET", signal });
-        if (!health.ok) throw new Error("Worker health check failed");
+        await pingWorker(base, signal);
       } catch (e) {
         if (e?.name === "AbortError") throw e;
-        throw new Error(
-          "Can't reach the Moonrise worker at " +
-            base +
-            ". Start it with: cd moonrise-studio/worker && npm start"
-        );
+        throw new Error(workerUnreachableMessage(base, e?.message || e));
       }
       const headers = await authHeaders();
       const requestId =
@@ -4099,10 +4150,7 @@
       }
       let msg = e.message || "Generation failed";
       if (/failed to fetch|networkerror|load failed|network request failed/i.test(msg)) {
-        msg =
-          "Can't reach the Moonrise worker at " +
-          workerUrl() +
-          ". Start it with: cd moonrise-studio/worker && npm start. If you opened Studio via a network IP, keep using that same host.";
+        msg = workerUnreachableMessage(workerUrl(), msg);
       }
       if (fromOnboard) setOnboardError(msg);
       setError(msg);

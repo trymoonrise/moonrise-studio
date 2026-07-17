@@ -20,7 +20,7 @@ window.SITE_CONFIG = {
   /**
    * Cloud API worker (generate, Stripe, publish, watermark embed).
    * Hosted on Vercel — works from any device / production Studio URL.
-   * Local dev only: set localStorage.ms_use_local_worker = "0" to force the cloud worker.
+   * Local worker is opt-in: localStorage.ms_use_local_worker = "1"
    */
   workerUrl: "https://moonrise-studio.vercel.app",
   localWorkerUrl: "http://127.0.0.1:8787",
@@ -81,8 +81,10 @@ window.isLocalDevHost = function isLocalDevHost() {
 
 /**
  * Resolve the worker base URL for the current page host.
- * Public hosts (GitHub Pages, Vercel, custom domains) always use the cloud worker
- * so the browser never prompts for private-network access.
+ * Public hosts always use the cloud worker.
+ * Local/LAN pages also use the cloud worker by default so generate works
+ * without a local `npm start`. Opt into local with:
+ *   localStorage.setItem("ms_use_local_worker", "1")
  */
 window.resolveWorkerUrl = function resolveWorkerUrl() {
   const cloud = String(window.SITE_CONFIG?.workerUrl || "").replace(/\/$/, "");
@@ -96,7 +98,8 @@ window.resolveWorkerUrl = function resolveWorkerUrl() {
     const isLocalPage = isPrivateNetworkHost(pageHost);
     const pref =
       typeof localStorage !== "undefined" ? localStorage.getItem("ms_use_local_worker") : null;
-    const useLocal = isLocalPage && pref !== "0";
+    // Opt-in only — default cloud avoids "Can't reach worker" when local isn't running.
+    const useLocal = isLocalPage && pref === "1";
     if (useLocal && localConfigured) {
       const local = new URL(localConfigured);
       if (

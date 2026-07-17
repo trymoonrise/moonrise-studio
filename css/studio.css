@@ -10069,7 +10069,17 @@ body[data-page="support"] .ms-page-head-copy {
   }
   .ms-lb-side {
     order: 2;
-    max-height: 42dvh;
+    max-height: min(48dvh, 420px);
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    justify-content: flex-start;
+    padding-bottom: max(0.35rem, env(safe-area-inset-bottom, 0px));
+  }
+  .ms-lb-side-controls {
+    min-height: 0;
   }
   .ms-lb-side-hero {
     display: none;
