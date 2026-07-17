@@ -31,7 +31,7 @@ body {
 }
 
 body[data-page="login"],
-body[data-page="apply"] {
+body[data-page="login"] {
   display: grid;
   place-items: center;
   align-content: center;
@@ -688,7 +688,8 @@ body.ms-sidebar-resizing iframe {
   padding-right: 1.75rem;
 }
 
-/* Help ΓÇö match Finance column width */
+/* Support — match Finance column width */
+body[data-page="support"] #page-body.ms-content-page,
 body[data-page="help"] #page-body.ms-content-page {
   --ms-channel-w: 620px;
   padding-left: 1.75rem;
@@ -2874,7 +2875,7 @@ input.ms-input:-webkit-autofill:focus {
 }
 
 @media (max-width: 480px) {
-  body[data-page="apply"],
+  body[data-page="login"],
   body[data-page="login"] {
     padding: 0.65rem;
     align-items: stretch;
@@ -7151,6 +7152,12 @@ body.ms-lb-fullscreen #lb-price-range {
   font-weight: 650 !important;
 }
 
+.ms-lb-onboard-next.is-busy {
+  opacity: 0.88;
+  pointer-events: none;
+  cursor: wait;
+}
+
 .ms-lb-onboard-foot .ms-btn:last-child,
 .ms-lb-onboard-foot .ms-lb-onboard-next {
   margin-left: auto;
@@ -9235,10 +9242,6 @@ body.ms-lb-generating .ms-lb-chat-activity .ms-lb-dots-loader span {
   justify-self: start;
 }
 
-.ms-help-contact {
-  margin: 0;
-}
-
 .ms-help-contact-title {
   margin: 0 0 0.35rem;
   font-size: 1.05rem;
@@ -9247,50 +9250,233 @@ body.ms-lb-generating .ms-lb-chat-activity .ms-lb-dots-loader span {
   color: #0f172a;
 }
 
-.ms-help-contact-lead {
-  margin: 0 0 1rem;
-  font-size: 0.9rem;
-}
-
-.ms-help-contact-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 0.65rem;
-}
-
-.ms-help-contact-link {
+body[data-page="support"] .ms-content-page {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
-  padding: 0.85rem 0.95rem;
-  border: 1px solid #eef2f7;
-  border-radius: 14px;
-  background: #f8fafc;
-  text-decoration: none;
-  color: inherit;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  align-items: center;
 }
 
-.ms-help-contact-link:hover {
-  border-color: #bfdbfe;
-  background: #eff6ff;
+body[data-page="support"] .ms-page-head {
+  width: 100%;
+  max-width: 24rem;
+  text-align: center;
 }
 
-.ms-help-contact-label {
+body[data-page="support"] .ms-page-head-copy {
+  width: 100%;
+}
+
+.ms-help-vcard {
+  position: relative;
+  width: 100%;
+  max-width: 24rem;
+  margin: 0.35rem auto 2rem;
+  border-radius: 24px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 18px 48px rgba(15, 23, 42, 0.08);
+}
+
+.ms-help-vcard-hero {
+  height: 7.25rem;
+  background:
+    radial-gradient(ellipse 90% 100% at 50% 0%, rgba(255, 255, 255, 0.85), transparent 58%),
+    linear-gradient(165deg, #f4f7fb 0%, #e8eef6 48%, #dde6f0 100%);
+}
+
+.ms-help-vcard-body {
+  position: relative;
+  padding: 0 1.5rem 1.65rem;
+  text-align: center;
+}
+
+.ms-help-vcard-top {
+  position: absolute;
+  top: -6.1rem;
+  left: 1.15rem;
+  right: 1.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 2;
+}
+
+.ms-help-vcard-brand {
   font-size: 0.72rem;
   font-weight: 650;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #94a3b8;
+  color: rgba(71, 85, 105, 0.78);
 }
 
-.ms-help-contact-value {
-  font-size: 1rem;
+.ms-help-vcard-share {
+  appearance: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(255, 255, 255, 0.8);
+  color: #64748b;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.ms-help-vcard-share:hover {
+  background: #fff;
+  color: #0f172a;
+  border-color: rgba(148, 163, 184, 0.45);
+}
+
+.ms-help-vcard-avatar {
+  width: 5.5rem;
+  height: 5.5rem;
+  margin: -2.75rem auto 1.05rem;
+  border-radius: 1.25rem;
+  background: #fff;
+  border: 4px solid #fff;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.1);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+.ms-help-vcard-avatar img {
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
+}
+
+.ms-help-vcard-identity {
+  text-align: center;
+  margin: 0 0 1.2rem;
+}
+
+.ms-help-vcard-name {
+  margin: 0;
+  font-size: 1.7rem;
+  font-weight: 750;
+  letter-spacing: -0.035em;
+  color: #0f172a;
+  line-height: 1.1;
+}
+
+.ms-help-vcard-role {
+  margin: 0.35rem 0 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #64748b;
+  letter-spacing: -0.01em;
+}
+
+.ms-help-vcard-role a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.ms-help-vcard-role a:hover {
+  color: #0f172a;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.ms-help-vcard-save {
+  appearance: none;
+  width: 100%;
+  border: 0;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #fff;
+  font: inherit;
+  font-size: 0.98rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  padding: 0.92rem 1.25rem;
+  cursor: pointer;
+  margin-bottom: 1.35rem;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.ms-help-vcard-save:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+.ms-help-vcard-links {
+  list-style: none;
+  margin: 0;
+  padding: 0.15rem 0 0;
+  display: grid;
+  gap: 0.55rem;
+  text-align: left;
+}
+
+.ms-help-vcard-link {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  text-decoration: none;
+  color: inherit;
+  padding: 0.7rem 0.75rem;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.ms-help-vcard-link:hover {
+  background: #f8fafc;
+  border-color: rgba(15, 23, 42, 0.06);
+}
+
+.ms-help-vcard-icon {
+  width: 2.65rem;
+  height: 2.65rem;
+  border-radius: 0.8rem;
+  display: block;
+  flex-shrink: 0;
+  overflow: hidden;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.1);
+}
+
+.ms-help-vcard-icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ms-help-vcard-link-text {
+  display: grid;
+  gap: 0.08rem;
+  min-width: 0;
+}
+
+.ms-help-vcard-link-text strong {
+  font-size: 0.95rem;
   font-weight: 650;
   color: #0f172a;
-  word-break: break-word;
+  letter-spacing: -0.01em;
+}
+
+.ms-help-vcard-link-text em {
+  font-style: normal;
+  font-size: 0.82rem;
+  color: #64748b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ms-help-vcard-link:hover .ms-help-vcard-link-text strong {
+  color: #0f172a;
 }
 
 .ms-legal-doc {
@@ -10294,6 +10480,7 @@ body.ms-home-menu-open .ms-home-brand img {
   letter-spacing: -0.04em;
   line-height: 1.1;
   color: #0f172a;
+  white-space: nowrap;
 }
 
 .ms-home-title-accent {
@@ -10871,7 +11058,7 @@ body.ms-home-menu-open .ms-home-brand img {
   }
 
   .ms-home-hero-stage {
-    gap: 1.5rem;
+    gap: 1.35rem;
     width: 100%;
     align-items: stretch;
   }
@@ -10881,16 +11068,17 @@ body.ms-home-menu-open .ms-home-brand img {
     max-width: none;
     min-height: 0;
     margin: 0;
-    padding: 0.75rem 0 0.15rem;
-    gap: 1.05rem;
+    padding: 0.55rem 0 0.15rem;
+    gap: 0.95rem;
     justify-content: flex-start;
     align-items: flex-start;
     text-align: left;
   }
 
   .ms-home-title {
-    font-size: clamp(2rem, 8vw, 2.65rem);
-    max-width: 12ch;
+    font-size: clamp(1.62rem, 7vw, 2.55rem);
+    max-width: none;
+    white-space: nowrap;
   }
 
   .ms-home-sub {
@@ -11119,30 +11307,41 @@ body.ms-home-menu-open .ms-home-brand img {
     padding-bottom: 2.5rem;
   }
 
-  .ms-home-cascade {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-auto-rows: minmax(7.25rem, auto);
-    grid-template-rows: none;
-    gap: 0.85rem;
+  .ms-home-title {
+    font-size: clamp(1.48rem, 7.35vw, 2rem);
+    letter-spacing: -0.055em;
   }
 
-  .ms-home-tile:nth-child(1) { grid-column: 1 / 2; grid-row: auto; min-height: 11.5rem; }
-  .ms-home-tile:nth-child(2) { grid-column: 2 / 3; grid-row: auto; min-height: 7.25rem; }
-  .ms-home-tile:nth-child(3) { grid-column: 2 / 3; grid-row: auto; min-height: 9.5rem; }
-  .ms-home-tile:nth-child(4) { grid-column: 1 / 2; grid-row: auto; min-height: 7.25rem; }
-  .ms-home-tile:nth-child(5) { grid-column: 1 / 2; grid-row: auto; min-height: 9.5rem; }
-  .ms-home-tile:nth-child(6) { grid-column: 2 / 3; grid-row: auto; min-height: 9.5rem; }
-  .ms-home-tile:nth-child(7) { grid-column: 1 / 3; grid-row: auto; min-height: 8.5rem; }
-  .ms-home-tile:nth-child(8) { grid-column: 1 / 2; grid-row: auto; min-height: 7.25rem; }
-  .ms-home-tile:nth-child(9) { grid-column: 2 / 3; grid-row: auto; min-height: 7.25rem; }
+  .ms-home-sub {
+    font-size: 0.98rem;
+    max-width: 24rem;
+  }
+
+  .ms-home-cascade {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 9.15rem;
+    grid-template-rows: none;
+    gap: 0.75rem;
+  }
+
+  .ms-home-tile:nth-child(n) {
+    grid-column: auto;
+    grid-row: auto;
+    min-height: 0;
+  }
+
+  .ms-home-tile:first-child,
+  .ms-home-tile:nth-child(7) {
+    grid-column: 1 / -1;
+  }
 
   .ms-home-preset {
-    inset: 0.55rem;
+    inset: 0.5rem;
     padding: 0.6rem;
   }
 
   .ms-home-preset strong {
-    max-width: 12ch;
+    max-width: 15ch;
   }
 
   .ms-home-tile:nth-child(2) .ms-home-preset::before,
@@ -13757,6 +13956,14 @@ body.ms-fin-onboarding-mode #page-body.ms-finance-page {
   border: 1px solid #e2e8f0;
   border-radius: 16px;
   background: #fff;
+}
+
+.ms-pricing-topup-heading {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #0f172a;
 }
 
 .ms-pricing-topup-row {

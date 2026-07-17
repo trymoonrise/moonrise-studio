@@ -1,4 +1,4 @@
-<p align="center">
+﻿<p align="center">
   <img src="doc/MoonriseLogo.png" alt="Moonrise Studio" width="88" height="88">
 </p>
 
@@ -30,7 +30,7 @@
 
 It helps you discover local businesses that need an online presence, create a polished site for them, share a watermarked preview, collect payment, and publish when the order is complete.
 
-The goal is simple: turn website selling into a clear, repeatable flow — find → build → present → get paid → go live.
+The goal is simple: turn website selling into a clear, repeatable flow â€” find â†’ build â†’ present â†’ get paid â†’ go live.
 
 ---
 
@@ -40,7 +40,7 @@ The goal is simple: turn website selling into a clear, repeatable flow — find 
   <img src="doc/MoonriseLogo.png" alt="TryMoonrise" width="72" height="72">
 </p>
 
-Hi — I’m the builder behind **Moonrise** / **TryMoonrise**.
+Hi â€” Iâ€™m the builder behind **Moonrise** / **TryMoonrise**.
 
 I build tools for freelancers and creators who want to earn by helping local businesses show up online. Moonrise Studio is the product side of that mission: less busywork, clearer client delivery, and a path from preview to payment.
 
@@ -51,7 +51,7 @@ I build tools for freelancers and creators who want to earn by helping local bus
 | **Phone** | [(401) 300-0957](tel:+14013000957) |
 | **Focus** | Local business websites, freelancers, creators |
 
-If you’re exploring Moonrise, building with it, or want to collaborate — reach out.
+If youâ€™re exploring Moonrise, building with it, or want to collaborate â€” reach out.
 
 ---
 
@@ -87,11 +87,11 @@ You still own the relationship, the pitch, and the pricing. Moonrise provides th
 
 ---
 
-## Who it’s for
+## Who itâ€™s for
 
 - Freelancers selling websites to local businesses  
 - Creators building a service offer around web presence  
-- Solo operators who want a cleaner find → build → sell loop  
+- Solo operators who want a cleaner find â†’ build â†’ sell loop  
 
 ---
 
@@ -100,7 +100,7 @@ You still own the relationship, the pitch, and the pricing. Moonrise provides th
 | Page | Purpose |
 |---|---|
 | `index.html` | Marketing home |
-| `apply.html` | Sign in / get started |
+| `login.html` | Sign in / get started |
 | `dashboard.html` | Progress and overview |
 | `leads.html` | Business Finder |
 | `builder.html` | Create and manage sites |
@@ -115,12 +115,12 @@ You still own the relationship, the pitch, and the pricing. Moonrise provides th
 
 ## Quick links
 
-- 🌐 **Website:** [trymoonrise.com](https://trymoonrise.com)  
-- 📬 **Support:** [trymoonrise@gmail.com](mailto:trymoonrise@gmail.com)  
-- 📄 **Privacy:** [privacy.html](privacy.html)  
-- 📜 **Terms:** [terms.html](terms.html)  
-- 🔐 **Security:** [SECURITY.md](SECURITY.md)  
-- 🤝 **Contributing:** [CONTRIBUTING.md](CONTRIBUTING.md)  
+- ðŸŒ **Website:** [trymoonrise.com](https://trymoonrise.com)  
+- ðŸ“¬ **Support:** [trymoonrise@gmail.com](mailto:trymoonrise@gmail.com)  
+- ðŸ“„ **Privacy:** [privacy.html](privacy.html)  
+- ðŸ“œ **Terms:** [terms.html](terms.html)  
+- ðŸ” **Security:** [SECURITY.md](SECURITY.md)  
+- ðŸ¤ **Contributing:** [CONTRIBUTING.md](CONTRIBUTING.md)  
 
 ---
 
@@ -149,7 +149,7 @@ For security concerns, please use the process in [SECURITY.md](SECURITY.md).
 
 ## License
 
-© Moonrise Studio / TryMoonrise. All rights reserved.
+Â© Moonrise Studio / TryMoonrise. All rights reserved.
 
 This repository and product are provided for Moonrise Studio. Unauthorized copying, redistribution, or commercial reuse of proprietary materials is not permitted without written permission.
 

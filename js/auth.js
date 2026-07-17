@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Supabase Auth helpers + page gate for Studio.
  * Sign-in / sign-up / reset go through the worker so lockouts + rate limits apply.
  */
@@ -33,21 +33,44 @@
     return err;
   }
 
+  function friendlyAuthMessage(err, fallback) {
+    const raw = String(err?.message || err || "").trim();
+    const lower = raw.toLowerCase();
+    if (
+      !raw ||
+      lower === "failed to fetch" ||
+      lower.includes("networkerror") ||
+      lower.includes("load failed") ||
+      lower.includes("network request failed")
+    ) {
+      return "Can't reach the sign-in service. Check your connection and try again.";
+    }
+    if (lower.includes("timed out") || lower.includes("timeout")) {
+      return "Sign-in timed out. Please try again.";
+    }
+    return raw || fallback || "Authentication failed";
+  }
+
   async function workerAuth(path, body, headers) {
     const base = workerUrl();
     if (!base) throw new Error("Worker URL is not configured");
-    const res = await withTimeout(
-      fetch(base + path, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(headers || {}),
-        },
-        body: JSON.stringify(body || {}),
-      }),
-      AUTH_TIMEOUT_MS,
-      "Auth"
-    );
+    let res;
+    try {
+      res = await withTimeout(
+        fetch(base + path, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(headers || {}),
+          },
+          body: JSON.stringify(body || {}),
+        }),
+        AUTH_TIMEOUT_MS,
+        "Auth"
+      );
+    } catch (e) {
+      throw authError({ error: friendlyAuthMessage(e), code: "network_error" });
+    }
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw authError(data, "Authentication failed");
     return data;
@@ -283,7 +306,7 @@
   async function requestPasswordReset(email) {
     const address = String(email || "").trim();
     if (!address) throw new Error("Enter your email");
-    const redirectTo = new URL("apply.html?mode=recover", location.href).href;
+    const redirectTo = new URL("login.html?mode=recover", location.href).href;
     return workerAuth("/auth/forgot", { email: address, redirectTo });
   }
 
@@ -337,7 +360,7 @@
       const next = encodeURIComponent(
         (location.pathname.split("/").pop() || "dashboard.html") + location.search
       );
-      location.replace("apply.html?next=" + next);
+      location.replace("login.html?next=" + next);
       return null;
     }
     return session;

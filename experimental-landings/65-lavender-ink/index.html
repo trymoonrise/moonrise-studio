@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lavink · Experimental 65</title>
+<meta name="description" content="Moonrise experimental landing — book house. Motion: page turn." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;700&family=Literata:opsz,wght@7..72,500;700&display=swap" rel="stylesheet" />
+<style>
+:root{--bg:#f6f2fa;--text:#1a1024;--muted:#6e6480;--accent:#7c3aed;--line:rgba(15,23,42,.12)}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:"Literata",system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.55;overflow-x:hidden}
+h1,h2,h3{font-family:"Fraunces",Georgia,serif;line-height:.95;font-weight:700;letter-spacing:-.03em}
+a{color:inherit;text-decoration:none}
+img{display:block;width:100%;height:100%;object-fit:cover}
+.nav{position:fixed;inset:0 0 auto;z-index:30;display:flex;justify-content:space-between;align-items:center;padding:1.25rem clamp(1.25rem,4vw,3rem);backdrop-filter:blur(8px);background:color-mix(in srgb,var(--bg) 72%,transparent);border-bottom:1px solid transparent}
+.nav.is-scrolled{border-bottom-color:var(--line)}
+.logo{font-family:"Fraunces",sans-serif;font-weight:700;font-size:1.15rem}
+.nav-links{display:flex;gap:1.35rem;font-size:.84rem;color:var(--muted)}
+.nav-links a:hover{color:var(--text)}
+.nav-cta{padding:.45rem .85rem;border-radius:999px;background:var(--accent);color:#fff;font-size:.8rem;font-weight:650}
+.hero{position:relative;min-height:100vh;min-height:100dvh}
+.hero-media{position:absolute;inset:0;overflow:hidden}
+.hero-media::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg, rgba(255,255,255,.2), rgba(244,241,234,.92))}
+.hero-content,.hero-copy,.hero-foot{position:relative;z-index:2;padding:clamp(5rem,14vh,8rem) clamp(1.25rem,4vw,3rem) clamp(2.5rem,6vh,4rem);max-width:44rem}
+.eyebrow{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:650;margin-bottom:1rem}
+h1{font-size:clamp(2.8rem,9vw,5.2rem);margin-bottom:1.1rem}
+.lede{color:var(--muted);max-width:36ch;font-size:1.05rem;margin-bottom:1.6rem}
+.cta-row{display:flex;flex-wrap:wrap;gap:.7rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:.75rem 1.2rem;border-radius:999px;font-weight:650;font-size:.9rem;background:var(--accent);color:#fff}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.hero-split{display:grid;grid-template-columns:1.05fr .95fr;align-items:stretch}
+.hero-split .hero-media{position:relative;min-height:100vh}
+.hero-split .hero-media::after{background:linear-gradient(90deg,var(--bg),transparent 40%)}
+.hero-split .hero-copy{display:grid;align-content:center;padding-right:2rem}
+.hero-asymm .hero-content{margin-left:auto;margin-right:clamp(1rem,6vw,4rem);text-align:right;max-width:38rem;padding-top:clamp(7rem,18vh,10rem)}
+.hero-asymm .lede{margin-left:auto}.hero-asymm .cta-row{justify-content:flex-end}
+.hero-stack{display:flex;flex-direction:column;justify-content:space-between;min-height:100vh}
+.hero-stack .hero-media{position:relative;height:min(48vh,420px);margin:0 clamp(1.25rem,4vw,3rem);border-radius:1.25rem;border:1px solid var(--line)}
+.hero-stack .hero-content{padding-bottom:1rem}.hero-stack .hero-foot{padding-top:1.5rem}
+.hero-center{display:grid;place-items:end stretch}
+.hero-center .hero-content{max-width:48rem;margin:0 auto;text-align:center;padding-bottom:clamp(3rem,10vh,5.5rem)}
+.hero-center .lede{margin-inline:auto}.hero-center .cta-row{justify-content:center}
+section.block{padding:clamp(3.5rem,9vh,6rem) clamp(1.25rem,4vw,3rem);border-top:1px solid var(--line)}
+.block h2{font-size:clamp(2rem,5vw,3.2rem);margin-bottom:.75rem}
+.block .sub{color:var(--muted);max-width:42ch;margin-bottom:2rem}
+.grid-3{display:grid;gap:1rem;grid-template-columns:repeat(3,minmax(0,1fr))}
+.card{border:1px solid var(--line);border-radius:1rem;padding:1.25rem 1.2rem;background:color-mix(in srgb,var(--text) 3%,transparent)}
+.card h3{font-size:1.25rem;margin-bottom:.45rem}.card p{color:var(--muted);font-size:.92rem}
+.about{display:grid;gap:2rem;grid-template-columns:1.1fr .9fr;align-items:center}
+.about-media{aspect-ratio:4/5;border-radius:1.25rem;overflow:hidden;border:1px solid var(--line)}
+.quotes{display:grid;gap:1rem;grid-template-columns:1fr 1fr}
+.quote{border-left:3px solid var(--accent);padding:.4rem 0 .4rem 1rem}
+.quote p{font-size:1.05rem;margin-bottom:.55rem}.quote span{color:var(--muted);font-size:.8rem}
+.cta-band{text-align:center;padding:clamp(4rem,10vh,6.5rem) 1.25rem;background:radial-gradient(ellipse 60% 80% at 50% 100%,color-mix(in srgb,var(--accent) 28%,transparent),transparent),var(--bg);border-top:1px solid var(--line)}
+.cta-band h2{font-size:clamp(2.2rem,6vw,3.6rem);margin-bottom:1rem}
+footer{display:flex;flex-wrap:wrap;gap:1rem;justify-content:space-between;padding:1.5rem clamp(1.25rem,4vw,3rem) 2rem;border-top:1px solid var(--line);color:var(--muted);font-size:.82rem}
+footer a{color:var(--text);border-bottom:1px solid var(--line)}footer a:hover{color:var(--accent)}
+.toggles{position:fixed;bottom:1rem;right:1rem;z-index:40;background:color-mix(in srgb,var(--bg) 90%,transparent);border:1px solid var(--line);border-radius:.85rem;padding:.85rem 1rem;width:12.5rem;backdrop-filter:blur(10px)}
+.toggles h4{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.55rem}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;margin:.35rem 0;font-size:.8rem}
+.switch{position:relative;width:2.2rem;height:1.2rem}.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;cursor:pointer;background:color-mix(in srgb,var(--text) 18%,transparent);border-radius:999px}
+.slider::before{content:"";position:absolute;height:.85rem;width:.85rem;left:.16rem;top:.175rem;background:#fff;border-radius:50%;transition:.2s}
+.switch input:checked+.slider{background:var(--accent)}.switch input:checked+.slider::before{transform:translateX(.95rem)}
+.hero-media{clip-path:inset(0 0 0 0);animation:unfold 1.35s cubic-bezier(.2,.8,.2,1) both}
+@keyframes unfold{from{clip-path:inset(0 48% 0 48%)}}
+.reveal{animation:fadeup .9s ease .15s both}@keyframes fadeup{from{opacity:0;transform:translateY(20px)}}
+body.motion-off .hero-media img,body.motion-off .hero-media::before,body.motion-off .hero::after,body.motion-off .reveal,body.motion-off .hero-content h1,body.motion-off .hero-content h1::after{animation:none!important;filter:none!important}
+@media(max-width:860px){.hero-split,.about,.grid-3,.quotes{grid-template-columns:1fr}.hero-split .hero-media{min-height:48vh;order:-1}.hero-asymm .hero-content{text-align:left;margin-left:0}.hero-asymm .lede,.hero-asymm .cta-row{margin-left:0;justify-content:flex-start}.nav-links{display:none}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body class="motion-on">
+<header class="nav" id="nav"><a class="logo" href="#top">Lavink</a><nav class="nav-links" aria-label="Primary"><a href="#about">About</a><a href="#work">Work</a><a href="#notes">Notes</a><a href="#contact">Contact</a></nav><a class="nav-cta" href="#contact">Start</a></header>
+<main id="top">
+<section class="hero hero-split"><div class="hero-copy reveal"><p class="eyebrow">book house</p><h1>Motion with<br />a purpose.</h1><p class="lede">Experimental landing for Moonrise — sparse copy, strong type, purposeful motion.</p><div class="cta-row"><a class="btn" href="#work">See the work</a><a class="btn ghost" href="#contact">Book a call</a></div></div><div class="hero-media"><img src="https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=1600&q=80" alt="" /></div></section>
+<section class="block" id="about"><div class="about"><div><h2>Built as a reference site</h2><p class="sub">Template 65 · lavender-ink. Cross-check with Website Presets when shaping Moonrise generations.</p><div class="grid-3" style="grid-template-columns:1fr;gap:.75rem"><div class="card"><h3>Strategy</h3><p>Positioning that survives a boardroom and a feed.</p></div><div class="card"><h3>Identity</h3><p>Systems coherent from favicon to billboard.</p></div><div class="card"><h3>Sites</h3><p>Fast pages with one job: the next step.</p></div></div></div><div class="about-media"><img src="https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?auto=format&fit=crop&w=1600&q=80" alt="" /></div></div></section>
+<section class="block" id="work"><h2>Selected frames</h2><p class="sub">Sparse gallery — three stills, one mood.</p><div class="grid-3"><div class="about-media" style="aspect-ratio:4/3"><img src="https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=1600&q=80" alt="" /></div><div class="about-media" style="aspect-ratio:4/3"><img src="https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?auto=format&fit=crop&w=1600&q=80" alt="" /></div><div class="about-media" style="aspect-ratio:4/3"><img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1600&q=80" alt="" /></div></div></section>
+<section class="block" id="notes"><h2>What people notice</h2><div class="quotes"><blockquote class="quote"><p>“The motion doesn’t fight the type — it proves hierarchy.”</p><span>— Studio partner</span></blockquote><blockquote class="quote"><p>“Feels like a real site, not a component dump.”</p><span>— Builder QA</span></blockquote></div></section>
+<section class="cta-band" id="contact"><h2>Ready when you are.</h2><p class="sub" style="margin-inline:auto">Open from Experimental Landings, Test Templates, or Website Presets.</p><div class="cta-row" style="justify-content:center"><a class="btn" href="../index.html">All experiments</a><a class="btn ghost" href="../../Website%20Presets/index.html">Website Presets</a></div></section>
+</main>
+<footer><span>65 Lavink · page turn</span><span><a href="../index.html">Experimental landings</a> · <a href="../../testtemplates/index.html">Test templates</a> · <a href="../../Website%20Presets/index.html">Presets</a></span></footer>
+<aside class="toggles" aria-label="Preview controls"><h4>Preview</h4><div class="toggle-row"><span>Motion</span><label class="switch"><input type="checkbox" id="tog-motion" checked /><span class="slider"></span></label></div></aside>
+<script>
+const nav=document.getElementById("nav");
+const onScroll=()=>nav.classList.toggle("is-scrolled",window.scrollY>12);
+window.addEventListener("scroll",onScroll,{passive:true});onScroll();
+document.getElementById("tog-motion").addEventListener("change",e=>{document.body.classList.toggle("motion-on",e.target.checked);document.body.classList.toggle("motion-off",!e.target.checked);});
+</script>
+</body>
+</html>

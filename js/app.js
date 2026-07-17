@@ -14,7 +14,7 @@
   const ACCOUNT = [
     { id: "settings", href: "settings.html", label: "Settings", icon: "gear" },
     { id: "course", href: "course.html", label: "Course", icon: "grad" },
-    { id: "help", href: "help.html", label: "Help", icon: "help" },
+    { id: "support", href: "support.html", label: "Support", icon: "help" },
     {
       id: "telegram",
       href: (window.SITE_CONFIG && window.SITE_CONFIG.telegramUrl) || "https://t.me/c/3541685239/1",
@@ -253,6 +253,7 @@
 
   /** Live-only flag — never restore from storage (stale markers looked like "still generating"). */
   let channelGeneratingId = null;
+  let channelGeneratingCancellable = false;
 
   function applyChannelGenerating() {
     const id = channelGeneratingId;
@@ -260,19 +261,29 @@
       const on = !!id && el.getAttribute("data-nav") === id;
       el.classList.toggle("is-generating", on);
       const cancelBtn = el.querySelector("[data-nav-cancel]");
-      if (cancelBtn) cancelBtn.hidden = !(on && el.getAttribute("data-nav") === "builder");
+      if (cancelBtn) {
+        cancelBtn.hidden = !(on && channelGeneratingCancellable && el.getAttribute("data-nav") === "builder");
+      }
       if (on) {
         el.setAttribute("aria-busy", "true");
-        el.setAttribute("title", "Generating website…");
+        el.setAttribute(
+          "title",
+          channelGeneratingCancellable ? "Generating website…" : "Looking up business…"
+        );
       } else {
         el.removeAttribute("aria-busy");
-        if (el.getAttribute("title") === "Generating website…") el.removeAttribute("title");
+        const title = el.getAttribute("title");
+        if (title === "Generating website…" || title === "Looking up business…") {
+          el.removeAttribute("title");
+        }
       }
     });
   }
 
-  function setChannelGenerating(navId, busy) {
+  function setChannelGenerating(navId, busy, opts) {
     channelGeneratingId = busy && navId ? String(navId) : null;
+    // /generate keeps cancel; Maps lookup passes { cancellable: false }.
+    channelGeneratingCancellable = !!(channelGeneratingId && opts?.cancellable !== false);
     // Clear any legacy session marker from older builds
     try {
       sessionStorage.removeItem("ms_channel_generating");

@@ -10,8 +10,10 @@ accesstokens.env
 **/secrets/
 **/*credentials*
 
-# Heavy media — keep HTML/CSS presets, skip stock video/binaries
-Website Presets/stock/
+# Heavy media — keep stock images for Website Presets; skip videos (many >50MB)
+Website Presets/stock/**/*.mp4
+Website Presets/stock/**/*.webm
+Website Presets/stock/**/*.mov
 **/*.mp4
 **/*.webm
 **/*.mov
@@ -30,5 +32,4 @@ dist/
 supabase/.temp/
 .vercel
 css/studio.css.restored
-experimental-landings/
 worker/scripts/lead-structure-analysis.json

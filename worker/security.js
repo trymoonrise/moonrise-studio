@@ -4,7 +4,7 @@
  */
 const crypto = require("crypto");
 
-const AUTH_MAX_FAILURES = Number(process.env.AUTH_MAX_FAILURES || 4);
+const AUTH_MAX_FAILURES = Number(process.env.AUTH_MAX_FAILURES || 6);
 const AUTH_LOCKOUT_MS = Number(process.env.AUTH_LOCKOUT_MS || 60 * 60 * 1000); // 1 hour
 const AUTH_FAILURE_WINDOW_MS = Number(process.env.AUTH_FAILURE_WINDOW_MS || 60 * 60 * 1000);
 
@@ -226,7 +226,7 @@ async function recordAuthFailure(supabase, { email, ip }) {
             remainingTries +
             " attempt" +
             (remainingTries === 1 ? "" : "s") +
-            " left before a 1-hour cooldown."
+            " left before a temporary lockout."
           : "Incorrect email or password.",
     code: retryAfterMs > 0 ? "auth_locked" : "auth_failed",
   };

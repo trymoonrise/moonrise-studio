@@ -947,9 +947,37 @@
     return false;
   }
 
+  const ONBOARD_GENERATE_LABEL = "Generate site";
+
+  function setOnboardGenerateLoading(busy, label) {
+    const btn = document.getElementById("onboard-generate");
+    if (!btn) return;
+    btn.classList.toggle("is-busy", !!busy);
+    btn.setAttribute("aria-busy", busy ? "true" : "false");
+    if (busy) {
+      btn.disabled = true;
+      btn.textContent = label || "Loading…";
+    } else {
+      btn.textContent = ONBOARD_GENERATE_LABEL;
+    }
+  }
+
   function updateOnboardContinue() {
     const btn = document.getElementById("onboard-generate");
-    if (btn) btn.disabled = !canContinueOnboard();
+    if (!btn) return;
+    // Keep Generate in a loading state while Maps lookup or /generate is in flight.
+    if (state.mapsScraping) {
+      setOnboardGenerateLoading(true, "Looking up…");
+      window.StudioShell?.setChannelGenerating?.("builder", true, { cancellable: false });
+      return;
+    }
+    if (generateAbort) {
+      setOnboardGenerateLoading(true, "Generating…");
+      window.StudioShell?.setChannelGenerating?.("builder", true);
+      return;
+    }
+    setOnboardGenerateLoading(false);
+    btn.disabled = !canContinueOnboard();
   }
 
   function shouldExpandManualFields() {
@@ -1195,6 +1223,10 @@
       }
     } finally {
       state.mapsScraping = false;
+      // Clear lookup progress on the Builder channel unless /generate is already running.
+      if (!generateAbort) {
+        window.StudioShell?.setChannelGenerating?.(null, false);
+      }
       updateOnboardContinue();
     }
   }
@@ -3738,21 +3770,10 @@
 
   function refreshWatermark() {
     const host = document.getElementById("watermark-host");
-    const enabled = !!(state.project?.watermark_enabled && state.html) && state.mode !== "edit";
-    if (!enabled) {
-      window.MoonriseWatermarkEmbed?.unmount?.();
-      if (host) host.innerHTML = "";
-      setPublishEnabled();
-      return;
-    }
-    const base = workerUrl();
-    if (!base || !window.MoonriseWatermarkEmbed?.mount) return;
-    window.MoonriseWatermarkEmbed.mount({
-      host,
-      projectId: state.projectId,
-      workerUrl: base,
-      urgencyEndsAt: state.project?.urgency_ends_at || "",
-    });
+    // Never show the order watermark inside the builder — sellers need a clean
+    // canvas. It still ships on the live published site when enabled.
+    window.MoonriseWatermarkEmbed?.unmount?.();
+    if (host) host.innerHTML = "";
     setPublishEnabled();
   }
 
@@ -3854,10 +3875,9 @@
     if (!(await ensureCreditsForGeneration(fromOnboard))) return;
 
     setStatus("");
-    const onboardBtn = document.getElementById("onboard-generate");
-    if (onboardBtn) onboardBtn.disabled = true;
     generateAbort = new AbortController();
     const signal = generateAbort.signal;
+    updateOnboardContinue();
     setPromptBusy(true, "Generating…");
     try {
       const base = workerUrl();
@@ -3947,8 +3967,8 @@
       setError(msg);
       setStatus("");
     } finally {
-      if (onboardBtn) onboardBtn.disabled = !canContinueOnboard();
       setPromptBusy(false);
+      updateOnboardContinue();
     }
   }
 
