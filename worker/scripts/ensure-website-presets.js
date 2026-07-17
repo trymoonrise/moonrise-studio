@@ -5,9 +5,32 @@ const { execFileSync } = require("child_process");
 const root = path.join(__dirname, "..", "..");
 const src = path.join(root, "Website Presets");
 const dest = path.join(root, "website-presets");
+const onVercel = Boolean(process.env.VERCEL);
 
 function existsManifest(dir) {
   return fs.existsSync(path.join(dir, "presets", "manifest.json"));
+}
+
+function isSymlink(dir) {
+  try {
+    return fs.lstatSync(dir).isSymbolicLink();
+  } catch (_) {
+    return false;
+  }
+}
+
+function mirrorCopy() {
+  fs.mkdirSync(dest, { recursive: true });
+  if (process.platform === "win32") {
+    execFileSync(
+      "robocopy",
+      [src, dest, "/E", "/NFL", "/NDL", "/NJH", "/NJS", "/nc", "/ns", "/np"],
+      { stdio: "inherit" }
+    );
+  } else {
+    execFileSync("cp", ["-a", src + "/.", dest + "/"], { stdio: "inherit" });
+  }
+  console.log("Mirrored Website Presets -> website-presets");
 }
 
 function main() {
@@ -16,6 +39,20 @@ function main() {
     process.exitCode = 1;
     return;
   }
+
+  // Vercel rejects serverless packages that include symlinked directories.
+  if (onVercel) {
+    if (existsManifest(dest) && !isSymlink(dest)) {
+      console.log("website-presets already ready:", dest);
+      return;
+    }
+    if (fs.existsSync(dest)) {
+      fs.rmSync(dest, { recursive: true, force: true });
+    }
+    mirrorCopy();
+    return;
+  }
+
   if (existsManifest(dest)) {
     console.log("website-presets already ready:", dest);
     return;
@@ -40,15 +77,7 @@ function main() {
     }
   }
 
-  fs.mkdirSync(dest, { recursive: true });
-  execFileSync(
-    process.platform === "win32" ? "robocopy" : "cp",
-    process.platform === "win32"
-      ? [src, dest, "/E", "/NFL", "/NDL", "/NJH", "/NJS", "/nc", "/ns", "/np"]
-      : ["-a", src + "/.", dest + "/"],
-    { stdio: "inherit" }
-  );
-  console.log("Mirrored Website Presets -> website-presets");
+  mirrorCopy();
 }
 
 main();

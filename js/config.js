@@ -20,7 +20,7 @@ window.SITE_CONFIG = {
   /**
    * Cloud API worker (generate, Stripe, publish, watermark embed).
    * Hosted on Vercel — works from any device / production Studio URL.
-   * Set localStorage.ms_use_local_worker = "1" to force localWorkerUrl instead.
+   * Local dev only: set localStorage.ms_use_local_worker = "0" to force the cloud worker.
    */
   workerUrl: "https://moonrise-studio.vercel.app",
   localWorkerUrl: "http://127.0.0.1:8787",
@@ -58,9 +58,31 @@ window.SITE_CONFIG = {
   discordUrl: "https://discord.gg/yFJajbBNj",
 };
 
+function isPrivateNetworkHost(hostname) {
+  const host = String(hostname || "").toLowerCase();
+  if (host === "localhost" || host === "127.0.0.1" || host === "[::1]" || host === "::1") {
+    return true;
+  }
+  if (/^192\.168\.\d{1,3}\.\d{1,3}$/.test(host)) return true;
+  if (/^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(host)) return true;
+  if (/^172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}$/.test(host)) return true;
+  return false;
+}
+
+/** True when Studio is opened from localhost or a private LAN IP (local dev only). */
+window.isLocalDevHost = function isLocalDevHost() {
+  try {
+    if (typeof location === "undefined") return false;
+    return isPrivateNetworkHost(location.hostname);
+  } catch (_) {
+    return false;
+  }
+};
+
 /**
  * Resolve the worker base URL for the current page host.
- * Rewrites loopback (127.0.0.1 ↔ localhost) and LAN IP when Studio isn't on loopback.
+ * Public hosts (GitHub Pages, Vercel, custom domains) always use the cloud worker
+ * so the browser never prompts for private-network access.
  */
 window.resolveWorkerUrl = function resolveWorkerUrl() {
   const cloud = String(window.SITE_CONFIG?.workerUrl || "").replace(/\/$/, "");
@@ -71,15 +93,10 @@ window.resolveWorkerUrl = function resolveWorkerUrl() {
   try {
     if (typeof location === "undefined") return cloud || localConfigured;
     const pageHost = location.hostname;
-    const isLocalPage =
-      pageHost === "localhost" ||
-      pageHost === "127.0.0.1" ||
-      pageHost === "[::1]" ||
-      /^192\.168\.\d{1,3}\.\d{1,3}$/.test(pageHost) ||
-      /^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(pageHost);
+    const isLocalPage = isPrivateNetworkHost(pageHost);
     const pref =
       typeof localStorage !== "undefined" ? localStorage.getItem("ms_use_local_worker") : null;
-    const useLocal = pref === "1" || (pref !== "0" && isLocalPage);
+    const useLocal = isLocalPage && pref !== "0";
     if (useLocal && localConfigured) {
       const local = new URL(localConfigured);
       if (
@@ -95,4 +112,15 @@ window.resolveWorkerUrl = function resolveWorkerUrl() {
     /* keep cloud */
   }
   return cloud || localConfigured;
+};
+
+/**
+ * Local LeadFinder scrape API — only available during local dev.
+ * Returns empty on public origins to avoid private-network permission prompts.
+ */
+window.resolveLeadFinderUrl = function resolveLeadFinderUrl() {
+  if (!window.isLocalDevHost()) return "";
+  return String(window.SITE_CONFIG?.leadFinderUrl || "")
+    .trim()
+    .replace(/\/$/, "");
 };

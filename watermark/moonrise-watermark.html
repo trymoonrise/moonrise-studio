@@ -485,7 +485,7 @@
 
       const params = new URLSearchParams(location.search);
       const projectId = params.get("project_id") || params.get("projectId") || "";
-      const workerUrl = (params.get("worker") || "http://127.0.0.1:8787").replace(/\/$/, "");
+      const workerUrl = (params.get("worker") || "https://moonrise-studio.vercel.app").replace(/\/$/, "");
       const paymentLink = params.get("payment_link") || "";
 
       const overlay = document.getElementById("mr-wm-overlay");

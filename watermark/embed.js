@@ -218,7 +218,9 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
     ensureStyle();
 
     const projectId = String(opts.projectId || "").trim();
-    const workerUrl = String(opts.workerUrl || "http://127.0.0.1:8787").replace(/\/$/, "");
+    const workerUrl = String(
+      opts.workerUrl || "https://moonrise-studio.vercel.app"
+    ).replace(/\/$/, "");
     const paymentLink = String(opts.paymentLink || "").trim();
     const host = opts.host || null;
     const urgencyEndsAt = resolveUrgencyEndsAt(opts.urgencyEndsAt);
