@@ -5989,124 +5989,19 @@ body.ms-lb-pane-resizing .ms-lb-pane-resizer::before {
   border-radius: 14px;
   display: grid;
   place-items: center;
-  background: #eff6ff;
-  border: 1px solid #dbeafe;
+  background: transparent;
+  border: 0;
   color: #2563eb;
   box-shadow: none;
-  isolation: isolate;
+  overflow: hidden;
 }
 
-.ms-lb-mark-spinner,
-.ms-lb-mark-pulse {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  opacity: 0;
-}
-
-.ms-lb-mark-spinner {
-  inset: -3px;
-  border-radius: 17px;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg 40deg,
-    #2563eb 40deg 120deg,
-    #60a5fa 120deg 200deg,
-    #93c5fd 200deg 280deg,
-    transparent 280deg 360deg
-  );
-  animation: ms-lb-mark-spin 1.15s linear infinite;
-}
-
-.ms-lb-mark-spinner::after {
-  content: "";
-  position: absolute;
-  inset: 2.5px;
-  border-radius: 14px;
-  background: #eff6ff;
-}
-
-.ms-lb-mark-pulse {
-  box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.28);
-  animation: ms-lb-mark-pulse 1.15s ease-in-out infinite;
-}
-
-.ms-lb-mark-icon {
-  position: relative;
-  z-index: 1;
-  width: 22px;
-  height: 22px;
-  display: block;
-}
-
-.ms-lb-mark-chevron {
-  transform-box: fill-box;
-  transform-origin: center;
-}
-
-body.ms-lb-generating .ms-lb-mark-spinner,
-body.ms-lb-generating .ms-lb-mark-pulse,
-.ms-lb-empty.is-generating .ms-lb-mark-spinner,
-.ms-lb-empty.is-generating .ms-lb-mark-pulse {
-  opacity: 1;
-}
-
-body.ms-lb-generating .ms-lb-mark-chevron--left,
-.ms-lb-empty.is-generating .ms-lb-mark-chevron--left {
-  animation: ms-lb-chevron-left 1.15s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
-}
-
-body.ms-lb-generating .ms-lb-mark-chevron--right,
-.ms-lb-empty.is-generating .ms-lb-mark-chevron--right {
-  animation: ms-lb-chevron-right 1.15s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
-}
-
-body.ms-lb-generating .ms-lb-mark,
-.ms-lb-empty.is-generating .ms-lb-mark {
-  animation: ms-lb-mark-float 2.3s ease-in-out infinite;
-}
-
-@keyframes ms-lb-mark-spin {
-  to { transform: rotate(360deg); }
-}
-
-@keyframes ms-lb-mark-pulse {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.22);
-    opacity: 0.55;
-  }
-  50% {
-    box-shadow: 0 0 0 10px rgba(37, 99, 235, 0);
-    opacity: 1;
-  }
-}
-
-@keyframes ms-lb-mark-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-2px); }
-}
-
-@keyframes ms-lb-chevron-left {
-  0%, 100% { transform: translateX(0); opacity: 1; }
-  50% { transform: translateX(-2.5px); opacity: 0.72; }
-}
-
-@keyframes ms-lb-chevron-right {
-  0%, 100% { transform: translateX(0); opacity: 1; }
-  50% { transform: translateX(2.5px); opacity: 0.72; }
-}
-
-.ms-lb-mark svg {
-  width: 22px;
-  height: 22px;
-}
-
-.ms-lb-mark img {
-  width: 28px;
-  height: 28px;
+.ms-lb-mark-logo {
+  width: 40px;
+  height: 40px;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 12px;
+  display: block;
 }
 
 .ms-lb-gen-track {
@@ -6147,25 +6042,9 @@ body.ms-lb-generating .ms-lb-gen-beam,
 }
 
 @media (prefers-reduced-motion: reduce) {
-  body.ms-lb-generating .ms-lb-mark,
-  .ms-lb-empty.is-generating .ms-lb-mark,
-  body.ms-lb-generating .ms-lb-mark-spinner,
-  .ms-lb-empty.is-generating .ms-lb-mark-spinner,
-  body.ms-lb-generating .ms-lb-mark-pulse,
-  .ms-lb-empty.is-generating .ms-lb-mark-pulse,
-  body.ms-lb-generating .ms-lb-mark-chevron--left,
-  .ms-lb-empty.is-generating .ms-lb-mark-chevron--left,
-  body.ms-lb-generating .ms-lb-mark-chevron--right,
-  .ms-lb-empty.is-generating .ms-lb-mark-chevron--right,
   body.ms-lb-generating .ms-lb-gen-beam,
   .ms-lb-empty.is-generating .ms-lb-gen-beam {
     animation: none !important;
-  }
-
-  body.ms-lb-generating .ms-lb-mark-pulse,
-  .ms-lb-empty.is-generating .ms-lb-mark-pulse {
-    opacity: 0.75;
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14);
   }
 }
 
@@ -6269,6 +6148,9 @@ body.ms-lb-generating .ms-lb-dots-loader span {
   max-width: 100%;
   flex: 1;
   min-height: 0;
+  /* Keep iframe above empty overlays so wheel/touch scroll reach the preview */
+  position: relative;
+  z-index: 1;
 }
 
 .ms-preview-vp-resizer {
@@ -6424,8 +6306,10 @@ body.ms-lb-vp-resizing .ms-preview-vp-resizer::after {
   height: 100%;
   border: 0;
   background: #fff;
-  min-height: 100%;
+  min-height: 0;
   flex-shrink: 0;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
   transition: box-shadow 0.28s ease;
 }
 
@@ -8872,12 +8756,22 @@ body.ms-lb-generating .ms-lb-chat-activity .ms-lb-dots-loader span {
   background: var(--ms-accent-soft);
 }
 
-/* Watermark overlay ΓÇö floating bottom-center widget */
+/* Watermark chip host — bottom strip only so it never blocks iframe scroll */
 #watermark-host {
   position: absolute;
-  inset: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: auto;
   z-index: 20;
+  height: auto;
+  max-height: 40%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding: 0 0.75rem max(1rem, env(safe-area-inset-bottom, 0px));
   pointer-events: none;
+  overflow: visible;
 }
 
 .ms-watermark {
