@@ -3,77 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Landing Page Builder · Moonrise Studio</title>
+  <title>Builder · Moonrise Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css?v=20260718-gen-finish">
-  <link rel="stylesheet" href="css/mvp-gate.css?v=20260717-mvp-fix">
+  <link rel="stylesheet" href="css/studio.css?v=20260718-projects-page">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Open existing project or Finder handoff: show workspace immediately. -->
-  <script>
-    (function () {
-      try {
-        var q = new URLSearchParams(location.search);
-        var fromFinder = !!(
-          q.get("from_finder") === "1" ||
-          q.get("auto_generate") === "1" ||
-          q.get("lead_id") ||
-          q.get("lead") ||
-          q.get("pick") ||
-          q.get("name")
-        );
-        var openWorkspace = !!(q.get("project_id") || fromFinder);
-        if (!openWorkspace) return;
-        document.documentElement.classList.add("ms-lb-boot-project");
-        function apply() {
-          if (document.body) {
-            document.body.classList.add("ms-lb-workspace");
-            document.body.classList.remove("ms-lb-setup");
-          }
-          var setup = document.getElementById("builder-setup");
-          var work = document.getElementById("builder-workspace");
-          if (setup) setup.hidden = true;
-          if (work) work.hidden = false;
-        }
-        if (document.readyState === "loading") {
-          document.addEventListener("DOMContentLoaded", apply);
-        } else {
-          apply();
-        }
-      } catch (_) {
-        /* ignore */
-      }
-    })();
-  </script>
-  <style>
-    html.ms-lb-boot-project #builder-setup {
-      display: none !important;
-    }
-    html.ms-lb-boot-project #builder-workspace {
-      display: flex !important;
-      flex-direction: column;
-      height: 100dvh;
-      margin: 0 !important;
-      max-width: none !important;
-      width: 100% !important;
-      padding: 0 !important;
-      overflow: hidden;
-      box-sizing: border-box;
-    }
-  </style>
 </head>
-<body data-page="builder">
+<body data-page="builder" class="ms-lb-setup">
   <div id="shell"></div>
 
   <div id="builder-setup" class="ms-builder-setup-page">
-    <header class="ms-page-head ms-bs-hero">
-      <div class="ms-page-head-copy">
-        <h1>Builder</h1>
-      </div>
-    </header>
+    <div class="ms-bs-layout">
+      <header class="ms-page-head ms-bs-hero">
+        <div class="ms-page-head-copy">
+          <h1>Builder</h1>
+          <p class="lead">Gather business details, then generate a website in the Editor.</p>
+        </div>
+      </header>
 
-    <section class="ms-bs-card" id="builder-setup-card">
+      <section class="ms-bs-card" id="builder-setup-card">
       <div class="ms-lb-onboard-step is-active" data-step="1" id="onboard-step-1">
         <div class="ms-lb-onboard-body">
           <div class="ms-bs-paths">
@@ -84,7 +33,7 @@
                 </span>
                 <div class="ms-bs-path-copy">
                   <h3 id="bs-path-google-title">Google link</h3>
-                  <p>Paste a Maps or g.page URL - we’ll pull the details.</p>
+                  <p>Paste a Maps or g.page URL — we'll pull the details.</p>
                 </div>
               </header>
               <div class="ms-lb-onboard-maps">
@@ -108,7 +57,7 @@
                 </span>
                 <div class="ms-bs-path-copy">
                   <h3 id="bs-path-manual-title">Manual input</h3>
-                  <p>Fill every field below if you don’t have a link.</p>
+                  <p>Fill every field below if you don't have a link.</p>
                 </div>
               </header>
               <div class="ms-lb-onboard-fields ms-lb-onboard-fields--manual">
@@ -152,532 +101,38 @@
           <button type="button" class="ms-btn ms-lb-onboard-next" id="onboard-generate" disabled>Generate site</button>
         </footer>
       </div>
-    </section>
-    <p class="ms-muted ms-bs-status" id="builder-setup-status" hidden></p>
-  </div>
+      </section>
 
-  <div id="builder-workspace" class="ms-builder-page" hidden>
-    <div class="ms-lb-stage">
-      <div class="ms-lb-body">
-        <div class="ms-lb-chrome-bar">
-          <div class="ms-lb-mode-row">
-            <button
-              type="button"
-              class="ms-lb-back-menu"
-              id="lb-back-menu"
-              aria-label="Back"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
-              <span>Back</span>
-            </button>
-            <div class="ms-lb-mode" role="group" aria-label="View mode">
-              <button type="button" class="ms-lb-mode-btn is-mode is-active" data-mode="preview">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
-                Preview
-              </button>
-              <button type="button" class="ms-lb-mode-btn is-mode" data-mode="edit">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-                Edit
-              </button>
-              <button type="button" class="ms-lb-mode-btn is-mode" data-mode="code">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-                Code
-              </button>
-            </div>
+      <aside class="ms-bs-recent" aria-label="Recent projects">
+        <header class="ms-bs-recent-head">
+          <div>
+            <h2>Recent projects</h2>
+            <p class="ms-muted">Your past builds</p>
           </div>
-
-          <div class="ms-lb-viewports" role="group" aria-label="Builder tools">
-            <button type="button" class="ms-lb-icon-btn" id="btn-download-html" title="Download HTML" aria-label="Download HTML">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            </button>
-            <button type="button" class="ms-lb-icon-btn" id="btn-qr-code" title="QR Code business card" aria-label="QR Code business card">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v6M14 20h3"/></svg>
-            </button>
-            <span class="ms-lb-viewports-sep" aria-hidden="true"></span>
-            <button type="button" class="ms-lb-icon-btn is-vp is-active" data-vp="desktop" title="Desktop" aria-label="Desktop">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-            </button>
-            <button type="button" class="ms-lb-icon-btn is-vp" data-vp="tablet" title="Tablet" aria-label="Tablet">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M12 18h.01"/></svg>
-            </button>
-            <button type="button" class="ms-lb-icon-btn is-vp" data-vp="phone" title="Mobile" aria-label="Mobile">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M12 18h.01"/></svg>
-            </button>
-            <span class="ms-lb-viewports-sep" aria-hidden="true"></span>
-            <button type="button" class="ms-lb-icon-btn is-vp" data-vp="fullscreen" title="Fullscreen" aria-label="Fullscreen">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
-            </button>
-          </div>
-        </div>
-
-        <aside class="ms-lb-side">
-          <div class="ms-lb-side-controls">
-            <p class="ms-lb-edit-save" id="lb-edit-save-status" hidden aria-live="polite"></p>
-
-            <div class="ms-lb-widget" id="lb-contact-form-widget">
-              <div class="ms-lb-widget-head">
-                <div class="ms-lb-widget-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                </div>
-                <div class="ms-lb-widget-copy">
-                  <h3>Contact Form</h3>
-                  <p class="ms-muted">Form submissions</p>
-                </div>
-                <label class="ms-lb-widget-toggle" title="Enable contact form">
-                  <input type="checkbox" id="lb-contact-form-enabled" aria-label="Enable contact form">
-                  <span class="ms-lb-widget-toggle-track" aria-hidden="true"></span>
-                </label>
-              </div>
-              <div class="ms-lb-widget-body" id="lb-contact-form-body" aria-hidden="true">
-                <div class="ms-lb-widget-body-inner">
-                <div class="ms-lb-widget-mode" role="group" aria-label="Contact form delivery mode">
-                  <button type="button" class="ms-lb-widget-mode-btn is-active" data-form-mode="auto" aria-pressed="true">Auto</button>
-                  <button type="button" class="ms-lb-widget-mode-btn" data-form-mode="custom" aria-pressed="false">Custom</button>
-                </div>
-                <div class="ms-field ms-lb-widget-field" id="lb-contact-form-auto-fields">
-                  <label class="ms-label" for="lb-contact-form-email">Client email</label>
-                  <input class="ms-input" id="lb-contact-form-email" type="email" placeholder="owner@business.com" autocomplete="email">
-                  <p class="ms-muted ms-lb-widget-hint">Paste the business owner's email. Every form lead goes to that inbox after you publish.</p>
-                </div>
-                <div class="ms-field ms-lb-widget-field" id="lb-contact-form-custom-fields" hidden>
-                  <label class="ms-label" for="lb-contact-form-endpoint">Form endpoint</label>
-                  <input class="ms-input" id="lb-contact-form-endpoint" type="url" placeholder="https://formspree.io/f/..." autocomplete="off">
-                  <p class="ms-muted ms-lb-widget-hint">Formspree, Discord webhook, Telegram sendMessage link with <code>?chat_id=</code>, or any HTTPS webhook (Zapier, Make, etc.).</p>
-                </div>
-                <button type="button" class="ms-btn ms-lb-widget-save" id="lb-contact-form-save">Save Settings</button>
-                </div>
-              </div>
-            </div>
-
-            <div class="ms-lb-widget" id="lb-custom-domain-widget">
-              <div class="ms-lb-widget-head">
-                <div class="ms-lb-widget-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
-                </div>
-                <div class="ms-lb-widget-copy">
-                  <h3>Custom Domain</h3>
-                  <p class="ms-muted" id="lb-custom-domain-summary">Connect your own domain</p>
-                </div>
-                <label class="ms-lb-widget-toggle" title="Enable custom domain">
-                  <input type="checkbox" id="lb-custom-domain-enabled" aria-label="Enable custom domain">
-                  <span class="ms-lb-widget-toggle-track" aria-hidden="true"></span>
-                </label>
-              </div>
-              <div class="ms-lb-widget-body" id="lb-custom-domain-body" aria-hidden="true">
-                <div class="ms-lb-widget-body-inner">
-                <div class="ms-field ms-lb-widget-field">
-                  <label class="ms-label" for="lb-custom-domain">Domain</label>
-                  <input class="ms-input" id="lb-custom-domain" type="text" placeholder="www.yourbusiness.com" autocomplete="off" inputmode="url">
-                  <p class="ms-muted ms-lb-widget-hint" id="lb-custom-domain-hint">Publish your site first, then connect your domain.</p>
-                </div>
-                <button type="button" class="ms-btn ms-lb-widget-save" id="lb-custom-domain-save">Save Domain</button>
-                </div>
-              </div>
-            </div>
-
-            <div class="ms-lb-price">
-              <div class="ms-lb-price-title">
-                <div>
-                  <strong>Website pricing</strong>
-                  <span>Click the amount and type</span>
-                </div>
-                <span class="ms-lb-price-rate">20% to @moonrise</span>
-              </div>
-              <div class="ms-lb-price-head">
-                <label class="ms-lb-price-stat ms-lb-price-stat--input" for="lb-price-input">
-                  <div class="ms-lb-price-stat-top">
-                    <span class="ms-lb-price-eyebrow">Client pays</span>
-                    <span class="ms-lb-price-stat-icon" aria-hidden="true" title="Editable">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-                    </span>
-                  </div>
-                  <span class="ms-lb-price-input-wrap">
-                    <span class="ms-lb-price-currency" aria-hidden="true">$</span>
-                    <input
-                      class="ms-lb-price-input"
-                      id="lb-price-input"
-                      type="text"
-                      inputmode="decimal"
-                      autocomplete="off"
-                      spellcheck="false"
-                      placeholder="500"
-                      aria-label="Client pays — type an amount"
-                      value="500"
-                    >
-                  </span>
-                </label>
-              </div>
-              <p class="ms-lb-price-hint">When the business owner pays @moonrise will receive a 20% cut to cover application costs.</p>
-            </div>
-
-            <div class="ms-lb-publish-actions">
-              <button type="button" class="ms-lb-publish-btn" id="btn-publish-top" disabled>
-                <svg class="ms-lb-publish-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/><polyline points="12 3 12 15"/><path d="m7 8 5-5 5 5"/></svg>
-                <span class="ms-lb-publish-label">Publish</span>
-              </button>
-              <button type="button" class="ms-lb-redesign-btn" id="btn-redesign-top" hidden>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
-                <span class="ms-lb-redesign-label">Redesign · 5 credits</span>
-              </button>
-              <button type="button" class="ms-lb-unpublish-btn" id="btn-unpublish-top" hidden>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg>
-                Unpublish
-              </button>
-              <button type="button" class="ms-lb-delete-btn" id="btn-delete-top" hidden>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-                Delete project
-              </button>
-            </div>
-          </div>
-
-          <div class="ms-lb-dock" hidden>
-            <p class="ms-error" id="builder-error" hidden></p>
-            <p class="ms-muted ms-lb-status" id="builder-status"></p>
-          </div>
-        </aside>
-
+          <span class="ms-bs-recent-count" id="builder-recent-count" hidden aria-hidden="true"></span>
+        </header>
         <div
-          class="ms-lb-pane-resizer"
-          id="lb-pane-resizer"
-          role="separator"
-          aria-orientation="vertical"
-          aria-label="Resize builder panels"
-          tabindex="0"
-        ></div>
+          class="ms-dash-projects-filters ms-bs-recent-filters seg-switch"
+          role="group"
+          aria-label="Filter by live status"
+          data-seg-tone="surface"
+        >
+          <button type="button" class="ms-dash-projects-filter is-active" data-live-filter="all" aria-pressed="true">All</button>
+          <button type="button" class="ms-dash-projects-filter" data-live-filter="live" aria-pressed="false">Live</button>
+          <button type="button" class="ms-dash-projects-filter" data-live-filter="not-live" aria-pressed="false">Not live</button>
+        </div>
+        <div class="ms-bs-recent-list" id="builder-recent-list">
+          <p class="ms-muted ms-bs-recent-loading">Loading…</p>
+        </div>
+        <footer class="ms-bs-recent-foot">
+          <a class="ms-bs-recent-view-all" href="projects.html">View all</a>
+        </footer>
+      </aside>
 
-        <main class="ms-lb-main">
-          <div class="ms-lb-live-banner" id="lb-live-banner" hidden role="status" aria-live="polite">
-            <div class="ms-lb-live-banner-inner">
-              <span class="ms-lb-live-banner-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-              </span>
-              <div class="ms-lb-live-banner-copy">
-                <strong>Your site is live!</strong>
-                <a class="ms-lb-live-banner-link" id="lb-live-banner-link" href="#" target="_blank" rel="noopener noreferrer"></a>
-              </div>
-              <button type="button" class="ms-lb-live-banner-close" id="lb-live-banner-close" aria-label="Dismiss">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
-              </button>
-            </div>
-          </div>
-          <div class="ms-lb-offline-banner" id="lb-offline-banner" hidden role="status" aria-live="polite">
-            <div class="ms-lb-live-banner-inner">
-              <span class="ms-lb-offline-banner-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M4.93 4.93l14.14 14.14"/></svg>
-              </span>
-              <div class="ms-lb-live-banner-copy">
-                <strong>Your site is offline!</strong>
-                <span class="ms-lb-offline-banner-url" id="lb-offline-banner-url"></span>
-              </div>
-              <button type="button" class="ms-lb-offline-banner-close" id="lb-offline-banner-close" aria-label="Dismiss">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
-              </button>
-            </div>
-          </div>
-          <div class="ms-lb-browser" id="preview-browser">
-            <div class="ms-lb-chrome">
-              <span class="ms-lb-chrome-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-              <div class="ms-lb-chrome-url-wrap">
-                <div class="ms-lb-chrome-url" id="lb-preview-chrome-url" title="">your-site.vercel.app</div>
-                <button type="button" class="ms-lb-chrome-copy" id="lb-preview-chrome-copy" aria-label="Copy site link" title="Copy link">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                </button>
-              </div>
-            </div>
-            <div class="ms-preview-frame-wrap" id="preview-wrap">
-              <div class="ms-lb-loading" id="preview-loading" hidden aria-busy="true" aria-label="Building website">
-                <div class="ms-lb-loading-inner">
-                  <div class="ms-lb-progress" id="preview-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-                    <div class="ms-lb-progress-track">
-                      <div class="ms-lb-progress-fill" id="preview-progress-fill"></div>
-                    </div>
-                    <span class="ms-lb-progress-pct" id="preview-progress-pct">0%</span>
-                  </div>
-                  <p class="ms-lb-loading-copy" id="preview-loading-copy">Building your website…</p>
-                </div>
-              </div>
-              <div class="ms-lb-gen-error" id="preview-gen-error" hidden role="alert">
-                <div class="ms-lb-gen-error-inner">
-                  <p class="ms-lb-gen-error-copy" id="preview-gen-error-copy"></p>
-                  <button type="button" class="ms-btn ms-btn-primary" id="preview-gen-error-retry">Try again</button>
-                </div>
-              </div>
-              <div class="ms-lb-empty" id="preview-empty" hidden>
-                <div class="ms-lb-empty-card">
-                  <div class="ms-lb-mark" aria-hidden="true">
-                    <img class="ms-lb-mark-logo" src="doc/MoonriseLogo.png" alt="" width="40" height="40" decoding="async" />
-                  </div>
-                  <p>No code generated yet</p>
-                </div>
-              </div>
-              <div class="ms-preview-frame-shell" id="preview-frame-shell">
-                <div
-                  class="ms-preview-vp-resizer is-left"
-                  id="preview-vp-resizer-left"
-                  role="separator"
-                  aria-orientation="vertical"
-                  aria-label="Resize preview width"
-                  tabindex="0"
-                ></div>
-                <div
-                  class="ms-preview-vp-resizer is-top"
-                  id="preview-vp-resizer-top"
-                  role="separator"
-                  aria-orientation="horizontal"
-                  aria-label="Resize preview height"
-                  tabindex="0"
-                ></div>
-                <iframe class="ms-preview-frame is-desktop is-parked" id="preview-frame" title="Site preview" sandbox="allow-same-origin allow-scripts allow-forms"></iframe>
-                <div id="watermark-host"></div>
-                <div
-                  class="ms-preview-vp-resizer is-bottom"
-                  id="preview-vp-resizer-bottom"
-                  role="separator"
-                  aria-orientation="horizontal"
-                  aria-label="Resize preview height"
-                  tabindex="0"
-                ></div>
-                <div
-                  class="ms-preview-vp-resizer is-right"
-                  id="preview-vp-resizer-right"
-                  role="separator"
-                  aria-orientation="vertical"
-                  aria-label="Resize preview width"
-                  tabindex="0"
-                ></div>
-                <span class="ms-preview-vp-size" id="preview-vp-size" hidden aria-live="polite"></span>
-              </div>
-              <button type="button" class="ms-lb-fs-exit" id="lb-exit-fullscreen" hidden aria-label="Exit full screen" title="Exit full screen (Esc)">
-                <span class="ms-lb-fs-exit-label">Exit full screen</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
-              </button>
-              <div class="ms-lb-edit-toolbar" id="lb-edit-toolbar" hidden>
-                <div class="ms-lb-edit-toolbar-head">
-                  <div class="ms-lb-edit-tabs" id="lb-edit-tabs" role="tablist" aria-label="Edit sections"></div>
-                  <button type="button" class="ms-lb-edit-btn is-primary ms-lb-edit-done" data-edit-action="close">Done</button>
-                </div>
-                <div class="ms-lb-edit-toolbar-body" id="lb-edit-toolbar-main"></div>
-                <div class="ms-lb-edit-toolbar-foot" id="lb-edit-toolbar-foot"></div>
-              </div>
-            </div>
-            <textarea class="ms-lb-code" id="code-editor" hidden spellcheck="false"></textarea>
-          </div>
-        </main>
-      </div>
+      <p class="ms-muted ms-bs-status" id="builder-setup-status" hidden></p>
     </div>
   </div>
 
-  <div class="ms-lb-settings" id="builder-site-settings" hidden aria-hidden="true">
-    <div class="ms-lb-settings-card" role="dialog" aria-modal="true" aria-labelledby="lb-settings-title">
-      <header class="ms-lb-settings-head">
-        <div>
-          <h2 id="lb-settings-title">Settings</h2>
-          <p class="ms-muted" id="lb-settings-subtitle">Your site</p>
-        </div>
-        <button type="button" class="ms-lb-settings-close" id="btn-close-site-settings" aria-label="Close settings">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
-        </button>
-      </header>
-
-      <nav class="ms-lb-settings-tabs" role="tablist" aria-label="Site settings">
-        <button type="button" class="ms-lb-settings-tab is-active" role="tab" aria-selected="true" data-settings-tab="domain">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
-          Domain
-        </button>
-        <button type="button" class="ms-lb-settings-tab" role="tab" aria-selected="false" data-settings-tab="branding">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
-          Branding
-        </button>
-        <button type="button" class="ms-lb-settings-tab" role="tab" aria-selected="false" data-settings-tab="contact">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="m4 7 8 6 8-6"/></svg>
-          Contact
-        </button>
-        <button type="button" class="ms-lb-settings-tab" role="tab" aria-selected="false" data-settings-tab="share">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-          Share
-        </button>
-        <button type="button" class="ms-lb-settings-tab" role="tab" aria-selected="false" data-settings-tab="danger">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-          Danger
-        </button>
-      </nav>
-
-      <div class="ms-lb-settings-panels">
-        <section class="ms-lb-settings-panel is-active" data-settings-panel="domain" role="tabpanel">
-          <div class="ms-lb-settings-block">
-            <div class="ms-lb-settings-block-ico" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
-            </div>
-            <div class="ms-lb-settings-block-body">
-              <h3>Preview Link</h3>
-              <p class="ms-muted">Make your site live on Vercel</p>
-              <p class="ms-lb-settings-link" id="lb-set-live-url" hidden></p>
-              <div class="ms-lb-settings-publish-row">
-                <button type="button" class="ms-btn ms-lb-settings-publish" id="lb-set-publish">Publish Site</button>
-                <button type="button" class="ms-btn ms-lb-settings-unpublish" id="lb-set-unpublish" hidden>Unpublish</button>
-              </div>
-            </div>
-          </div>
-          <div class="ms-lb-settings-block">
-            <div class="ms-lb-settings-block-ico" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-            </div>
-            <div class="ms-lb-settings-block-body">
-              <h3>Custom Domain</h3>
-              <p class="ms-muted">Connect your own domain</p>
-              <div class="ms-lb-settings-domain-row" id="lb-set-domain-row" hidden>
-                <input class="ms-input" id="lb-set-domain" type="text" placeholder="www.yourbusiness.com" autocomplete="off">
-                <button type="button" class="ms-btn ms-btn-secondary" id="lb-set-domain-save">Save</button>
-              </div>
-              <p class="ms-lb-settings-note" id="lb-set-domain-note">Publish your site first to connect a domain.</p>
-            </div>
-          </div>
-        </section>
-
-        <section class="ms-lb-settings-panel" data-settings-panel="branding" role="tabpanel" hidden>
-          <div class="ms-field">
-            <label class="ms-label" for="lb-set-title">Site title</label>
-            <input class="ms-input" id="lb-set-title" placeholder="Business name">
-          </div>
-          <div class="ms-field">
-            <label class="ms-label" for="lb-set-accent">Accent color</label>
-            <div class="ms-lb-settings-color-row">
-              <input type="color" id="lb-set-accent" value="#3b82f6" aria-label="Accent color">
-              <input class="ms-input" id="lb-set-accent-hex" value="#3b82f6" maxlength="7" spellcheck="false">
-            </div>
-          </div>
-          <button type="button" class="ms-btn" id="lb-set-branding-save">Apply branding</button>
-          <p class="ms-muted ms-lb-settings-hint">Updates the page title and injects your accent into the site HTML.</p>
-        </section>
-
-        <section class="ms-lb-settings-panel" data-settings-panel="contact" role="tabpanel" hidden>
-          <p class="ms-lb-settings-section-label">Business details</p>
-
-          <div class="ms-lb-detail-grid">
-            <div class="ms-field">
-              <label class="ms-label" for="lb-set-category">Category</label>
-              <input class="ms-input" id="lb-set-category" placeholder="Niche">
-            </div>
-            <div class="ms-field">
-              <label class="ms-label" for="lb-set-phone">Phone</label>
-              <input class="ms-input" id="lb-set-phone" placeholder="Phone" autocomplete="tel">
-            </div>
-          </div>
-          <div class="ms-field">
-            <label class="ms-label" for="lb-set-address">Address</label>
-            <input class="ms-input" id="lb-set-address" placeholder="Address" autocomplete="street-address">
-          </div>
-          <div class="ms-field">
-            <label class="ms-label" for="lb-set-maps">Google Maps link</label>
-            <input class="ms-input" id="lb-set-maps" type="url" placeholder="https://maps.google.com/...">
-          </div>
-          <button type="button" class="ms-btn" id="lb-set-contact-save">Save contact</button>
-        </section>
-
-        <section class="ms-lb-settings-panel" data-settings-panel="share" role="tabpanel" hidden>
-          <div class="ms-lb-settings-block">
-            <div class="ms-lb-settings-block-ico" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-            </div>
-            <div class="ms-lb-settings-block-body">
-              <h3>Share link</h3>
-              <p class="ms-muted" id="lb-set-share-hint">Publish first to get a public URL.</p>
-              <div class="ms-lb-settings-share-row">
-                <input class="ms-input" id="lb-set-share-url" readonly placeholder="No live URL yet">
-                <button type="button" class="ms-btn ms-btn-secondary" id="lb-set-copy-link">Copy</button>
-              </div>
-              <div class="ms-lb-settings-share-actions">
-                <button type="button" class="ms-btn ms-btn-secondary" id="lb-set-open-link" disabled>Open site</button>
-                <button type="button" class="ms-btn ms-btn-secondary" id="lb-set-copy-pitch">Copy pitch</button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="ms-lb-settings-panel" data-settings-panel="danger" role="tabpanel" hidden>
-          <div class="ms-lb-settings-danger">
-            <h3>Delete this project</h3>
-            <p class="ms-muted">Permanently removes the site, preview, and publish record. This cannot be undone.</p>
-            <button type="button" class="ms-btn ms-btn-ghost-danger" id="lb-set-delete">Delete project</button>
-          </div>
-        </section>
-      </div>
-      <p class="ms-error" id="lb-settings-error" hidden></p>
-      <p class="ms-muted ms-lb-settings-status" id="lb-settings-status" hidden></p>
-    </div>
-  </div>
-
-  <dialog class="ms-clients-dialog" id="lb-unpublish-dialog" aria-labelledby="lb-unpublish-title">
-    <div class="ms-clients-dialog-panel ms-clients-dialog-panel--compact ms-lb-unpublish-dialog-panel">
-      <div class="ms-lb-unpublish-dialog-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-      </div>
-      <header class="ms-clients-dialog-head">
-        <h2 class="ms-clients-dialog-title" id="lb-unpublish-title">Take site offline?</h2>
-      </header>
-      <p class="ms-clients-dialog-lead">The public link will stop working until you publish again.</p>
-      <p class="ms-lb-unpublish-url" id="lb-unpublish-url" aria-live="polite"></p>
-      <div class="ms-clients-dialog-actions">
-        <button type="button" class="ms-clients-dialog-back" id="lb-unpublish-cancel">Keep live</button>
-        <button type="button" class="ms-btn ms-btn-danger ms-clients-dialog-next" id="lb-unpublish-submit">Unpublish</button>
-      </div>
-    </div>
-  </dialog>
-
-  <dialog class="ms-clients-dialog" id="lb-redesign-dialog" aria-labelledby="lb-redesign-title">
-    <div class="ms-clients-dialog-panel ms-clients-dialog-panel--compact ms-lb-redesign-dialog-panel">
-      <div class="ms-lb-redesign-dialog-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
-      </div>
-      <header class="ms-clients-dialog-head">
-        <h2 class="ms-clients-dialog-title" id="lb-redesign-title">Redesign this site?</h2>
-      </header>
-      <p class="ms-clients-dialog-lead">This replaces the current design with a completely new one.</p>
-      <p class="ms-lb-redesign-cost" id="lb-redesign-cost" aria-live="polite">Uses 5 credits</p>
-      <div class="ms-clients-dialog-actions">
-        <button type="button" class="ms-clients-dialog-back" id="lb-redesign-cancel">Cancel</button>
-        <button type="button" class="ms-btn ms-clients-dialog-next" id="lb-redesign-submit">Redesign</button>
-      </div>
-    </div>
-  </dialog>
-
-  <div class="ms-lb-qr" id="lb-qr-modal" hidden>
-    <button type="button" class="ms-lb-qr-backdrop" id="lb-qr-close-backdrop" aria-label="Close"></button>
-    <div class="ms-lb-qr-stage" role="dialog" aria-modal="true" aria-labelledby="lb-qr-title">
-      <header class="ms-lb-qr-head">
-        <div>
-          <h2 id="lb-qr-title">QR business card</h2>
-          <p class="ms-muted">Scan to open the live site · print-ready download</p>
-        </div>
-        <button type="button" class="ms-lb-qr-close" id="lb-qr-close" aria-label="Close">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
-        </button>
-      </header>
-
-      <div class="ms-lb-qr-scene" id="lb-qr-scene">
-        <div class="ms-lb-qr-card" id="lb-qr-card">
-          <div class="ms-lb-qr-card-sheen" aria-hidden="true"></div>
-          <div class="ms-lb-qr-card-top">
-            <span class="ms-lb-qr-brand">moonrise</span>
-            <span class="ms-lb-qr-chip">Live site</span>
-          </div>
-          <h3 class="ms-lb-qr-name" id="lb-qr-name">Business</h3>
-          <div class="ms-lb-qr-code-wrap">
-            <canvas id="lb-qr-canvas" width="220" height="220" aria-label="QR code"></canvas>
-          </div>
-          <a class="ms-lb-qr-link" id="lb-qr-link" href="#" target="_blank" rel="noopener"></a>
-          <p class="ms-lb-qr-hint">Scan with a phone camera</p>
-        </div>
-      </div>
-
-      <div class="ms-lb-qr-actions">
-        <button type="button" class="ms-btn ms-btn-ghost" id="lb-qr-copy">Copy link</button>
-        <button type="button" class="ms-btn" id="lb-qr-download">Download card</button>
-      </div>
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/site-branding.js"></script>
   <script src="js/supabase-client.js"></script>
@@ -685,9 +140,9 @@
   <script src="js/segment-switch.js"></script>
   <script src="js/ui-motion.js"></script>
   <script src="js/toast.js"></script>
-  <script src="js/mvp-cosmetics.js"></script>
-  <script src="js/app.js?v=20260717-mvp-fix"></script>
-  <script src="watermark/embed.js"></script>
-  <script src="js/builder.js?v=20260718-gen-finish"></script>
+  <script src="js/income.js?v=20260718-income"></script>
+  <script src="js/app.js?v=20260718-builder-split"></script>
+  <script src="js/builder-recent.js?v=20260718-projects-page"></script>
+  <script src="js/builder.js?v=20260722-mvp-copy"></script>
 </body>
 </html>

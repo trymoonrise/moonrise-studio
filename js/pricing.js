@@ -46,11 +46,10 @@
   function planBenefits(plan, genCost) {
     const sites = Math.floor((plan.credits || 0) / (genCost || 5));
     return [
-      "MVP+ role",
+      "MVP+ perks while subscribed",
       "Up to " + sites + " websites per month",
-      "Download HTML",
-      "View code",
-      "Everything in the store is free",
+      "View code and download HTML in Builder",
+      "Everything free in the Store",
       "Business Finder lead search",
       "Credits refresh monthly",
     ];

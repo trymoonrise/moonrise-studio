@@ -13,7 +13,6 @@
   const bootScriptEl = typeof document !== "undefined" ? document.currentScript : null;
   const AVATAR =
     "https://moonrise-studio.vercel.app/doc/MoonriseLogo.png";
-  const SITE_HOST = "trymoonrise.com";
   const SITE_URL = "https://trymoonrise.com";
   const STYLE_ID = "mr-wm-embed-style";
   const DEFAULT_URGENCY_MS = 96 * 3600000;
@@ -123,7 +122,7 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
   function panelBodyHtml(contactHref) {
     return (
       '<div class="mr-wm-body">' +
-      '<p class="mr-wm-lead">A seller built this preview for your business. Unlock it to remove the watermark and keep the site live.</p>' +
+      '<p class="mr-wm-lead">This is your new website preview. Go live to remove the watermark and share your link with customers.</p>' +
       '<div class="mr-wm-offer">' +
       '<p class="mr-wm-timer" id="mr-wm-timer" aria-live="polite"></p>' +
       '<button type="button" class="mr-wm-pay" id="mr-wm-pay">Unlock site</button>' +
@@ -271,11 +270,7 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
       AVATAR +
       '" alt="Moonrise" width="48" height="48" decoding="async" />' +
       '<span class="mr-wm-copy"><strong>Complete your order</strong>' +
-      '<span><a href="' +
-      SITE_URL +
-      '" target="_blank" rel="noopener noreferrer">' +
-      SITE_HOST +
-      "</a></span></span></button></div>";
+      "<span>Click here to remove watermark</span></span></button></div>";
 
     // Overlay always on document.body so it covers builder chrome / native UI bleed.
     const overlayRoot = document.createElement("div");

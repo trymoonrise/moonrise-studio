@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Donate · Moonrise Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/studio.css?v=20260722-onetime-amount">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body data-page="donate">
+  <div id="shell"></div>
+  <div id="page-body" class="ms-settings-page ms-donate-page">
+    <header class="ms-donate-hero">
+      <div class="ms-donate-hero-glow" aria-hidden="true"></div>
+      <div class="ms-donate-hero-inner">
+        <p class="ms-donate-eyebrow">Support Moonrise</p>
+        <h1>Fuel the mission</h1>
+        <p class="ms-donate-hero-lead">
+          Keep <a href="https://trymoonrise.com" target="_blank" rel="noopener noreferrer">trymoonrise.com</a> free for everyone by donating! Unlock MVP+ perks, and leave a note on your way to the donation leaderboard.
+        </p>
+      </div>
+    </header>
+
+    <div class="ms-donate-layout">
+      <div class="ms-donate-main">
+        <section class="ms-card ms-settings-card ms-donate-checkout-card" id="donate-checkout-card" aria-labelledby="donate-mvp-heading">
+          <div class="ms-donate-active-banner" id="donate-active-banner" hidden>
+            <span class="ms-donate-active-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+            </span>
+            <div class="ms-donate-active-copy">
+              <p class="ms-donate-active-title">MVP+ is active</p>
+              <p class="ms-donate-active-sub">Thank you for supporting Moonrise. Your membership perks are unlocked on this account.</p>
+            </div>
+          </div>
+
+          <div class="ms-donate-card-head" id="donate-pricing-head">
+            <div class="ms-donate-card-intro">
+              <p class="ms-donate-section-kicker">Membership</p>
+              <h2 class="ms-donate-card-title" id="donate-mvp-heading">MVP+ Support</h2>
+              <p class="ms-donate-status-line" id="donate-status-copy">
+                <span id="donate-price-copy">From $5/mo</span> · cancel anytime · perks while subscribed
+              </p>
+            </div>
+            <div class="ms-donate-price-pill" id="donate-price-pill" aria-hidden="true">From $5/mo</div>
+          </div>
+
+          <div class="ms-donate-perks-block">
+            <p class="ms-donate-section-label" id="donate-perks-label">What&apos;s included</p>
+            <ul class="ms-donate-perks" id="donate-benefits"></ul>
+          </div>
+
+          <div class="ms-donate-pay-wrap" id="donate-pay-wrap">
+            <div class="ms-donate-support-panel">
+              <div class="ms-donate-support-head">
+                <p class="ms-donate-section-label" id="donate-support-label">Choose support</p>
+                <p class="ms-donate-support-hint" id="donate-support-hint">Monthly MVP+ is $5/mo. Pick any one-time amount — it counts toward the leaderboard.</p>
+              </div>
+
+              <div class="ms-donate-plan-actions">
+                <button type="button" class="ms-donate-plan-btn is-primary" id="btn-donate">
+                  <span class="ms-donate-plan-btn-title">Monthly</span>
+                  <span class="ms-donate-plan-btn-meta" id="donate-monthly-meta">$5/mo · MVP+</span>
+                </button>
+                <button type="button" class="ms-donate-plan-btn" id="btn-donate-once">
+                  <span class="ms-donate-plan-btn-title">One-time</span>
+                  <span class="ms-donate-plan-btn-meta" id="donate-once-meta">$25</span>
+                </button>
+              </div>
+
+              <div class="ms-donate-amount-panel" id="donate-onetime-amount-panel">
+                <label class="ms-donate-amount-label" for="donate-onetime-amount">One-time amount (USD)</label>
+                <div class="ms-donate-amount-row">
+                  <div class="ms-donate-amount-input-wrap" id="donate-onetime-amount-wrap">
+                    <span class="ms-donate-amount-currency" aria-hidden="true">$</span>
+                    <input
+                      type="number"
+                      id="donate-onetime-amount"
+                      class="ms-donate-amount-input"
+                      inputmode="decimal"
+                      min="5"
+                      max="1000"
+                      step="1"
+                      value="25"
+                      aria-describedby="donate-onetime-amount-hint donate-onetime-amount-error"
+                    >
+                  </div>
+                  <p class="ms-donate-amount-hint" id="donate-onetime-amount-hint">$5 – $1,000 · you choose the gift amount</p>
+                </div>
+                <p class="ms-donate-amount-error" id="donate-onetime-amount-error" hidden role="alert"></p>
+                <div class="ms-donate-presets" id="donate-onetime-presets" role="group" aria-label="Suggested one-time amounts">
+                  <button type="button" class="ms-donate-preset" data-donate-preset="5">$5</button>
+                  <button type="button" class="ms-donate-preset" data-donate-preset="10">$10</button>
+                  <button type="button" class="ms-donate-preset is-active" data-donate-preset="25">$25</button>
+                  <button type="button" class="ms-donate-preset" data-donate-preset="50">$50</button>
+                  <button type="button" class="ms-donate-preset" data-donate-preset="100">$100</button>
+                </div>
+              </div>
+
+              <div class="ms-donate-message-wrap" id="donate-message-wrap">
+                <label class="ms-donate-message-label" for="donate-message">Leaderboard message</label>
+                <textarea
+                  id="donate-message"
+                  class="ms-donate-message"
+                  rows="2"
+                  maxlength="120"
+                  placeholder="Optional — a short note shown with your name on the supporter wall."
+                  aria-describedby="donate-message-count"
+                ></textarea>
+                <p class="ms-donate-message-meta">
+                  <span id="donate-message-count">0 / 120</span>
+                </p>
+              </div>
+
+              <div class="ms-donate-footer-actions">
+                <button type="button" class="ms-donate-manage-link" id="btn-manage-stripe" hidden>Manage subscription in Stripe</button>
+              </div>
+            </div>
+          </div>
+
+          <p class="ms-settings-status is-ok" id="donate-ok" hidden></p>
+          <p class="ms-error" id="donate-error" hidden></p>
+        </section>
+      </div>
+
+      <aside class="ms-donate-leaderboard" aria-labelledby="donate-lb-heading">
+        <div class="ms-donate-leaderboard-head">
+          <div>
+            <p class="ms-donate-lb-eyebrow">Community</p>
+            <h2 id="donate-lb-heading">Top supporters</h2>
+          </div>
+          <span class="ms-donate-lb-badge">Top 10</span>
+        </div>
+        <p class="ms-donate-lb-copy">Ranked by total contributed — monthly and one-time gifts count.</p>
+        <ol class="ms-donate-lb-list" id="donate-leaderboard-list" aria-live="polite">
+          <li class="ms-donate-lb-empty" id="donate-leaderboard-loading">Loading supporters…</li>
+        </ol>
+      </aside>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/site-branding.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/segment-switch.js"></script>
+  <script src="js/ui-motion.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/income.js?v=20260722-donate-pro"></script>
+  <script src="js/app.js?v=20260718-shell-fix"></script>
+  <script src="js/mvp-perks.js"></script>
+  <script src="js/donate.js?v=20260722-leaderboard"></script>
+</body>
+</html>

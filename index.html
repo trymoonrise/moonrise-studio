@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Moonrise Studio — For business owners and creators</title>
-  <meta name="description" content="Moonrise Studio helps business owners and creators build digital presence and lasting wealth - without a development team.">
+  <title>Moonrise Studio — Build websites. Get paid.</title>
+  <meta name="description" content="Build beautiful websites for local businesses. Start free, then get paid when they remove the watermark.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css">
+  <link rel="stylesheet" href="css/studio.css?v=20260718-creator-help">
   <meta name="color-scheme" content="light">
   <script src="js/config.js"></script>
   <script src="js/site-branding.js"></script>
@@ -37,7 +37,7 @@
     <div class="ms-home-bloom" id="ms-home-bloom" aria-hidden="true">
       <nav class="ms-home-bloom-nav" aria-label="Primary">
         <a href="login.html">Start earning</a>
-        <a href="orders.html">Learn More</a>
+        <a href="#method">Learn More</a>
         <a href="#method">Method</a>
         <a href="login.html">Sign in</a>
       </nav>
@@ -47,10 +47,10 @@
       <div class="ms-home-hero-stage">
         <div class="ms-home-hero-copy">
           <h1 class="ms-home-title">Build websites.&nbsp;<span class="ms-home-title-accent">Get paid.</span></h1>
-          <p class="ms-home-sub">Turn $5 into $5,000, sell websites to business owners with 1 swipe.</p>
+          <p class="ms-home-sub">Build beautiful websites for local businesses. Start free, then get paid when they remove the watermark.</p>
           <div class="ms-home-ctas">
             <a class="ms-home-cta-primary" href="login.html">Start earning</a>
-            <a class="ms-home-cta-secondary" href="orders.html">Learn More</a>
+            <a class="ms-home-cta-secondary" href="#method">Learn More</a>
           </div>
         </div>
 
@@ -67,7 +67,7 @@
               <div class="ms-home-tile-face ms-home-tile-face--back">
                 <span>Sell</span>
                 <strong>Build &amp; close</strong>
-                <p>Ship polished sites for local businesses and get paid.</p>
+                <p>Ship polished sites for free. Owners pay on the watermark — you keep 80%.</p>
               </div>
             </div>
           </div>
@@ -145,7 +145,7 @@
               <div class="ms-home-tile-face ms-home-tile-face--back">
                 <span>Paid</span>
                 <strong>Collect &amp; publish</strong>
-                <p>Take payment, then put the site live for your client.</p>
+                <p>Publish the watermarked preview. The owner pays on the live site — not to you.</p>
               </div>
             </div>
           </div>
@@ -176,7 +176,7 @@
               <div class="ms-home-tile-face ms-home-tile-face--back">
                 <span>Earn</span>
                 <strong>Turn sites into income</strong>
-                <p>Find. Build. Close — without hiring a development team.</p>
+                <p>Find. Build. Close — free to start, paid when they unlock.</p>
               </div>
             </div>
           </div>
@@ -210,7 +210,7 @@
         </p>
         <h2>Find. Build. <span>Close.</span></h2>
         <p class="ms-home-section-lead">
-          Surface the brief, shape the site, collect payment — without a development team.
+          Find a business, build their site for free, send the link — get paid when they unlock it. @moonrise keeps 20% of each sale.
         </p>
       </div>
 
@@ -231,7 +231,7 @@
           <div class="ms-home-method-body">
             <span class="ms-home-method-num">01</span>
             <strong>Find</strong>
-            <p>Search for businesses without a website by using our "No website" filter.</p>
+            <p>Search for businesses without a website by using our <strong>Business Finder</strong>.</p>
           </div>
         </article>
 
@@ -268,7 +268,7 @@
           <div class="ms-home-method-body">
             <span class="ms-home-method-num">03</span>
             <strong>Close</strong>
-            <p>Publish the site, send the link to the owner, collect $$$.</p>
+            <p>Publish the watermarked preview, send the link, and earn when the owner pays on the site.</p>
           </div>
         </article>
       </div>
@@ -282,7 +282,7 @@
           <img src="https://moonrise-studio.vercel.app/doc/MoonriseLogo.png" alt="" width="32" height="32">
           <strong>Moonrise Studio</strong>
         </a>
-        <p>Ready to build and get paid? Create your account and start earning.</p>
+        <p>Build websites and get paid when owners unlock on the watermark. Sign up free — you keep 80%.</p>
       </div>
       <div class="ms-home-footer-actions">
         <a class="ms-home-footer-signup" href="login.html?mode=signup">Sign up</a>
@@ -299,6 +299,23 @@
         location.replace("dashboard.html");
         return;
       }
+
+      // Signed-in creators land in the app shell, not the marketing homepage.
+      (function redirectSignedInToApp() {
+        if (new URLSearchParams(location.search).get("home") === "1") return;
+        try {
+          const raw = localStorage.getItem("moonrise-studio-auth");
+          if (!raw) return;
+          const parsed = JSON.parse(raw);
+          const session =
+            parsed?.currentSession?.access_token ||
+            parsed?.session?.access_token ||
+            parsed?.access_token;
+          if (session) location.replace("dashboard.html");
+        } catch (_) {
+          /* ignore */
+        }
+      })();
 
       const body = document.body;
       const greet = document.getElementById("ms-home-greet");

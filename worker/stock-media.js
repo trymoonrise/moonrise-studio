@@ -204,6 +204,7 @@ function formatStockMediaForPrompt(media) {
     "- Hero: prefer muted looping <video> with poster=hero image, OR a full-bleed hero image.",
     "- About / services / gallery: use the matching image URLs with descriptive alt text.",
     "- Every visual section needs real media - no empty gray boxes, no broken relative paths.",
+    "- If you need more images than unique slots above, REUSE these pack URLs. Never invent URLs.",
     "- Match the theme to this business (barber gets haircuts, gardener gets plants, tutor gets books, plumber gets tools)."
   );
   return lines.filter(Boolean).join("\n");

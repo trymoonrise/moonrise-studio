@@ -4,14 +4,56 @@
  */
 (function (global) {
   const PUBLIC_PAGES = new Set(["index", "login", "apply", "orders", "home", "contact", "privacy", "terms"]);
-  const AUTH_TIMEOUT_MS = 12000;
+  const AUTH_TIMEOUT_MS = 45000;
+  const AUTH_RETRY_DELAY_MS = 800;
 
   function getClient() {
     return global.SiteSupabase?.getClient?.() || null;
   }
 
+  function isLocalFilePage() {
+    try {
+      return typeof location !== "undefined" && location.protocol === "file:";
+    } catch (_) {
+      return false;
+    }
+  }
+
   function workerUrl() {
-    return String(global.SITE_CONFIG?.workerUrl || "").replace(/\/$/, "");
+    const cloud = String(global.SITE_CONFIG?.workerUrl || "").replace(/\/$/, "");
+    try {
+      if (typeof location !== "undefined" && cloud) {
+        const cloudOrigin = new URL(cloud).origin;
+        if (location.origin === cloudOrigin) return location.origin;
+      }
+    } catch (_) {
+      /* keep cloud fallback */
+    }
+    if (typeof global.resolveWorkerUrl === "function") {
+      const resolved = String(global.resolveWorkerUrl() || "").replace(/\/$/, "");
+      if (resolved) return resolved;
+    }
+    return cloud;
+  }
+
+  function assertAuthReachable() {
+    if (isLocalFilePage()) {
+      throw authError({
+        error:
+          "Sign-in does not work when this page is opened as a file. Use https://moonrise-studio.vercel.app/login.html instead.",
+        code: "file_protocol",
+      });
+    }
+    if (!workerUrl()) {
+      throw authError({ error: "Worker URL is not configured", code: "worker_missing" });
+    }
+  }
+
+  function warmAuthService() {
+    if (isLocalFilePage()) return;
+    const base = workerUrl();
+    if (!base) return;
+    void fetch(base + "/auth/status", { method: "GET", cache: "no-store" }).catch(() => {});
   }
 
   function withTimeout(promise, ms, label) {
@@ -43,17 +85,22 @@
       lower.includes("load failed") ||
       lower.includes("network request failed")
     ) {
+      if (isLocalFilePage()) {
+        return "Sign-in does not work when this page is opened as a file. Use https://moonrise-studio.vercel.app/login.html instead.";
+      }
+      if (fallback) return fallback;
       return "Can't reach the sign-in service. Check your connection and try again.";
     }
     if (lower.includes("timed out") || lower.includes("timeout")) {
+      if (fallback) return fallback;
       return "Sign-in timed out. Please try again.";
     }
     return raw || fallback || "Authentication failed";
   }
 
-  async function workerAuth(path, body, headers) {
+  async function workerAuth(path, body, headers, attempt = 0) {
+    assertAuthReachable();
     const base = workerUrl();
-    if (!base) throw new Error("Worker URL is not configured");
     let res;
     try {
       res = await withTimeout(
@@ -69,6 +116,10 @@
         "Auth"
       );
     } catch (e) {
+      if (attempt < 1) {
+        await new Promise((resolve) => setTimeout(resolve, AUTH_RETRY_DELAY_MS));
+        return workerAuth(path, body, headers, attempt + 1);
+      }
       throw authError({ error: friendlyAuthMessage(e), code: "network_error" });
     }
     const data = await res.json().catch(() => ({}));
@@ -82,16 +133,23 @@
     if (!payload?.access_token || !payload?.refresh_token) {
       return payload;
     }
-    const { data, error } = await withTimeout(
-      sb.auth.setSession({
-        access_token: payload.access_token,
-        refresh_token: payload.refresh_token,
-      }),
-      AUTH_TIMEOUT_MS,
-      "Session"
-    );
-    if (error) throw error;
-    return data;
+    try {
+      const { data, error } = await withTimeout(
+        sb.auth.setSession({
+          access_token: payload.access_token,
+          refresh_token: payload.refresh_token,
+        }),
+        AUTH_TIMEOUT_MS,
+        "Session"
+      );
+      if (error) throw error;
+      return data;
+    } catch (e) {
+      throw authError({
+        error: friendlyAuthMessage(e, "Could not save your session. Try again."),
+        code: "session_error",
+      });
+    }
   }
 
   async function getSession() {
@@ -154,7 +212,6 @@
 
   async function signOut() {
     const sb = getClient();
-    setFinanceOnboardingSoftSkip(false);
     if (!sb) return;
     try {
       await withTimeout(sb.auth.signOut(), 4000, "Sign out");
@@ -238,17 +295,17 @@
       : {};
   }
 
-  function financeProfileComplete(profile) {
-    const payout = payoutProfileFrom(profile);
-    if (payout.onboardingStatus === "complete") return true;
-    const methods =
-      payout.methods && typeof payout.methods === "object" && !Array.isArray(payout.methods)
-        ? payout.methods
-        : {};
-    const hasMethod = Object.values(methods).some(
-      (method) => method?.enabled && String(method.handle || "").trim()
+  function payoutProfileComplete(profile) {
+    return studioOnboarded(profile);
+  }
+
+  function verifiedSecurityCard(payout) {
+    const card = payout?.securityCard;
+    return !!(
+      card &&
+      String(card.verifiedAt || "").trim() &&
+      String(card.paymentMethodId || "").trim()
     );
-    return !!(String(payout.email || "").trim() && String(payout.phone || "").trim() && hasMethod);
   }
 
   const FORCE_ONBOARDING_REPLAY_KEY = "ms_force_studio_onboarding_replay";
@@ -271,52 +328,27 @@
   }
 
   function studioOnboarded(profile) {
+    if (!profile) return false;
     if (hasForceOnboardingReplay()) return false;
+
     const branding = brandingDefaultsFrom(profile);
-    if (String(branding.studioOnboardedAt || "").trim()) return true;
-    // Backfill: existing creators who already finished payout setup.
-    return financeProfileComplete(profile);
-  }
+    if (!String(branding.studioOnboardedAt || "").trim()) return false;
 
-  const FINANCE_SOFT_SKIP_KEY = "ms_finance_onboarding_soft_skip";
+    const payout = payoutProfileFrom(profile);
+    if (String(payout.onboardingStatus || "") !== "complete") return false;
+    if (String(payout.skippedAt || "").trim()) return false;
+    if (!verifiedSecurityCard(payout)) return false;
 
-  function hasFinanceOnboardingSoftSkip() {
-    try {
-      return sessionStorage.getItem(FINANCE_SOFT_SKIP_KEY) === "1";
-    } catch (_) {
-      return false;
-    }
-  }
-
-  function setFinanceOnboardingSoftSkip(enabled) {
-    try {
-      if (enabled) sessionStorage.setItem(FINANCE_SOFT_SKIP_KEY, "1");
-      else sessionStorage.removeItem(FINANCE_SOFT_SKIP_KEY);
-    } catch (_) {
-      /* ignore */
-    }
-  }
-
-  function financeOnboardingDone(profile) {
-    return financeProfileComplete(profile);
-  }
-
-  async function financeOnboardingRedirect(nextUrl) {
-    return studioOnboardingRedirect(nextUrl);
+    return !!(String(payout.email || "").trim() && String(payout.phone || "").trim());
   }
 
   async function studioOnboardingRedirect(nextUrl) {
     const destination = String(nextUrl || "dashboard.html");
     const profile = await getProfile();
     if (studioOnboarded(profile)) {
-      setFinanceOnboardingSoftSkip(false);
       return destination;
     }
     return "onboarding.html?next=" + encodeURIComponent(destination);
-  }
-
-  async function ensureFinanceOnboarding() {
-    return ensureStudioOnboarding();
   }
 
   async function ensureStudioOnboarding() {
@@ -329,30 +361,6 @@
 
     const profile = await getProfile();
     if (studioOnboarded(profile)) {
-      setFinanceOnboardingSoftSkip(false);
-      // Persist backfill so Settings → Replay can clear a real flag.
-      // Skip while a forced replay is in progress.
-      if (!hasForceOnboardingReplay()) {
-        const branding = brandingDefaultsFrom(profile);
-        if (!String(branding.studioOnboardedAt || "").trim() && financeProfileComplete(profile)) {
-          try {
-            const user = await getUser();
-            if (user) {
-              await getClient()
-                .from("profiles")
-                .update({
-                  branding_defaults: {
-                    ...branding,
-                    studioOnboardedAt: new Date().toISOString(),
-                  },
-                })
-                .eq("id", user.id);
-            }
-          } catch (_) {
-            /* non-fatal */
-          }
-        }
-      }
       return null;
     }
 
@@ -452,18 +460,16 @@
     getSession,
     getUser,
     getProfile,
-    financeProfileComplete,
-    financeOnboardingDone,
-    financeOnboardingRedirect,
-    ensureFinanceOnboarding,
+    friendlyNetworkMessage: friendlyAuthMessage,
+    warmAuthService,
+    workerUrl,
+    payoutProfileComplete,
     studioOnboarded,
     studioOnboardingRedirect,
     ensureStudioOnboarding,
     clearStudioOnboardingFlag,
     hasForceOnboardingReplay,
     setForceOnboardingReplay,
-    hasFinanceOnboardingSoftSkip,
-    setFinanceOnboardingSoftSkip,
     signUp,
     signIn,
     signOut,

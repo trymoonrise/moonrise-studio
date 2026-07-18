@@ -183,8 +183,61 @@
     );
   }
 
+  /**
+   * Strict website classification for Business Finder filters.
+   * - has: valid official business URL on the lead
+   * - missing: Maps place check confirmed no website on file
+   * - unknown: not verified yet (must not be treated as confirmed "no website")
+   */
+  function normalizeWebsiteStatus(lead) {
+    const status = raw(lead?.websiteStatus || lead?.website_status).toLowerCase();
+    if (status === "has" || status === "missing" || status === "unknown") return status;
+    return "";
+  }
+
+  function classifyLeadWebsite(lead) {
+    const website = resolveLeadWebsite(lead);
+    if (website) {
+      return { status: "has", hasWebsite: true, website, confirmed: true };
+    }
+
+    const status = normalizeWebsiteStatus(lead);
+    if (status === "missing") {
+      return { status: "missing", hasWebsite: false, website: "", confirmed: true };
+    }
+    if (status === "has") {
+      return { status: "unknown", hasWebsite: false, website: "", confirmed: false };
+    }
+    if (lead?.websiteEnriched === true) {
+      return { status: "missing", hasWebsite: false, website: "", confirmed: true };
+    }
+
+    return { status: "unknown", hasWebsite: false, website: "", confirmed: false };
+  }
+
+  function reconcileLeadWebsiteFields(lead) {
+    if (!lead || typeof lead !== "object") return lead;
+    const classified = classifyLeadWebsite(lead);
+    lead.website = classified.website;
+    lead.hasWebsite = classified.hasWebsite;
+    lead.websiteStatus = classified.status;
+    lead.websiteConfirmed = classified.confirmed;
+    return lead;
+  }
+
   function resolveLeadHasWebsite(lead) {
-    return !!resolveLeadWebsite(lead);
+    return classifyLeadWebsite(lead).status === "has";
+  }
+
+  function resolveLeadMissingWebsite(lead) {
+    return classifyLeadWebsite(lead).status === "missing";
+  }
+
+  function resolveLeadNeedsWebsiteCheck(lead) {
+    const classified = classifyLeadWebsite(lead);
+    if (classified.status === "has" || classified.status === "missing") return false;
+    const maps = raw(lead?.mapsUrl || lead?.maps_url);
+    return maps.startsWith("http");
   }
 
   function looksLikeHours(value) {
@@ -399,7 +452,14 @@
     const reviewMeta = parseReviewCount(cell(row, "reviewCount"));
     const phone = raw(cell(row, "phone"));
     const websiteUrl = resolveWebsiteUrl(row);
-    const hasWebsite = isValidWebsiteUrl(websiteUrl);
+    const websiteClass = classifyLeadWebsite({
+      ...row,
+      website: websiteUrl,
+      website_url: websiteUrl,
+      websiteStatus: row.websiteStatus || row.website_status,
+      websiteEnriched: row.websiteEnriched,
+    });
+    const hasWebsite = websiteClass.hasWebsite;
     const address = resolveAddress(row);
     const hours = resolveHours(row);
     const categoryGroup = resolveCategoryGroup(row);
@@ -415,9 +475,11 @@
       phone,
       address,
       mapsUrl,
-      website: isValidWebsiteUrl(websiteUrl) ? websiteUrl : "",
+      website: websiteClass.website,
       hours: hours || raw(row.full_hours),
       hasWebsite,
+      websiteStatus: websiteClass.status,
+      websiteConfirmed: websiteClass.confirmed,
       rating,
       reviewCount: reviewMeta.count,
       reviewLabel: reviewMeta.label,
@@ -472,5 +534,9 @@
     resolveWebsiteUrl,
     resolveLeadWebsite,
     resolveLeadHasWebsite,
+    resolveLeadMissingWebsite,
+    resolveLeadNeedsWebsiteCheck,
+    classifyLeadWebsite,
+    reconcileLeadWebsiteFields,
   };
 })(window);

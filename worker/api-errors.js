@@ -91,7 +91,7 @@ function formatApiError(err, fallback) {
 
   if (err?.code === "INSUFFICIENT_CREDITS") {
     return {
-      message: raw || "Not enough credits for this action. Top up on Pricing or upgrade your plan.",
+      message: raw || "This action is no longer credit-gated.",
       status: 402,
       code: "INSUFFICIENT_CREDITS",
     };

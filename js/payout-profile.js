@@ -1,78 +1,7 @@
 /**
- * Shared payout method defs + profile normalize helpers for Finance + Onboarding.
+ * Shared payout profile helpers for onboarding and Settings.
  */
 (function (global) {
-  const ICON_FILES = {
-    cashapp: "Cashapp.png",
-    venmo: "Venmo.png",
-    paypal: "PayPal.png",
-    zelle: "Zelle.png",
-    applepay: "ApplePay.png",
-    googlepay: "GooglePay.png",
-    stripe: "Stripe.png",
-    crypto: "Bitcoin.png",
-  };
-
-  const METHOD_DEFS = [
-    {
-      id: "cashapp",
-      label: "Cash App",
-      placeholder: "$cashtag",
-      hint: "Type your $cashtag, or paste your Cash App link",
-    },
-    {
-      id: "venmo",
-      label: "Venmo",
-      placeholder: "@username",
-      hint: "Type your @username, or paste your Venmo link",
-    },
-    {
-      id: "paypal",
-      label: "PayPal",
-      placeholder: "@username",
-      hint: "Type your PayPal.me username, or paste your link",
-    },
-    {
-      id: "zelle",
-      label: "Zelle",
-      placeholder: "you@email.com or (555) 123-4567",
-      hint: "Paste the email or phone you use for Zelle",
-    },
-    {
-      id: "applepay",
-      label: "Apple Pay",
-      placeholder: "(555) 123-4567 or Apple ID email",
-      hint: "Paste the phone number or email linked to your Apple Pay",
-    },
-    {
-      id: "googlepay",
-      label: "Google Pay",
-      placeholder: "you@gmail.com or phone",
-      hint: "Paste the email or phone you use for Google Pay",
-    },
-    {
-      id: "stripe",
-      label: "Stripe",
-      placeholder: "buy.stripe.com/your-link",
-      hint: "Paste your Stripe Payment Link",
-    },
-    {
-      id: "crypto",
-      label: "Crypto",
-      placeholder: "Wallet address or payment link",
-      hint: "Paste your crypto wallet address or payment link",
-    },
-    {
-      id: "other",
-      label: "Other",
-      placeholder: "Payment link or phone number",
-      hint: "Paste a payment link or phone number",
-    },
-  ];
-
-  const METHODS = METHOD_DEFS.map((m) => m.id);
-  const METHOD_LABELS = Object.fromEntries(METHOD_DEFS.map((m) => [m.id, m.label]));
-
   const PHONE_COUNTRIES = [
     { iso: "US", name: "United States", dial: "1", flag: "🇺🇸", mask: "us" },
     { iso: "CA", name: "Canada", dial: "1", flag: "🇨🇦", mask: "us" },
@@ -100,11 +29,6 @@
     return escapeHtml(s).replace(/'/g, "&#39;");
   }
 
-  function iconUrl(id) {
-    const file = ICON_FILES[id];
-    return file ? "doc/" + file : "";
-  }
-
   function digitsOnly(value) {
     return String(value || "").replace(/\D/g, "");
   }
@@ -113,20 +37,26 @@
     return PHONE_COUNTRIES.find((c) => c.iso === iso) || PHONE_COUNTRIES[0];
   }
 
+  /** National digits only — country dial is shown beside the input, not inside it. */
   function formatPhoneDisplay(nationalDigits, iso) {
     const country = phoneCountry(iso);
-    const dial = country.dial;
     let d = digitsOnly(nationalDigits);
-    if (d.startsWith(dial) && d.length > dial.length + 6) d = d.slice(dial.length);
+    if (
+      d.startsWith(country.dial) &&
+      (d.length > (country.mask === "us" ? 10 : 12) ||
+        d.length >= country.dial.length + 7)
+    ) {
+      d = d.slice(country.dial.length);
+    }
     if (country.mask === "us") {
       d = d.slice(0, 10);
       if (!d.length) return "";
-      if (d.length <= 3) return "+" + dial + "(" + d;
-      if (d.length <= 6) return "+" + dial + "(" + d.slice(0, 3) + ")" + d.slice(3);
-      return "+" + dial + "(" + d.slice(0, 3) + ")" + d.slice(3, 6) + "-" + d.slice(6);
+      if (d.length <= 3) return "(" + d;
+      if (d.length <= 6) return "(" + d.slice(0, 3) + ") " + d.slice(3);
+      return "(" + d.slice(0, 3) + ") " + d.slice(3, 6) + "-" + d.slice(6);
     }
     d = d.slice(0, 12);
-    if (!d.length) return "+" + dial + " ";
+    if (!d.length) return "";
     const parts = [];
     let rest = d;
     while (rest.length) {
@@ -134,16 +64,47 @@
       parts.push(rest.slice(0, take));
       rest = rest.slice(take);
     }
-    return "+" + dial + " " + parts.join(" ");
+    return parts.join(" ");
   }
 
   function nationalDigitsFromDisplay(value, iso) {
     const country = phoneCountry(iso);
     let d = digitsOnly(value);
-    if (d.startsWith(country.dial) && d.length > country.dial.length) {
-      d = d.slice(country.dial.length);
+    const hasPlus = String(value || "").trim().startsWith("+");
+    if (d.startsWith(country.dial)) {
+      const rest = d.slice(country.dial.length);
+      const maxNational = country.mask === "us" ? 10 : 12;
+      if (hasPlus || d.length > maxNational) {
+        d = rest;
+      }
     }
     return country.mask === "us" ? d.slice(0, 10) : d.slice(0, 12);
+  }
+
+  function caretDigitIndex(value, caret, iso) {
+    const country = phoneCountry(iso);
+    const prefix = String(value || "").slice(0, Math.max(0, caret || 0));
+    let digits = digitsOnly(prefix);
+    const hasPlus = String(value || "").trim().startsWith("+");
+    if (
+      digits.startsWith(country.dial) &&
+      (hasPlus || (country.mask === "us" && digitsOnly(value).length > 10))
+    ) {
+      digits = digits.slice(country.dial.length);
+    }
+    return digits.length;
+  }
+
+  function caretPosForDigitIndex(formatted, digitIndex) {
+    if (digitIndex <= 0) return 0;
+    let seen = 0;
+    for (let i = 0; i < formatted.length; i++) {
+      if (/\d/.test(formatted[i])) {
+        seen += 1;
+        if (seen >= digitIndex) return i + 1;
+      }
+    }
+    return formatted.length;
   }
 
   function detectCountryFromPhone(value, fallbackIso) {
@@ -157,53 +118,20 @@
     return fallbackIso || "US";
   }
 
-  function normalizeMethods(raw) {
-    const out = {};
-    METHODS.forEach((id) => {
-      out[id] = { enabled: false, handle: "" };
-    });
-    if (!raw) return out;
-
-    if (Array.isArray(raw)) {
-      raw.forEach((item) => {
-        if (!item) return;
-        if (typeof item === "string") {
-          const id = METHODS.includes(item) ? item : "";
-          if (id) out[id] = { enabled: true, handle: "" };
-          return;
-        }
-        const id = String(item.id || item.method || "").trim();
-        if (!METHODS.includes(id)) return;
-        const handle = String(item.handle || item.value || item.link || "").trim();
-        const enabled =
-          item.enabled === undefined && item.on === undefined
-            ? !!handle
-            : !!(item.enabled ?? item.on);
-        out[id] = { enabled: enabled && !!handle ? true : !!enabled, handle };
-        if (handle && out[id].enabled === false && (item.enabled ?? item.on) !== false) {
-          out[id].enabled = true;
-        }
-      });
-      return out;
-    }
-
-    if (typeof raw !== "object") return out;
-    Object.keys(raw).forEach((id) => {
-      if (!METHODS.includes(id)) return;
-      const row = raw[id];
-      if (row == null) return;
-      if (typeof row === "string") {
-        const handle = row.trim();
-        out[id] = { enabled: !!handle, handle };
-        return;
-      }
-      if (typeof row !== "object") return;
-      const handle = String(row.handle || row.value || row.link || "").trim();
-      let enabled = !!(row.enabled ?? row.on);
-      if (handle && row.enabled === undefined && row.on === undefined) enabled = true;
-      out[id] = { enabled, handle };
-    });
-    return out;
+  function normalizeSecurityCard(raw) {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+    const verifiedAt = String(raw.verifiedAt || raw.verified_at || "").trim();
+    const paymentMethodId = String(raw.paymentMethodId || raw.payment_method_id || "").trim();
+    if (!verifiedAt || !paymentMethodId) return null;
+    return {
+      verifiedAt,
+      paymentMethodId,
+      stripeCustomerId: String(raw.stripeCustomerId || raw.stripe_customer_id || "").trim() || "",
+      brand: String(raw.brand || "").trim(),
+      last4: String(raw.last4 || "").trim(),
+      expMonth: Number(raw.expMonth || raw.exp_month) || null,
+      expYear: Number(raw.expYear || raw.exp_year) || null,
+    };
   }
 
   function normalizeProfile(raw) {
@@ -222,15 +150,22 @@
       .trim()
       .toUpperCase();
     return {
-      ...p,
       email,
       phone,
       phoneCountry: phoneCountryCode || undefined,
-      methods: normalizeMethods(p.methods),
+      securityCard: normalizeSecurityCard(p.securityCard || p.security_card),
       completedAt: p.completedAt || p.completed_at || "",
       onboardingStatus: String(p.onboardingStatus || p.onboarding_status || ""),
       skippedAt: p.skippedAt || p.skipped_at || "",
     };
+  }
+
+  function hasSecurityCard(profileOrPayout) {
+    const payout =
+      profileOrPayout?.payout_profile != null
+        ? normalizeProfile(profileOrPayout.payout_profile)
+        : normalizeProfile(profileOrPayout);
+    return !!payout.securityCard;
   }
 
   function brandingDefaultsFrom(profile) {
@@ -246,7 +181,15 @@
     return String(branding.studioOnboardedAt || "").trim();
   }
 
-  function isStudioOnboarded(profile, opts) {
+  function isVerifiedSecurityCard(card) {
+    return !!(
+      card &&
+      String(card.verifiedAt || "").trim() &&
+      String(card.paymentMethodId || "").trim()
+    );
+  }
+
+  function isStudioOnboarded(profile) {
     try {
       if (sessionStorage.getItem("ms_force_studio_onboarding_replay") === "1") {
         return false;
@@ -254,12 +197,18 @@
     } catch (_) {
       /* ignore */
     }
-    if (opts?.ignoreFinanceBackfill) {
-      return !!studioOnboardedAt(profile);
+    if (typeof global.StudioAuth?.studioOnboarded === "function") {
+      return !!global.StudioAuth.studioOnboarded(profile);
     }
-    if (studioOnboardedAt(profile)) return true;
-    // Backfill: creators who already finished finance payout setup.
-    return !!global.StudioAuth?.financeProfileComplete?.(profile);
+
+    if (!studioOnboardedAt(profile)) return false;
+
+    const payout = normalizeProfile(profile?.payout_profile || {});
+    if (String(payout.onboardingStatus || "") !== "complete") return false;
+    if (String(payout.skippedAt || "").trim()) return false;
+    if (!isVerifiedSecurityCard(payout.securityCard)) return false;
+
+    return !!(String(payout.email || "").trim() && String(payout.phone || "").trim());
   }
 
   /**
@@ -332,8 +281,18 @@
     function applyPhoneInput(raw) {
       const input = document.getElementById(ids.input);
       if (!input) return;
+      const caret = input.selectionStart;
+      const digitIndex =
+        caret == null ? nationalDigitsFromDisplay(raw, phoneCountryIso).length : caretDigitIndex(raw, caret, phoneCountryIso);
       const national = nationalDigitsFromDisplay(raw, phoneCountryIso);
-      input.value = formatPhoneDisplay(national, phoneCountryIso);
+      const formatted = formatPhoneDisplay(national, phoneCountryIso);
+      input.value = formatted;
+      try {
+        const pos = caretPosForDigitIndex(formatted, digitIndex);
+        input.setSelectionRange(pos, pos);
+      } catch (_) {
+        /* ignore unsupported selection */
+      }
     }
 
     function fillPhoneFromSaved(value, preferredIso) {
@@ -397,8 +356,10 @@
 
     function read() {
       const phoneEl = document.getElementById(ids.input);
+      const national = nationalDigitsFromDisplay(phoneEl?.value || "", phoneCountryIso);
+      const country = phoneCountry(phoneCountryIso);
       return {
-        phone: String(phoneEl?.value || "").trim(),
+        phone: national ? "+" + country.dial + national : "",
         phoneCountry: phoneCountryIso,
       };
     }
@@ -418,159 +379,22 @@
     };
   }
 
-  function renderMethodsHtml(host, opts) {
-    if (!host) return;
-    const classPrefix = opts?.classPrefix || "ms-fin";
-    host.innerHTML = METHOD_DEFS.map((m) => {
-      const src = iconUrl(m.id);
-      const icon = src
-        ? '<img class="' +
-          classPrefix +
-          '-method-icon" src="' +
-          src +
-          '" alt="" width="28" height="28" loading="lazy">'
-        : '<span class="' +
-          classPrefix +
-          '-method-fallback">' +
-          escapeHtml(m.label.charAt(0)) +
-          "</span>";
-      return (
-        '<div class="' +
-        classPrefix +
-        '-method" data-method="' +
-        m.id +
-        '">' +
-        '<div class="' +
-        classPrefix +
-        '-method-row">' +
-        '<div class="' +
-        classPrefix +
-        '-method-identity">' +
-        icon +
-        '<span class="' +
-        classPrefix +
-        '-method-name">' +
-        escapeHtml(m.label) +
-        "</span></div>" +
-        '<label class="ms-lb-toggle ' +
-        classPrefix +
-        '-toggle">' +
-        '<input type="checkbox" data-method-toggle="' +
-        m.id +
-        '">' +
-        '<span class="ms-lb-switch" aria-hidden="true"></span>' +
-        "</label></div>" +
-        '<div class="' +
-        classPrefix +
-        '-method-fields ms-expand" hidden>' +
-        '<div class="ms-expand-inner">' +
-        '<input class="ms-input" data-method-handle="' +
-        m.id +
-        '" placeholder="' +
-        escapeAttr(m.placeholder) +
-        '" autocomplete="off">' +
-        '<p class="' +
-        classPrefix +
-        '-method-hint">' +
-        escapeHtml(m.hint) +
-        "</p></div></div></div>"
-      );
-    }).join("");
-  }
-
-  function readMethodsFromDom() {
-    const methods = {};
-    METHODS.forEach((id) => {
-      const enabled = !!document.querySelector('[data-method-toggle="' + id + '"]')?.checked;
-      const handle = String(
-        document.querySelector('[data-method-handle="' + id + '"]')?.value || ""
-      ).trim();
-      methods[id] = { enabled, handle };
-    });
-    return methods;
-  }
-
-  function fillMethodsDom(profileMethods, classPrefix) {
-    const prefix = classPrefix || "ms-fin";
-    const methods = normalizeMethods(profileMethods);
-    METHODS.forEach((id) => {
-      const row = methods[id] || { enabled: false, handle: "" };
-      const toggle = document.querySelector('[data-method-toggle="' + id + '"]');
-      const handle = document.querySelector('[data-method-handle="' + id + '"]');
-      if (toggle) toggle.checked = !!(row.enabled && row.handle);
-      if (handle) handle.value = row.handle || "";
-      const block = document.querySelector("." + prefix + '-method[data-method="' + id + '"]');
-      const fields = block?.querySelector("." + prefix + "-method-fields");
-      const on = !!toggle?.checked;
-      block?.classList.toggle("is-on", on);
-      if (fields) {
-        if (global.StudioMotion?.setOpen) {
-          global.StudioMotion.setOpen(fields, on, { instant: true });
-        } else {
-          fields.hidden = !on;
-          fields.classList.toggle("is-open", on);
-        }
-      }
-    });
-  }
-
-  function bindMethodsHost(host, classPrefix) {
-    if (!host) return;
-    const prefix = classPrefix || "ms-fin";
-    host.addEventListener("change", (e) => {
-      const toggle = e.target?.closest?.("[data-method-toggle]");
-      if (!toggle) return;
-      const id = toggle.getAttribute("data-method-toggle");
-      const block = host.querySelector("." + prefix + '-method[data-method="' + id + '"]');
-      const fields = block?.querySelector("." + prefix + "-method-fields");
-      const on = !!toggle.checked;
-      block?.classList.toggle("is-on", on);
-      if (fields) {
-        if (global.StudioMotion?.setOpen) {
-          global.StudioMotion.setOpen(fields, on);
-        } else {
-          fields.hidden = !on;
-          fields.classList.toggle("is-open", on);
-        }
-      }
-    });
-  }
-
-  function validateMethods(methods) {
-    const on = METHODS.filter((id) => methods[id]?.enabled);
-    if (!on.length) return "Enable at least one payment method.";
-    for (const id of on) {
-      if (!methods[id].handle) {
-        return "Add a handle or link for " + METHOD_LABELS[id] + ".";
-      }
-    }
-    return null;
-  }
-
   global.MoonrisePayoutProfile = {
-    ICON_FILES,
-    METHOD_DEFS,
-    METHODS,
-    METHOD_LABELS,
     PHONE_COUNTRIES,
     escapeHtml,
     escapeAttr,
-    iconUrl,
     digitsOnly,
     phoneCountry,
     formatPhoneDisplay,
     nationalDigitsFromDisplay,
     detectCountryFromPhone,
-    normalizeMethods,
     normalizeProfile,
+    normalizeSecurityCard,
+    hasSecurityCard,
+    isVerifiedSecurityCard,
     brandingDefaultsFrom,
     studioOnboardedAt,
     isStudioOnboarded,
     createPhoneField,
-    renderMethodsHtml,
-    readMethodsFromDom,
-    fillMethodsDom,
-    bindMethodsHost,
-    validateMethods,
   };
 })(window);

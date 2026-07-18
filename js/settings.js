@@ -16,17 +16,19 @@
 
   let avatarUrl = "";
   let started = false;
-  let mvpPlus = false;
-  let brandingDefaults = {};
-  let selectedHat = "none";
-
-  const mvpCosmetics = () => window.MoonriseMvpCosmetics;
 
   function defaultAvatar() {
     return (
       (window.SITE_CONFIG && window.SITE_CONFIG.defaultAvatarUrl) ||
       "https://moonrise-studio.vercel.app/doc/pfp.png"
     );
+  }
+
+  function friendlyMessage(err, fallback) {
+    if (typeof window.StudioAuth?.friendlyNetworkMessage === "function") {
+      return window.StudioAuth.friendlyNetworkMessage(err, fallback);
+    }
+    return String(err?.message || err || fallback || "Something went wrong.");
   }
 
   function setError(msg) {
@@ -122,59 +124,6 @@
     imgEl.addEventListener("error", onError);
     imgEl.src = displayUrl;
     if (imgEl.complete && imgEl.naturalWidth > 0) void onLoad();
-    syncMvpPreview();
-  }
-
-  function syncMvpPreview() {
-    if (!mvpPlus) return;
-    const cosmetics = mvpCosmetics();
-    if (!cosmetics) return;
-    const handleInput = document.getElementById("set-handle");
-    const color = document.getElementById("set-mvp-name-color")?.value || "";
-    if (handleInput && /^#[0-9a-fA-F]{6}$/.test(color)) {
-      handleInput.style.color = color;
-    } else if (handleInput) {
-      handleInput.style.color = "";
-    }
-    cosmetics.applyProfileCosmetics(
-      { name_color: color, profile_hat: selectedHat },
-      { avatarWrap: wrapEl, hatElId: "set-avatar-hat" }
-    );
-  }
-
-  function syncMvpSection() {
-    const active = document.getElementById("set-mvp-active");
-    if (active) active.hidden = !mvpPlus;
-    if (!mvpPlus) return;
-
-    const branding = mvpCosmetics()?.normalizeBranding(brandingDefaults) || {
-      name_color: "",
-      profile_hat: "none",
-    };
-    selectedHat = branding.profile_hat;
-    const colorInput = document.getElementById("set-mvp-name-color");
-    const hexInput = document.getElementById("set-mvp-name-color-hex");
-    const defaultColor = "#2563eb";
-    const color = branding.name_color || defaultColor;
-    if (colorInput) colorInput.value = color;
-    if (hexInput) hexInput.value = branding.name_color || "";
-
-    mvpCosmetics()?.renderHatPicker(
-      document.getElementById("set-mvp-hats"),
-      selectedHat,
-      (hatId) => {
-        selectedHat = hatId;
-        syncMvpPreview();
-      }
-    );
-    syncMvpPreview();
-  }
-
-  function setMvpOk(msg) {
-    const el = document.getElementById("set-mvp-ok");
-    if (!el) return;
-    el.hidden = !msg;
-    el.textContent = msg || "";
   }
 
   function notifyShell(handle, url) {
@@ -182,23 +131,10 @@
     const nameEl = document.getElementById("ms-user-name");
     if (nameEl && clean) nameEl.textContent = clean;
     document.dispatchEvent(
-      new CustomEvent("ms:avatar-changed", { detail: { url: url || "", handle: clean } })
-    );
-    document.dispatchEvent(
-      new CustomEvent("ms:profile-cosmetics-changed", {
-        detail: { branding: brandingDefaults, mvpPlus },
+      new CustomEvent("ms:avatar-changed", {
+        detail: { url: url || "", handle: clean },
       })
     );
-  }
-
-  function syncFinanceSetupLink() {
-    const link = document.getElementById("set-finance-onboarding-link");
-    if (!link) return;
-    const complete = window.StudioAuth.financeProfileComplete({
-      payout_profile: payoutProfile,
-    });
-    link.textContent = complete ? "View full payout profile →" : "Resume payout setup →";
-    link.href = complete ? "finance.html" : "finance.html?onboarding=1&next=settings.html";
   }
 
   function extForType(type) {
@@ -234,112 +170,11 @@
     return url + (url.includes("?") ? "&" : "?") + "t=" + Date.now();
   }
 
-  const PAYOUT_ICON_FILES = {
-    cashapp: "Cashapp.png",
-    venmo: "Venmo.png",
-    paypal: "PayPal.png",
-    zelle: "Zelle.png",
-    applepay: "ApplePay.png",
-    googlepay: "GooglePay.png",
-    stripe: "Stripe.png",
-    crypto: "Bitcoin.png",
-  };
-
-  const PAYOUT_METHODS = [
-    {
-      id: "cashapp",
-      label: "Cash App",
-      placeholder: "$cashtag",
-      hint: "Type your $cashtag, or paste your Cash App link",
-      fieldLabel: "Cash App username or link",
-    },
-    {
-      id: "venmo",
-      label: "Venmo",
-      placeholder: "@username",
-      hint: "Type your @username, or paste your Venmo link",
-      fieldLabel: "Venmo username or link",
-    },
-    {
-      id: "paypal",
-      label: "PayPal",
-      placeholder: "@username",
-      hint: "Type your PayPal.me username, or paste your link",
-      fieldLabel: "PayPal username or link",
-    },
-    {
-      id: "zelle",
-      label: "Zelle",
-      placeholder: "you@email.com or (555) 123-4567",
-      hint: "Paste the email or phone you use for Zelle",
-      fieldLabel: "Zelle email or phone",
-    },
-    {
-      id: "applepay",
-      label: "Apple Pay",
-      placeholder: "(555) 123-4567 or Apple ID email",
-      hint: "Paste the phone number or email linked to your Apple Pay",
-      fieldLabel: "Apple Pay details",
-    },
-    {
-      id: "googlepay",
-      label: "Google Pay",
-      placeholder: "you@gmail.com or phone",
-      hint: "Paste the email or phone you use for Google Pay",
-      fieldLabel: "Google Pay details",
-    },
-    {
-      id: "stripe",
-      label: "Stripe",
-      placeholder: "buy.stripe.com/your-link",
-      hint: "Paste your Stripe Payment Link",
-      fieldLabel: "Stripe payment link",
-    },
-    {
-      id: "crypto",
-      label: "Crypto",
-      placeholder: "Wallet address or payment link",
-      hint: "Paste your crypto wallet address or payment link",
-      fieldLabel: "Crypto payout details",
-    },
-    {
-      id: "other",
-      label: "Other",
-      placeholder: "Payment link or phone number",
-      hint: "Paste a payment link or phone number",
-      fieldLabel: "Other payout details",
-    },
-  ];
+  const P = window.MoonrisePayoutProfile;
+  const SC = window.MoonriseSecurityCard;
 
   let payoutProfile = {};
-  let selectedPayoutMethod = null;
   let payoutBusy = false;
-
-  function escapeHtml(s) {
-    return String(s || "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
-  }
-
-  function payoutMeta(id) {
-    return PAYOUT_METHODS.find((m) => m.id === id) || null;
-  }
-
-  function payoutIconUrl(id) {
-    const file = PAYOUT_ICON_FILES[id];
-    return file ? "doc/" + file : "";
-  }
-
-  function enabledPayoutList(profile) {
-    const methods = (profile && profile.methods) || {};
-    return PAYOUT_METHODS.map((m) => {
-      const row = methods[m.id] || {};
-      if (!row.enabled || !String(row.handle || "").trim()) return null;
-      return { id: m.id, label: m.label, handle: String(row.handle || "").trim() };
-    }).filter(Boolean);
-  }
 
   function setPayoutError(msg) {
     const el = document.getElementById("set-payout-error");
@@ -350,7 +185,7 @@
       el.textContent = "";
     }
     if (!msg) return;
-    window.StudioToast?.error?.(msg);
+    window.StudioToast?.error?.(friendlyMessage(msg, "Could not update payout settings."));
   }
 
   function setPayoutOk(msg) {
@@ -361,272 +196,121 @@
     el.textContent = msg || "";
   }
 
-  function renderPayoutMethodButtons() {
-    const host = document.getElementById("set-payout-methods");
-    if (!host) return;
-    host.innerHTML = PAYOUT_METHODS.map((m) => {
-      const src = payoutIconUrl(m.id);
-      const icon = src
-        ? '<img class="ms-payout-method-icon" src="' +
-          src +
-          '" alt="" width="28" height="28" loading="lazy">'
-        : '<span class="ms-payout-method-fallback">' +
-          escapeHtml(m.label.charAt(0)) +
-          "</span>";
-      return (
-        '<button type="button" class="ms-payout-method-btn" data-method="' +
-        m.id +
-        '" aria-pressed="false">' +
-        icon +
-        '<span class="ms-payout-method-label">' +
-        escapeHtml(m.label) +
-        "</span></button>"
-      );
-    }).join("");
+  function renderPayoutCardStatus() {
+    const statusEl = document.getElementById("set-payout-card-status");
+    const emptyEl = document.getElementById("set-payout-card-empty");
+    const updateBtn = document.getElementById("set-payout-update-card");
+    const card = P?.normalizeSecurityCard?.(payoutProfile?.securityCard);
+
+    if (card && P?.isVerifiedSecurityCard?.(card)) {
+      const label = SC?.formatCardLabel?.(card) || "Card connected";
+      if (statusEl) {
+        statusEl.hidden = false;
+        statusEl.textContent = "Security card: " + label;
+      }
+      if (emptyEl) emptyEl.hidden = true;
+      if (updateBtn) {
+        updateBtn.hidden = false;
+        updateBtn.textContent = "Update security card";
+      }
+    } else {
+      if (statusEl) {
+        statusEl.hidden = true;
+        statusEl.textContent = "";
+      }
+      if (emptyEl) emptyEl.hidden = false;
+      if (updateBtn) {
+        updateBtn.hidden = false;
+        updateBtn.textContent = "Connect security card";
+      }
+    }
   }
 
-  function renderPayoutList() {
-    const listEl = document.getElementById("set-payout-list");
-    const emptyEl = document.getElementById("set-payout-empty");
-    if (!listEl) return;
-    const rows = enabledPayoutList(payoutProfile);
-    if (!rows.length) {
-      listEl.hidden = true;
-      listEl.innerHTML = "";
-      if (emptyEl) emptyEl.hidden = false;
+  function closePayoutCardPanel() {
+    const panel = document.getElementById("set-payout-card-panel");
+    if (panel) panel.hidden = true;
+    SC?.unmountCard?.();
+  }
+
+  async function openPayoutCardPanel() {
+    const panel = document.getElementById("set-payout-card-panel");
+    const mount = document.getElementById("set-payout-card-mount");
+    const retry = document.getElementById("set-payout-card-retry");
+    if (!panel || !mount || !SC) {
+      setPayoutError("Payout card setup is not available.");
       return;
     }
-    if (emptyEl) emptyEl.hidden = true;
-    listEl.hidden = false;
-    listEl.innerHTML = rows
-      .map((row, index) => {
-        const src = payoutIconUrl(row.id);
-        const icon = src
-          ? '<img class="ms-payout-item-icon" src="' +
-            src +
-            '" alt="" width="36" height="36" loading="lazy">'
-          : '<span class="ms-payout-item-fallback">' +
-            escapeHtml(row.label.charAt(0)) +
-            "</span>";
-        const badge =
-          index === 0
-            ? '<span class="ms-payout-default-badge">Default</span>'
-            : "";
-        return (
-          '<li class="ms-payout-item' +
-          (index === 0 ? " is-default" : "") +
-          '" data-method="' +
-          escapeHtml(row.id) +
-          '">' +
-          '<div class="ms-payout-item-main">' +
-          icon +
-          '<div class="ms-payout-item-copy">' +
-          '<div class="ms-payout-item-title">' +
-          escapeHtml(row.label) +
-          badge +
-          "</div>" +
-          '<div class="ms-payout-item-handle">' +
-          escapeHtml(row.handle) +
-          "</div></div></div>" +
-          '<button type="button" class="ms-payout-remove" data-remove-method="' +
-          escapeHtml(row.id) +
-          '" aria-label="Remove ' +
-          escapeHtml(row.label) +
-          '">×</button></li>'
-        );
-      })
-      .join("");
-  }
-
-  function closePayoutAddPanel() {
-    selectedPayoutMethod = null;
-    const addPanel = document.getElementById("set-payout-add-panel");
-    const inputPanel = document.getElementById("set-payout-input-panel");
-    const toolbar = document.getElementById("set-payout-toolbar");
-    const handle = document.getElementById("set-payout-handle");
-    if (addPanel) addPanel.hidden = true;
-    if (inputPanel) inputPanel.hidden = true;
-    if (toolbar) toolbar.hidden = false;
-    if (handle) handle.value = "";
-    document.querySelectorAll(".ms-payout-method-btn").forEach((btn) => {
-      btn.setAttribute("aria-pressed", "false");
-    });
-  }
-
-  function openPayoutAddPanel() {
-    const addPanel = document.getElementById("set-payout-add-panel");
-    const inputPanel = document.getElementById("set-payout-input-panel");
-    const toolbar = document.getElementById("set-payout-toolbar");
-    renderPayoutMethodButtons();
-    if (addPanel) addPanel.hidden = false;
-    if (inputPanel) inputPanel.hidden = true;
-    if (toolbar) toolbar.hidden = true;
-    selectedPayoutMethod = null;
     setPayoutError("");
-    setPayoutOk("");
-  }
-
-  function selectPayoutMethod(id) {
-    const meta = payoutMeta(id);
-    if (!meta) return;
-    selectedPayoutMethod = id;
-    const methods = (payoutProfile.methods || {})[id] || {};
-    const inputPanel = document.getElementById("set-payout-input-panel");
-    const fieldLabel = document.getElementById("set-payout-field-label");
-    const hint = document.getElementById("set-payout-hint");
-    const handle = document.getElementById("set-payout-handle");
-    if (fieldLabel) fieldLabel.textContent = meta.fieldLabel;
-    if (hint) hint.textContent = meta.hint;
-    if (handle) {
-      handle.placeholder = meta.placeholder;
-      handle.value = String(methods.handle || "").trim();
-      handle.focus();
+    panel.hidden = false;
+    try {
+      await SC.mountCard(mount, { elementId: "set-payout-card-element" });
+      if (retry) retry.hidden = true;
+    } catch (e) {
+      if (retry) retry.hidden = false;
+      setPayoutError(e.message || "Could not load payout card form.");
     }
-    if (inputPanel) inputPanel.hidden = false;
-    document.querySelectorAll(".ms-payout-method-btn").forEach((btn) => {
-      btn.setAttribute(
-        "aria-pressed",
-        btn.getAttribute("data-method") === id ? "true" : "false"
-      );
-    });
   }
 
-  async function savePayoutProfile(nextProfile) {
+  async function saveVerifiedCard(card) {
     const user = await window.StudioAuth.getUser();
     if (!user) throw new Error("Not signed in");
+    const next = P.normalizeProfile({
+      ...payoutProfile,
+      securityCard: card,
+      email: payoutProfile.email || user.email || "",
+    });
     await window.StudioAuth.ensureProfile?.(user);
     const client = window.SiteSupabase.getClient();
-    if (!client) throw new Error("Could not connect to the database.");
-
-    const payload = {
-      payout_profile: nextProfile,
-      updated_at: new Date().toISOString(),
-    };
-
-    let { data, error } = await client
+    const { data, error } = await client
       .from("profiles")
-      .update(payload)
+      .update({ payout_profile: next, updated_at: new Date().toISOString() })
       .eq("id", user.id)
       .select("payout_profile")
       .maybeSingle();
     if (error) throw error;
-
-    if (!data) {
-      const handle =
-        String(user.user_metadata?.handle || "")
-          .replace(/^@/, "")
-          .trim()
-          .toLowerCase()
-          .replace(/[^a-z0-9_]/g, "")
-          .slice(0, 18) || "user";
-      const upsert = await client
-        .from("profiles")
-        .upsert(
-          {
-            id: user.id,
-            handle: handle + "_" + String(user.id).replace(/-/g, "").slice(0, 6),
-            display_name: handle,
-            ...payload,
-          },
-          { onConflict: "id" }
-        )
-        .select("payout_profile")
-        .maybeSingle();
-      if (upsert.error) throw upsert.error;
-      data = upsert.data;
-    }
-
-    if (!data) throw new Error("Save did not stick. Refresh and try again.");
-    payoutProfile =
-      data.payout_profile && typeof data.payout_profile === "object"
-        ? data.payout_profile
-        : nextProfile;
+    payoutProfile = P.normalizeProfile(data?.payout_profile || next);
   }
 
-  async function saveSelectedPayoutMethod() {
-    if (payoutBusy) return;
-    const id = selectedPayoutMethod;
-    const meta = payoutMeta(id);
-    const handle = String(document.getElementById("set-payout-handle")?.value || "").trim();
-    if (!meta) {
-      setPayoutError("Choose a payment app first.");
-      return;
-    }
-    if (!handle) {
-      setPayoutError("Enter your payout details.");
-      document.getElementById("set-payout-handle")?.focus();
-      return;
-    }
+  async function verifyPayoutCard() {
+    if (payoutBusy || !SC) return;
     payoutBusy = true;
-    const saveBtn = document.getElementById("set-payout-save");
-    if (saveBtn) saveBtn.disabled = true;
+    const btn = document.getElementById("set-payout-update-card");
+    const prev = btn?.textContent;
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "Connecting…";
+    }
     setPayoutError("");
     try {
-      const next = {
-        ...(payoutProfile || {}),
-        methods: { ...((payoutProfile && payoutProfile.methods) || {}) },
-      };
-      next.methods[id] = { enabled: true, handle };
-      await savePayoutProfile(next);
-      closePayoutAddPanel();
-      renderPayoutList();
-      syncFinanceSetupLink();
-      setPayoutOk(meta.label + " saved.");
+      const user = await window.StudioAuth.getUser();
+      const card = await SC.verifyCard({
+        email: payoutProfile.email || user?.email || "",
+      });
+      await saveVerifiedCard(card);
+      closePayoutCardPanel();
+      setPayoutOk("Security card connected.");
+      renderPayoutCardStatus();
     } catch (e) {
-      setPayoutError(e.message || "Could not save payment method.");
+      setPayoutError(e.message || "Could not connect payout card.");
     } finally {
       payoutBusy = false;
-      if (saveBtn) saveBtn.disabled = false;
-    }
-  }
-
-  async function removePayoutMethod(id) {
-    if (payoutBusy || !id) return;
-    payoutBusy = true;
-    setPayoutError("");
-    try {
-      const next = {
-        ...(payoutProfile || {}),
-        methods: { ...((payoutProfile && payoutProfile.methods) || {}) },
-      };
-      next.methods[id] = { enabled: false, handle: "" };
-      await savePayoutProfile(next);
-      renderPayoutList();
-      syncFinanceSetupLink();
-      setPayoutOk("Payment method removed.");
-    } catch (e) {
-      setPayoutError(e.message || "Could not remove payment method.");
-    } finally {
-      payoutBusy = false;
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = prev || "Update payout card";
+      }
+      renderPayoutCardStatus();
     }
   }
 
   function bindPayoutUi() {
-    document.getElementById("set-payout-add")?.addEventListener("click", () => {
-      openPayoutAddPanel();
+    document.getElementById("set-payout-update-card")?.addEventListener("click", () => {
+      void openPayoutCardPanel();
     });
-    document.getElementById("set-payout-cancel")?.addEventListener("click", () => {
-      closePayoutAddPanel();
-      setPayoutOk("");
+    document.getElementById("set-payout-verify-card")?.addEventListener("click", () => {
+      void verifyPayoutCard();
     });
-    document.getElementById("set-payout-save")?.addEventListener("click", () => {
-      void saveSelectedPayoutMethod();
-    });
-    document.getElementById("set-payout-methods")?.addEventListener("click", (e) => {
-      const btn = e.target.closest?.(".ms-payout-method-btn[data-method]");
-      if (!btn) return;
-      selectPayoutMethod(btn.getAttribute("data-method"));
-    });
-    document.getElementById("set-payout-list")?.addEventListener("click", (e) => {
-      const btn = e.target.closest?.("[data-remove-method]");
-      if (!btn) return;
-      void removePayoutMethod(btn.getAttribute("data-remove-method"));
-    });
-    document.getElementById("set-payout-handle")?.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        void saveSelectedPayoutMethod();
-      }
+    document.getElementById("set-payout-card-retry")?.addEventListener("click", () => {
+      void openPayoutCardPanel();
     });
   }
 
@@ -635,7 +319,7 @@
     if (!user) {
       setError("Sign in to manage settings.");
       payoutProfile = {};
-      renderPayoutList();
+      renderPayoutCardStatus();
       return;
     }
 
@@ -651,18 +335,8 @@
       document.getElementById("set-handle").value = String(profile.handle || "")
         .replace(/^@/, "");
       document.getElementById("set-display").value = profile.display_name || "";
-      document.getElementById("set-email-notif").checked =
-        profile.notification_prefs?.email !== false;
       avatarUrl = String(profile.avatar_url || "").trim();
-      payoutProfile =
-        profile.payout_profile && typeof profile.payout_profile === "object"
-          ? profile.payout_profile
-          : {};
-      mvpPlus = !!profile.mvp_plus;
-      brandingDefaults =
-        profile.branding_defaults && typeof profile.branding_defaults === "object"
-          ? profile.branding_defaults
-          : {};
+      payoutProfile = P?.normalizeProfile?.(profile.payout_profile) || {};
     } else {
       const fallback =
         user.user_metadata?.handle ||
@@ -671,33 +345,11 @@
       document.getElementById("set-handle").value = String(fallback)
         .replace(/^@/, "");
       document.getElementById("set-display").value = "";
-      document.getElementById("set-email-notif").checked = true;
       avatarUrl = "";
       payoutProfile = {};
-      mvpPlus = false;
-      brandingDefaults = {};
     }
     refreshPreview();
-    renderPayoutList();
-    syncFinanceSetupLink();
-    try {
-      const base =
-        typeof window.resolveWorkerUrl === "function"
-          ? window.resolveWorkerUrl()
-          : String(window.SITE_CONFIG?.workerUrl || "").replace(/\/$/, "");
-      const session = await window.StudioAuth.getSession();
-      if (base && session?.access_token) {
-        const res = await fetch(base + "/credits/balance", {
-          headers: { Authorization: "Bearer " + session.access_token },
-        });
-        const bal = await res.json().catch(() => ({}));
-        // Source of truth: Pricing subscription on = MVP+, otherwise off.
-        if (res.ok) mvpPlus = !!(bal.paidPlan || bal.mvpPlus);
-      }
-    } catch (_) {
-      /* profile flag only */
-    }
-    syncMvpSection();
+    renderPayoutCardStatus();
   }
 
   fileInput?.addEventListener("change", async () => {
@@ -751,71 +403,6 @@
   document.getElementById("set-handle")?.addEventListener("input", refreshPreview);
   document.getElementById("set-display")?.addEventListener("input", refreshPreview);
 
-  document.getElementById("set-mvp-name-color")?.addEventListener("input", (e) => {
-    const hex = document.getElementById("set-mvp-name-color-hex");
-    if (hex) hex.value = e.target.value;
-    syncMvpPreview();
-  });
-  document.getElementById("set-mvp-name-color-hex")?.addEventListener("input", (e) => {
-    const raw = String(e.target.value || "").trim();
-    if (!/^#[0-9a-fA-F]{6}$/.test(raw)) {
-      syncMvpPreview();
-      return;
-    }
-    const color = document.getElementById("set-mvp-name-color");
-    if (color) color.value = raw;
-    syncMvpPreview();
-  });
-  document.getElementById("set-mvp-name-color-reset")?.addEventListener("click", () => {
-    const color = document.getElementById("set-mvp-name-color");
-    const hex = document.getElementById("set-mvp-name-color-hex");
-    if (color) color.value = "#2563eb";
-    if (hex) hex.value = "";
-    syncMvpPreview();
-  });
-
-  document.getElementById("set-mvp-save")?.addEventListener("click", async () => {
-    const btn = document.getElementById("set-mvp-save");
-    setMvpOk("");
-    if (!mvpPlus) return;
-    if (btn) btn.disabled = true;
-    try {
-      const user = await window.StudioAuth.getUser();
-      if (!user) throw new Error("Not signed in");
-      const hex = String(document.getElementById("set-mvp-name-color-hex")?.value || "").trim();
-      const colorFromPicker = document.getElementById("set-mvp-name-color")?.value || "";
-      const nameColor = /^#[0-9a-fA-F]{6}$/.test(hex)
-        ? hex
-        : /^#[0-9a-fA-F]{6}$/.test(colorFromPicker)
-          ? colorFromPicker
-          : "";
-      const nextBranding = mvpCosmetics()?.normalizeBranding({
-        ...brandingDefaults,
-        name_color: nameColor,
-        profile_hat: selectedHat,
-      });
-      const { error } = await window.SiteSupabase.getClient()
-        .from("profiles")
-        .update({
-          branding_defaults: nextBranding,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", user.id);
-      if (error) throw error;
-      brandingDefaults = nextBranding;
-      setMvpOk("Profile style saved.");
-      document.dispatchEvent(
-        new CustomEvent("ms:profile-cosmetics-changed", {
-          detail: { branding: brandingDefaults, mvpPlus: true },
-        })
-      );
-    } catch (e) {
-      setError(e.message || "Could not save profile style");
-    } finally {
-      if (btn) btn.disabled = false;
-    }
-  });
-
   document.getElementById("set-save")?.addEventListener("click", async () => {
     const btn = document.getElementById("set-save");
     setError("");
@@ -833,9 +420,6 @@
         handle,
         display_name: document.getElementById("set-display").value.trim() || null,
         avatar_url: avatarUrl || null,
-        notification_prefs: {
-          email: document.getElementById("set-email-notif").checked,
-        },
         updated_at: new Date().toISOString(),
       };
       const { error } = await window.SiteSupabase.getClient()
@@ -953,7 +537,7 @@
       await load();
     } catch (e) {
       console.warn(e);
-      setError(e.message || "Could not load settings");
+      setError(friendlyMessage(e, "Could not load settings"));
     }
   }
 

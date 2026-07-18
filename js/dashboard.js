@@ -5,7 +5,7 @@
   const DEFAULT_GOAL = 1000;
   const MIN_GOAL = 1;
   const MAX_GOAL = 1000000;
-  const COMMISSION_RATE = 0.8;
+  const INCOME_RATE = window.StudioIncome?.INCOME_RATE ?? 0.8;
 
   let goalTarget = DEFAULT_GOAL;
   let goalUserId = "";
@@ -15,6 +15,7 @@
   let allProjects = [];
   let deleteProjectId = null;
   let projectSearchQuery = "";
+  let projectLiveFilter = "all";
   let projectSuggestIndex = -1;
   let projectPaintToken = 0;
   let statsAnimFrame = 0;
@@ -22,6 +23,7 @@
   /** Soft cap only for search results; default view shows every project. */
   const SEARCH_RESULT_LIMIT = 100;
   const STATS_INTRO_MS = 1100;
+  const DASH_CACHE_KEY = "ms_dashboard_stats_v1";
 
   function escapeHtml(s) {
     return String(s || "")
@@ -48,6 +50,10 @@
   }
 
   function formatCommission(n) {
+    return window.StudioIncome?.formatIncome?.(n) ?? formatIncomeFallback(n);
+  }
+
+  function formatIncomeFallback(n) {
     return (
       "$" +
       Number(n).toLocaleString("en-US", {
@@ -58,12 +64,18 @@
   }
 
   function commissionFromProject(project) {
+    if (window.StudioIncome?.incomeFromProject) {
+      return window.StudioIncome.incomeFromProject(project);
+    }
     const cents = Number(project?.price_cents);
     if (!Number.isFinite(cents) || cents <= 0) return 0;
-    return Math.round(cents * COMMISSION_RATE) / 100;
+    return Math.round(cents * INCOME_RATE) / 100;
   }
 
   function calcCommission(sales) {
+    if (window.StudioIncome?.calcIncome) {
+      return window.StudioIncome.calcIncome(sales);
+    }
     return (sales || []).reduce((sum, project) => sum + commissionFromProject(project), 0);
   }
 
@@ -71,6 +83,10 @@
     const n = Math.round(Number(String(raw ?? "").replace(/,/g, "").trim()));
     if (!Number.isFinite(n) || n < MIN_GOAL) return null;
     return Math.min(MAX_GOAL, n);
+  }
+
+  function isLiveProject(p) {
+    return String(p?.status || "").toLowerCase() === "published";
   }
 
   function statusLabel(p) {
@@ -91,7 +107,7 @@
   }
 
   function isSale(p) {
-    // Only count when the business owner paid to remove the watermark.
+    if (window.StudioIncome?.isPaidSale) return window.StudioIncome.isPaidSale(p);
     return p.watermark_enabled === false;
   }
 
@@ -107,6 +123,67 @@
 
   function easeOutCubic(t) {
     return 1 - Math.pow(1 - t, 3);
+  }
+
+  function readDashboardCache() {
+    try {
+      const raw = sessionStorage.getItem(DASH_CACHE_KEY);
+      if (!raw) return null;
+      const data = JSON.parse(raw);
+      return data && typeof data === "object" ? data : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function writeDashboardCache() {
+    try {
+      sessionStorage.setItem(
+        DASH_CACHE_KEY,
+        JSON.stringify({
+          goalTarget,
+          commissionEarned,
+          salesCount,
+          projectCount: allProjects.length,
+          at: Date.now(),
+        })
+      );
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  function paintDashboardFromCache() {
+    const cached = readDashboardCache();
+    if (cached) {
+      const parsedGoal = parseGoal(cached.goalTarget);
+      if (parsedGoal != null) goalTarget = parsedGoal;
+      commissionEarned = Number(cached.commissionEarned) || 0;
+      salesCount = Number(cached.salesCount) || 0;
+      statsIntroPlayed = true;
+      renderGoal();
+      renderSalesProgress();
+      const countEl = document.getElementById("dash-projects-count");
+      const projectCount = Number(cached.projectCount);
+      if (countEl && Number.isFinite(projectCount)) {
+        countEl.textContent =
+          projectCount + " " + plural(projectCount, "project", "projects");
+      }
+      return true;
+    }
+    try {
+      const raw = sessionStorage.getItem("ms_sidebar_income_v1");
+      if (!raw) return false;
+      const data = JSON.parse(raw);
+      const income = Number(data?.income);
+      if (!Number.isFinite(income)) return false;
+      commissionEarned = income;
+      statsIntroPlayed = true;
+      renderGoal();
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   function goalPct(commission, goal) {
@@ -128,7 +205,7 @@
       goalEl.textContent = formatGoal(goal);
       goalEl.setAttribute(
         "aria-label",
-        "Commission goal " + formatGoal(goal) + ", click to edit"
+        "Income goal " + formatGoal(goal) + ", click to edit"
       );
     }
     if (input && document.activeElement !== input) input.value = String(Math.round(goal));
@@ -226,15 +303,25 @@
     });
   }
 
+  function syncSidebarIncome() {
+    document.dispatchEvent(
+      new CustomEvent("ms:income-changed", {
+        detail: { income: commissionEarned, sales: salesCount },
+      })
+    );
+  }
+
   function setStats(salesProjects, opts) {
     const sales = (salesProjects || []).filter(isSale);
     salesCount = sales.length;
     commissionEarned = calcCommission(sales);
-    const animate = opts?.animate === true || (opts?.animate !== false && !statsIntroPlayed);
-    if (animate) {
+    syncSidebarIncome();
+    writeDashboardCache();
+    if (opts?.animate === true && !statsIntroPlayed) {
       statsIntroPlayed = true;
       animateStatsToCurrent();
     } else {
+      statsIntroPlayed = true;
       renderGoal();
     }
   }
@@ -399,10 +486,16 @@
       .toLowerCase();
   }
 
-  function filteredProjects(list, query) {
+  function filteredProjects(list, query, liveFilter) {
     const q = String(query || "").trim().toLowerCase();
-    const projects = list || [];
-    if (!q) return projects.slice();
+    const filter = liveFilter || projectLiveFilter || "all";
+    let projects = (list || []).slice();
+    if (filter === "live") {
+      projects = projects.filter(isLiveProject);
+    } else if (filter === "not-live") {
+      projects = projects.filter((p) => !isLiveProject(p));
+    }
+    if (!q) return projects;
     const matched = projects.filter((p) => projectHaystack(p).includes(q));
     return matched.slice(0, SEARCH_RESULT_LIMIT);
   }
@@ -521,12 +614,18 @@
     void paintProjects();
   }
 
+  function isProjectsPanelOpen() {
+    const btn = document.getElementById("dash-projects-toggle");
+    return btn?.getAttribute("aria-expanded") === "true";
+  }
+
   async function paintProjects() {
     const token = ++projectPaintToken;
     const host = document.getElementById("dash-projects-list");
     const countEl = document.getElementById("dash-projects-count");
     const hint = document.getElementById("dash-projects-search-hint");
     const searchWrap = document.getElementById("dash-projects-search-wrap");
+    const filtersWrap = document.querySelector(".ms-dash-projects-filters");
     const card = document.querySelector(".ms-dash-projects-card");
     const btn = document.getElementById("dash-projects-toggle");
     const panel = document.getElementById("dash-projects-panel");
@@ -537,6 +636,7 @@
         projects.length + " " + plural(projects.length, "project", "projects");
     }
     if (searchWrap) searchWrap.hidden = !projects.length;
+    if (filtersWrap) filtersWrap.hidden = !projects.length;
 
     if (!host) return;
 
@@ -559,12 +659,19 @@
 
     card?.classList.remove("is-empty");
     if (btn) btn.disabled = false;
+    syncProjectLiveFilterUi();
 
     const shown = filteredProjects(projects, projectSearchQuery);
     const q = projectSearchQuery.trim();
     if (hint) {
       if (q) {
-        const totalMatches = projects.filter((p) => projectHaystack(p).includes(q.toLowerCase())).length;
+        const pool =
+          projectLiveFilter === "live"
+            ? projects.filter(isLiveProject)
+            : projectLiveFilter === "not-live"
+              ? projects.filter((p) => !isLiveProject(p))
+              : projects;
+        const totalMatches = pool.filter((p) => projectHaystack(p).includes(q.toLowerCase())).length;
         hint.hidden = false;
         hint.textContent =
           totalMatches === 0
@@ -572,6 +679,10 @@
             : totalMatches > SEARCH_RESULT_LIMIT
               ? "Showing " + SEARCH_RESULT_LIMIT + " of " + totalMatches + " matches."
               : totalMatches + " " + plural(totalMatches, "match", "matches") + ".";
+      } else if (projectLiveFilter !== "all" && !shown.length) {
+        hint.hidden = false;
+        hint.textContent =
+          projectLiveFilter === "live" ? "No live projects yet." : "No unpublished projects.";
       } else {
         hint.hidden = true;
         hint.textContent = "";
@@ -581,7 +692,15 @@
     if (!shown.length) {
       if (token !== projectPaintToken) return;
       host.innerHTML =
-        '<div class="ms-dash-empty ms-dash-empty--dotted"><p>No projects match that search.</p></div>';
+        '<div class="ms-dash-empty ms-dash-empty--dotted"><p>' +
+        (q
+          ? "No projects match that search."
+          : projectLiveFilter === "live"
+            ? "No live projects yet."
+            : projectLiveFilter === "not-live"
+              ? "No unpublished projects."
+              : "No projects yet.") +
+        "</p></div>";
       return;
     }
 
@@ -595,12 +714,18 @@
     const name = p.business_name || "Untitled";
     const hasHtml = !!(p.html && String(p.html).trim());
     const paid = isPaidProject(p);
+    const live = isLiveProject(p);
+    const liveBadge = live
+      ? '<span class="ms-dash-preview-live" aria-label="Live site">Live</span>'
+      : "";
     const shot = hasHtml
       ? '<div class="ms-dash-preview-shot" aria-hidden="true">' +
+        liveBadge +
         '<iframe class="ms-dash-preview-iframe" data-preview-id="' +
         escapeAttr(p.id) +
         '" title="" tabindex="-1" loading="lazy" sandbox=""></iframe></div>'
       : '<div class="ms-dash-preview-shot ms-dash-preview-shot--empty" aria-hidden="true">' +
+        liveBadge +
         '<span class="ms-dash-preview-placeholder">' +
         escapeHtml(name.slice(0, 1).toUpperCase()) +
         "</span></div>";
@@ -617,14 +742,14 @@
       '<article class="ms-dash-preview">' +
       shot +
       deleteBtn +
-      '<a class="ms-dash-preview-meta" href="builder.html?project_id=' +
+      '<a class="ms-dash-preview-meta" href="editor.html?project_id=' +
       encodeURIComponent(p.id) +
       '" target="_blank" rel="noopener noreferrer">' +
       '<span class="ms-dash-preview-name">' +
       escapeHtml(name) +
       "</span>" +
       "</a>" +
-      '<a class="ms-dash-preview-hit" href="builder.html?project_id=' +
+      '<a class="ms-dash-preview-hit" href="editor.html?project_id=' +
       encodeURIComponent(p.id) +
       '" target="_blank" rel="noopener noreferrer" aria-label="Open ' +
       escapeAttr(name) +
@@ -777,6 +902,26 @@
     }
   }
 
+  function syncProjectLiveFilterUi() {
+    document.querySelectorAll("[data-live-filter]").forEach((btn) => {
+      const on = btn.getAttribute("data-live-filter") === projectLiveFilter;
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  function bindProjectLiveFilter() {
+    document.querySelector(".ms-dash-projects-filters")?.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-live-filter]");
+      if (!btn) return;
+      const next = btn.getAttribute("data-live-filter") || "all";
+      if (next === projectLiveFilter) return;
+      projectLiveFilter = next;
+      syncProjectLiveFilterUi();
+      void paintProjects();
+    });
+  }
+
   function bindProjectSearch() {
     const input = document.getElementById("dash-projects-search");
     const clearBtn = document.getElementById("dash-projects-search-clear");
@@ -873,6 +1018,19 @@
     });
   }
 
+  async function fetchProjectsList(userId) {
+    const client = window.SiteSupabase.getClient();
+    const query = client
+      .from("projects")
+      .select("id,business_name,status,watermark_enabled,updated_at,vercel_url,price_cents,lead_id,business_context")
+      .eq("user_id", userId)
+      .order("updated_at", { ascending: false })
+      .limit(100);
+    const { data, error } = await window.StudioAuth.withTimeout(query, 6000, "Dashboard");
+    if (error) throw error;
+    return data || [];
+  }
+
   async function load() {
     const user = await window.StudioAuth.getUser();
     if (!user) {
@@ -882,38 +1040,32 @@
       commissionEarned = 0;
       setStats([]);
       await renderProjects([]);
+      writeDashboardCache();
       return;
     }
 
-    await loadGoal(user.id);
-
-    const client = window.SiteSupabase.getClient();
+    goalUserId = user.id;
     let list = [];
     try {
-      const query = client
-        .from("projects")
-        .select("id,business_name,status,watermark_enabled,updated_at,vercel_url,price_cents,lead_id,business_context")
-        .eq("user_id", user.id)
-        .order("updated_at", { ascending: false })
-        .limit(100);
-      const { data, error } = await window.StudioAuth.withTimeout(
-        query,
-        6000,
-        "Dashboard"
-      );
-      if (error) throw error;
-      list = data || [];
+      const [_, projects] = await Promise.all([
+        loadGoal(user.id),
+        fetchProjectsList(user.id),
+      ]);
+      list = projects;
     } catch (e) {
       console.warn(e);
-      commissionEarned = 0;
-      salesCount = 0;
-      setStats([]);
+      if (!readDashboardCache()) {
+        commissionEarned = 0;
+        salesCount = 0;
+        setStats([]);
+      }
       await renderProjects([]);
       return;
     }
 
     setStats(list.filter(isSale));
     await renderProjects(list);
+    writeDashboardCache();
   }
 
   let started = false;
@@ -941,9 +1093,11 @@
     started = true;
     bindGoalEditor();
     bindProjectsToggle();
+    bindProjectLiveFilter();
     bindProjectSearch();
     bindProjectActions();
     bindDashboardRefresh();
+    paintDashboardFromCache();
     refreshDashboard();
   }
 

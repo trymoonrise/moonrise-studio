@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All projects · Moonrise Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/studio.css?v=20260718-projects-page">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body data-page="projects">
+  <div id="shell"></div>
+  <div id="page-body" class="ms-projects-page ms-settings-page">
+    <header class="ms-page-head">
+      <div class="ms-page-head-copy">
+        <p class="ms-page-crumb"><a href="builder.html">Builder</a> / All projects</p>
+        <h1>All projects</h1>
+        <p class="lead">Search and open any website you have built.</p>
+      </div>
+    </header>
+
+    <section class="ms-card ms-settings-card ms-projects-card" aria-label="Projects">
+      <div class="ms-projects-toolbar">
+        <span class="ms-projects-count" id="projects-count" aria-live="polite">0 projects</span>
+      </div>
+
+      <div class="ms-dash-projects-search" id="projects-search-wrap">
+        <label class="ms-sr-only" for="projects-search">Search projects</label>
+        <div class="ms-dash-projects-search-field">
+          <input
+            type="search"
+            id="projects-search"
+            class="ms-dash-projects-search-input"
+            placeholder="Search name, location, category, phone, domain…"
+            autocomplete="off"
+            spellcheck="false"
+            aria-autocomplete="list"
+            aria-controls="projects-suggest"
+            aria-expanded="false"
+          >
+          <button type="button" class="ms-dash-projects-search-clear" id="projects-search-clear" hidden aria-label="Clear search">×</button>
+        </div>
+        <ul class="ms-dash-projects-suggest" id="projects-suggest" role="listbox" hidden></ul>
+        <p class="ms-dash-projects-search-hint" id="projects-search-hint" hidden></p>
+      </div>
+
+      <div
+        class="ms-dash-projects-filters ms-projects-filters seg-switch"
+        role="group"
+        aria-label="Filter by live status"
+        data-seg-tone="surface"
+      >
+        <button type="button" class="ms-dash-projects-filter is-active" data-live-filter="all" aria-pressed="true">All</button>
+        <button type="button" class="ms-dash-projects-filter" data-live-filter="live" aria-pressed="false">Live</button>
+        <button type="button" class="ms-dash-projects-filter" data-live-filter="not-live" aria-pressed="false">Not live</button>
+      </div>
+
+      <div class="ms-dash-previews" id="projects-list"></div>
+    </section>
+  </div>
+
+  <dialog class="ms-clients-dialog" id="projects-delete-dialog" aria-labelledby="projects-delete-title">
+    <div class="ms-clients-dialog-panel ms-clients-dialog-panel--compact">
+      <header class="ms-clients-dialog-head">
+        <h2 class="ms-clients-dialog-title" id="projects-delete-title">Delete project</h2>
+      </header>
+      <p class="ms-clients-dialog-warning" id="projects-delete-message" aria-live="polite"></p>
+      <p class="ms-clients-dialog-error" id="projects-delete-error" hidden role="alert"></p>
+      <div class="ms-clients-dialog-actions">
+        <button type="button" class="ms-clients-dialog-back" id="projects-delete-cancel">Cancel</button>
+        <button type="button" class="ms-btn ms-btn-danger ms-clients-dialog-next" id="projects-delete-submit">Delete</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="js/config.js"></script>
+  <script src="js/site-branding.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/segment-switch.js"></script>
+  <script src="js/ui-motion.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/app.js?v=20260718-shell-fix"></script>
+  <script src="js/projects.js?v=20260718-projects-page"></script>
+</body>
+</html>

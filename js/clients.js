@@ -5,6 +5,7 @@
  */
 (function () {
   const QUERY_MS = 10000;
+  const CLIENTS_CACHE_KEY = "ms_clients_cache_v1";
   const PROJECT_SELECT =
     "id, user_id, business_name, status, watermark_enabled, price_cents, vercel_url, business_context, updated_at, created_at";
 
@@ -248,7 +249,7 @@
           "</td><td>" +
           statusBadge(row) +
           '</td><td class="ms-clients-actions-cell"><div class="ms-clients-row-actions">' +
-          '<a class="ms-clients-row-btn" href="builder.html?project_id=' +
+          '<a class="ms-clients-row-btn" href="editor.html?project_id=' +
           encodeURIComponent(row.id) +
           '">Open</a></div></td></tr>'
         );
@@ -277,6 +278,33 @@
     } catch (e) {
       console.warn("loadCreatorHandles", e);
       return new Map();
+    }
+  }
+
+  function writeClientsCache() {
+    try {
+      sessionStorage.setItem(
+        CLIENTS_CACHE_KEY,
+        JSON.stringify({ clients, isAdmin, at: Date.now() })
+      );
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  function paintClientsFromCache() {
+    try {
+      const raw = sessionStorage.getItem(CLIENTS_CACHE_KEY);
+      if (!raw) return false;
+      const data = JSON.parse(raw);
+      if (!Array.isArray(data.clients)) return false;
+      clients = data.clients;
+      isAdmin = !!data.isAdmin;
+      syncAdminChrome();
+      renderClients();
+      return true;
+    } catch (_) {
+      return false;
     }
   }
 
@@ -374,6 +402,7 @@
         .sort((a, b) => String(b.paid_at || "").localeCompare(String(a.paid_at || "")));
 
       renderClients();
+      writeClientsCache();
     } catch (e) {
       clients = [];
       renderClients();
@@ -452,19 +481,10 @@
     if (started) return;
     started = true;
     bindUi();
-    if (window.StudioAuth?.requireAuth) {
-      try {
-        await window.StudioAuth.requireAuth();
-      } catch (_) {
-        /* shell handles redirect */
-      }
-    }
+    paintClientsFromCache();
     await loadClients();
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => void boot());
-  } else {
-    void boot();
-  }
+  if (document.body.dataset.msAuthFired === "1") void boot();
+  else document.addEventListener("ms:auth-ready", () => void boot(), { once: true });
 })();

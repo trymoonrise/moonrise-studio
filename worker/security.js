@@ -87,9 +87,10 @@ function applySecurityHeaders(req, res, next) {
 }
 
 /** In-memory sliding window rate limiter (per process). */
-function createRateLimiter({ windowMs, max, keyFn, name }) {
+function createRateLimiter({ windowMs, max, keyFn, name, shouldCount }) {
   const hits = new Map();
   const label = name || "rate limit";
+  const countFn = typeof shouldCount === "function" ? shouldCount : () => true;
 
   function prune(now) {
     if (hits.size < 4000) return;
@@ -108,13 +109,14 @@ function createRateLimiter({ windowMs, max, keyFn, name }) {
         bucket = { start: now, count: 0 };
         hits.set(key, bucket);
       }
-      bucket.count += 1;
+      const counts = countFn(req) !== false;
+      if (counts) bucket.count += 1;
       const remaining = Math.max(0, max - bucket.count);
       res.setHeader("X-RateLimit-Limit", String(max));
       res.setHeader("X-RateLimit-Remaining", String(remaining));
       const retryAfterSec = Math.ceil((windowMs - (now - bucket.start)) / 1000);
       res.setHeader("X-RateLimit-Reset", String(retryAfterSec));
-      if (bucket.count > max) {
+      if (counts && bucket.count > max) {
         res.setHeader("Retry-After", String(Math.max(1, retryAfterSec)));
         return res.status(429).json({
           error: `Too many requests (${label}). Try again in ${Math.max(1, retryAfterSec)}s.`,

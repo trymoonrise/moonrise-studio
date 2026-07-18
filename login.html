@@ -7,17 +7,22 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css">
+  <link rel="stylesheet" href="css/studio.css?v=20260718-creator-help">
   <meta name="color-scheme" content="light">
   <link rel="preconnect" href="https://erfaxgmnzdropviormpj.supabase.co" crossorigin>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body data-page="login">
+  <p class="ms-auth-file-warning" id="auth-file-warning" hidden role="alert">
+    This page was opened as a local file, so sign-in cannot connect to Moonrise.
+    <a href="https://moonrise-studio.vercel.app/login.html">Open the live login page</a> instead.
+  </p>
   <div class="ms-auth-card">
     <div class="ms-auth-brand">
       <img src="https://moonrise-studio.vercel.app/doc/MoonriseLogo.png" alt="" width="36" height="36">
       <div>
         <strong>Moonrise Studio</strong>
+        <p class="ms-muted" style="margin:0.15rem 0 0;font-size:0.88rem;line-height:1.4">Build websites. Get paid when clients go live.</p>
       </div>
     </div>
 
@@ -119,9 +124,14 @@
   <script src="js/site-branding.js"></script>
   <script src="js/handles.js"></script>
   <script src="js/supabase-client.js"></script>
-  <script src="js/auth.js"></script>
+  <script src="js/auth.js?v=20260722-auth-reachability"></script>
   <script>
     (async function () {
+      window.StudioAuth?.warmAuthService?.();
+      if (location.protocol === "file:") {
+        const fileWarning = document.getElementById("auth-file-warning");
+        if (fileWarning) fileWarning.hidden = false;
+      }
       const params = new URLSearchParams(location.search);
       const nextUrl = params.get("next") || "dashboard.html";
       const isLocate = params.get("intent") === "locate";
@@ -456,16 +466,9 @@
 
       function showAuthError(msg) {
         const text = String(msg || "").trim();
-        const lower = text.toLowerCase();
-        const friendly =
-          !text
-            ? ""
-            : lower === "failed to fetch" ||
-                lower.includes("networkerror") ||
-                lower.includes("load failed") ||
-                lower.includes("network request failed")
-              ? "Can't reach the sign-in service. Check your connection and try again."
-              : text;
+        const friendly = text
+          ? window.StudioAuth?.friendlyNetworkMessage?.({ message: text }, text) || text
+          : "";
         err.hidden = true;
         err.textContent = "";
         if (friendly) window.StudioToast?.error?.(friendly);

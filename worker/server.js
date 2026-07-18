@@ -125,6 +125,8 @@ const {
   buildBusinessBrief,
   selectStockMedia,
   ensureStockMediaInHtml,
+  ensurePaletteContrast,
+  assessSiteCompleteness,
 } = require("./generate-prompt");
 const { catalogStats } = require("./stock-media");
 const {
@@ -150,8 +152,33 @@ const {
   customTopupLineItem,
   TOPUP_MIN_DOLLARS,
   TOPUP_MAX_DOLLARS,
+  DONATE_MIN_DOLLARS,
+  DONATE_MAX_DOLLARS,
+  DONATE_DEFAULT_DOLLARS,
   publicPlansCatalog,
+  quoteDonation,
+  donateOneTimeLineItem,
+  donateSubscriptionLineItem,
+  donatePriceLabel,
+  donateAmountCents,
+  publicDonateConfig,
+  hasActiveMvpDonationSubscription,
+  grantMvpDonation,
+  revokeMvpDonation,
 } = require("./credits");
+const {
+  DONOR_MESSAGE_MAX,
+  sanitizeDonorMessage,
+  getDonationLeaderboard,
+} = require("./donate-leaderboard");
+const {
+  startSecurityCardVerification,
+  completeSecurityCardVerification,
+  chargeSecurityCard,
+  publicSecurityCardConfig,
+  publicSecurityCardStatus,
+} = require("./security-card");
+const { notifyGoLiveSale } = require("./sale-telegram");
 const { sendContactLeadEmail, sendPurchaseInvoiceEmail } = require("./contact-mail");
 const {
   detectContactEndpoint,
@@ -159,6 +186,32 @@ const {
   escapeHtmlAttr,
 } = require("./contact-endpoint");
 const { clientIp, createRateLimiter, applySecurityHeaders } = security;
+const {
+  resolveExistingGeneration,
+  failGenerationJob,
+  findJobByRequestId,
+  buildDonePayload,
+  waitForGenerationJob,
+  ACTIVE_JOB_MS,
+} = require("./generate-jobs");
+
+/** Same requestId retries (refresh/resume) must not consume generate rate limit slots. */
+const seenGenerateRequestIds = new Map();
+
+function shouldCountGenerate(req) {
+  const rid = String(req.body?.requestId || req.headers["x-request-id"] || "").trim();
+  if (!rid) return true;
+  const key = String(req.user?.id || clientIp(req)) + ":" + rid;
+  if (seenGenerateRequestIds.has(key)) return false;
+  seenGenerateRequestIds.set(key, Date.now());
+  if (seenGenerateRequestIds.size > 8000) {
+    const cutoff = Date.now() - ACTIVE_JOB_MS;
+    for (const [k, t] of seenGenerateRequestIds) {
+      if (t < cutoff) seenGenerateRequestIds.delete(k);
+    }
+  }
+  return true;
+}
 
 /** Roles the atmosphere planner should cover. */
 const PLAN_ROLE_CATEGORIES = {
@@ -351,6 +404,7 @@ async function unlockGoLiveAfterPayment(supabase, { projectId, session, userId }
       : {};
 
   const invoiceEmailAlreadySent = !!priorCtx.purchaseInvoiceEmailSentAt;
+  const saleTelegramAlreadySent = !!priorCtx.saleTelegramSentAt;
 
   const { error: unlockErr } = await supabase
     .from("projects")
@@ -449,6 +503,20 @@ async function unlockGoLiveAfterPayment(supabase, { projectId, session, userId }
     }
   }
 
+  if (!saleTelegramAlreadySent && session) {
+    try {
+      await notifyGoLiveSale(supabase, {
+        project: fresh,
+        session,
+        ownerId,
+        siteUrl,
+        hostingMonthlyCents: HOSTING_MONTHLY_CENTS,
+      });
+    } catch (telegramErr) {
+      console.error("Go-live sale Telegram failed:", telegramErr.message || telegramErr);
+    }
+  }
+
   return {
     projectId,
     watermarkEnabled: false,
@@ -524,6 +592,8 @@ app.use(
       if (isAllowedOrigin(origin)) return callback(null, true);
       return callback(null, false);
     },
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
@@ -589,7 +659,7 @@ app.post("/webhooks/stripe", express.raw({ type: "application/json" }), async (r
       const projectId = session.metadata?.projectId;
       const userId = session.metadata?.userId;
       const kind = String(session.metadata?.type || "").toLowerCase();
-      const supabase = db();
+        const supabase = db();
 
       // Credit plan subscription (Starter / Pro / Business)
       if (kind === "credit_plan" && userId) {
@@ -626,21 +696,21 @@ app.post("/webhooks/stripe", express.raw({ type: "application/json" }), async (r
             periodStart,
             periodEnd,
           });
-          await supabase.from("payments").upsert(
-            {
-              user_id: userId,
+        await supabase.from("payments").upsert(
+          {
+            user_id: userId,
               project_id: null,
-              stripe_session_id: session.id,
-              stripe_payment_intent:
-                typeof session.payment_intent === "string"
-                  ? session.payment_intent
-                  : session.payment_intent?.id || null,
+            stripe_session_id: session.id,
+            stripe_payment_intent:
+              typeof session.payment_intent === "string"
+                ? session.payment_intent
+                : session.payment_intent?.id || null,
               amount_cents: session.amount_total || plan.priceCents,
-              currency: session.currency || "usd",
-              status: "paid",
-            },
-            { onConflict: "stripe_session_id" }
-          );
+            currency: session.currency || "usd",
+            status: "paid",
+          },
+          { onConflict: "stripe_session_id" }
+        );
         }
       } else if (kind === "credit_topup" && userId) {
         const topup = resolveTopupFromSession(session);
@@ -668,6 +738,67 @@ app.post("/webhooks/stripe", express.raw({ type: "application/json" }), async (r
             { onConflict: "stripe_session_id" }
           );
         }
+      } else if (kind === "mvp_donation" && userId) {
+        const subId =
+          typeof session.subscription === "string"
+            ? session.subscription
+            : session.subscription?.id || null;
+        let periodEnd = null;
+        if (subId && stripe) {
+          const sub = await stripe.subscriptions.retrieve(subId);
+          periodEnd = sub.current_period_end
+            ? new Date(sub.current_period_end * 1000).toISOString()
+            : null;
+        }
+        await grantMvpDonation(supabase, {
+          userId,
+          sessionId: session.id,
+          stripeCustomerId:
+            typeof session.customer === "string" ? session.customer : session.customer?.id || null,
+          stripeSubscriptionId: subId,
+          periodEnd,
+        });
+        const donorMessage = sanitizeDonorMessage(session.metadata?.donorMessage);
+        await supabase.from("payments").upsert(
+          {
+            user_id: userId,
+            project_id: null,
+            stripe_session_id: session.id,
+            stripe_payment_intent:
+              typeof session.payment_intent === "string"
+                ? session.payment_intent
+                : session.payment_intent?.id || null,
+            amount_cents: session.amount_total || Number(session.metadata?.priceCents) || donateAmountCents(),
+            currency: session.currency || "usd",
+            status: "paid",
+            kind: "mvp_donation",
+            donor_message: donorMessage,
+          },
+          { onConflict: "stripe_session_id" }
+        );
+      } else if (kind === "mvp_donation_onetime" && userId) {
+        const donorMessage = sanitizeDonorMessage(session.metadata?.donorMessage);
+        const paidCents = Math.max(
+          0,
+          Number(session.amount_total || session.metadata?.priceCents || 0)
+        );
+        await supabase.from("payments").upsert(
+          {
+            user_id: userId,
+            project_id: null,
+            stripe_session_id: session.id,
+            stripe_payment_intent:
+              typeof session.payment_intent === "string"
+                ? session.payment_intent
+                : session.payment_intent?.id || null,
+            amount_cents: paidCents,
+            currency: session.currency || "usd",
+            status: "paid",
+            kind: "mvp_donation",
+            donor_message: donorMessage,
+          },
+          { onConflict: "stripe_session_id" }
+        );
       } else if (projectId) {
         // Business-owner go-live payment (type=go_live or legacy sessions):
         // remove watermark + redeploy clean HTML without embed.js.
@@ -711,6 +842,31 @@ app.post("/webhooks/stripe", express.raw({ type: "application/json" }), async (r
                 : null,
             });
           }
+        } else if (kind === "mvp_donation" && userId) {
+          const billingReason = String(invoice.billing_reason || "");
+          if (billingReason === "subscription_cycle") {
+            const supabase = db();
+            const paidCents = Math.max(
+              0,
+              Number(invoice.amount_paid || invoice.total || donateAmountCents())
+            );
+            await supabase.from("payments").upsert(
+              {
+                user_id: userId,
+                project_id: null,
+                stripe_session_id: `invoice:${invoice.id}`,
+                stripe_payment_intent:
+                  typeof invoice.payment_intent === "string"
+                    ? invoice.payment_intent
+                    : invoice.payment_intent?.id || null,
+                amount_cents: paidCents,
+                currency: invoice.currency || "usd",
+                status: "paid",
+                kind: "mvp_donation",
+              },
+              { onConflict: "stripe_session_id" }
+            );
+          }
         }
       }
     }
@@ -748,6 +904,22 @@ app.post("/webhooks/stripe", express.raw({ type: "application/json" }), async (r
             await db().from("profiles").update({ mvp_plus: true }).eq("id", userId);
           }
         }
+      } else if (kind === "mvp_donation" && userId) {
+        const status = String(sub.status || "");
+        const active = status === "active" || status === "trialing";
+        if (event.type === "customer.subscription.deleted" || !active) {
+          await revokeMvpDonation(db(), userId);
+        } else if (active) {
+          await grantMvpDonation(db(), {
+            userId,
+            stripeCustomerId:
+              typeof sub.customer === "string" ? sub.customer : sub.customer?.id || null,
+            stripeSubscriptionId: sub.id,
+            periodEnd: sub.current_period_end
+              ? new Date(sub.current_period_end * 1000).toISOString()
+              : null,
+          });
+        }
       }
     }
     res.json({ received: true });
@@ -780,6 +952,7 @@ const generateLimiter = createRateLimiter({
   max: 12,
   name: "generate",
   keyFn: (req) => "gen:" + (req.user?.id || clientIp(req)),
+  shouldCount: shouldCountGenerate,
 });
 const editLimiter = createRateLimiter({
   windowMs: 10 * 60 * 1000,
@@ -810,6 +983,12 @@ const mapsLimiter = createRateLimiter({
   max: 40,
   name: "resolve-maps",
   keyFn: (req) => "maps:" + (req.user?.id || clientIp(req)),
+});
+const leadFinderLimiter = createRateLimiter({
+  windowMs: 10 * 60 * 1000,
+  max: 6,
+  name: "lead-finder",
+  keyFn: (req) => "lf:" + (req.user?.id || clientIp(req)),
 });
 const contactSubmitLimiter = createRateLimiter({
   windowMs: 60 * 60 * 1000,
@@ -1201,7 +1380,11 @@ async function openRouterChat({ model, system, user, temperature, maxTokens, tit
   if (!res.ok) {
     throw new Error(data?.error?.message || `OpenRouter error ${res.status}`);
   }
-  return data?.choices?.[0]?.message?.content || "";
+  const choice = data?.choices?.[0] || {};
+  return {
+    content: choice?.message?.content || "",
+    finishReason: choice?.finish_reason || "",
+  };
 }
 
 /**
@@ -1342,7 +1525,7 @@ async function planAtmosphereAndPicks(ctx) {
   if (!catalog.length) {
     return { plan: { atmosphere: "", picks: [] }, ids: [], roleById: {}, catalog };
   }
-  const raw = await openRouterChat({
+  const rawResult = await openRouterChat({
     system: PLAN_SYSTEM_PROMPT,
     user: buildPlanUserPrompt(ctx, catalog),
     temperature: 0.45,
@@ -1350,6 +1533,7 @@ async function planAtmosphereAndPicks(ctx) {
     prefer: "price",
     title: "Moonrise Studio Atmosphere",
   });
+  const raw = rawResult.content;
   try {
     const parsed = parsePlanJson(raw);
     // Keep only ids that exist in the catalog we offered.
@@ -1417,21 +1601,6 @@ function closeIncompleteHtml(html) {
   return out;
 }
 
-function looksIncompleteSite(html, structure) {
-  const raw = String(html || "");
-  const sections = structure?.sections?.length || 10;
-  const sectionTags = (raw.match(/<section[\s>]/gi) || []).length;
-  const hasForm = /<form[\s>]/i.test(raw);
-  const hasFooter = /<footer[\s>]/i.test(raw);
-  const minSections = Math.min(7, Math.max(5, sections - 4));
-  // Truncation alone is fixed by closeIncompleteHtml — do not trigger a second
-  // full LLM call just for missing </html> (doubles latency to minutes).
-  if (sectionTags < minSections) return true;
-  if (!hasForm || !hasFooter) return true;
-  if (raw.length < 6000 && sections >= 10) return true;
-  return false;
-}
-
 function sanitizeGeneratedCopy(html) {
   return String(html || "").replace(/>([^<]*)</g, (match, text) => {
     if (!text.includes("\u2014")) return match;
@@ -1446,7 +1615,7 @@ async function generateWithOpenRouter(ctx, presetPack, plan) {
 
   async function assemble({ retryIncomplete = false, maxTokens = WEBSITE_MAX_OUTPUT_TOKENS } = {}) {
     const userPrompt = buildGenerationUserPrompt(ctx, presets, plan, stockMedia, { retryIncomplete });
-    const htmlRaw = await openRouterChat({
+    const result = await openRouterChat({
       system: GENERATION_SYSTEM_PROMPT,
       user: userPrompt,
       temperature: retryIncomplete ? 0.35 : 0.4,
@@ -1454,32 +1623,43 @@ async function generateWithOpenRouter(ctx, presetPack, plan) {
       prefer: "throughput",
       title: retryIncomplete ? "Moonrise Studio Assemble (retry)" : "Moonrise Studio Assemble",
     });
-    let html = String(htmlRaw || "")
+    let html = String(result.content || "")
       .replace(/^```(?:html)?\s*/i, "")
       .replace(/```\s*$/i, "")
       .trim();
     if (!html.includes("<html") && !html.includes("<!DOCTYPE")) {
       throw new Error("MiniMax did not return a complete HTML document");
     }
-    html = sanitizeGeneratedCopy(
-      ensureMobileFriendlyHtml(ensureStockMediaInHtml(stripDemoChrome(html), stockMedia))
+    html = ensurePaletteContrast(
+      sanitizeGeneratedCopy(
+        ensureMobileFriendlyHtml(ensureStockMediaInHtml(stripDemoChrome(html), stockMedia))
+      )
     );
-    return html;
+    return { html, finishReason: result.finishReason || "" };
   }
 
-  let html = await assemble();
-  // Only retry when the page is structurally thin — not when tags are merely
-  // truncated (closeIncompleteHtml repairs that without another LLM round-trip).
-  if (looksIncompleteSite(html, structure) && html.length < 28000) {
-    console.warn("Assembled page looks incomplete; retrying with expanded section requirements");
+  let { html, finishReason } = await assemble();
+  const firstPass = assessSiteCompleteness(html, structure);
+  const truncated = finishReason === "length";
+  // Retry when structurally thin OR the model hit max_tokens mid-page.
+  if ((truncated || !firstPass.ok) && html.length < 28000) {
+    console.warn(
+      "Assembled page needs retry:",
+      truncated ? "finish_reason=length" : firstPass.reasons.join(", ")
+    );
     const retryBudget = Math.min(
       16000,
       Math.max(WEBSITE_MAX_OUTPUT_TOKENS, Math.floor(WEBSITE_MAX_OUTPUT_TOKENS * 1.25))
     );
-    const retryHtml = await assemble({ retryIncomplete: true, maxTokens: retryBudget });
-    if (!looksIncompleteSite(retryHtml, structure) || retryHtml.length > html.length) {
-      html = retryHtml;
+    const retry = await assemble({ retryIncomplete: true, maxTokens: retryBudget });
+    const retryPass = assessSiteCompleteness(retry.html, structure);
+    if (retryPass.ok || retry.html.length > html.length) {
+      html = retry.html;
+      finishReason = retry.finishReason;
     }
+  }
+  if (finishReason === "length") {
+    console.warn("Assemble finished with finish_reason=length; closed tags via closeIncompleteHtml");
   }
   return closeIncompleteHtml(html);
 }
@@ -1567,39 +1747,61 @@ function urgencyHours() {
   return Number(process.env.WATERMARK_URGENCY_HOURS || 96);
 }
 
+app.get("/generate/status", requireUser, async (req, res) => {
+  try {
+    const supabase = db();
+    const requestId = String(req.query.requestId || "").trim();
+    if (!requestId) return res.status(400).json({ error: "requestId required" });
+    const job = await findJobByRequestId(supabase, req.user.id, requestId);
+    if (!job) return res.status(404).json({ error: "Generation not found", code: "not_found" });
+    if (job.status === "done") {
+      return res.json(await buildDonePayload(supabase, job, getBalance, req.user.id));
+    }
+    if (job.status === "failed") {
+      return res.status(500).json({ error: job.error || "Generation failed", code: "generation_failed" });
+    }
+    return res.status(202).json({
+      inProgress: true,
+      jobId: job.id,
+      requestId,
+      retryAfterSec: 3,
+    });
+  } catch (e) {
+    console.error(e);
+    respondApiError(res, e, "Could not load generation status");
+  }
+});
+
 app.post("/generate", requireUser, generateLimiter, async (req, res) => {
   const supabase = db();
   const requestId = String(req.body.requestId || req.headers["x-request-id"] || "").trim();
-  const deductKey = requestId
-    ? `gen:${req.user.id}:${requestId}`
-    : `gen:${req.user.id}:${Date.now()}`;
-  let creditsDeducted = false;
+  let activeJobId = null;
 
   try {
+    const existing = await resolveExistingGeneration(
+      supabase,
+      req.user.id,
+      requestId,
+      getBalance
+    );
+    if (existing.action === "return") {
+      return res.json(existing.payload);
+    }
+    if (existing.action === "poll") {
+      return res.status(202).json({
+        inProgress: true,
+        jobId: existing.jobId,
+        requestId: existing.requestId || requestId || null,
+        retryAfterSec: 3,
+        message: "Generation already running.",
+      });
+    }
+    if (existing.action === "error") {
+      return res.status(500).json({ error: existing.error || "Generation failed" });
+    }
+
     let notes = sanitizeUserText(req.body.notes || "", 2000);
     if (notes) assertSafeEditIntent(notes);
-
-    try {
-      await deductCredits(supabase, {
-        userId: req.user.id,
-        amount: GENERATION_CREDIT_COST,
-        idempotencyKey: deductKey,
-        reason: "website_generation",
-      });
-      creditsDeducted = true;
-    } catch (creditErr) {
-      if (creditErr.code === "INSUFFICIENT_CREDITS") {
-        const balance = await getBalance(supabase, req.user.id).catch(() => null);
-        return res.status(402).json({
-          error: "Insufficient credits",
-          code: "INSUFFICIENT_CREDITS",
-          required: GENERATION_CREDIT_COST,
-          balance: balance?.totalCredits ?? 0,
-          pricingUrl: `${PUBLIC_APP_URL}/pricing.html`,
-        });
-      }
-      throw creditErr;
-    }
 
     const ctx = {
       businessName: sanitizeUserText(req.body.businessName || "Untitled business", 120) || "Untitled business",
@@ -1635,12 +1837,14 @@ app.post("/generate", requireUser, generateLimiter, async (req, res) => {
         status: "running",
         prompt: {
           ...ctx,
+          requestId: requestId || null,
           brief: buildBusinessBrief(ctx),
           presetsDir: WEBSITE_PRESETS_DIR,
         },
       })
       .select("id")
       .single();
+    activeJobId = jobInsert?.data?.id || null;
 
     // Fast path (default): pick the component kit + palette locally (instant),
     // then a single assembly call. Set WEBSITE_PLAN_WITH_LLM=1 to restore the
@@ -1714,11 +1918,11 @@ app.post("/generate", requireUser, generateLimiter, async (req, res) => {
         redesignedAt: isRedesign ? new Date().toISOString() : undefined,
       };
       const patch = {
-        business_name: ctx.businessName,
-        lead_id: ctx.leadId,
-        template_id: ctx.templateId,
-        html,
-        urgency_ends_at: ends,
+          business_name: ctx.businessName,
+          lead_id: ctx.leadId,
+          template_id: ctx.templateId,
+          html,
+          urgency_ends_at: ends,
         business_context: nextContext,
       };
       // Full redesign keeps payment / publish state; first generate on a project still
@@ -1756,6 +1960,13 @@ app.post("/generate", requireUser, generateLimiter, async (req, res) => {
           status: "done",
           project_id: projectId,
           result_html: html.slice(0, 200000),
+          prompt: {
+            ...ctx,
+            requestId: requestId || null,
+            brief: buildBusinessBrief(ctx),
+            presetsDir: WEBSITE_PRESETS_DIR,
+            presetCount: presetPack.length,
+          },
         })
         .eq("id", jobInsert.data.id);
     }
@@ -1766,23 +1977,12 @@ app.post("/generate", requireUser, generateLimiter, async (req, res) => {
       html,
       presetCount: presetPack.length,
       credits: balance,
-      creditsUsed: GENERATION_CREDIT_COST,
+      creditsUsed: 0,
     });
   } catch (e) {
     console.error(e);
-    if (creditsDeducted) {
-      try {
-        await refundCredits(supabase, {
-          userId: req.user.id,
-          amount: GENERATION_CREDIT_COST,
-          idempotencyKey: `refund:${deductKey}`,
-          reason: "generation_failed",
-        });
-      } catch (refundErr) {
-        console.error("Credit refund failed", refundErr);
-      }
-    }
-    const status = e.status || (e.code === "INSUFFICIENT_CREDITS" ? 402 : 500);
+    await failGenerationJob(supabase, activeJobId, e.message || "Generate failed");
+    const status = e.status || 500;
     const formatted = formatApiError(e, "Generate failed");
     res.status(status).json({
       error: formatted.message,
@@ -1810,7 +2010,7 @@ app.post("/checkout", requireUser, checkoutLimiter, async (req, res) => {
     if (!project.watermark_enabled) {
       return res.json({
         alreadyPaid: true,
-        url: `${PUBLIC_APP_URL}/builder.html?project_id=${projectId}`,
+        url: `${PUBLIC_APP_URL}/editor.html?project_id=${projectId}`,
       });
     }
 
@@ -1825,8 +2025,8 @@ app.post("/checkout", requireUser, checkoutLimiter, async (req, res) => {
       projectId,
       userId: req.user.id,
       amountCents,
-      successUrl: `${PUBLIC_APP_URL}/builder.html?project_id=${projectId}&paid=1&session_id={CHECKOUT_SESSION_ID}`,
-      cancelUrl: `${PUBLIC_APP_URL}/builder.html?project_id=${projectId}&canceled=1`,
+      successUrl: `${PUBLIC_APP_URL}/editor.html?project_id=${projectId}&paid=1&session_id={CHECKOUT_SESSION_ID}`,
+      cancelUrl: `${PUBLIC_APP_URL}/editor.html?project_id=${projectId}&canceled=1`,
       customerEmail: req.user.email || undefined,
       lineItems,
     });
@@ -1842,7 +2042,7 @@ app.post("/checkout", requireUser, checkoutLimiter, async (req, res) => {
         project_id: projectId,
         stripe_session_id: session.id,
         amount_cents: session.amount_total || amountCents,
-        currency: "usd",
+              currency: "usd",
         status: "pending",
       },
       { onConflict: "stripe_session_id" }
@@ -1913,7 +2113,7 @@ app.get("/credits/balance", requireUser, async (req, res) => {
     }
     // MVP+ mirrors Pricing subscription: on with Starter/Pro/Business, off otherwise.
     try {
-      await syncProfileMvpPlus(supabase, req.user.id, balance.paidPlan);
+      await syncProfileMvpPlus(supabase, req.user.id, balance.hasActiveSubscription);
     } catch (syncMvpErr) {
       console.error("MVP+ profile sync failed", syncMvpErr.message);
     }
@@ -2083,6 +2283,102 @@ app.post("/credits/billing-portal", requireUser, checkoutLimiter, async (req, re
   }
 });
 
+/**
+ * Creator security card — $1 verify + refund, save for fraud recovery.
+ */
+app.get("/security-card/config", requireUser, (_req, res) => {
+  res.json(publicSecurityCardConfig());
+});
+
+app.get("/security-card/status", requireUser, async (req, res) => {
+  try {
+    const { data, error } = await db()
+      .from("profiles")
+      .select("payout_profile")
+      .eq("id", req.user.id)
+      .maybeSingle();
+    if (error) throw error;
+    res.json(publicSecurityCardStatus(data));
+  } catch (e) {
+    console.error(e);
+    respondApiError(res, e, "Could not load payout card status");
+  }
+});
+
+app.post("/security-card/start", requireUser, checkoutLimiter, async (req, res) => {
+  try {
+    const stripe = stripeClient();
+    if (!stripe) return sendStripeMissing(res);
+    const email = String(req.body?.email || req.user.email || "").trim();
+    const data = await startSecurityCardVerification(stripe, db(), req.user.id, email);
+    res.json(data);
+  } catch (e) {
+    console.error(e);
+    respondApiError(res, e, "Could not connect payout card");
+  }
+});
+
+app.post("/security-card/complete", requireUser, checkoutLimiter, async (req, res) => {
+  try {
+    const stripe = stripeClient();
+    if (!stripe) return sendStripeMissing(res);
+    const paymentIntentId = String(req.body?.paymentIntentId || req.body?.payment_intent_id || "").trim();
+    const result = await completeSecurityCardVerification(
+      stripe,
+      db(),
+      req.user.id,
+      paymentIntentId
+    );
+    res.json({
+      ok: true,
+      verified: true,
+      securityCard: result.securityCard,
+    });
+  } catch (e) {
+    console.error(e);
+    respondApiError(res, e, "Could not connect security card");
+  }
+});
+
+/**
+ * Admin-only: charge a creator's saved security card (Terms enforcement).
+ * Header: Authorization: Bearer <SECURITY_CARD_ADMIN_SECRET>
+ */
+function requireSecurityCardAdmin(req, res, next) {
+  const secret = String(process.env.SECURITY_CARD_ADMIN_SECRET || "").trim();
+  if (!secret) {
+    return res.status(503).json({ error: "Security card admin API is not configured" });
+  }
+  const auth = String(req.headers.authorization || "").trim();
+  const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
+  if (!token || token !== secret) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  next();
+}
+
+app.post("/admin/security-card/charge", requireSecurityCardAdmin, async (req, res) => {
+  try {
+    const stripe = stripeClient();
+    if (!stripe) return sendStripeMissing(res);
+
+    const userId = String(req.body?.userId || req.body?.user_id || "").trim();
+    if (!userId) return res.status(400).json({ error: "userId required" });
+
+    const result = await chargeSecurityCard(stripe, db(), userId, {
+      amountCents: req.body?.amountCents ?? req.body?.amount_cents,
+      reason: req.body?.reason,
+      referenceId: req.body?.referenceId || req.body?.reference_id,
+    });
+
+    res.json(result);
+  } catch (e) {
+    console.error("security-card charge", e);
+    const status = Number(e.status) || 500;
+    res.status(status).json({ error: e.message || "Charge failed", code: e.code || undefined });
+  }
+});
+
 app.post("/credits/fulfill-checkout", requireUser, checkoutLimiter, async (req, res) => {
   try {
     const stripe = stripeClient();
@@ -2163,10 +2459,254 @@ app.post("/credits/fulfill-checkout", requireUser, checkoutLimiter, async (req, 
 app.get("/mvp-status", requireUser, async (req, res) => {
   try {
     const balance = await getBalance(db(), req.user.id);
-    res.json({ mvpPlus: balance.paidPlan, paidPlan: balance.paidPlan, ...balance });
+    res.json({
+      mvpPlus: balance.mvpPlus,
+      paidPlan: balance.hasActiveSubscription,
+      codeAccess: balance.codeAccess,
+      ...balance,
+    });
   } catch (e) {
     console.error(e);
     respondApiError(res, e, "Could not load status");
+  }
+});
+
+app.get("/donate/config", requireUser, async (req, res) => {
+  try {
+    const supabase = db();
+    const balance = await getBalance(supabase, req.user.id);
+    const leaderboardLimit = Math.min(Math.max(Number(req.query.leaderboard) || 10, 1), 25);
+    const leaderboardEntries = await getDonationLeaderboard(supabase, leaderboardLimit);
+    res.json({
+      ...publicDonateConfig(balance),
+      donorMessageMax: DONOR_MESSAGE_MAX,
+      leaderboardEntries,
+    });
+  } catch (e) {
+    console.error(e);
+    respondApiError(res, e, "Could not load donate config");
+  }
+});
+
+app.get("/donate/leaderboard", requireUser, async (req, res) => {
+  try {
+    const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 25);
+    const entries = await getDonationLeaderboard(db(), limit);
+    res.json({ entries });
+  } catch (e) {
+    console.error(e);
+    respondApiError(res, e, "Could not load leaderboard");
+  }
+});
+
+app.post("/donate/billing-portal", requireUser, checkoutLimiter, async (req, res) => {
+  try {
+    const stripe = stripeClient();
+    if (!stripe) return sendStripeMissing(res);
+
+    const balance = await getBalance(db(), req.user.id);
+    if (!balance.stripeCustomerId) {
+      return res.status(400).json({
+        error: "No Stripe billing account yet. Subscribe first to manage billing.",
+      });
+    }
+
+    const portal = await stripe.billingPortal.sessions.create({
+      customer: balance.stripeCustomerId,
+      return_url: `${PUBLIC_APP_URL}/donate.html`,
+    });
+
+    res.json({ url: portal.url });
+  } catch (e) {
+    console.error(e);
+    respondApiError(res, e, "Billing portal failed");
+  }
+});
+
+app.post("/donate-checkout", requireUser, checkoutLimiter, async (req, res) => {
+  try {
+    const stripe = stripeClient();
+    if (!stripe) return sendStripeMissing(res);
+
+    const supabase = db();
+    const balance = await getBalance(supabase, req.user.id);
+    const donorMessage = sanitizeDonorMessage(req.body?.message);
+    const mode = String(req.body?.mode || "monthly").toLowerCase();
+    const isOneTime =
+      mode === "once" || mode === "onetime" || mode === "one_time" || mode === "one-time";
+
+    if (isOneTime) {
+      const quote = quoteDonation(req.body?.amountDollars ?? DONATE_DEFAULT_DOLLARS);
+      if (!quote) {
+        return res.status(400).json({
+          error: `Enter an amount between $${DONATE_MIN_DOLLARS} and $${DONATE_MAX_DOLLARS}`,
+        });
+      }
+
+      const session = await stripe.checkout.sessions.create({
+        mode: "payment",
+        line_items: donateOneTimeLineItem(quote),
+        success_url: `${PUBLIC_APP_URL}/donate.html?paid=1&mode=once&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${PUBLIC_APP_URL}/donate.html?canceled=1`,
+        customer: balance.stripeCustomerId || undefined,
+        customer_email: balance.stripeCustomerId ? undefined : req.user.email || undefined,
+        client_reference_id: req.user.id,
+        metadata: {
+          type: "mvp_donation_onetime",
+          userId: req.user.id,
+          priceCents: String(quote.priceCents),
+          ...(donorMessage ? { donorMessage } : {}),
+        },
+      });
+
+      await supabase.from("payments").upsert(
+        {
+          user_id: req.user.id,
+          project_id: null,
+          stripe_session_id: session.id,
+          amount_cents: quote.priceCents,
+          currency: "usd",
+          status: "pending",
+          kind: "mvp_donation",
+          donor_message: donorMessage,
+        },
+        { onConflict: "stripe_session_id" }
+      );
+
+      return res.json({ url: session.url, sessionId: session.id, mode: "once", quote });
+    }
+
+    if (hasActiveMvpDonationSubscription(balance)) {
+      return res.json({ alreadyActive: true, url: `${PUBLIC_APP_URL}/donate.html` });
+    }
+
+    const monthlyDefaultDollars = donateAmountCents() / 100;
+    const monthlyQuote = quoteDonation(monthlyDefaultDollars);
+    if (!monthlyQuote) {
+      return res.status(400).json({
+        error: `Enter an amount between $${DONATE_MIN_DOLLARS} and $${DONATE_MAX_DOLLARS}`,
+      });
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      line_items: donateSubscriptionLineItem(monthlyQuote),
+      success_url: `${PUBLIC_APP_URL}/donate.html?paid=1&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${PUBLIC_APP_URL}/donate.html?canceled=1`,
+      customer: balance.stripeCustomerId || undefined,
+      customer_email: balance.stripeCustomerId ? undefined : req.user.email || undefined,
+      client_reference_id: req.user.id,
+      subscription_data: {
+        metadata: {
+          type: "mvp_donation",
+          userId: req.user.id,
+          priceCents: String(monthlyQuote.priceCents),
+          ...(donorMessage ? { donorMessage } : {}),
+        },
+      },
+      metadata: {
+        type: "mvp_donation",
+        userId: req.user.id,
+        priceCents: String(monthlyQuote.priceCents),
+        ...(donorMessage ? { donorMessage } : {}),
+      },
+    });
+
+    await supabase.from("payments").upsert(
+      {
+        user_id: req.user.id,
+        project_id: null,
+        stripe_session_id: session.id,
+        amount_cents: monthlyQuote.priceCents,
+        currency: "usd",
+        status: "pending",
+        kind: "mvp_donation",
+        donor_message: donorMessage,
+      },
+      { onConflict: "stripe_session_id" }
+    );
+
+    res.json({ url: session.url, sessionId: session.id, mode: "monthly", quote: monthlyQuote });
+  } catch (e) {
+    console.error(e);
+    respondApiError(res, e, "Donate checkout failed");
+  }
+});
+
+app.post("/donate-fulfill", requireUser, checkoutLimiter, async (req, res) => {
+  try {
+    const stripe = stripeClient();
+    if (!stripe) return sendStripeMissing(res);
+    const sessionId = String(req.body.sessionId || "").trim();
+    if (!sessionId.startsWith("cs_")) {
+      return res.status(400).json({ error: "Valid checkout session required" });
+    }
+
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    const userId = String(session.metadata?.userId || "");
+    if (userId !== req.user.id) {
+      return res.status(403).json({ error: "Checkout session does not belong to this account" });
+    }
+    if (session.status !== "complete" || session.payment_status === "unpaid") {
+      return res.status(409).json({ error: "Payment is not complete yet" });
+    }
+    const kind = String(session.metadata?.type || "").toLowerCase();
+    if (kind !== "mvp_donation" && kind !== "mvp_donation_onetime") {
+      return res.status(400).json({ error: "Not a donation checkout" });
+    }
+
+    const supabase = db();
+    const donorMessage = sanitizeDonorMessage(session.metadata?.donorMessage);
+    const paymentUpdate = {
+      status: "paid",
+      kind: "mvp_donation",
+      donor_message: donorMessage,
+      stripe_payment_intent:
+        typeof session.payment_intent === "string"
+          ? session.payment_intent
+          : session.payment_intent?.id || null,
+    };
+
+    if (kind === "mvp_donation_onetime") {
+      paymentUpdate.amount_cents = Math.max(
+        0,
+        Number(session.amount_total || session.metadata?.priceCents || 0)
+      );
+      await supabase.from("payments").update(paymentUpdate).eq("stripe_session_id", session.id);
+      const balance = await getBalance(supabase, userId);
+      return res.json({ ...balance, oneTime: true });
+    }
+
+    const subId =
+      typeof session.subscription === "string"
+        ? session.subscription
+        : session.subscription?.id || null;
+    let periodEnd = null;
+    if (subId) {
+      const sub = await stripe.subscriptions.retrieve(subId);
+      periodEnd = sub.current_period_end
+        ? new Date(sub.current_period_end * 1000).toISOString()
+        : null;
+    }
+    await grantMvpDonation(supabase, {
+      userId,
+      sessionId: session.id,
+      stripeCustomerId:
+        typeof session.customer === "string" ? session.customer : session.customer?.id || null,
+      stripeSubscriptionId: subId,
+      periodEnd,
+    });
+    paymentUpdate.amount_cents = Math.max(
+      0,
+      Number(session.amount_total || session.metadata?.priceCents || donateAmountCents())
+    );
+    await supabase.from("payments").update(paymentUpdate).eq("stripe_session_id", session.id);
+
+    const balance = await getBalance(supabase, userId);
+    res.json({ ...balance, mvpPlus: true });
+  } catch (e) {
+    console.error(e);
+    respondApiError(res, e, "Could not fulfill donation");
   }
 });
 
@@ -2513,19 +3053,22 @@ app.post("/edit", requireUser, editLimiter, async (req, res) => {
       return respondApiError(res, new Error("OpenRouter is not configured"), "OpenRouter is not configured", 503);
     }
 
-    const htmlRaw = await openRouterChat({
+    const editResult = await openRouterChat({
       system: EDIT_SYSTEM_PROMPT,
       user: buildEditUserPrompt(instruction, currentHtml, WEBSITE_EDIT_MAX_INPUT_CHARS),
-      temperature: 0.3,
+        temperature: 0.3,
       maxTokens: WEBSITE_EDIT_MAX_OUTPUT_TOKENS,
       prefer: "throughput",
       title: "Moonrise Studio Edit",
     });
-    let html = String(htmlRaw || "")
+    let html = String(editResult.content || "")
       .replace(/^```(?:html)?\s*/i, "")
       .replace(/```\s*$/i, "")
       .trim();
-    html = stripDemoChrome(html);
+    html = ensurePaletteContrast(stripDemoChrome(html));
+    if (editResult.finishReason === "length") {
+      console.warn("Edit finished with finish_reason=length");
+    }
     if (!html.includes("<html") && !html.includes("<!DOCTYPE")) {
       return res.status(502).json({ error: "Model did not return usable HTML" });
     }
@@ -2617,7 +3160,7 @@ function injectContactFormHandler(html, project) {
 
 function preparePublishedHtml(project) {
   let html = ensureMobileFriendlyHtml(project.html || "<!doctype html><title>Site</title>");
-  if (project.watermark_enabled) {
+    if (project.watermark_enabled) {
     html = injectWatermarkEmbed(html, project);
   }
   html = injectContactFormHandler(html, project);
@@ -2924,6 +3467,16 @@ async function ensureVercelProjectForMoonrise(headers, project, preferredSlug) {
   throw lastError || new Error("Could not create Vercel project");
 }
 
+/** Stable fingerprint of deployed HTML — must match builder.js publishContentHash. */
+function publishContentHash(html) {
+  const str = String(html || "");
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) {
+    h = ((h << 5) + h) ^ str.charCodeAt(i);
+  }
+  return (h >>> 0).toString(36);
+}
+
 /**
  * Deploy a project's site to Vercel. Adds the watermark widget when the project
  * is still unpaid. Reused by /publish (seller) and the Stripe webhook (auto
@@ -2932,8 +3485,8 @@ async function ensureVercelProjectForMoonrise(headers, project, preferredSlug) {
 async function deployProjectToVercel(supabase, project) {
   const html = preparePublishedHtml(project);
 
-  const token = process.env.VERCEL_TOKEN;
-  if (!token) {
+    const token = process.env.VERCEL_TOKEN;
+    if (!token) {
     const fakeUrl = `${PUBLIC_APP_URL}/preview/${project.id}`;
     const publishedAt = new Date().toISOString();
     const ctx = {
@@ -2943,13 +3496,14 @@ async function deployProjectToVercel(supabase, project) {
           ? project.business_context.publishedAt
           : publishedAt,
       lastPublishedAt: publishedAt,
+      publishedContentHash: publishContentHash(html),
     };
-    await supabase
-      .from("projects")
-      .update({
-        status: "published",
-        vercel_url: fakeUrl,
-        vercel_deployment_id: "local-fallback",
+      await supabase
+        .from("projects")
+        .update({
+          status: "published",
+          vercel_url: fakeUrl,
+          vercel_deployment_id: "local-fallback",
         business_context: ctx,
       })
       .eq("id", project.id);
@@ -2960,29 +3514,29 @@ async function deployProjectToVercel(supabase, project) {
   const preferredSlug = buildVercelProjectSlug(project);
   const { slug, vercelProject } = await ensureVercelProjectForMoonrise(headers, project, preferredSlug);
 
-  const files = [
-    {
-      file: "index.html",
+    const files = [
+      {
+        file: "index.html",
       data: Buffer.from(html).toString("base64"),
-      encoding: "base64",
-    },
-  ];
+        encoding: "base64",
+      },
+    ];
 
-  const deployRes = await fetch("https://api.vercel.com/v13/deployments", {
-    method: "POST",
-    headers,
-    body: JSON.stringify({
+    const deployRes = await fetch("https://api.vercel.com/v13/deployments", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
       name: slug,
       project: vercelProject.name || slug,
       target: "production",
-      files,
-      projectSettings: { framework: null },
-    }),
-  });
-  const deployData = await deployRes.json().catch(() => ({}));
-  if (!deployRes.ok) {
-    throw new Error(deployData?.error?.message || `Vercel deploy failed (${deployRes.status})`);
-  }
+        files,
+        projectSettings: { framework: null },
+      }),
+    });
+    const deployData = await deployRes.json().catch(() => ({}));
+    if (!deployRes.ok) {
+      throw new Error(deployData?.error?.message || `Vercel deploy failed (${deployRes.status})`);
+    }
 
   await disableVercelDeploymentProtection(headers, vercelProject.id);
   const url = await resolvePublicProductionUrl(headers, deployData, slug);
@@ -2995,14 +3549,15 @@ async function deployProjectToVercel(supabase, project) {
         ? project.business_context.publishedAt
         : publishedAt,
     lastPublishedAt: publishedAt,
+    publishedContentHash: publishContentHash(html),
   };
 
-  await supabase
-    .from("projects")
-    .update({
-      status: "published",
-      vercel_url: url,
-      vercel_deployment_id: deployData.id || deployData.uid || null,
+    await supabase
+      .from("projects")
+      .update({
+        status: "published",
+        vercel_url: url,
+        vercel_deployment_id: deployData.id || deployData.uid || null,
       business_context: ctx,
     })
     .eq("id", project.id);
@@ -3121,6 +3676,86 @@ app.post("/resolve-maps", requireUser, mapsLimiter, async (req, res) => {
   } catch (e) {
     console.error(e);
     res.status(e.status || 500).json({ error: e.message || "Could not read that Maps link" });
+  }
+});
+
+/** Proxy on-demand Maps scrapes to LeadFinderCloud search:server (Playwright on Render). */
+app.post("/lead-finder/search", requireUser, leadFinderLimiter, async (req, res) => {
+  const upstream = String(process.env.LEADFINDER_SEARCH_URL || "").trim().replace(/\/$/, "");
+  if (!upstream) {
+    return res.status(503).json({
+      ok: false,
+      error: "Nearby business scrape is not configured. Set LEADFINDER_SEARCH_URL on the worker.",
+    });
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 180000);
+  try {
+    const upstreamRes = await fetch(`${upstream}/search`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(req.body || {}),
+      signal: controller.signal,
+    });
+    const data = await upstreamRes.json().catch(() => ({}));
+    if (!upstreamRes.ok) {
+      return res.status(upstreamRes.status).json({
+        ok: false,
+        error: data?.error || `LeadFinder upstream failed (${upstreamRes.status})`,
+        ...data,
+      });
+    }
+    res.json(data);
+  } catch (e) {
+    const aborted = e?.name === "AbortError";
+    console.error("LeadFinder proxy failed:", e?.message || e);
+    res.status(502).json({
+      ok: false,
+      error: aborted ? "Nearby scrape timed out" : e?.message || "LeadFinder proxy failed",
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+});
+
+/** Proxy single-place website verification to LeadFinderCloud (Playwright). */
+app.post("/lead-finder/enrich-place", requireUser, leadFinderLimiter, async (req, res) => {
+  const upstream = String(process.env.LEADFINDER_SEARCH_URL || "").trim().replace(/\/$/, "");
+  if (!upstream) {
+    return res.status(503).json({
+      ok: false,
+      error: "Place website verification is not configured. Set LEADFINDER_SEARCH_URL on the worker.",
+    });
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 120000);
+  try {
+    const upstreamRes = await fetch(`${upstream}/enrich-place`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(req.body || {}),
+      signal: controller.signal,
+    });
+    const data = await upstreamRes.json().catch(() => ({}));
+    if (!upstreamRes.ok) {
+      return res.status(upstreamRes.status).json({
+        ok: false,
+        error: data?.error || `LeadFinder enrich failed (${upstreamRes.status})`,
+        ...data,
+      });
+    }
+    res.json(data);
+  } catch (e) {
+    const aborted = e?.name === "AbortError";
+    console.error("LeadFinder enrich proxy failed:", e?.message || e);
+    res.status(502).json({
+      ok: false,
+      error: aborted ? "Website verification timed out" : e?.message || "LeadFinder enrich proxy failed",
+    });
+  } finally {
+    clearTimeout(timer);
   }
 });
 
@@ -3514,7 +4149,7 @@ module.exports = app;
 
 /** Local / Render long-running process. Skip listen on Vercel serverless. */
 if (!process.env.VERCEL) {
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`moonrise-studio-worker listening on 0.0.0.0:${PORT}`);
-  });
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`moonrise-studio-worker listening on 0.0.0.0:${PORT}`);
+});
 }

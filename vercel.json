@@ -26,6 +26,7 @@
   "rewrites": [
     { "source": "/health", "destination": "/api" },
     { "source": "/generate", "destination": "/api" },
+    { "source": "/generate/status", "destination": "/api" },
     { "source": "/edit", "destination": "/api" },
     { "source": "/checkout", "destination": "/api" },
     { "source": "/public-checkout", "destination": "/api" },
@@ -38,6 +39,11 @@
     { "source": "/contact-form.js", "destination": "/api" },
     { "source": "/contact-submit", "destination": "/api" },
     { "source": "/webhooks/stripe", "destination": "/api" },
+    { "source": "/donate/config", "destination": "/api" },
+    { "source": "/donate/leaderboard", "destination": "/api" },
+    { "source": "/donate-checkout", "destination": "/api" },
+    { "source": "/donate-fulfill", "destination": "/api" },
+    { "source": "/donate/billing-portal", "destination": "/api" },
     { "source": "/credits/catalog", "destination": "/api" },
     { "source": "/credits/balance", "destination": "/api" },
     { "source": "/credits/plan-checkout", "destination": "/api" },
@@ -51,7 +57,8 @@
     { "source": "/auth/signin", "destination": "/api" },
     { "source": "/auth/signup", "destination": "/api" },
     { "source": "/auth/forgot", "destination": "/api" },
-    { "source": "/auth/verify-password", "destination": "/api" }
+    { "source": "/auth/verify-password", "destination": "/api" },
+    { "source": "/security-card/:path*", "destination": "/api" }
   ],
   "functions": {
     "api/index.js": {

@@ -118,12 +118,22 @@ window.resolveWorkerUrl = function resolveWorkerUrl() {
 };
 
 /**
- * Local LeadFinder scrape API — only available during local dev.
- * Returns empty on public origins to avoid private-network permission prompts.
+ * LeadFinder scrape API — always via authenticated worker proxy when available.
+ * Avoids mixed-content / private-network blocks to localhost from HTTPS Studio.
  */
 window.resolveLeadFinderUrl = function resolveLeadFinderUrl() {
-  if (!window.isLocalDevHost()) return "";
-  return String(window.SITE_CONFIG?.leadFinderUrl || "")
-    .trim()
-    .replace(/\/$/, "");
+  try {
+    if (typeof window.resolveWorkerUrl === "function") {
+      const worker = String(window.resolveWorkerUrl() || "").trim().replace(/\/$/, "");
+      if (worker) return worker + "/lead-finder";
+    }
+    if (window.isLocalDevHost()) {
+      return String(window.SITE_CONFIG?.leadFinderUrl || "")
+        .trim()
+        .replace(/\/$/, "");
+    }
+  } catch (_) {
+    /* keep empty */
+  }
+  return "";
 };

@@ -144,6 +144,25 @@
   }
 
   let deferredInstallPrompt = null;
+
+  function notifyInstallStateChanged() {
+    window.dispatchEvent(new CustomEvent("ms:install-state-changed"));
+  }
+
+  async function promptInstall() {
+    if (!deferredInstallPrompt) return { outcome: "unavailable" };
+    try {
+      await deferredInstallPrompt.prompt();
+      const choice = await deferredInstallPrompt.userChoice;
+      const outcome = choice?.outcome || "dismissed";
+      if (outcome === "accepted") deferredInstallPrompt = null;
+      notifyInstallStateChanged();
+      return { outcome };
+    } catch (_) {
+      return { outcome: "error" };
+    }
+  }
+
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
     deferredInstallPrompt = e;
@@ -154,6 +173,7 @@
       banner.classList.add("ios-install-banner--installable");
       banner.title = "Click to install Moonrise";
     }
+    notifyInstallStateChanged();
   });
   window.addEventListener("appinstalled", () => {
     deferredInstallPrompt = null;
@@ -161,6 +181,7 @@
     clearPromptAfterLogin();
     const banner = document.getElementById("ios-install-banner");
     if (banner) dismissInstallHint(banner);
+    notifyInstallStateChanged();
   });
 
   const SHARE_ICO =
@@ -256,14 +277,8 @@
     banner.addEventListener("click", async (e) => {
       if (e.target.closest(".ios-install-banner-close")) return;
       if (!deferredInstallPrompt) return;
-      try {
-        deferredInstallPrompt.prompt();
-        const choice = await deferredInstallPrompt.userChoice;
-        deferredInstallPrompt = null;
-        if (choice?.outcome === "accepted") dismissInstallHint(banner);
-      } catch (_) {
-        /* ignore */
-      }
+      const result = await promptInstall();
+      if (result.outcome === "accepted") dismissInstallHint(banner);
     });
   }
 
@@ -298,7 +313,23 @@
     maybeShowInstallHint();
   }
 
+  window.MoonriseInstall = {
+    appTitle: PWA_APP_TITLE,
+    getIconUrl: pwaIconUrl,
+    isIos: isIosDevice,
+    isAndroid: isAndroidDevice,
+    isDesktop: isDesktopDevice,
+    isStandalone: isStandaloneDisplay,
+    canPrompt: () => !!deferredInstallPrompt,
+    getInstructionsHtml: installHintSubcopyHtml,
+    promptInstall,
+    ensurePwaMetadata,
+    registerPwaServiceWorker,
+  };
+
   function start() {
+    ensurePwaMetadata();
+
     if (document.readyState === "loading") {
       window.addEventListener("load", registerPwaServiceWorker, { once: true });
     } else {

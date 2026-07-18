@@ -7,14 +7,14 @@
     { id: "leads", href: "leads.html", label: "Business Finder", icon: "search" },
     { id: "builder", href: "builder.html", label: "Builder", icon: "hammer" },
     { id: "clients", href: "clients.html", label: "My clients", icon: "users" },
-    { id: "pricing", href: "pricing.html", label: "Pricing", icon: "dollar" },
+    { id: "donate", href: "donate.html", label: "Donate", icon: "heart" },
     { id: "store", href: "store.html", label: "Store", icon: "bag" },
   ];
 
   const ACCOUNT = [
     { id: "settings", href: "settings.html", label: "Settings", icon: "gear" },
     { id: "course", href: "course.html", label: "Course", icon: "grad" },
-    { id: "support", href: "support.html", label: "Support", icon: "help" },
+    { id: "help", href: "help.html", label: "Help", icon: "help" },
     {
       id: "telegram",
       href: (window.SITE_CONFIG && window.SITE_CONFIG.telegramUrl) || "https://t.me/c/3541685239/1",
@@ -49,6 +49,7 @@
     user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
     users: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
     bag: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
+    heart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>',
     external: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>',
   };
 
@@ -224,7 +225,9 @@
       : "";
     const cancelMark =
       item.id === "builder"
-        ? '<button type="button" class="ms-nav-cancel" data-nav-cancel="builder" hidden aria-label="Cancel website generation" title="Cancel generation">' +
+        ? '<button type="button" class="ms-nav-cancel" data-nav-cancel="' +
+          item.id +
+          '" hidden aria-label="Cancel website generation" title="Cancel generation">' +
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>' +
           "</button>"
         : "";
@@ -263,7 +266,11 @@
       el.classList.toggle("is-generating", on);
       const cancelBtn = el.querySelector("[data-nav-cancel]");
       if (cancelBtn) {
-        cancelBtn.hidden = !(on && channelGeneratingCancellable && el.getAttribute("data-nav") === "builder");
+        cancelBtn.hidden = !(
+          on &&
+          channelGeneratingCancellable &&
+          (el.getAttribute("data-nav") === "builder")
+        );
       }
       if (on) {
         el.setAttribute("aria-busy", "true");
@@ -295,8 +302,9 @@
   }
 
   function cancelChannelGenerating() {
+    const nav = channelGeneratingId || "builder";
     setChannelGenerating(null, false);
-    document.dispatchEvent(new CustomEvent("ms:cancel-generation", { detail: { nav: "builder" } }));
+    document.dispatchEvent(new CustomEvent("ms:cancel-generation", { detail: { nav } }));
   }
 
   function bindNavCancel() {
@@ -341,9 +349,9 @@
   }
 
   const SIDEBAR_LEGAL = [
+    { id: "guide", href: "guide.html", label: "Guide" },
     { id: "privacy", href: "privacy.html", label: "Privacy" },
     { id: "terms", href: "terms.html", label: "Terms" },
-    { id: "finance", href: "finance.html", label: "Finance" },
   ];
 
   function sidebarLegal(page) {
@@ -360,7 +368,7 @@
       );
     });
     return (
-      '<nav class="ms-sidebar-legal" aria-label="Legal and support">' +
+      '<nav class="ms-sidebar-legal" aria-label="Help and legal">' +
       links.join('<span class="ms-sidebar-legal-sep" aria-hidden="true">•</span>') +
       "</nav>"
     );
@@ -451,7 +459,24 @@
       .map((item) => navLink(item, page))
       .join("");
     const accountHtml = ACCOUNT.map((item) => navLink(item, page)).join("");
-    const bootAvatar = resolveAvatarUrl(cachedAvatarUrl());
+    const bootProfile = readProfileCache();
+    const bootAuth = peekAuthUser();
+    const bootHandle = String(bootProfile?.handle || bootAuth?.handle || "")
+      .replace(/^@/, "")
+      .trim();
+    const bootAvatar = resolveAvatarUrl(bootProfile?.avatarUrl || cachedAvatarUrl() || "");
+    const bootIncome = readIncomeCache();
+    const bootIncomeLabel =
+      bootIncome != null
+        ? global.StudioIncome?.formatIncome?.(bootIncome) ??
+          "$" +
+            Number(bootIncome).toLocaleString("en-US", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })
+        : "$0.00";
+    const avatarBusy =
+      !bootAvatar || bootAvatar === defaultAvatarUrl() ? " is-loading" : " has-photo";
 
     shell.innerHTML =
       '<aside class="ms-sidebar" id="ms-sidebar">' +
@@ -468,16 +493,20 @@
       navGroup("Workspace", "layers", menuHtml, "Main") +
       navGroup("Account", "user", accountHtml, "Account") +
       "</div>" +
-      '<a class="ms-credits-tag" id="ms-user-credits" href="pricing.html" title="View plans and top up">' +
-      '<span class="ms-credits-tag-label">Credits</span>' +
-      '<strong class="ms-credits-tag-value" id="ms-user-credits-value">-</strong>' +
+      '<a class="ms-credits-tag ms-income-tag" id="ms-user-income" href="dashboard.html" title="View income on Dashboard">' +
+      '<span class="ms-credits-tag-label">Income</span>' +
+      '<strong class="ms-credits-tag-value" id="ms-user-income-value">' +
+      bootIncomeLabel +
+      "</strong>" +
       "</a>" +
       sidebarLegal(page) +
       '<div class="ms-sidebar-foot">' +
       '<div class="ms-user-row">' +
       '<a class="ms-user-profile" href="settings.html" aria-label="Open settings">' +
       '<div class="ms-user-avatar-wrap">' +
-      '<div class="ms-user-avatar is-loading" id="ms-user-avatar" aria-hidden="true">' +
+      '<div class="ms-user-avatar' +
+      avatarBusy +
+      '" id="ms-user-avatar" aria-hidden="true">' +
       '<span class="ms-user-avatar-spin" id="ms-user-avatar-spin" aria-hidden="true"></span>' +
       '<span id="ms-user-avatar-initial" hidden>M</span>' +
       '<img id="ms-user-avatar-img" src="' +
@@ -487,7 +516,9 @@
       '<span class="ms-user-status" title="Online" aria-hidden="true"></span>' +
       "</div>" +
       '<div class="ms-user-meta">' +
-      '<strong class="ms-user-name" id="ms-user-name">Loading…</strong>' +
+      '<strong class="ms-user-name" id="ms-user-name">' +
+      (bootHandle || "") +
+      "</strong>" +
       "</div>" +
       "</a>" +
       '<button type="button" class="ms-user-logout" id="ms-signout" aria-label="Sign out">' +
@@ -559,8 +590,7 @@
       menuToggle?.focus();
     });
 
-    // Paint cached/default avatar immediately; spinner clears on load
-    setSidebarAvatar(cachedAvatarUrl(), "M");
+    paintSidebarFromCache();
 
     bindExternalRedirects();
     initSidebarResize();
@@ -836,6 +866,114 @@
   }
 
   const AVATAR_CACHE_KEY = "ms_avatar_url_v1";
+  const PROFILE_CACHE_KEY = "ms_sidebar_profile_v1";
+  const INCOME_CACHE_KEY = "ms_sidebar_income_v1";
+
+  function readProfileCache() {
+    try {
+      const raw = sessionStorage.getItem(PROFILE_CACHE_KEY);
+      if (!raw) return null;
+      const data = JSON.parse(raw);
+      return data && typeof data === "object" ? data : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function rememberProfileCache(handle, avatarUrl, extras) {
+    try {
+      const clean = String(handle || "")
+        .replace(/^@/, "")
+        .trim();
+      if (!clean) return;
+      sessionStorage.setItem(
+        PROFILE_CACHE_KEY,
+        JSON.stringify({
+          handle: clean,
+          avatarUrl: String(avatarUrl || "").trim(),
+          mvpPlus: !!(extras && extras.mvpPlus),
+          at: Date.now(),
+        })
+      );
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  function clearLegacyProfileCosmetics() {
+    document.querySelectorAll(".ms-user-hat, .set-avatar-hat").forEach((el) => el.remove());
+    const nameEl = document.getElementById("ms-user-name");
+    if (nameEl) nameEl.style.removeProperty("color");
+  }
+
+  function readIncomeCache() {
+    try {
+      const raw = sessionStorage.getItem(INCOME_CACHE_KEY);
+      if (raw == null) return null;
+      const data = JSON.parse(raw);
+      if (data && typeof data === "object" && data.income != null) {
+        return Number(data.income) || 0;
+      }
+      const n = Number(raw);
+      return Number.isFinite(n) ? n : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function rememberIncomeCache(income) {
+    try {
+      sessionStorage.setItem(
+        INCOME_CACHE_KEY,
+        JSON.stringify({ income: Number(income) || 0, at: Date.now() })
+      );
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  function peekAuthUser() {
+    try {
+      const cached = readProfileCache();
+      if (cached?.handle) {
+        return {
+          handle: String(cached.handle).replace(/^@/, "").trim(),
+          avatarUrl: String(cached.avatarUrl || "").trim(),
+        };
+      }
+      const raw = localStorage.getItem("moonrise-studio-auth");
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      const user = parsed?.user || parsed?.currentSession?.user || parsed?.session?.user;
+      if (!user) return null;
+      const handle = String(
+        user.user_metadata?.handle || user.user_metadata?.username || user.email?.split("@")[0] || ""
+      )
+        .replace(/^@/, "")
+        .trim();
+      if (!handle) return null;
+      return { handle, avatarUrl: "" };
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function paintSidebarFromCache() {
+    const cached = readProfileCache();
+    const auth = peekAuthUser();
+    const handle = String(cached?.handle || auth?.handle || "")
+      .replace(/^@/, "")
+      .trim();
+    const nameEl = document.getElementById("ms-user-name");
+    if (nameEl && handle) nameEl.textContent = handle;
+
+    const avatar = cached?.avatarUrl || cachedAvatarUrl() || auth?.avatarUrl || "";
+    setSidebarAvatar(avatar, handle || "M");
+
+    const income = readIncomeCache();
+    if (income != null) setSidebarIncome(income);
+    clearLegacyProfileCosmetics();
+  }
 
   function cachedAvatarUrl() {
     try {
@@ -998,9 +1136,9 @@
       case "unavailable":
         return "Moonrise services aren't available right now. Try again in a moment.";
       case "no_credits":
-        return "Sorry, you need credits to generate a website. Visit our pricing page!";
+        return "Generation is free — try again in a moment.";
       default:
-        return "Can't generate right now. Check your connection or credits and try again.";
+        return "Can't generate right now. Check your connection and try again.";
     }
   }
 
@@ -1010,62 +1148,44 @@
   }
 
   async function canAffordGeneration() {
-    const result = await fetchCreditBalanceDetailed();
-    const cost = Number(result?.data?.generationCost) || 5;
-
-    if (result.error) {
-      return {
-        ok: false,
-        reason: result.error,
-        message: generationBlockMessage(result.error),
-        cost,
-      };
-    }
-
-    const totalCredits = Number(result.data.totalCredits) || 0;
-    if (totalCredits < cost) {
-      return {
-        ok: false,
-        reason: "no_credits",
-        message: generationBlockMessage("no_credits"),
-        totalCredits,
-        cost,
-        data: result.data,
-      };
-    }
-
-    return { ok: true, totalCredits, cost, data: result.data };
+    return { ok: true, totalCredits: null, cost: 0 };
   }
 
   async function hydrateCredits() {
-    const valueEl = document.getElementById("ms-user-credits-value");
-    if (!valueEl) return null;
     try {
-      const data = await fetchCreditBalance();
-      if (!data) {
-        valueEl.textContent = "-";
-        return null;
-      }
-      const total = data.totalCredits ?? 0;
-      valueEl.textContent = String(total);
-      setSidebarCredits(total, data);
-      return data;
+      return await fetchCreditBalance();
     } catch (_) {
-      valueEl.textContent = "-";
       return null;
     }
   }
 
-  function setSidebarCredits(total, detail) {
-    const valueEl = document.getElementById("ms-user-credits-value");
-    const tag = document.getElementById("ms-user-credits");
-    if (valueEl && total != null) valueEl.textContent = String(total);
+  function setSidebarIncome(income) {
+    const valueEl = document.getElementById("ms-user-income-value");
+    const tag = document.getElementById("ms-user-income");
+    const formatted =
+      global.StudioIncome?.formatIncome?.(income) ??
+      "$" +
+        Number(income || 0).toLocaleString("en-US", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+    if (valueEl) valueEl.textContent = formatted;
     if (tag) {
-      const n = Number(total) || 0;
-      tag.title =
-        n > 0
-          ? "You have " + n + " credits - view plans and top up"
-          : "0 credits - new accounts start here. Choose a plan to generate websites.";
+      tag.title = "Your 80% share from paid client sites — @moonrise keeps 20%. Open Dashboard.";
+    }
+    rememberIncomeCache(income);
+  }
+
+  async function hydrateIncome() {
+    const valueEl = document.getElementById("ms-user-income-value");
+    if (!valueEl || !global.StudioIncome?.fetchUserIncome) return null;
+    try {
+      const data = await global.StudioIncome.fetchUserIncome();
+      setSidebarIncome(data.income);
+      return data;
+    } catch (_) {
+      setSidebarIncome(0);
+      return null;
     }
   }
 
@@ -1092,34 +1212,32 @@
         if (client) {
           const { data } = await client
             .from("profiles")
-            .select("handle, display_name, avatar_url, mvp_plus, branding_defaults")
+            .select("handle, display_name, avatar_url, mvp_plus")
             .eq("id", user.id)
             .maybeSingle();
           if (data?.handle) handle = data.handle;
           else if (data?.display_name) handle = data.display_name;
           avatarUrl = String(data?.avatar_url || "").trim();
 
-          const credits = await hydrateCredits();
-          // MVP+ only while a Pricing subscription (Starter/Pro/Business) is active.
-          const hasMvp = !!(credits?.paidPlan || credits?.mvpPlus);
-          if (global.MoonriseMvpCosmetics) {
-            if (hasMvp) {
-              global.MoonriseMvpCosmetics.applyProfileCosmetics(data?.branding_defaults);
-            } else {
-              global.MoonriseMvpCosmetics.applyProfileCosmetics({});
-            }
-          }
+          const clean = String(handle).replace(/^@/, "").trim() || "moonrise";
+          const mvpPlus = !!data?.mvp_plus || ownerHandles().includes(normalizeHandle(clean));
+          nameEl.textContent = clean;
+          setSidebarAvatar(avatarUrl, clean);
+          clearLegacyProfileCosmetics();
+          rememberProfileCache(clean, avatarUrl, { mvpPlus });
+          return { handle: clean, avatarUrl };
         } else {
-          void hydrateCredits();
+          void hydrateIncome();
         }
       } catch (e) {
         /* keep metadata fallback */
-        void hydrateCredits();
+        void hydrateIncome();
       }
 
       const clean = String(handle).replace(/^@/, "").trim() || "moonrise";
       nameEl.textContent = clean;
       setSidebarAvatar(avatarUrl, clean);
+      rememberProfileCache(clean, avatarUrl);
       return { handle: clean, avatarUrl };
     } catch (e) {
       nameEl.textContent = "Account";
@@ -1128,11 +1246,25 @@
     }
   }
 
+  function bindShellListeners() {
+    document.addEventListener("ms:avatar-changed", (e) => {
+      const nameEl = document.getElementById("ms-user-name");
+      const handle = e.detail?.handle || nameEl?.textContent || "M";
+      if (nameEl && e.detail?.handle) nameEl.textContent = e.detail.handle;
+      setSidebarAvatar(e.detail?.url || "", handle);
+      if (e.detail?.handle) rememberProfileCache(e.detail.handle, e.detail?.url || "");
+    });
+    document.addEventListener("ms:income-changed", (e) => {
+      if (e.detail?.income != null) setSidebarIncome(e.detail.income);
+      else void hydrateIncome();
+    });
+  }
+
   async function boot() {
     buildShell();
     ensureHardRefreshButton();
     bindNavCancel();
-    // Never restore a stale "generating" UI — only live /generate sets it
+    bindShellListeners();
     try {
       sessionStorage.removeItem("ms_channel_generating");
     } catch {
@@ -1141,38 +1273,27 @@
     setChannelGenerating(null, false);
     document.body.classList.add("ms-ready");
     document.dispatchEvent(new Event("ms:shell-ready"));
+    clearLegacyProfileCosmetics();
+
+    void hydrateUser().catch(() => ({ handle: "", avatarUrl: "" }));
+    void hydrateIncome();
 
     if (window.StudioAuth?.requireAuth) {
       try {
         const session = await window.StudioAuth.requireAuth();
         if (session && window.StudioAuth.ensureStudioOnboarding) {
           const redirected = await window.StudioAuth.ensureStudioOnboarding();
-          if (redirected === "redirect") return;
-        } else if (session && window.StudioAuth.ensureFinanceOnboarding) {
-          const redirected = await window.StudioAuth.ensureFinanceOnboarding();
-          if (redirected === "redirect") return;
+          if (redirected === "redirect") {
+            document.body.dataset.msAuthFired = "1";
+            document.dispatchEvent(new Event("ms:auth-ready"));
+            return;
+          }
         }
       } catch (e) {
         console.warn(e);
       }
     }
 
-    await hydrateUser().catch(() => ({ handle: "", avatarUrl: "" }));
-
-    document.addEventListener("ms:avatar-changed", (e) => {
-      const nameEl = document.getElementById("ms-user-name");
-      const handle = e.detail?.handle || nameEl?.textContent || "M";
-      if (nameEl && e.detail?.handle) nameEl.textContent = e.detail.handle;
-      setSidebarAvatar(e.detail?.url || "", handle);
-    });
-    document.addEventListener("ms:credits-changed", (e) => {
-      if (e.detail?.totalCredits != null) setSidebarCredits(e.detail.totalCredits, e.detail);
-      else void hydrateCredits();
-    });
-    document.addEventListener("ms:profile-cosmetics-changed", (e) => {
-      if (!e.detail?.mvpPlus || !global.MoonriseMvpCosmetics) return;
-      global.MoonriseMvpCosmetics.applyProfileCosmetics(e.detail.branding);
-    });
     document.body.dataset.msAuthFired = "1";
     document.dispatchEvent(new Event("ms:auth-ready"));
     ensureInstallHintScript();

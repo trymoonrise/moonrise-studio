@@ -42,7 +42,7 @@
         "doc/MoonriseLogo.png") +
       '" alt="">' +
       '<span class="ms-watermark-text"><strong>Complete your order</strong>' +
-      "<span>trymoonrise.com</span></span>";
+      "<span>Click here to remove watermark</span></span>";
     btn.addEventListener("click", () => openPaywall(opts));
     wrap.appendChild(btn);
     host.appendChild(wrap);

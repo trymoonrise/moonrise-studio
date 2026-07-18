@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css">
+  <link rel="stylesheet" href="css/studio.css?v=20260722-outdated-fix">
   <link rel="stylesheet" href="css/mvp-gate.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -17,9 +17,13 @@
     <header class="ms-page-head ms-store-head">
       <div class="ms-page-head-copy">
         <h1>Store</h1>
-        <p class="lead">Tools and resources to find clients and close more deals.</p>
+        <p class="lead">Tools and resources to find clients and close more deals. MVP+ includes Moonrise Store items free.</p>
       </div>
     </header>
+
+    <p class="ms-store-mvp-note" id="store-mvp-note">
+      Unlock everything here with <a href="donate.html">MVP+</a> from $5/mo, or purchase items individually when checkout opens.
+    </p>
 
     <div class="ms-store-content">
       <section class="ms-store-grid" aria-label="Programs">
@@ -97,8 +101,8 @@
   <script src="js/segment-switch.js"></script>
   <script src="js/ui-motion.js"></script>
   <script src="js/toast.js"></script>
-  <script src="js/mvp-cosmetics.js"></script>
-  <script src="js/app.js"></script>
-  <script src="js/store.js"></script>
+  <script src="js/income.js?v=20260718-income"></script>
+  <script src="js/app.js?v=20260718-shell-fix"></script>
+  <script src="js/store.js?v=20260722-store-mvp"></script>
 </body>
 </html>

@@ -1191,19 +1191,6 @@
     const lead = findLeadById(id);
     if (!id || !lead || !canEditLeadStatus(lead)) return;
 
-    const afford = window.StudioCredits?.canAffordGeneration
-      ? await window.StudioCredits.canAffordGeneration()
-      : {
-          ok: false,
-          message: "Can't verify credits right now. Refresh the page and try again.",
-        };
-    if (!afford.ok) {
-      window.StudioToast?.error?.(
-        afford.message || "Sorry, you need credits to generate a website. Visit our pricing page!"
-      );
-      return;
-    }
-
     // Immediate local On hold so Active list hides this card before navigation.
     patchStatusMapLocal(id, "building", lead?.name);
     global.LeadSync?.saveBuildingLocalSnapshot?.(id, lead?.name);
@@ -1281,11 +1268,11 @@
       } catch (_) {
         /* ignore */
       }
-      window.location.href = "builder.html?" + params.toString();
+      window.location.href = "editor.html?" + params.toString();
     } catch (e) {
       console.warn("Generate site fallback failed", e);
       window.location.href =
-        "builder.html?from_finder=1&auto_generate=1&lead_id=" +
+        "editor.html?from_finder=1&auto_generate=1&lead_id=" +
         encodeURIComponent(id) +
         "&name=" +
         encodeURIComponent(String(lead?.name || "").trim());

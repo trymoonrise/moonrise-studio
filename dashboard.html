@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://erfaxgmnzdropviormpj.supabase.co" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css">
+  <link rel="stylesheet" href="css/studio.css?v=20260718-live-filter">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body data-page="dashboard">
@@ -24,7 +24,7 @@
       <section class="ms-card ms-settings-card ms-dash-card ms-dash-progress-card" aria-label="Overview">
         <div class="ms-dash-progress-layout">
           <div class="ms-dash-ring-wrap">
-            <div class="ms-dash-ring" role="img" aria-label="0 percent of commission goal">
+            <div class="ms-dash-ring" role="img" aria-label="0 percent of income goal">
               <svg class="ms-dash-ring-svg" viewBox="0 0 280 280" aria-hidden="true">
                 <circle class="ms-dash-ring-track" cx="140" cy="140" r="118" fill="none" />
                 <circle class="ms-dash-ring-prog" id="stat-goal-ring" cx="140" cy="140" r="118" fill="none" pathLength="100" />
@@ -40,11 +40,11 @@
           <div class="ms-dash-overview-grid" aria-label="Key metrics and quick actions">
             <div class="ms-dash-metric ms-dash-metric--goal" id="stat-goal-wrap">
               <span class="ms-dash-metric-label">Goal</span>
-              <button type="button" class="ms-dash-metric-value ms-dash-goal-display" id="stat-goal" title="Click to edit commission goal" aria-label="Commission goal $1,000, click to edit">$1,000</button>
-              <input class="ms-dash-goal-input" id="stat-goal-input" type="number" inputmode="numeric" min="1" max="1000000" step="1" value="1000" aria-label="Edit commission goal" hidden>
+              <button type="button" class="ms-dash-metric-value ms-dash-goal-display" id="stat-goal" title="Click to edit income goal" aria-label="Income goal $1,000, click to edit">$1,000</button>
+              <input class="ms-dash-goal-input" id="stat-goal-input" type="number" inputmode="numeric" min="1" max="1000000" step="1" value="1000" aria-label="Edit income goal" hidden>
             </div>
             <div class="ms-dash-metric ms-dash-metric--earned">
-              <span class="ms-dash-metric-label">Commission</span>
+              <span class="ms-dash-metric-label">Income <span class="ms-muted" style="font-weight:500">(your 80%)</span></span>
               <strong class="ms-dash-metric-value" id="stat-commission">$0</strong>
             </div>
             <div class="ms-dash-metric ms-dash-metric--sales">
@@ -87,6 +87,11 @@
             <ul class="ms-dash-projects-suggest" id="dash-projects-suggest" role="listbox" hidden></ul>
             <p class="ms-dash-projects-search-hint" id="dash-projects-search-hint" hidden></p>
           </div>
+          <div class="ms-dash-projects-filters" role="group" aria-label="Filter by live status">
+            <button type="button" class="ms-dash-projects-filter is-active" data-live-filter="all" aria-pressed="true">All</button>
+            <button type="button" class="ms-dash-projects-filter" data-live-filter="live" aria-pressed="false">Live</button>
+            <button type="button" class="ms-dash-projects-filter" data-live-filter="not-live" aria-pressed="false">Not live</button>
+          </div>
           <div class="ms-dash-previews" id="dash-projects-list"></div>
         </div>
       </section>
@@ -114,9 +119,9 @@
   <script src="js/segment-switch.js"></script>
   <script src="js/ui-motion.js"></script>
   <script src="js/toast.js"></script>
-  <script src="js/mvp-cosmetics.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/income.js?v=20260718-income"></script>
+  <script src="js/app.js?v=20260718-shell-fix"></script>
   <script src="js/install-hint.js"></script>
-  <script src="js/dashboard.js"></script>
+  <script src="js/dashboard.js?v=20260718-live-filter"></script>
 </body>
 </html>

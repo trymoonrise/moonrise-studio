@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css">
+  <link rel="stylesheet" href="css/studio.css?v=20260718-security-card">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body data-page="settings">
@@ -58,42 +58,6 @@
             </div>
           </div>
 
-          <div class="ms-pref-row ms-settings-pref">
-            <div class="ms-pref-copy">
-              <span class="ms-pref-label">Email notifications</span>
-              <span class="ms-muted ms-pref-hint">Product updates and account alerts</span>
-            </div>
-            <label class="ms-switch" title="Email notifications">
-              <input type="checkbox" id="set-email-notif" checked>
-              <span class="ms-switch-track" aria-hidden="true"></span>
-              <span class="ms-sr-only">Email notifications</span>
-            </label>
-          </div>
-
-          <div class="ms-settings-mvp" id="set-mvp-active" hidden>
-            <div class="ms-settings-mvp-head">
-              <strong>Paid plan profile style</strong>
-              <span class="ms-settings-mvp-badge">Active</span>
-            </div>
-            <p class="ms-settings-hint ms-muted">Customize how your name and avatar appear in the sidebar.</p>
-            <div class="ms-field">
-              <label class="ms-label" for="set-mvp-name-color">Name color</label>
-              <div class="ms-mvp-color-row">
-                <input class="ms-mvp-color-input" type="color" id="set-mvp-name-color" value="#2563eb" aria-label="Name color">
-                <input class="ms-input ms-mvp-color-hex" id="set-mvp-name-color-hex" maxlength="7" spellcheck="false" placeholder="#2563eb" aria-label="Name color hex">
-                <button type="button" class="ms-btn ms-btn-secondary ms-mvp-color-reset" id="set-mvp-name-color-reset">Reset</button>
-              </div>
-            </div>
-            <div class="ms-field">
-              <p class="ms-label" id="set-mvp-hat-label">Profile hat</p>
-              <div class="ms-mvp-hats" id="set-mvp-hats" role="group" aria-labelledby="set-mvp-hat-label"></div>
-            </div>
-            <div class="ms-settings-actions">
-              <button type="button" class="ms-btn" id="set-mvp-save">Save profile style</button>
-            </div>
-            <p class="ms-settings-status is-ok" id="set-mvp-ok" hidden></p>
-          </div>
-
           <div class="ms-settings-actions">
             <button type="button" class="ms-btn" id="set-save">Save profile</button>
           </div>
@@ -131,32 +95,32 @@
         <section class="ms-card ms-settings-card" id="settings-payments">
           <h2 class="ms-settings-card-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
-            Payout methods
+            Security card
           </h2>
-          <p class="ms-settings-hint ms-muted">How commissions get paid to you. Add Cash App, Venmo, PayPal, and more.</p>
+          <p class="ms-settings-hint ms-muted">Required for creator onboarding. Moonrise may charge this card for fraud, chargebacks, or Terms violations (including off-platform payments).</p>
 
-          <ul class="ms-payout-list" id="set-payout-list" hidden></ul>
-          <p class="ms-settings-hint ms-muted" id="set-payout-empty">No payment methods saved yet.</p>
+          <p class="ms-settings-status is-ok" id="set-payout-card-status" hidden></p>
+          <p class="ms-settings-hint ms-muted" id="set-payout-card-empty">No security card on file yet.</p>
 
-          <div class="ms-payout-add-panel" id="set-payout-add-panel" hidden>
-            <p class="ms-label" id="set-payout-add-label">Choose a payment app</p>
-            <div class="ms-payout-methods" id="set-payout-methods" role="group" aria-label="Payment app"></div>
-            <div class="ms-payout-input-panel" id="set-payout-input-panel" hidden>
-              <div class="ms-field">
-                <label class="ms-label" for="set-payout-handle" id="set-payout-field-label">Payout details</label>
-                <input class="ms-input" id="set-payout-handle" autocomplete="off" spellcheck="false">
-              </div>
-              <p class="ms-settings-hint ms-muted" id="set-payout-hint"></p>
-              <div class="ms-settings-actions ms-payout-add-actions">
-                <button type="button" class="ms-btn" id="set-payout-save">Save</button>
-                <button type="button" class="ms-btn ms-btn-secondary" id="set-payout-cancel">Cancel</button>
-              </div>
+          <div class="ms-sec-card-panel" id="set-payout-card-panel" hidden>
+            <div id="set-payout-card-mount"></div>
+            <div class="ms-settings-actions">
+              <button type="button" class="ms-btn" id="set-payout-verify-card">Connect card</button>
             </div>
+            <button
+              type="button"
+              class="ms-sec-card-retry"
+              id="set-payout-card-retry"
+              hidden
+              aria-label="Reload card form"
+              title="Reload card form"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
+            </button>
           </div>
 
           <div class="ms-settings-actions ms-payout-toolbar" id="set-payout-toolbar">
-            <button type="button" class="ms-btn" id="set-payout-add">Add payment method</button>
-            <a class="ms-dash-link" id="set-finance-onboarding-link" href="finance.html?onboarding=1&amp;next=settings.html">Resume payout setup →</a>
+            <button type="button" class="ms-btn" id="set-payout-update-card" hidden>Update security card</button>
           </div>
           <p class="ms-error" id="set-payout-error" hidden></p>
           <p class="ms-settings-status is-ok" id="set-payout-ok" hidden></p>
@@ -167,11 +131,37 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
             Onboarding
           </h2>
-          <p class="ms-settings-hint ms-muted">Replay the creator welcome wizard anytime. Your payout methods stay saved.</p>
+          <p class="ms-settings-hint ms-muted">Replay the creator welcome wizard anytime, including security card setup.</p>
           <div class="ms-settings-actions">
             <button type="button" class="ms-btn ms-btn-secondary" id="set-replay-onboarding">Replay onboarding</button>
           </div>
           <p class="ms-error" id="set-onboard-error" hidden></p>
+        </section>
+
+        <section class="ms-card ms-settings-card" id="settings-app">
+          <h2 class="ms-settings-card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download app
+          </h2>
+          <p class="ms-settings-hint ms-muted">Install Moonrise on this device for faster access and a full-screen experience.</p>
+
+          <div class="ms-settings-install-done" id="set-install-done" hidden>
+            <p class="ms-settings-status is-ok">You are using the installed Moonrise app.</p>
+          </div>
+
+          <div class="ms-settings-install" id="set-install-panel">
+            <div class="ms-settings-install-preview">
+              <img class="ms-settings-install-icon" id="set-install-icon" src="" alt="" width="56" height="56" decoding="async">
+              <div class="ms-settings-install-copy">
+                <strong id="set-install-title">Moonrise</strong>
+                <span class="ms-muted" id="set-install-status">Checking install options…</span>
+              </div>
+            </div>
+            <p class="ms-settings-install-steps ms-muted" id="set-install-instructions"></p>
+            <div class="ms-settings-actions">
+              <button type="button" class="ms-btn" id="set-install-btn" hidden>Install app</button>
+            </div>
+          </div>
         </section>
 
         <section class="ms-card ms-settings-card ms-settings-card--danger" id="settings-session">
@@ -196,8 +186,12 @@
   <script src="js/segment-switch.js"></script>
   <script src="js/ui-motion.js"></script>
   <script src="js/toast.js"></script>
-  <script src="js/mvp-cosmetics.js"></script>
-  <script src="js/app.js"></script>
-  <script src="js/settings.js"></script>
+  <script src="js/income.js?v=20260718-income"></script>
+  <script src="js/app.js?v=20260718-shell-fix"></script>
+  <script src="js/install-hint.js?v=20260718-settings-install"></script>
+  <script src="js/payout-profile.js?v=20260718-security-only"></script>
+  <script src="js/security-card.js?v=20260718-no-card-hint"></script>
+  <script src="js/settings.js?v=20260718-security-only"></script>
+  <script src="js/settings-install.js?v=20260718-settings-install"></script>
 </body>
 </html>

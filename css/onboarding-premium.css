@@ -1,0 +1,784 @@
+/* Premium onboarding — compact single-card layout (loads after studio.css) */
+
+:root {
+  --onb-ease-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  --onb-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --onb-ease-in: cubic-bezier(0.4, 0, 0.2, 1);
+  --onb-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --onb-spring: cubic-bezier(0.34, 1.12, 0.64, 1);
+  --onb-dur-fast: 0.26s;
+  --onb-dur-med: 0.48s;
+  --onb-dur-slow: 0.62s;
+  --onb-dur-panel: 0.44s;
+  --onb-content-base-delay: 0.12s;
+  --onb-blur-panel: 10px;
+  --onb-blur-content: 5px;
+  --onb-card-width: min(26rem, 100%);
+}
+
+body.ms-onboard-page {
+  position: relative;
+  overflow: hidden;
+  height: 100dvh;
+  background: #eef2f7;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+.ms-onboard-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 120% 70% at 50% -20%, rgba(37, 99, 235, 0.14), transparent 58%),
+    radial-gradient(ellipse 50% 40% at 0% 100%, rgba(99, 102, 241, 0.08), transparent 55%),
+    linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+  animation: ms-onb-bg-drift 18s ease-in-out infinite alternate;
+}
+
+@keyframes ms-onb-bg-drift {
+  0% { transform: scale(1) translate3d(0, 0, 0); }
+  100% { transform: scale(1.03) translate3d(0, -1%, 0); }
+}
+
+.ms-onboard {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  padding: 0.85rem;
+  box-sizing: border-box;
+  opacity: 0;
+  filter: blur(10px);
+  transform: translate3d(0, 18px, 0) scale(0.985);
+  overflow: hidden;
+}
+
+.ms-onboard.is-ready {
+  opacity: 1;
+  filter: blur(0);
+  transform: translate3d(0, 0, 0) scale(1);
+  transition:
+    opacity 0.72s var(--onb-ease-soft),
+    filter 0.82s var(--onb-ease-soft),
+    transform 0.82s var(--onb-ease-soft);
+}
+
+body.ms-onboard-page.is-transitioning .ms-onboard-bg {
+  animation-play-state: paused;
+}
+
+.ms-onboard-card {
+  display: flex;
+  flex-direction: column;
+  width: var(--onb-card-width);
+  min-height: min(34rem, calc(100dvh - 1.7rem));
+  max-height: calc(100dvh - 1.7rem);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  border-radius: 20px;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 16px 40px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(12px);
+  overflow: hidden;
+}
+
+.ms-onboard-card-head {
+  flex: 0 0 auto;
+  padding: 0.85rem 1rem 0.75rem;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.85);
+  background: linear-gradient(180deg, #fff 0%, #fafbfc 100%);
+}
+
+.ms-onboard-card-head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
+.ms-onboard-brand {
+  font-weight: 800;
+  font-size: 0.98rem;
+  transition: opacity 0.2s ease, transform 0.25s var(--onb-ease-out);
+}
+
+.ms-onboard-brand:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.ms-onboard-brand img {
+  width: 1.55rem;
+  height: 1.55rem;
+  filter: drop-shadow(0 3px 8px rgba(37, 99, 235, 0.16));
+}
+
+.ms-onboard-step-pill {
+  background: #f1f5f9;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  font-size: 0.74rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+}
+
+.ms-onboard-step-pill.is-bump {
+  animation: ms-onb-pill-bump 0.52s var(--onb-spring);
+  background: #eff6ff;
+  border-color: rgba(37, 99, 235, 0.22);
+}
+
+@keyframes ms-onb-pill-bump {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+.ms-onboard-progress-track {
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.22);
+  overflow: hidden;
+}
+
+.ms-onboard-progress-fill {
+  height: 100%;
+  width: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2563eb 0%, #4f46e5 100%);
+  transform: scaleX(var(--onb-progress, 0));
+  transform-origin: left center;
+  transition: transform 0.64s var(--onb-ease-soft);
+  box-shadow: 0 0 12px rgba(37, 99, 235, 0.32);
+}
+
+.ms-onboard-main {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 18rem;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  backdrop-filter: none;
+  max-height: none;
+  overflow: hidden;
+  transition: none;
+}
+
+.ms-onboard-main.is-step-pulse {
+  animation: ms-onb-card-pulse 0.62s var(--onb-ease-out);
+}
+
+@keyframes ms-onb-card-pulse {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.004); }
+  100% { transform: scale(1); }
+}
+
+.ms-onboard-panel {
+  display: none;
+  position: absolute;
+  inset: 0;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  z-index: 1;
+}
+
+.ms-onboard-panel.is-active {
+  display: flex;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.ms-onboard-panel.is-active.is-visible {
+  z-index: 2;
+}
+
+.ms-onboard-panel.ms-panel-anim:not(.is-visible):not(.is-exiting) {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ms-onboard-panel[hidden] {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.ms-onboard-panel-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1rem 1rem 0.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+}
+
+.ms-onboard-panel.ms-panel-anim {
+  transition:
+    opacity var(--onb-dur-panel) var(--onb-ease-soft),
+    filter var(--onb-dur-panel) var(--onb-ease-soft),
+    transform var(--onb-dur-panel) var(--onb-ease-soft);
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+  filter: blur(0);
+}
+
+.ms-onboard-main.is-forward .ms-onboard-panel.ms-panel-anim:not(.is-visible):not(.is-exiting) {
+  opacity: 0;
+  filter: blur(var(--onb-blur-panel));
+  transform: translate3d(0, 14px, 0);
+}
+
+.ms-onboard-main.is-back .ms-onboard-panel.ms-panel-anim:not(.is-visible):not(.is-exiting) {
+  opacity: 0;
+  filter: blur(var(--onb-blur-panel));
+  transform: translate3d(0, -10px, 0);
+}
+
+.ms-onboard-main.is-entering .ms-onboard-panel.ms-panel-anim:not(.is-visible):not(.is-exiting) {
+  opacity: 0;
+  filter: blur(calc(var(--onb-blur-panel) + 2px));
+  transform: translate3d(0, 16px, 0) scale(0.992);
+}
+
+.ms-onboard-main.is-forward .ms-onboard-panel.ms-panel-anim.is-exiting {
+  opacity: 0;
+  filter: blur(calc(var(--onb-blur-panel) - 2px));
+  transform: translate3d(0, -8px, 0);
+  z-index: 3;
+  pointer-events: none;
+  transition:
+    opacity var(--onb-dur-fast) var(--onb-ease-in),
+    filter var(--onb-dur-fast) var(--onb-ease-in),
+    transform var(--onb-dur-fast) var(--onb-ease-in);
+}
+
+.ms-onboard-main.is-back .ms-onboard-panel.ms-panel-anim.is-exiting {
+  opacity: 0;
+  filter: blur(calc(var(--onb-blur-panel) - 2px));
+  transform: translate3d(0, 10px, 0);
+  z-index: 3;
+  pointer-events: none;
+  transition:
+    opacity var(--onb-dur-fast) var(--onb-ease-in),
+    filter var(--onb-dur-fast) var(--onb-ease-in),
+    transform var(--onb-dur-fast) var(--onb-ease-in);
+}
+
+.ms-onboard-panel.ms-panel-anim.is-visible {
+  opacity: 1;
+  filter: blur(0);
+  transform: translate3d(0, 0, 0);
+}
+
+.ms-onboard-panel-head {
+  margin-bottom: 0.25rem;
+}
+
+.ms-onboard-panel h1 {
+  margin: 0;
+  font-size: clamp(1.35rem, 4vw, 1.55rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: #0f172a;
+}
+
+.ms-onboard-lead {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: #64748b;
+}
+
+/* Content reveal — soft blur + rise (panel crossfade handles step shell) */
+.ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-lead,
+.ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-creator-policy-notice,
+.ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-legal-links,
+.ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-check,
+.ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-form-block,
+.ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-chip-label,
+.ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-chips,
+.ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onb-celebrate-mark,
+.ms-onboard-panel.is-active.is-visible > .ms-onboard-actions {
+  opacity: 0;
+  transform: translate3d(0, 10px, 0);
+  filter: blur(var(--onb-blur-content));
+  animation: ms-onb-soft-in var(--onb-dur-med) var(--onb-ease-soft) forwards;
+  animation-delay: calc(var(--onb-content-base-delay) + var(--onb-stagger, 0ms));
+  backface-visibility: hidden;
+}
+
+.ms-onboard-panel.is-active:not(.is-visible) .ms-onboard-panel-scroll > *,
+.ms-onboard-panel.is-active:not(.is-visible) > .ms-onboard-actions,
+.ms-onboard-panel.is-active:not(.is-visible) .ms-onboard-panel-head h1 {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  animation: none;
+}
+
+.ms-onboard-panel.is-active.is-visible .ms-onboard-panel-head {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  animation: none;
+}
+
+.ms-onboard-panel.is-active.is-visible .ms-onboard-panel-head h1 {
+  opacity: 0;
+  transform: translate3d(0, 10px, 0);
+  filter: blur(var(--onb-blur-content));
+  animation: ms-onb-soft-in var(--onb-dur-med) var(--onb-ease-soft) forwards;
+  animation-delay: calc(var(--onb-content-base-delay) + 0.03s);
+  backface-visibility: hidden;
+}
+
+.ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-lead { --onb-stagger: 0.05s; }
+.ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-creator-policy-notice { --onb-stagger: 0.1s; }
+.ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-form-block { --onb-stagger: 0.08s; }
+.ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-chip-label { --onb-stagger: 0.12s; }
+.ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-chips { --onb-stagger: 0.14s; }
+.ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-check { --onb-stagger: 0.12s; }
+.ms-onboard-panel.is-active.is-visible > .ms-onboard-actions {
+  --onb-stagger: 0.18s;
+}
+
+.ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-legal-links {
+  opacity: 1;
+  transform: none;
+  animation: none;
+}
+
+.ms-onboard-panel.is-active.is-visible .ms-onboard-legal-links .ms-onboard-legal-card {
+  opacity: 0;
+  transform: translate3d(0, 10px, 0);
+  filter: blur(var(--onb-blur-content));
+  animation: ms-onb-soft-in var(--onb-dur-med) var(--onb-ease-soft) forwards;
+  backface-visibility: hidden;
+}
+
+.ms-onboard-panel.is-active.is-visible .ms-onboard-legal-links .ms-onboard-legal-card:nth-child(1) {
+  animation-delay: calc(var(--onb-content-base-delay) + 0.08s);
+}
+.ms-onboard-panel.is-active.is-visible .ms-onboard-legal-links .ms-onboard-legal-card:nth-child(2) {
+  animation-delay: calc(var(--onb-content-base-delay) + 0.13s);
+}
+
+/* Compact path grid — fits on one screen */
+.ms-onboard-panel--path .ms-onboard-path {
+  --onb-path-num: 1.35rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ms-onboard-panel--path .ms-onboard-path li {
+  display: grid;
+  grid-template-columns: var(--onb-path-num) minmax(0, 1fr);
+  column-gap: 0.45rem;
+  align-items: start;
+  padding: 0.45rem 0.5rem;
+  border: 1px solid #e8edf3;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.ms-onboard-panel--path .ms-onboard-path li:not(:last-child)::after {
+  display: none;
+}
+
+.ms-onboard-panel--path .ms-onboard-path-num {
+  width: var(--onb-path-num);
+  height: var(--onb-path-num);
+  font-size: 0.72rem;
+  border-width: 1.5px;
+  box-shadow: none;
+}
+
+.ms-onboard-panel--path .ms-onboard-path-copy {
+  padding-top: 0;
+}
+
+.ms-onboard-panel--path .ms-onboard-path-copy strong {
+  font-size: 0.82rem;
+  margin-bottom: 0.1rem;
+  line-height: 1.2;
+}
+
+.ms-onboard-panel--path .ms-onboard-path-copy p {
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.ms-onboard-panel--path.is-active.is-visible > .ms-onboard-actions {
+  --onb-stagger: 0.34s;
+}
+
+.ms-onboard-panel.is-active.is-visible .ms-onboard-path li {
+  opacity: 0;
+  transform: translate3d(0, 8px, 0);
+  animation: ms-onb-path-in 0.42s var(--onb-ease-soft) forwards;
+  backface-visibility: hidden;
+}
+
+.ms-onboard-panel.is-active.is-visible .ms-onboard-path li:nth-child(1) {
+  animation-delay: calc(var(--onb-content-base-delay) + 0.04s);
+}
+.ms-onboard-panel.is-active.is-visible .ms-onboard-path li:nth-child(2) {
+  animation-delay: calc(var(--onb-content-base-delay) + 0.07s);
+}
+.ms-onboard-panel.is-active.is-visible .ms-onboard-path li:nth-child(3) {
+  animation-delay: calc(var(--onb-content-base-delay) + 0.1s);
+}
+.ms-onboard-panel.is-active.is-visible .ms-onboard-path li:nth-child(4) {
+  animation-delay: calc(var(--onb-content-base-delay) + 0.13s);
+}
+.ms-onboard-panel.is-active.is-visible .ms-onboard-path li:nth-child(5) {
+  animation-delay: calc(var(--onb-content-base-delay) + 0.16s);
+}
+.ms-onboard-panel.is-active.is-visible .ms-onboard-path li:nth-child(6) {
+  animation-delay: calc(var(--onb-content-base-delay) + 0.19s);
+}
+
+@keyframes ms-onb-soft-in {
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    filter: blur(0);
+  }
+}
+
+@keyframes ms-onb-path-in {
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.ms-onboard-panel--celebrate.is-active.is-visible .ms-onb-celebrate-mark {
+  animation: ms-onb-celebrate-in 0.72s var(--onb-ease-soft) forwards;
+  animation-delay: calc(var(--onb-content-base-delay) + 0.02s);
+}
+
+@keyframes ms-onb-celebrate-in {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0) scale(0.92);
+    filter: blur(6px);
+  }
+  60% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1.04);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.ms-onboard-form-block {
+  display: grid;
+  gap: 0.65rem;
+  margin-bottom: 0.35rem;
+  padding: 0.75rem;
+  border-radius: 12px;
+  border: 1px solid #e8edf3;
+  background: #f8fafc;
+}
+
+.ms-onboard-panel .ms-creator-policy-notice.ms-onboard-policy {
+  padding: 0.75rem 0.85rem;
+  border-radius: 12px;
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+.ms-onboard-panel .ms-creator-policy-notice.ms-onboard-policy p {
+  margin: 0.35rem 0 0;
+}
+
+.ms-onboard-legal-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin-bottom: 0.35rem;
+}
+
+.ms-onboard-legal-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 0.55rem;
+  min-width: 0;
+  padding: 0.65rem 0.7rem;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #e8edf3;
+  text-decoration: none;
+  color: inherit;
+}
+
+.ms-onboard-legal-card:hover {
+  border-color: #93c5fd;
+  background: #f8fbff;
+}
+
+.ms-onboard-legal-arrow {
+  display: none;
+}
+
+.ms-onboard-legal-icon {
+  width: 1.85rem;
+  height: 1.85rem;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.ms-onboard-legal-icon svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.ms-onboard-legal-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.ms-onboard-legal-copy strong {
+  display: block;
+  font-size: 0.8rem;
+  line-height: 1.25;
+  color: #0f172a;
+}
+
+.ms-onboard-legal-copy span {
+  display: block;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: #64748b;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
+.ms-onboard-check {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.55rem;
+  margin-bottom: 0.25rem;
+  padding: 0.65rem 0.75rem;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  border-radius: 12px;
+  border: 1px solid #e8edf3;
+  background: #fff;
+}
+
+.ms-onboard-chip-label {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+}
+
+.ms-onboard-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.25rem;
+}
+
+.ms-onboard-chip {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.78rem;
+  border-radius: 999px;
+}
+
+.ms-onboard-actions {
+  flex: 0 0 auto;
+  margin-top: 0;
+  padding: 0.65rem 1rem 0.85rem;
+  border-top: 1px solid rgba(226, 232, 240, 0.9);
+  background: #fff;
+  display: flex;
+  gap: 0.45rem;
+}
+
+.ms-onboard-actions .ms-btn {
+  flex: 1 1 0;
+  min-height: 2.65rem;
+  border-radius: 12px;
+  font-size: 0.88rem;
+}
+
+.ms-onboard-actions--split {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.ms-onboard-actions--stack {
+  flex-direction: column;
+}
+
+.ms-onboard-actions .ms-btn.ms-onboard-next,
+.ms-onboard-actions a.ms-btn.ms-onboard-next {
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.16);
+}
+
+.ms-onboard-page .ms-field .ms-label,
+.ms-onboard-page .ms-label {
+  font-size: 0.82rem;
+  margin-bottom: 0.35rem;
+}
+
+.ms-onboard-page .ms-input,
+.ms-onboard-page .ms-phone-input {
+  border-radius: 10px;
+  font-size: 0.9rem;
+  min-height: 2.5rem;
+}
+
+.ms-onb-celebrate-mark {
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-bottom: 0.65rem;
+}
+
+.ms-onb-celebrate-mark svg {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.ms-onboard-error {
+  flex: 0 0 auto;
+  width: 100%;
+  margin: 0;
+  padding: 0.55rem 1rem 0.75rem;
+  border-top: 1px solid rgba(248, 113, 113, 0.25);
+  border-radius: 0;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.ms-onboard-error.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+.ms-onboard-panel .ms-sec-card-panel {
+  margin: 0;
+}
+
+/* Hide legacy outer wrappers if present */
+.ms-onboard-top,
+.ms-onboard-progress,
+.ms-onboard-stage,
+.ms-onboard-progress-dots,
+.ms-onboard-progress-head,
+.ms-onboard-progress-title,
+.ms-onboard-eyebrow {
+  display: none !important;
+}
+
+@media (max-width: 520px) {
+  .ms-onboard {
+    padding: 0.55rem;
+  }
+
+  .ms-onboard-card {
+    max-height: calc(100dvh - 1.1rem);
+    border-radius: 16px;
+  }
+
+  .ms-onboard-panel--path .ms-onboard-path {
+    grid-template-columns: 1fr;
+  }
+
+  .ms-onboard-legal-links {
+    grid-template-columns: 1fr;
+  }
+
+  .ms-onboard-actions--split {
+    grid-template-columns: 1fr;
+  }
+
+  .ms-onboard-panel-scroll {
+    padding: 0.85rem 0.85rem 0.45rem;
+  }
+}
+
+@media (max-height: 700px) {
+  .ms-onboard-panel h1 {
+    font-size: 1.25rem;
+  }
+
+  .ms-onboard-lead {
+    font-size: 0.84rem;
+    margin-bottom: 0.55rem;
+  }
+
+  .ms-onboard-panel--path .ms-onboard-path {
+    gap: 0.35rem;
+  }
+
+  .ms-onboard-panel--path .ms-onboard-path li {
+    padding: 0.35rem 0.45rem;
+  }
+
+  .ms-onboard-actions {
+    padding: 0.55rem 0.85rem 0.7rem;
+  }
+
+  .ms-onboard-actions .ms-btn {
+    min-height: 2.45rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ms-onboard,
+  .ms-onboard-bg,
+  .ms-onboard-main.is-step-pulse,
+  .ms-onboard-panel-scroll > *,
+  .ms-onboard-panel > .ms-onboard-actions,
+  .ms-onboard-panel.is-active.is-visible .ms-onboard-path li,
+  .ms-onboard-panel.is-active.is-visible .ms-onboard-legal-links .ms-onboard-legal-card,
+  .ms-onboard-panel.is-active.is-visible .ms-onboard-panel-head h1,
+  .ms-onboard-progress-fill {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+
+  .ms-onboard-panel.ms-panel-anim {
+    transition: none !important;
+    filter: none !important;
+  }
+}

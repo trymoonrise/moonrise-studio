@@ -1,9 +1,10 @@
 /**
- * Lead Finder — business type + location search with demo leads fallback.
+ * Lead Finder — business type + location search.
  */
 (function () {
   const typeInput = document.getElementById("lf-type");
   const locationInput = document.getElementById("lf-location");
+  const areaToggle = document.getElementById("lf-area-toggle");
   const form = document.getElementById("lf-form");
   const statusEl = document.getElementById("lf-status");
   const errorEl = document.getElementById("lf-error");
@@ -12,6 +13,9 @@
   const findBtn = document.getElementById("lf-find");
   const SAVED_KEY = "ms_lf_quick_save_v1";
   const CLAIMED_KEY = "ms_lf_claimed_v1";
+  const AREA_PREF_KEY = "ms_lf_in_my_area_v1";
+  const NEARBY_RADIUS_MILES = 5;
+  const AREA_LOCATION_LABEL = "Using your location";
   const DISPLAY_PAGE = 80;
   const LOADING_CARD_COUNT = 6;
   let listView = "default";
@@ -21,11 +25,345 @@
   let displayLimit = DISPLAY_PAGE;
   let lastLeads = [];
   let lastQuery = "";
-  let lastUsedDemo = false;
   let savedMap = loadSavedMap();
   let claimedMap = loadClaimedMap();
   const revealedLeadIds = new Set();
   let leadRevealObserver = null;
+  let inMyArea = false;
+  let userCoords = null;
+  let areaRequestToken = 0;
+  let websiteVerifyJob = 0;
+  let websiteRefreshTimer = null;
+
+  function readAreaPref() {
+    try {
+      return localStorage.getItem(AREA_PREF_KEY) === "1";
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function persistAreaPref(on) {
+    try {
+      localStorage.setItem(AREA_PREF_KEY, on ? "1" : "0");
+    } catch (e) {
+      /* ignore */
+    }
+  }
+
+  function haversineMiles(lat1, lon1, lat2, lon2) {
+    const toRad = (deg) => (deg * Math.PI) / 180;
+    const r = 3958.8;
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+    return r * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  function leadCoords(lead) {
+    const lat = Number(lead?.latitude ?? lead?.lat);
+    const lng = Number(lead?.longitude ?? lead?.lng);
+    if (Number.isFinite(lat) && Number.isFinite(lng)) return { lat, lng };
+    const url = String(lead?.mapsUrl || lead?.maps_url || "");
+    let match = url.match(/@(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/);
+    if (match) return { lat: Number(match[1]), lng: Number(match[2]) };
+    match = url.match(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/);
+    if (match) return { lat: Number(match[1]), lng: Number(match[2]) };
+    return null;
+  }
+
+  function withDistanceFromUser(leads, coords) {
+    if (!coords || !Number.isFinite(coords.lat) || !Number.isFinite(coords.lng)) {
+      return (leads || []).map((lead) => ({ lead, distanceMiles: null }));
+    }
+    return (leads || []).map((lead) => {
+      const point = leadCoords(lead);
+      const distanceMiles = point
+        ? haversineMiles(coords.lat, coords.lng, point.lat, point.lng)
+        : null;
+      return { lead, distanceMiles };
+    });
+  }
+
+  function applyNearbyFilterAndSort(leads, coords, radiusMiles, options) {
+    const opts = options && typeof options === "object" ? options : {};
+    const radius = Number(radiusMiles) || NEARBY_RADIUS_MILES;
+    const rows = withDistanceFromUser(leads, coords);
+    const withDistance = rows.filter((row) => row.distanceMiles != null);
+    const withoutDistance = rows.filter((row) => row.distanceMiles == null);
+
+    if (!withDistance.length && opts.trustScrapeRadius) {
+      return (leads || []).map((lead) => ({ ...lead, distanceMiles: null }));
+    }
+
+    const inRadius = withDistance
+      .filter((row) => row.distanceMiles <= radius)
+      .sort((a, b) => a.distanceMiles - b.distanceMiles);
+
+    const ranked = inRadius.map((row) => ({
+      ...row.lead,
+      distanceMiles: Math.round(row.distanceMiles * 10) / 10,
+    }));
+
+    if (opts.includeUnknownDistance && withoutDistance.length) {
+      withoutDistance.forEach((row) => {
+        ranked.push({ ...row.lead, distanceMiles: null });
+      });
+    }
+
+    return ranked;
+  }
+
+  function shouldSkipBulkPaint() {
+    return !!(inMyArea || readAreaPref() || areaToggle?.checked);
+  }
+
+  function nearbySearchType(type) {
+    return String(type || "").trim();
+  }
+
+  function scrapeErrorMessage(err) {
+    const msg = String(err?.message || err || "").trim();
+    if (/failed to fetch|networkerror|network error|load failed/i.test(msg)) {
+      return "Scrape server unreachable — showing nearby leads from the database.";
+    }
+    return msg || "Nearby scrape unavailable";
+  }
+
+  function isWorkerLeadFinderBase(base) {
+    return /\/lead-finder$/i.test(String(base || "").trim());
+  }
+
+  async function reverseGeocodeSearchContext(coords) {
+    if (!coords) return null;
+    if (coords.searchCity) {
+      return { city: coords.searchCity, region: coords.searchRegion || "", label: coords.searchLabel || "" };
+    }
+    try {
+      const url =
+        "https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=" +
+        encodeURIComponent(coords.lat) +
+        "&longitude=" +
+        encodeURIComponent(coords.lng) +
+        "&localityLanguage=en";
+      const res = await fetch(url, { method: "GET" });
+      const data = await res.json().catch(() => ({}));
+      const city = String(data?.city || data?.locality || "").trim();
+      const region = String(data?.principalSubdivisionCode || data?.principalSubdivision || "")
+        .trim()
+        .replace(/^US-/i, "");
+      const label = city && region ? city + ", " + region : city || region || "";
+      coords.searchCity = city;
+      coords.searchRegion = region;
+      coords.searchLabel = label;
+      return { city, region, label };
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function leadsMatchingSearchCity(leads, cityContext) {
+    const city = String(cityContext?.city || "").trim().toLowerCase();
+    const region = String(cityContext?.region || "").trim().toLowerCase();
+    if (!city) return [];
+    return (leads || []).filter((lead) => {
+      const blob = leadBlob(lead);
+      if (!blob.includes(city)) return false;
+      if (region && region.length >= 2 && !blob.includes(region)) return false;
+      return true;
+    });
+  }
+
+  function mergeNearbyResults(primary, secondary) {
+    const seen = new Set();
+    const out = [];
+    (primary || []).concat(secondary || []).forEach((lead) => {
+      const key = leadId(lead) || lead.mapsUrl || lead.name;
+      if (!key || seen.has(key)) return;
+      seen.add(key);
+      out.push(lead);
+    });
+    return out;
+  }
+
+  async function scrapeAuthHeaders() {
+    const headers = { "Content-Type": "application/json" };
+    try {
+      const session = await window.StudioAuth?.getSession?.();
+      if (session?.access_token) {
+        headers.Authorization = "Bearer " + session.access_token;
+      }
+    } catch (_) {
+      /* ignore */
+    }
+    return headers;
+  }
+
+  function requestUserLocation() {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error("Location is not supported in this browser."));
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = Number(pos?.coords?.latitude);
+          const lng = Number(pos?.coords?.longitude);
+          if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+            reject(new Error("Could not read your location."));
+            return;
+          }
+          resolve({ lat, lng, accuracyMeters: Number(pos?.coords?.accuracy) || null });
+        },
+        (err) => {
+          const code = Number(err?.code);
+          if (code === 1) {
+            reject(new Error("Location permission denied. Allow location to search near you."));
+          } else if (code === 2) {
+            reject(new Error("Location unavailable. Try again or enter a city manually."));
+          } else if (code === 3) {
+            reject(new Error("Location request timed out. Try again."));
+          } else {
+            reject(new Error(err?.message || "Could not get your location."));
+          }
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 120000 }
+      );
+    });
+  }
+
+  function isAreaLocationLabel(value) {
+    const v = String(value || "").trim().toLowerCase();
+    return v === "using your location" || v === "near you";
+  }
+
+  function setAreaLocationField() {
+    if (locationInput) locationInput.value = AREA_LOCATION_LABEL;
+  }
+
+  function syncAreaUi() {
+    const locked = !!inMyArea;
+    if (locationInput) {
+      locationInput.readOnly = locked;
+      locationInput.setAttribute("aria-readonly", locked ? "true" : "false");
+      if (locked && userCoords) setAreaLocationField();
+    }
+    const inputWrap = locationInput?.closest(".ms-lf-input");
+    if (inputWrap) inputWrap.classList.toggle("is-area-locked", locked);
+    if (areaToggle) areaToggle.checked = locked;
+    const clearBtn = document.getElementById("lf-location-clear");
+    if (clearBtn && locked) clearBtn.hidden = true;
+    else syncFieldClear("location");
+  }
+
+  async function enableInMyArea(options) {
+    const opts = options && typeof options === "object" ? options : {};
+    const token = ++areaRequestToken;
+    const willSearch = opts.autoSearch !== false;
+    setError("");
+    if (areaToggle) areaToggle.disabled = true;
+    if (willSearch) {
+      showLoadingCards();
+      setFindBusy(true);
+    }
+    try {
+      const coords = await requestUserLocation();
+      if (token !== areaRequestToken) return false;
+      userCoords = coords;
+      inMyArea = true;
+      persistAreaPref(true);
+      setAreaLocationField();
+      syncAreaUi();
+      hideSuggest("location");
+      if (willSearch) {
+        await findNearbyLeads({ fromAreaToggle: true });
+      }
+      return true;
+    } catch (e) {
+      if (token !== areaRequestToken) return false;
+      inMyArea = false;
+      userCoords = null;
+      persistAreaPref(false);
+      if (areaToggle) areaToggle.checked = false;
+      syncAreaUi();
+      if (willSearch) {
+        clearLoadingCards();
+        setFindBusy(false);
+      }
+      setError(e?.message || "Could not use your location.");
+      return false;
+    } finally {
+      if (areaToggle) areaToggle.disabled = false;
+    }
+  }
+
+  function restoreNormalList() {
+    setError("");
+    setStatus("");
+    displayLimit = DISPLAY_PAGE;
+    resetLeadReveals();
+    clearLoadingCards();
+    setFindBusy(false);
+
+    let pool = allLeads;
+    if (!pool.length) {
+      const cached = window.LeadsLoader?.peekCache?.();
+      if (cached?.leads?.length) {
+        pool = rankLeadList(cached.leads.slice());
+        allLeads = pool;
+        leadsReady = true;
+      }
+    }
+
+    if (pool.length) {
+      renderLeads(pool, "All leads");
+      return;
+    }
+
+    if (leadsLoading) {
+      showLoadingCards();
+      return;
+    }
+
+    void preloadAllLeads();
+  }
+
+  function disableInMyArea() {
+    areaRequestToken += 1;
+    inMyArea = false;
+    userCoords = null;
+    persistAreaPref(false);
+    if (areaToggle) areaToggle.checked = false;
+    if (locationInput) {
+      locationInput.readOnly = false;
+      locationInput.removeAttribute("aria-readonly");
+      if (isAreaLocationLabel(locationInput.value)) {
+        locationInput.value = "";
+      }
+    }
+    syncAreaUi();
+    restoreNormalList();
+  }
+
+  function bindAreaToggle() {
+    if (!areaToggle || areaToggle.dataset.bound === "1") return;
+    areaToggle.dataset.bound = "1";
+    areaToggle.addEventListener("change", () => {
+      if (areaToggle.checked) {
+        void enableInMyArea({ autoSearch: true });
+        return;
+      }
+      disableInMyArea();
+    });
+    if (readAreaPref()) {
+      areaToggle.checked = true;
+      void enableInMyArea({ autoSearch: true });
+    } else {
+      syncAreaUi();
+    }
+  }
 
   /** High-fit niches surfaced first in Popular tags. */
   const POPULAR_TOP_CATEGORIES = window.LeadProspectRank?.TOP_SEARCH_CATEGORIES || [
@@ -44,10 +382,14 @@
   ];
 
   function rankLeadList(leads) {
+    const pool = reconcileLeadList(Array.isArray(leads) ? leads : []);
+    if (!pool.length) return pool;
     if (window.LeadProspectRank?.prepareList) {
-      return window.LeadProspectRank.prepareList(leads);
+      // Full shuffle + score sort on huge cached pools can freeze mobile Safari.
+      if (pool.length > 1200) return pool.slice();
+      return window.LeadProspectRank.prepareList(pool);
     }
-    return Array.isArray(leads) ? leads.slice() : [];
+    return pool.slice();
   }
 
   /** Business-type catalog for suggestions + Popular tags. */
@@ -267,9 +609,6 @@
     return true;
   }
 
-  const NO_CREDITS_MSG =
-    "Sorry, you need credits to generate a website. Visit our pricing page!";
-
   function showGenerateBlocked(msg) {
     const text = String(msg || "").trim();
     if (!text) return;
@@ -285,14 +624,7 @@
   }
 
   async function canAffordGeneration() {
-    if (!window.StudioCredits?.canAffordGeneration) {
-      return {
-        ok: false,
-        reason: "unavailable",
-        message: "Can't verify credits right now. Refresh the page and try again.",
-      };
-    }
-    return window.StudioCredits.canAffordGeneration();
+    return { ok: true };
   }
 
   function mergeClaimedIds(ids) {
@@ -387,190 +719,6 @@
     return filterClaimed(Object.keys(savedMap).map((id) => savedMap[id]));
   }
 
-  /** Demo businesses for empty DB / offline preview. */
-  const DEMO_LEADS = [
-    {
-      id: "demo-gym-1",
-      name: "Iron Peak Fitness",
-      category: "Gyms & Fitness",
-      phone: "(512) 555-0142",
-      address: "1840 South Lamar Blvd, Austin, TX",
-      website: "",
-      mapsUrl: "https://maps.google.com/?q=Iron+Peak+Fitness+Austin",
-    },
-    {
-      id: "demo-gym-2",
-      name: "Sunrise Strength Co.",
-      category: "Gyms & Fitness",
-      phone: "(512) 555-0198",
-      address: "902 E 6th St, Austin, TX",
-      website: "",
-      mapsUrl: "https://maps.google.com/?q=Sunrise+Strength+Austin",
-    },
-    {
-      id: "demo-barber-1",
-      name: "Cedar Street Barbers",
-      category: "Barbershops",
-      phone: "(512) 555-0117",
-      address: "2214 S 1st St, Austin, TX",
-      website: "",
-      mapsUrl: "https://maps.google.com/?q=Cedar+Street+Barbers+Austin",
-    },
-    {
-      id: "demo-barber-2",
-      name: "Fade Room",
-      category: "Barbershops",
-      phone: "(214) 555-0164",
-      address: "3812 Greenville Ave, Dallas, TX",
-      website: "https://example.com",
-      mapsUrl: "https://maps.google.com/?q=Fade+Room+Dallas",
-    },
-    {
-      id: "demo-dental-1",
-      name: "Brightside Dental",
-      category: "Dental Practices",
-      phone: "(512) 555-0133",
-      address: "4400 N Lamar Blvd, Austin, TX",
-      website: "",
-      mapsUrl: "https://maps.google.com/?q=Brightside+Dental+Austin",
-    },
-    {
-      id: "demo-dental-2",
-      name: "Oak & Ivory Dentistry",
-      category: "Dental Practices",
-      phone: "(713) 555-0175",
-      address: "2200 Westheimer Rd, Houston, TX",
-      website: "",
-      mapsUrl: "https://maps.google.com/?q=Oak+Ivory+Dentistry+Houston",
-    },
-    {
-      id: "demo-yoga-1",
-      name: "Lotus & Linen Yoga",
-      category: "Yoga Studios",
-      phone: "(512) 555-0188",
-      address: "1200 W 6th St, Austin, TX",
-      website: "",
-      mapsUrl: "https://maps.google.com/?q=Lotus+Linen+Yoga+Austin",
-    },
-    {
-      id: "demo-yoga-2",
-      name: "Stillwater Studio",
-      category: "Yoga Studios",
-      phone: "(310) 555-0129",
-      address: "1450 Abbot Kinney Blvd, Venice, CA",
-      website: "https://example.com",
-      mapsUrl: "https://maps.google.com/?q=Stillwater+Studio+Venice",
-    },
-    {
-      id: "demo-rest-1",
-      name: "Mesa Verde Kitchen",
-      category: "Restaurants",
-      phone: "(512) 555-0155",
-      address: "1600 E Cesar Chavez St, Austin, TX",
-      website: "",
-      mapsUrl: "https://maps.google.com/?q=Mesa+Verde+Kitchen+Austin",
-    },
-    {
-      id: "demo-rest-2",
-      name: "Harbor & Hearth",
-      category: "Restaurants",
-      phone: "(619) 555-0144",
-      address: "880 W Harbor Dr, San Diego, CA",
-      website: "",
-      mapsUrl: "https://maps.google.com/?q=Harbor+Hearth+San+Diego",
-    },
-    {
-      id: "demo-auto-1",
-      name: "Redline Auto Repair",
-      category: "Auto Repair",
-      phone: "(512) 555-0106",
-      address: "5401 N Interstate Hwy 35, Austin, TX",
-      website: "",
-      mapsUrl: "https://maps.google.com/?q=Redline+Auto+Repair+Austin",
-    },
-    {
-      id: "demo-auto-2",
-      name: "Northside Motors",
-      category: "Auto Repair",
-      phone: "(480) 555-0191",
-      address: "2323 E Indian School Rd, Phoenix, AZ",
-      website: "",
-      mapsUrl: "https://maps.google.com/?q=Northside+Motors+Phoenix",
-    },
-    {
-      id: "demo-pet-1",
-      name: "Paw & Polish Grooming",
-      category: "Pet Groomers",
-      phone: "(512) 555-0172",
-      address: "7010 Easy Wind Dr, Austin, TX",
-      website: "",
-      mapsUrl: "https://maps.google.com/?q=Paw+Polish+Grooming+Austin",
-    },
-    {
-      id: "demo-pet-2",
-      name: "Happy Coat Pets",
-      category: "Pet Groomers",
-      phone: "(303) 555-0138",
-      address: "2555 16th St, Denver, CO",
-      website: "https://example.com",
-      mapsUrl: "https://maps.google.com/?q=Happy+Coat+Pets+Denver",
-    },
-    {
-      id: "demo-salon-1",
-      name: "Copper Crown Salon",
-      category: "Hair Salons",
-      phone: "(512) 555-0160",
-      address: "2700 W Anderson Ln, Austin, TX",
-      website: "",
-      mapsUrl: "https://maps.google.com/?q=Copper+Crown+Salon+Austin",
-    },
-    {
-      id: "demo-cafe-1",
-      name: "Blueprint Coffee House",
-      category: "Cafes",
-      phone: "(512) 555-0121",
-      address: "200 Congress Ave, Austin, TX",
-      website: "",
-      mapsUrl: "https://maps.google.com/?q=Blueprint+Coffee+Austin",
-    },
-    {
-      id: "demo-plumb-1",
-      name: "True North Plumbing",
-      category: "Home Services",
-      phone: "(512) 555-0199",
-      address: "9100 Burnet Rd, Austin, TX",
-      website: "",
-      mapsUrl: "https://maps.google.com/?q=True+North+Plumbing+Austin",
-    },
-    {
-      id: "demo-lawn-1",
-      name: "Greenline Lawn Care",
-      category: "Home Services",
-      phone: "(737) 555-0147",
-      address: "13001 N MoPac Expy, Austin, TX",
-      website: "",
-      mapsUrl: "https://maps.google.com/?q=Greenline+Lawn+Austin",
-    },
-    {
-      id: "demo-spa-1",
-      name: "Riverstone Day Spa",
-      category: "Spas",
-      phone: "(512) 555-0181",
-      address: "3600 N Capital of Texas Hwy, Austin, TX",
-      website: "",
-      mapsUrl: "https://maps.google.com/?q=Riverstone+Spa+Austin",
-    },
-    {
-      id: "demo-photo-1",
-      name: "Frame & Field Studio",
-      category: "Photographers",
-      phone: "(512) 555-0112",
-      address: "115 E 5th St, Austin, TX",
-      website: "https://example.com",
-      mapsUrl: "https://maps.google.com/?q=Frame+Field+Studio+Austin",
-    },
-  ];
-
   function escapeHtml(s) {
     return String(s || "")
       .replace(/&/g, "&amp;")
@@ -605,47 +753,6 @@
       const locOk = !locTokens.length || locTokens.some((t) => blob.includes(t));
       return typeOk && locOk;
     });
-  }
-
-  function filterDemoLeads(type, location) {
-    const typeTokens = tokensFrom(type);
-    const locTokens = tokensFrom(location);
-    const allTokens = typeTokens.concat(locTokens);
-
-    let matches = DEMO_LEADS.filter((lead) => {
-      const blob = leadBlob(lead);
-      const typeOk =
-        !typeTokens.length || typeTokens.some((t) => blob.includes(t));
-      const locOk =
-        !locTokens.length || locTokens.some((t) => blob.includes(t));
-      return typeOk && locOk;
-    });
-
-    // If location is too specific (e.g. city not in demo set), keep type matches.
-    if (!matches.length && typeTokens.length) {
-      matches = DEMO_LEADS.filter((lead) => {
-        const blob = leadBlob(lead);
-        return typeTokens.some((t) => blob.includes(t));
-      });
-    }
-
-    // Absolute fallback so Find Leads always returns something in demo mode.
-    if (!matches.length) {
-      matches = DEMO_LEADS.slice(0, 12);
-    }
-
-    // Soft rank: more token hits first.
-    return matches
-      .map((lead) => {
-        const blob = leadBlob(lead);
-        const score = allTokens.reduce(
-          (n, t) => n + (blob.includes(t) ? 1 : 0),
-          0
-        );
-        return { lead, score };
-      })
-      .sort((a, b) => b.score - a.score)
-      .map((row) => row.lead);
   }
 
   function setStatus(msg) {
@@ -717,6 +824,8 @@
           ? window.LeadCsvFormat.resolveLeadHasWebsite(row)
           : Boolean(String(row.website_url || "").trim()),
         searchQuery: String(row.search_query || "").trim(),
+        latitude: row.latitude ?? null,
+        longitude: row.longitude ?? null,
         formatValid: true,
       });
     });
@@ -726,28 +835,45 @@
   /**
    * Ask local LeadFinderCloud (search:server) to scrape Maps for type + location.
    */
-  async function scrapeViaLeadFinder(type, location, query) {
+  async function scrapeViaLeadFinder(type, location, query, geo) {
     const base = leadFinderBaseUrl();
     if (!base) return { ok: false, skipped: true, reason: "not_configured" };
     const t = String(type || "").trim();
     const loc = String(location || "").trim();
     const q = String(query || "").trim();
-    if (!t && !loc && !q) return { ok: false, skipped: true, reason: "empty_query" };
+    const hasGeo =
+      geo &&
+      Number.isFinite(Number(geo.latitude)) &&
+      Number.isFinite(Number(geo.longitude));
+    if (!t && !loc && !q && !hasGeo) {
+      return { ok: false, skipped: true, reason: "empty_query" };
+    }
 
     const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
     const timer = controller
       ? setTimeout(() => controller.abort(), 180000)
       : null;
 
+    const body = {
+      type: t,
+      location: loc,
+      query: q || undefined,
+    };
+    if (hasGeo) {
+      body.latitude = Number(geo.latitude);
+      body.longitude = Number(geo.longitude);
+      body.radiusMiles = Number(geo.radiusMiles) || NEARBY_RADIUS_MILES;
+    }
+
     try {
+      const headers = await scrapeAuthHeaders();
+      if (isWorkerLeadFinderBase(base) && !headers.Authorization) {
+        return { ok: false, skipped: true, reason: "sign_in_required" };
+      }
       const res = await fetch(base + "/search", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: t,
-          location: loc,
-          query: q || undefined,
-        }),
+        headers,
+        body: JSON.stringify(body),
         signal: controller?.signal,
       });
       const data = await res.json().catch(() => ({}));
@@ -770,9 +896,7 @@
       const aborted = e?.name === "AbortError";
       return {
         ok: false,
-        error: aborted
-          ? "LeadFinder scrape timed out"
-          : e?.message || "LeadFinder unavailable",
+        error: aborted ? "LeadFinder scrape timed out" : scrapeErrorMessage(e),
       };
     } finally {
       if (timer) clearTimeout(timer);
@@ -796,8 +920,24 @@
   function buildQuery(type, location) {
     const t = String(type || "").trim();
     const loc = String(location || "").trim();
+    if (inMyArea && userCoords) {
+      if (t) return t + " near you";
+      return "Businesses near you";
+    }
     if (t && loc) return t + " in " + loc;
     return t || loc;
+  }
+
+  function rankLeadsForView(leads, options) {
+    const opts = options && typeof options === "object" ? options : {};
+    if (inMyArea && userCoords) {
+      const nearby = applyNearbyFilterAndSort(leads, userCoords, NEARBY_RADIUS_MILES, {
+        trustScrapeRadius: !!opts.trustScrapeRadius,
+        includeUnknownDistance: !!opts.trustScrapeRadius,
+      });
+      if (nearby.length) return nearby;
+    }
+    return rankLeadList(leads);
   }
 
   function leadPhone(lead) {
@@ -817,6 +957,105 @@
     return w.startsWith("http://") || w.startsWith("https://");
   }
 
+  function leadMissingWebsite(lead) {
+    const fmt = window.LeadCsvFormat;
+    if (fmt?.resolveLeadMissingWebsite) return fmt.resolveLeadMissingWebsite(lead);
+    return !leadHasWebsite(lead);
+  }
+
+  function leadNeedsWebsiteCheck(lead) {
+    const fmt = window.LeadCsvFormat;
+    if (fmt?.resolveLeadNeedsWebsiteCheck) return fmt.resolveLeadNeedsWebsiteCheck(lead);
+    return !leadHasWebsite(lead) && !leadMissingWebsite(lead);
+  }
+
+  function renderWebsiteCell(lead) {
+    const website = leadWebsite(lead);
+    if (leadHasWebsite(lead) && website) {
+      return escapeHtml(formatWebsiteLabel(website));
+    }
+    if (leadMissingWebsite(lead)) {
+      return '<span class="ms-lf-pro-no-site">No website</span>';
+    }
+    if (leadNeedsWebsiteCheck(lead) && lead.websiteCheckPending) {
+      return '<span class="ms-lf-pro-site-check">Checking…</span>';
+    }
+    return '<span class="ms-lf-pro-no-site">No website</span>';
+  }
+
+  function reconcileLeadWebsite(lead) {
+    return window.LeadCsvFormat?.reconcileLeadWebsiteFields
+      ? window.LeadCsvFormat.reconcileLeadWebsiteFields(lead)
+      : lead;
+  }
+
+  function reconcileLeadList(leads) {
+    return (leads || []).map((lead) => reconcileLeadWebsite(lead));
+  }
+
+  function scheduleWebsiteRefresh() {
+    if (websiteRefreshTimer) return;
+    websiteRefreshTimer = setTimeout(() => {
+      websiteRefreshTimer = null;
+      refreshVisibleLeads();
+    }, 150);
+  }
+
+  function enqueueWebsiteVerification(leads) {
+    const maxBatch = Number(window.LeadWebsiteEnrich?.MAX_PER_BATCH) || 48;
+    const candidates = (leads || [])
+      .filter((lead) => needsWebsiteCheck(lead))
+      .slice(0, maxBatch);
+    if (!candidates.length) return;
+
+    const jobId = ++websiteVerifyJob;
+    const enrich = window.LeadWebsiteEnrich;
+    if (!enrich?.enqueue) {
+      candidates.forEach((lead) => enrich?.markLeadWebsiteMissing?.(lead));
+      scheduleWebsiteRefresh();
+      return;
+    }
+
+    void (async () => {
+      candidates.forEach((lead) => {
+        lead.websiteCheckPending = true;
+      });
+      scheduleWebsiteRefresh();
+      if (jobId !== websiteVerifyJob) return;
+
+      let canRun = false;
+      try {
+        canRun = enrich.canRunEnrichment ? await enrich.canRunEnrichment() : !!enrich.baseUrl?.();
+      } catch (_) {
+        canRun = false;
+      }
+      if (jobId !== websiteVerifyJob) return;
+
+      if (!canRun) {
+        try {
+          await enrich.fallbackLeads?.(candidates, scheduleWebsiteRefresh);
+        } catch (_) {
+          candidates.forEach((lead) => enrich.markLeadWebsiteMissing?.(lead));
+          scheduleWebsiteRefresh();
+        }
+        return;
+      }
+
+      try {
+        enrich.enqueue(candidates, scheduleWebsiteRefresh);
+      } catch (_) {
+        scheduleWebsiteRefresh();
+      }
+    })();
+  }
+
+  function needsWebsiteCheck(lead) {
+    if (window.LeadWebsiteEnrich?.needsWebsiteCheck) {
+      return window.LeadWebsiteEnrich.needsWebsiteCheck(lead);
+    }
+    return leadNeedsWebsiteCheck(lead);
+  }
+
   function getWebsiteFilter() {
     const active = document.querySelector("#lf-website-filter .ms-lf-website-btn.is-active");
     return String(active?.getAttribute("data-website") || "all").toLowerCase();
@@ -824,9 +1063,12 @@
 
   function applyWebsiteFilter(leads, filter) {
     const mode = String(filter || "all").toLowerCase();
-    if (mode === "with") return (leads || []).filter(leadHasWebsite);
-    if (mode === "without") return (leads || []).filter((lead) => !leadHasWebsite(lead));
-    return leads || [];
+    const pool = reconcileLeadList(leads);
+    if (mode === "with") return pool.filter(leadHasWebsite);
+    if (mode === "without") {
+      return pool.filter((lead) => !leadHasWebsite(lead) && (leadMissingWebsite(lead) || leadNeedsWebsiteCheck(lead)));
+    }
+    return pool;
   }
 
   function motionReduced() {
@@ -1259,18 +1501,11 @@
     } catch (_) {
       /* ignore */
     }
-    return { href: "builder.html?" + params.toString(), pick };
+    return { href: "editor.html?" + params.toString(), pick };
   }
 
   async function launchBuilderForLead(lead, opts) {
     if (!lead) return false;
-    if (!opts?.skipCreditCheck) {
-      const check = await canAffordGeneration();
-      if (!check.ok) {
-        showGenerateBlocked(check.message || NO_CREDITS_MSG);
-        return false;
-      }
-    }
     markLeadClaimed(lead);
     const handoff = builderHrefForLead(lead);
     storeBuilderPick(handoff.pick);
@@ -1336,18 +1571,12 @@
       return;
     }
     void (async () => {
-      const check = await canAffordGeneration();
-      if (!check.ok) {
-        resetSlide(slide, true);
-        showGenerateBlocked(check.message || NO_CREDITS_MSG);
-        return;
-      }
       slide.classList.remove("is-dragging", "is-returning");
       slide.classList.add("is-completing");
       setSlideX(slide, max, max);
       window.setTimeout(() => {
         slide.classList.remove("is-completing");
-        void launchBuilderForLead(lead, { skipCreditCheck: true }).then((ok) => {
+        void launchBuilderForLead(lead).then((ok) => {
           if (!ok) {
             resetSlide(slide, true);
             return;
@@ -1470,6 +1699,12 @@
     const hasSite = leadHasWebsite(lead);
     const mapsUrl = String(lead.mapsUrl || lead.maps_url || "").trim();
     const ratingLine = formatRatingCompact(lead);
+    const distanceLine =
+      inMyArea && lead.distanceMiles != null
+        ? lead.distanceMiles < 0.2
+          ? "< 0.2 mi"
+          : lead.distanceMiles.toFixed(1) + " mi"
+        : "";
     const saved = isSaved(lead);
     const tel = telHref(phone || lead.phone);
     const prospectScore = window.LeadProspectRank?.getWebsiteProspectScore?.(lead) ?? 0;
@@ -1506,9 +1741,7 @@
       renderProRowPair(
         ICO.globe,
         "Website and Google Maps",
-        hasSite && website
-          ? escapeHtml(formatWebsiteLabel(website))
-          : '<span class="ms-lf-pro-no-site">No website</span>',
+        renderWebsiteCell(lead),
         mapsUrl ? "Google Maps" : "Maps link unavailable",
         {
           rowClass: "ms-lf-pro-row--website",
@@ -1543,6 +1776,9 @@
       "</h3>" +
       '<p class="ms-lf-pro-category">' +
       escapeHtml(category) +
+      (distanceLine
+        ? ' <span class="ms-lf-pro-distance">' + escapeHtml(distanceLine) + "</span>"
+        : "") +
       "</p>" +
       "</div></div>" +
       '<div class="ms-lf-pro-head-actions">' +
@@ -1580,12 +1816,11 @@
     );
   }
 
-  function renderLeads(leads, query, isDemo) {
+  function renderLeads(leads, query) {
     if (!resultsEl) return;
     clearLoadingCards();
     lastLeads = Array.isArray(leads) ? leads.slice() : [];
     lastQuery = query || "";
-    lastUsedDemo = !!isDemo;
 
     const websiteFilter = getWebsiteFilter();
     let visible = filterClaimed(applyWebsiteFilter(lastLeads, websiteFilter));
@@ -1600,14 +1835,20 @@
     setListCount(visible.length);
 
     if (!visible.length) {
+      const nearbyEmpty =
+        inMyArea &&
+        "No businesses found within 5 miles. Try a specific category (e.g. Plumber, Barbershop) or turn off In my area.";
       resultsEl.innerHTML =
         '<div class="ms-dash-empty">' +
         (listView === "saved"
           ? "No Quick Save businesses yet. Heart a lead on Available to keep it here."
-          : leadsReady
-            ? 'No leads match "' + escapeHtml(query) + '". Try another type or city.'
-            : "No leads loaded yet. Refresh the page or check your connection.") +
+          : nearbyEmpty
+            ? nearbyEmpty
+            : leadsReady
+              ? 'No leads match "' + escapeHtml(query) + '". Try another type or city.'
+              : "No leads loaded yet. Refresh the page or check your connection.") +
         "</div>";
+      setStatus("");
       return;
     }
 
@@ -1615,9 +1856,6 @@
     const hasMore = visible.length > displayLimit;
 
     resultsEl.innerHTML =
-      (isDemo && listView !== "saved"
-        ? '<p class="ms-muted ms-lf-demo-note">Showing demo leads for preview</p>'
-        : "") +
       shown.map((lead, index) => renderLeadCard(lead, index)).join("") +
       (hasMore
         ? '<div class="ms-lf-more-wrap"><button type="button" class="ms-btn ms-btn-secondary" id="lf-load-more">Show more (' +
@@ -1627,19 +1865,30 @@
 
     observeLeadReveals(resultsEl);
 
-    window.LeadWebsiteEnrich?.enqueue?.(shown, () => {
-      refreshVisibleLeads();
-    });
+    if (websiteFilter === "without") {
+      enqueueWebsiteVerification(shown);
+    }
   }
 
   function refreshVisibleLeads() {
     if (listView === "saved" && !lastLeads.length) {
-      renderLeads(savedLeadsList(), "Quick Save", false);
+      renderLeads(savedLeadsList(), "Quick Save");
       setStatus("");
       return;
     }
     if (!lastLeads.length) return;
-    renderLeads(lastLeads, lastQuery, lastUsedDemo);
+    renderLeads(lastLeads, lastQuery);
+  }
+
+  function paintPreloadedLeads(leads) {
+    allLeads = rankLeadList(Array.isArray(leads) ? leads : []);
+    leadsReady = allLeads.length > 0;
+    if (shouldSkipBulkPaint()) return false;
+    displayLimit = DISPLAY_PAGE;
+    if (!allLeads.length) return false;
+    setStatus("");
+    renderLeads(allLeads, "All leads");
+    return true;
   }
 
   async function preloadAllLeads() {
@@ -1654,11 +1903,25 @@
     setStatus("");
     showLoadingCards();
     try {
-      const data = await loader.load({ force: true, forceFull: true, watch: true });
-      allLeads = rankLeadList(Array.isArray(data?.leads) ? data.leads : []);
-      leadsReady = allLeads.length > 0;
-      displayLimit = DISPLAY_PAGE;
-      if (!allLeads.length) {
+      const cached = loader.peekCache?.();
+      let paintedFromCache = false;
+      if (cached?.leads?.length) {
+        paintedFromCache = paintPreloadedLeads(cached.leads);
+        if (paintedFromCache) clearLoadingCards();
+      }
+
+      const data = await loader.load({
+        watch: true,
+        onPartial: (payload) => {
+          if (!payload?.leads?.length) return;
+          if (shouldSkipBulkPaint()) return;
+          if (typeInput?.value?.trim() || locationInput?.value?.trim()) return;
+          paintPreloadedLeads(payload.leads);
+          clearLoadingCards();
+        },
+      });
+
+      if (!paintPreloadedLeads(data?.leads || [])) {
         clearLoadingCards();
         setStatus("No leads in the database yet.");
         setListCount(0);
@@ -1666,8 +1929,10 @@
           '<div class="ms-dash-empty">No leads in the database yet.</div>';
         return;
       }
-      setStatus("");
-      renderLeads(allLeads, "All leads", false);
+      clearLoadingCards();
+      if (data?.fromCache && paintedFromCache) {
+        loader.checkForUpdates?.().catch(() => null);
+      }
     } catch (e) {
       console.error(e);
       clearLoadingCards();
@@ -1680,11 +1945,146 @@
     }
   }
 
-  async function findLeads() {
-    const type = typeInput?.value || "";
-    const location = locationInput?.value || "";
+  async function findNearbyLeads(options) {
+    const opts = options && typeof options === "object" ? options : {};
+    const token = areaRequestToken;
+    if (!userCoords) {
+      const ok = await enableInMyArea({ autoSearch: false });
+      if (!ok || token !== areaRequestToken) return;
+    }
+    const searchType = nearbySearchType(typeInput?.value || "");
+    const scrapeType = searchType || "businesses";
     const websiteFilter = getWebsiteFilter();
-    const query = buildQuery(type, location) || "All leads";
+    const query = searchType ? searchType + " near you" : "Businesses near you";
+
+    setError("");
+    setStatus("");
+    hideAllSuggests();
+    displayLimit = DISPLAY_PAGE;
+    resetLeadReveals();
+    setFindBusy(true);
+    if (!opts.fromAreaToggle) showLoadingCards();
+
+    let leads = [];
+    let remoteError = "";
+    let scrapedFresh = false;
+
+    try {
+      const base = leadFinderBaseUrl();
+      if (base) {
+        const scraped = await scrapeViaLeadFinder(
+          scrapeType,
+          "",
+          query,
+          {
+            latitude: userCoords.lat,
+            longitude: userCoords.lng,
+            radiusMiles: NEARBY_RADIUS_MILES,
+          }
+        );
+        if (scraped.ok && scraped.leads?.length) {
+          scrapedFresh = true;
+          leads = applyWebsiteFilter(scraped.leads, websiteFilter);
+          leads = applyNearbyFilterAndSort(leads, userCoords, NEARBY_RADIUS_MILES, {
+            trustScrapeRadius: true,
+            includeUnknownDistance: true,
+          });
+          mergeScrapedIntoAllLeads(scraped.leads);
+        } else if (!scraped.skipped) {
+          remoteError = scraped.error || "Nearby scrape returned no leads";
+          console.warn("Nearby scrape:", remoteError);
+        }
+      }
+
+      if (!leads.length && allLeads.length) {
+        const pool = applyWebsiteFilter(
+          searchType ? filterLocalLeads(searchType, "") : allLeads.slice(),
+          websiteFilter
+        );
+        leads = applyNearbyFilterAndSort(pool, userCoords, NEARBY_RADIUS_MILES, {
+          includeUnknownDistance: false,
+        });
+      }
+
+      const cityContext = await reverseGeocodeSearchContext(userCoords);
+
+      if (!leads.length && window.LeadsLoader?.searchRemote) {
+        try {
+          const remoteQuery = cityContext?.label
+            ? searchType
+              ? searchType + " in " + cityContext.label
+              : cityContext.label
+            : searchType || scrapeType;
+          const result = await window.LeadsLoader.searchRemote(remoteQuery, {
+            limit: 400,
+            websiteFilter: websiteFilter,
+          });
+          if (result?.ok && Array.isArray(result.leads) && result.leads.length) {
+            const filtered = applyWebsiteFilter(result.leads, websiteFilter);
+            const byDistance = applyNearbyFilterAndSort(filtered, userCoords, NEARBY_RADIUS_MILES, {
+              includeUnknownDistance: false,
+            });
+            const byCity = cityContext ? leadsMatchingSearchCity(filtered, cityContext) : [];
+            leads = mergeNearbyResults(byDistance, byCity);
+            leads = applyNearbyFilterAndSort(leads, userCoords, NEARBY_RADIUS_MILES, {
+              trustScrapeRadius: byDistance.length === 0 && byCity.length > 0,
+              includeUnknownDistance: byDistance.length === 0,
+            });
+          } else if (result?.error) {
+            remoteError = remoteError || String(result.error);
+          }
+        } catch (e) {
+          remoteError = remoteError || scrapeErrorMessage(e);
+        }
+      }
+
+      if (!leads.length) {
+        if (remoteError && !/showing nearby leads from the database/i.test(remoteError)) {
+          setError(remoteError);
+        }
+      } else {
+        setStatus("");
+        setError("");
+      }
+
+      if (!inMyArea || token !== areaRequestToken) return;
+
+      renderLeads(
+        rankLeadsForView(leads, { trustScrapeRadius: scrapedFresh }),
+        query
+      );
+    } finally {
+      setFindBusy(false);
+    }
+  }
+
+  function mergeScrapedIntoAllLeads(scrapedLeads) {
+    const byKey = new Map();
+    allLeads.forEach((lead) => {
+      const key = leadId(lead) || lead.mapsUrl || lead.name;
+      if (key) byKey.set(key, lead);
+    });
+    (scrapedLeads || []).forEach((lead) => {
+      const key = leadId(lead) || lead.mapsUrl || lead.name;
+      if (key) byKey.set(key, lead);
+    });
+    allLeads = rankLeadList(Array.from(byKey.values()));
+    leadsReady = allLeads.length > 0;
+  }
+
+  async function findLeads(options) {
+    if (inMyArea) {
+      await findNearbyLeads(options);
+      return;
+    }
+
+    const opts = options && typeof options === "object" ? options : {};
+    const typeRaw = typeInput?.value || "";
+    let location = locationInput?.value || "";
+    const websiteFilter = getWebsiteFilter();
+    let searchType = typeRaw.trim();
+
+    const query = buildQuery(searchType, location) || "All leads";
     setError("");
     setStatus("");
     hideAllSuggests();
@@ -1692,30 +2092,26 @@
     resetLeadReveals();
 
     setFindBusy(true);
-    showLoadingCards();
+    if (!opts.fromAreaToggle) showLoadingCards();
 
     let leads = [];
-    let usedDemo = false;
     let remoteError = "";
+    let scrapedFresh = false;
 
     try {
-      const canScrape = Boolean(leadFinderBaseUrl()) && (type.trim() || location.trim());
+      const canScrape = Boolean(leadFinderBaseUrl()) && (searchType || location.trim());
 
       if (canScrape) {
-        const scraped = await scrapeViaLeadFinder(type, location, query === "All leads" ? "" : query);
+        const scraped = await scrapeViaLeadFinder(
+          searchType,
+          location,
+          query === "All leads" ? "" : query,
+          null
+        );
         if (scraped.ok && scraped.leads?.length) {
+          scrapedFresh = true;
           leads = applyWebsiteFilter(scraped.leads, websiteFilter);
-          const byKey = new Map();
-          allLeads.forEach((lead) => {
-            const key = leadId(lead) || lead.mapsUrl || lead.name;
-            if (key) byKey.set(key, lead);
-          });
-          scraped.leads.forEach((lead) => {
-            const key = leadId(lead) || lead.mapsUrl || lead.name;
-            if (key) byKey.set(key, lead);
-          });
-          allLeads = rankLeadList(Array.from(byKey.values()));
-          leadsReady = allLeads.length > 0;
+          mergeScrapedIntoAllLeads(scraped.leads);
         } else if (!scraped.skipped) {
           remoteError = scraped.error || "Live scrape returned no leads";
           console.warn("LeadFinder scrape:", remoteError);
@@ -1723,46 +2119,37 @@
       }
 
       if (!leads.length && allLeads.length) {
-        leads = filterLocalLeads(type, location);
+        leads = filterLocalLeads(searchType, location);
       }
 
-      if (!leads.length && window.LeadsLoader?.searchRemote && (type.trim() || location.trim())) {
+      if (!leads.length && !scrapedFresh && window.LeadsLoader?.searchRemote && (searchType || location.trim())) {
         try {
-          const result = await window.LeadsLoader.searchRemote(
-            buildQuery(type, location) || type || location,
-            {
-              limit: 250,
-              websiteFilter: websiteFilter,
-            }
-          );
+          const remoteQuery = buildQuery(searchType, location) || searchType || location;
+          const result = await window.LeadsLoader.searchRemote(remoteQuery, {
+            limit: 250,
+            websiteFilter: websiteFilter,
+          });
           if (result?.ok && Array.isArray(result.leads) && result.leads.length) {
             leads = applyWebsiteFilter(result.leads, websiteFilter);
           } else if (result && result.ok === false && result.error) {
             remoteError = remoteError || String(result.error);
             console.warn("Business Finder search failed:", remoteError);
           }
-    } catch (e) {
+        } catch (e) {
           remoteError = remoteError || e?.message || String(e);
           console.warn(e);
         }
       }
 
-      if (!leads.length && allLeads.length && !type.trim() && !location.trim()) {
+      if (!leads.length && allLeads.length && !searchType && !location.trim()) {
         leads = allLeads.slice();
       }
 
-      if (!leads.length && !allLeads.length) {
-        leads = applyWebsiteFilter(filterDemoLeads(type, location), websiteFilter);
-        usedDemo = true;
-      }
-
       setStatus("");
-      if (usedDemo && remoteError) {
-        setError("Could not search live leads - showing demo results.");
-      } else       if (remoteError && !leads.length) {
+      if (remoteError && !leads.length) {
         setError(remoteError);
       }
-      renderLeads(rankLeadList(leads), query, usedDemo);
+      renderLeads(rankLeadList(leads), query);
     } finally {
       setFindBusy(false);
     }
@@ -1930,6 +2317,10 @@
   function clearField(kind) {
     const input = kind === "type" ? typeInput : locationInput;
     if (!input) return;
+    if (kind === "location" && inMyArea) {
+      disableInMyArea();
+      return;
+    }
     input.value = "";
     hideSuggest(kind);
     syncFieldClear(kind);
@@ -1955,10 +2346,12 @@
     };
 
     input.addEventListener("focus", () => {
+      if (kind === "location" && inMyArea) return;
       hideSuggest(kind === "type" ? "location" : "type");
       renderSuggest(kind);
     });
     input.addEventListener("input", () => {
+      if (kind === "location" && inMyArea) return;
       syncFieldClear(kind);
       schedule();
     });
@@ -2034,20 +2427,20 @@
       refreshVisibleLeads();
       return;
     }
-    if (allLeads.length) {
+    if (allLeads.length || inMyArea) {
       displayLimit = DISPLAY_PAGE;
       const type = typeInput?.value || "";
       const location = locationInput?.value || "";
-      if (type.trim() || location.trim()) {
+      if (type.trim() || location.trim() || inMyArea) {
         findLeads();
       } else {
         resetLeadReveals();
-        renderLeads(allLeads, "All leads", false);
+        renderLeads(allLeads, "All leads");
         setStatus("");
       }
       return;
     }
-    if (typeInput?.value?.trim() || locationInput?.value?.trim()) {
+    if (typeInput?.value?.trim() || locationInput?.value?.trim() || inMyArea) {
       findLeads();
     } else if (lastLeads.length) {
       resetLeadReveals();
@@ -2121,22 +2514,42 @@
 
   function bootLeadsSearch() {
     if (booted || document.body?.dataset?.page !== "leads") return;
+    showLoadingCards();
     const run = () => {
       if (booted) return;
       booted = true;
-      renderPopularTags();
-      bindSuggestField("type");
-      bindSuggestField("location");
-      syncListViewToggle();
-      void hydrateClaimedFromProjects().then((changed) => {
-        if (changed && lastLeads.length) refreshVisibleLeads();
-      });
-      void preloadAllLeads();
+      try {
+        renderPopularTags();
+        bindSuggestField("type");
+        bindSuggestField("location");
+        bindAreaToggle();
+        syncListViewToggle();
+        void hydrateClaimedFromProjects().then((changed) => {
+          if (changed && lastLeads.length) refreshVisibleLeads();
+        });
+        void preloadAllLeads();
+      } catch (e) {
+        console.error(e);
+        clearLoadingCards();
+        setError("Business Finder failed to start. Refresh the page.");
+        if (resultsEl) {
+          resultsEl.hidden = false;
+          resultsEl.innerHTML =
+            '<div class="ms-dash-empty">Business Finder failed to start. Refresh the page.</div>';
+        }
+      }
     };
+    if (document.body?.dataset?.msAuthFired === "1") {
+      run();
+      return;
+    }
     document.addEventListener("ms:auth-ready", run, { once: true });
     void window.StudioAuth?.getSession?.().then((session) => {
       if (session) run();
     });
+    setTimeout(() => {
+      if (!booted) run();
+    }, 12000);
   }
 
   window.LeadHandoff = {
@@ -2151,12 +2564,13 @@
 
   window.addEventListener("leads-cache-refreshed", (e) => {
     if (document.body?.dataset?.page !== "leads") return;
+    if (shouldSkipBulkPaint()) return;
     const payload = e.detail;
     if (!payload?.leads?.length) return;
-    allLeads = payload.leads.slice();
+    allLeads = rankLeadList(payload.leads.slice());
     leadsReady = true;
     if (!typeInput?.value?.trim() && !locationInput?.value?.trim()) {
-      renderLeads(allLeads, "All leads", false);
+      renderLeads(allLeads, "All leads");
       setStatus("");
     }
   });

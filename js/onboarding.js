@@ -37,13 +37,17 @@
   const nextUrl = safeNext(pageParams.get("next") || "dashboard.html");
 
   const P = window.MoonrisePayoutProfile;
-  if (!P) {
-    console.error("MoonrisePayoutProfile missing");
+  const SC = window.MoonriseSecurityCard;
+  if (!P || !SC) {
+    console.error("MoonrisePayoutProfile or MoonriseSecurityCard missing");
     return;
   }
 
   let step = 1;
   let saving = false;
+  let verifying = false;
+  let cardVerified = false;
+  let verifiedCard = null;
   let cachedPayout = P.normalizeProfile({});
   let phoneField = null;
 
@@ -52,11 +56,6 @@
   }
 
   function setError(msg) {
-    const el = document.getElementById("onb-error");
-    if (el) {
-      el.hidden = true;
-      el.textContent = "";
-    }
     if (!msg) {
       window.StudioToast?.clear?.();
       return;
@@ -68,7 +67,9 @@
     try {
       const raw = localStorage.getItem(DRAFT_KEY);
       if (!raw) return null;
-      return P.normalizeProfile(JSON.parse(raw));
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") delete parsed.securityCard;
+      return P.normalizeProfile(parsed);
     } catch (_) {
       return null;
     }
@@ -76,14 +77,15 @@
 
   function writeDraft(partial) {
     try {
-      const merged = P.normalizeProfile({ ...cachedPayout, ...partial });
+      const safe = { ...(partial || {}) };
+      delete safe.securityCard;
+      const merged = P.normalizeProfile({ ...cachedPayout, ...safe });
       localStorage.setItem(
         DRAFT_KEY,
         JSON.stringify({
           email: merged.email,
           phone: merged.phone,
           phoneCountry: merged.phoneCountry,
-          methods: merged.methods,
           updatedAt: new Date().toISOString(),
         })
       );
@@ -101,25 +103,284 @@
     }
   }
 
+  const MOTION = {
+    panelMs: 440,
+    exitMs: 260,
+    overlapMs: 100,
+    contentMs: 520,
+  };
+
+  function setTransitioning(active) {
+    document.body.classList.toggle("is-transitioning", !!active);
+  }
+
+  function waitForPanelTransition(el, fallbackMs) {
+    if (!el || prefersReducedMotion()) {
+      return waitMs(0);
+    }
+    return new Promise((resolve) => {
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        el.removeEventListener("transitionend", onEnd);
+        clearTimeout(timer);
+        resolve();
+      };
+      const onEnd = (event) => {
+        if (event.target !== el) return;
+        if (event.propertyName === "opacity" || event.propertyName === "filter") {
+          finish();
+        }
+      };
+      const timer = setTimeout(finish, fallbackMs);
+      el.addEventListener("transitionend", onEnd);
+    });
+  }
+
   function updateProgress() {
     const fill = document.getElementById("onb-progress-fill");
     const label = document.getElementById("onb-progress-label");
+    const bar = document.getElementById("onb-progress-bar");
     const pct = Math.round(((step - 1) / (TOTAL_STEPS - 1)) * 100);
-    if (fill) fill.style.width = pct + "%";
-    if (label) label.textContent = step + " / " + TOTAL_STEPS;
+    if (fill) fill.style.setProperty("--onb-progress", String(pct / 100));
+    if (bar) bar.setAttribute("aria-valuenow", String(step));
+    if (label) {
+      label.textContent = step + " / " + TOTAL_STEPS;
+      if (!prefersReducedMotion()) {
+        label.classList.remove("is-bump");
+        void label.offsetWidth;
+        label.classList.add("is-bump");
+      }
+    }
   }
 
-  function showStep(n) {
-    step = Math.max(1, Math.min(TOTAL_STEPS, n));
+  function pulseMainCard() {
+    /* Disabled — scaling the step container while children animate caused visible jank. */
+  }
+
+  function revealPanel(panel) {
+    if (!panel) return;
+    if (prefersReducedMotion()) {
+      panel.classList.add("is-visible");
+      return;
+    }
+    panel.classList.remove("is-visible");
+    void panel.offsetWidth;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        panel.classList.add("is-visible");
+      });
+    });
+  }
+
+  function syncPanelVisibility(activeStep) {
     document.querySelectorAll("[data-onb-step]").forEach((panel) => {
       const id = Number(panel.getAttribute("data-onb-step"));
-      const on = id === step;
-      panel.hidden = !on;
-      panel.classList.toggle("is-active", on);
+      const active = id === activeStep;
+      panel.hidden = !active;
+      panel.classList.toggle("is-active", active);
+      if (!active) {
+        panel.classList.remove("is-visible", "is-exiting", "is-onb-in", "ms-panel-anim");
+      }
     });
-    updateProgress();
+  }
+
+  function resetPanelScroll(panel) {
+    panel?.querySelector(".ms-onboard-panel-scroll")?.scrollTo({ top: 0, behavior: "instant" });
+  }
+
+  async function hidePanelAnimated(panel) {
+    if (!panel) return;
+    if (prefersReducedMotion()) {
+      panel.hidden = true;
+      panel.classList.remove("is-active", "is-visible", "is-exiting", "ms-panel-anim");
+      return;
+    }
+    panel.classList.add("ms-panel-anim", "is-exiting");
+    panel.classList.remove("is-visible");
+    await waitForPanelTransition(panel, MOTION.exitMs);
+    panel.hidden = true;
+    panel.classList.remove("is-active", "is-exiting", "ms-panel-anim");
+  }
+
+  async function showPanelAnimated(panel) {
+    if (!panel) return;
+    panel.hidden = false;
+    panel.classList.add("is-active", "ms-panel-anim");
+    panel.classList.remove("is-exiting");
+    if (prefersReducedMotion()) {
+      panel.classList.add("is-visible");
+      return;
+    }
+    panel.classList.remove("is-visible");
+    void panel.offsetWidth;
+    revealPanel(panel);
+    await waitForPanelTransition(panel, MOTION.panelMs);
+    await waitMs(MOTION.contentMs);
+  }
+
+  async function crossfadePanels(currentPanel, nextPanel) {
+    if (!nextPanel) return;
+    const reduced = prefersReducedMotion();
+
+    if (reduced) {
+      if (currentPanel && currentPanel !== nextPanel) {
+        currentPanel.hidden = true;
+        currentPanel.classList.remove("is-active", "is-visible", "is-exiting", "ms-panel-anim");
+      }
+      nextPanel.hidden = false;
+      nextPanel.classList.add("is-active", "is-visible");
+      resetPanelScroll(nextPanel);
+      return;
+    }
+
+    nextPanel.hidden = false;
+    nextPanel.classList.add("is-active", "ms-panel-anim");
+    nextPanel.classList.remove("is-visible", "is-exiting");
+    resetPanelScroll(nextPanel);
+    void nextPanel.offsetWidth;
+
+    if (currentPanel && currentPanel !== nextPanel) {
+      currentPanel.classList.add("ms-panel-anim", "is-exiting");
+      currentPanel.classList.remove("is-visible");
+      await waitMs(MOTION.overlapMs);
+      revealPanel(nextPanel);
+      await waitForPanelTransition(currentPanel, MOTION.exitMs);
+      currentPanel.hidden = true;
+      currentPanel.classList.remove("is-active", "is-exiting", "ms-panel-anim", "is-visible");
+      await waitMs(MOTION.contentMs);
+      return;
+    }
+
+    revealPanel(nextPanel);
+    await waitForPanelTransition(nextPanel, MOTION.panelMs);
+    await waitMs(MOTION.contentMs);
+  }
+
+  function waitMs(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  function prefersReducedMotion() {
+    return !!window.StudioMotion?.prefersReducedMotion?.();
+  }
+
+  let stepTransition = null;
+
+  async function showStep(n, opts) {
+    const target = Math.max(1, Math.min(TOTAL_STEPS, n));
+    const direction =
+      opts?.direction ||
+      (target > step ? "forward" : target < step ? "back" : "none");
+    if (target === step && !opts?.force) return;
+
+    if (stepTransition) await stepTransition;
+
+    stepTransition = (async () => {
+      const main = document.getElementById("onb-main");
+      const currentPanel = document.querySelector(`[data-onb-step="${step}"]`);
+      const nextPanel = document.querySelector(`[data-onb-step="${target}"]`);
+      const reduced = prefersReducedMotion();
+
+      setTransitioning(true);
+
+      if (main) {
+        main.classList.remove("is-forward", "is-back", "is-entering");
+        if (direction === "forward") main.classList.add("is-forward");
+        if (direction === "back") main.classList.add("is-back");
+        if (direction === "none") main.classList.add("is-entering");
+      }
+
+      try {
+        if (currentPanel && currentPanel !== nextPanel) {
+          await crossfadePanels(currentPanel, nextPanel);
+        } else if (nextPanel) {
+          if (direction === "none" && nextPanel.classList.contains("is-visible")) {
+            nextPanel.hidden = false;
+            nextPanel.classList.add("is-active", "is-visible");
+          } else {
+            await showPanelAnimated(nextPanel);
+          }
+          resetPanelScroll(nextPanel);
+        }
+
+        step = target;
+        updateProgress();
+        pulseMainCard();
+        syncPanelVisibility(step);
+
+        if (nextPanel) {
+          if (step === 6) {
+            document.querySelector(".ms-onboard")?.classList.add("is-celebrating");
+          } else {
+            document.querySelector(".ms-onboard")?.classList.remove("is-celebrating");
+          }
+        }
+
+        setError("");
+        if (step === 5 && !cardVerified) {
+          void mountSecurityCard();
+        }
+        window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
+      } finally {
+        setTransitioning(false);
+      }
+    })();
+
+    await stepTransition;
+    stepTransition = null;
+  }
+
+  function syncFinishButton() {
+    const btn = document.getElementById("onb-finish-setup");
+    if (btn) btn.disabled = !cardVerified;
+  }
+
+  function showVerifiedCard(card) {
+    const el = document.getElementById("onb-security-card-verified");
+    const mount = document.getElementById("onb-security-card-mount");
+    if (el) {
+      el.hidden = !card;
+      el.textContent = card
+        ? "Payout card connected: " + SC.formatCardLabel(card)
+        : "";
+    }
+    if (mount && card) {
+      mount.hidden = true;
+    }
+  }
+
+  function applyVerifiedCard(card) {
+    verifiedCard = card || null;
+    cardVerified = !!card;
+    if (card) {
+      cachedPayout = P.normalizeProfile({ ...cachedPayout, securityCard: card });
+      writeDraft({ securityCard: card });
+    }
+    showVerifiedCard(card);
+    syncFinishButton();
+  }
+
+  async function mountSecurityCard() {
+    const host = document.getElementById("onb-security-card-mount");
+    const panel = document.getElementById("onb-security-card-panel");
+    if (!host || cardVerified) return;
+    host.hidden = false;
+    panel?.classList.remove("is-load-error");
+    host.classList.add("is-loading");
     setError("");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    try {
+      host.innerHTML = "";
+      await SC.mountCard(host, { elementId: "onb-security-card-element" });
+    } catch (e) {
+      panel?.classList.add("is-load-error");
+      const retryBtn = document.getElementById("onb-retry-card");
+      if (retryBtn) retryBtn.hidden = false;
+      setError(e.message || "Could not load card form");
+    } finally {
+      host.classList.remove("is-loading");
+    }
   }
 
   function collectStepDraft() {
@@ -129,9 +390,8 @@
     }
     if (step === 5) {
       const email = String(document.getElementById("onb-email")?.value || "").trim();
-      const methods = P.readMethodsFromDom();
       const phone = phoneField ? phoneField.read() : {};
-      writeDraft({ email, methods, ...phone });
+      writeDraft({ email, ...phone, securityCard: verifiedCard || cachedPayout.securityCard });
     }
   }
 
@@ -156,24 +416,72 @@
       if (!phoneField?.isValid()) {
         return "Go back and enter a valid phone number.";
       }
-      return P.validateMethods(P.readMethodsFromDom());
+      if (!document.getElementById("onb-card-agree")?.checked) {
+        return "Please authorize storing your card for payouts.";
+      }
+      if (!cardVerified) {
+        return "Connect your payout card before continuing.";
+      }
+      return null;
     }
     return null;
+  }
+
+  async function verifySecurityCard() {
+    if (verifying || cardVerified) return;
+    const email = String(document.getElementById("onb-email")?.value || "").trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError("Enter a valid email first.");
+      return;
+    }
+    if (!document.getElementById("onb-card-agree")?.checked) {
+      setError("Please authorize storing your card for payouts.");
+      return;
+    }
+
+    verifying = true;
+    const btn = document.getElementById("onb-verify-card");
+    const prev = btn?.textContent;
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "Connecting…";
+    }
+    setError("");
+    try {
+      const card = await SC.verifyCard({ email });
+      applyVerifiedCard(card);
+      window.StudioToast?.success?.("Payout card connected.");
+    } catch (e) {
+      setError(e.message || "Could not connect payout card");
+      const host = document.getElementById("onb-security-card-mount");
+      if (host && !cardVerified) {
+        host.hidden = false;
+        await mountSecurityCard();
+      }
+    } finally {
+      verifying = false;
+      if (btn) {
+        btn.disabled = cardVerified;
+        btn.textContent = cardVerified ? "Connected" : prev || "Connect card";
+      }
+    }
   }
 
   async function persistComplete() {
     const user = await window.StudioAuth.getUser();
     if (!user) throw new Error("Not signed in");
+    if (!cardVerified || !P.isVerifiedSecurityCard?.(verifiedCard)) {
+      throw new Error("Connect your payout card before continuing.");
+    }
 
     const email = String(document.getElementById("onb-email")?.value || "").trim();
     const phone = phoneField.read();
-    const methods = P.readMethodsFromDom();
     const payout = P.normalizeProfile({
       ...cachedPayout,
       email,
       phone: phone.phone,
       phoneCountry: phone.phoneCountry,
-      methods,
+      securityCard: verifiedCard || cachedPayout.securityCard,
       completedAt: new Date().toISOString(),
       onboardingStatus: "complete",
       skippedAt: "",
@@ -199,10 +507,10 @@
     cachedPayout = payout;
     clearDraft();
     clearForceReplay();
-    window.StudioAuth.setFinanceOnboardingSoftSkip?.(false);
   }
 
   async function goNext() {
+    if (stepTransition) return;
     const err = validateCurrentStep();
     if (err) {
       setError(err);
@@ -217,16 +525,16 @@
       if (btn) btn.disabled = true;
       try {
         await persistComplete();
-        showStep(6);
+        await showStep(6, { direction: "forward" });
         const finder = document.getElementById("onb-go-finder");
         const dash = document.getElementById("onb-go-dash");
         if (finder) finder.href = "leads.html";
         if (dash) dash.href = nextUrl;
       } catch (e) {
         setError(e.message || "Could not save your profile.");
+        syncFinishButton();
       } finally {
         saving = false;
-        if (btn) btn.disabled = false;
       }
       return;
     }
@@ -235,13 +543,14 @@
       location.assign(nextUrl);
       return;
     }
-    showStep(step + 1);
+    await showStep(step + 1, { direction: "forward" });
   }
 
-  function goBack() {
+  async function goBack() {
+    if (stepTransition) return;
     setError("");
     if (step <= 1) return;
-    showStep(step - 1);
+    await showStep(step - 1, { direction: "back" });
   }
 
   function fillForm(profile, user) {
@@ -254,31 +563,45 @@
       emailEl.value = cachedPayout.email || user?.email || "";
     }
     phoneField?.fillPhoneFromSaved(cachedPayout.phone || "", cachedPayout.phoneCountry);
-    P.fillMethodsDom(cachedPayout.methods, "ms-fin");
   }
 
   function mergePayout(primary, fallback) {
     const a = P.normalizeProfile(primary);
     const b = P.normalizeProfile(fallback);
-    const methods = {};
-    P.METHODS.forEach((id) => {
-      const am = a.methods[id] || { enabled: false, handle: "" };
-      const bm = b.methods[id] || { enabled: false, handle: "" };
-      const pick =
-        am.enabled && am.handle ? am : bm.enabled && bm.handle ? bm : am.handle ? am : bm;
-      methods[id] = { enabled: !!pick.enabled, handle: String(pick.handle || "").trim() };
-    });
     return P.normalizeProfile({
       ...b,
       ...a,
       email: a.email || b.email,
       phone: a.phone || b.phone,
       phoneCountry: a.phoneCountry || b.phoneCountry,
-      methods,
+      securityCard: b.securityCard,
+      onboardingStatus: b.onboardingStatus,
+      completedAt: b.completedAt,
+      skippedAt: b.skippedAt,
     });
   }
 
+  async function hydrateVerifiedCard(profile) {
+    const dbCard = P.normalizeProfile(profile?.payout_profile || {}).securityCard;
+    if (P.isVerifiedSecurityCard?.(dbCard)) {
+      applyVerifiedCard(dbCard);
+      return;
+    }
+    try {
+      const status = await SC.fetchStatus();
+      if (status?.verified && status.securityCard && P.isVerifiedSecurityCard?.(status.securityCard)) {
+        applyVerifiedCard(status.securityCard);
+      }
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
   async function boot() {
+    document.querySelector(".ms-onboard")?.classList.add("is-ready");
+    syncPanelVisibility(1);
+    document.querySelector('[data-onb-step="1"]')?.classList.add("is-visible");
+
     const session = await window.StudioAuth.requireAuth();
     if (!session) return;
 
@@ -295,19 +618,16 @@
     });
     phoneField.bind();
 
-    const methodsHost = document.getElementById("onb-methods");
-    P.renderMethodsHtml(methodsHost, { classPrefix: "ms-fin" });
-    P.bindMethodsHost(methodsHost, "ms-fin");
-
     const user = await window.StudioAuth.getUser();
     const profile = await window.StudioAuth.getProfile();
 
-    if (!isReplay && P.isStudioOnboarded(profile)) {
+    if (!isReplay && window.StudioAuth.studioOnboarded?.(profile)) {
       location.replace(nextUrl);
       return;
     }
 
     fillForm(profile, user);
+    await hydrateVerifiedCard(profile);
 
     document.querySelectorAll("[data-onb-next]").forEach((btn) => {
       btn.addEventListener("click", (e) => {
@@ -318,7 +638,26 @@
     document.querySelectorAll("[data-onb-back]").forEach((btn) => {
       btn.addEventListener("click", (e) => {
         e.preventDefault();
-        goBack();
+        void goBack();
+      });
+    });
+
+    document.getElementById("onb-legal-agree")?.addEventListener("change", () => {
+      if (document.getElementById("onb-legal-agree")?.checked) setError("");
+    });
+
+    document.getElementById("onb-verify-card")?.addEventListener("click", (e) => {
+      e.preventDefault();
+      void verifySecurityCard();
+    });
+
+    document.getElementById("onb-retry-card")?.addEventListener("click", (e) => {
+      e.preventDefault();
+      const retryBtn = document.getElementById("onb-retry-card");
+      if (retryBtn) retryBtn.hidden = true;
+      void mountSecurityCard().then(() => {
+        const panel = document.getElementById("onb-security-card-panel");
+        if (panel?.classList.contains("is-load-error") && retryBtn) retryBtn.hidden = false;
       });
     });
 
@@ -327,7 +666,11 @@
       location.assign(nextUrl);
     });
 
-    showStep(1);
+    document.querySelector(".ms-onboard-brand")?.addEventListener("click", (e) => {
+      e.preventDefault();
+    });
+
+    await showStep(1, { direction: "none", force: true });
   }
 
   if (document.readyState === "loading") {

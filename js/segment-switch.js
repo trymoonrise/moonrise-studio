@@ -51,6 +51,18 @@
       tone: "surface",
     },
     {
+      track: ".ms-bs-recent-filters",
+      items: ":scope > .ms-dash-projects-filter",
+      activeClass: "is-active",
+      tone: "surface",
+    },
+    {
+      track: ".ms-projects-filters",
+      items: ":scope > .ms-dash-projects-filter",
+      activeClass: "is-active",
+      tone: "surface",
+    },
+    {
       track: ".settings-segment",
       items: ":scope > .settings-segment-btn",
       activeClass: "active",

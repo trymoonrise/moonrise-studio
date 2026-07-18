@@ -105,10 +105,14 @@
   }
 
   function finalizeLead(lead) {
-    if (global.LeadDisplay?.sanitizeLeadFields) {
-      return global.LeadDisplay.sanitizeLeadFields(lead);
+    let next = lead;
+    if (global.LeadCsvFormat?.reconcileLeadWebsiteFields) {
+      next = global.LeadCsvFormat.reconcileLeadWebsiteFields({ ...lead });
     }
-    return lead;
+    if (global.LeadDisplay?.sanitizeLeadFields) {
+      return global.LeadDisplay.sanitizeLeadFields(next);
+    }
+    return next;
   }
 
   function filterBrowsableLeads(leads) {
@@ -551,6 +555,11 @@
       );
     }
 
+    const session = await waitForAuthSession();
+    if (!session) {
+      throw new Error("Sign in to load Business Finder leads.");
+    }
+
     if (forceFull) {
       const fetched = await fetchLeadRows(sb, LEAD_SELECT, {});
       if (!fetched.rows.length) {
@@ -958,6 +967,11 @@
       return { ok: false, query: rawQuery, leads: [], total: 0, error: "client_unavailable", parsed };
     }
 
+    const session = await waitForAuthSession();
+    if (!session) {
+      return { ok: false, query: rawQuery, leads: [], total: 0, error: "sign_in_required", parsed };
+    }
+
     const limit = Math.min(Math.max(Number(options.limit) || 250, 20), 400);
     // Only real public.leads columns — ghost Maps scrape keys break PostgREST filters.
     const fields = [
@@ -1034,7 +1048,9 @@
       .filter((lead) => lead && (lead.formatValid !== false || lead.name || lead.mapsUrl))
       .filter((lead) => {
         if (websiteFilter === "with") return !!lead.hasWebsite;
-        if (websiteFilter === "without") return !lead.hasWebsite;
+        if (websiteFilter === "without") {
+          return !lead.hasWebsite && (lead.websiteStatus === "missing" || lead.websiteStatus === "unknown");
+        }
         return true;
       });
 
@@ -1074,6 +1090,30 @@
       await wait(120);
     }
     return global.SiteSupabase?.getClient?.() || null;
+  }
+
+  /** Leads RLS is authenticated-only — wait for JWT before querying. */
+  async function waitForAuthSession() {
+    const started = Date.now();
+    while (Date.now() - started < SUPABASE_WAIT_MS) {
+      try {
+        const fromAuth = await global.StudioAuth?.getSession?.();
+        if (fromAuth?.access_token) return fromAuth;
+      } catch (_) {
+        /* retry */
+      }
+      const sb = global.SiteSupabase?.getClient?.();
+      if (sb?.auth?.getSession) {
+        try {
+          const { data } = await sb.auth.getSession();
+          if (data?.session?.access_token) return data.session;
+        } catch (_) {
+          /* retry */
+        }
+      }
+      await wait(120);
+    }
+    return null;
   }
 
   function queueRealtimeRefresh() {

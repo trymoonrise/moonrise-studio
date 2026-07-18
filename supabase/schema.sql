@@ -19,6 +19,9 @@ create table if not exists public.profiles (
   updated_at timestamptz not null default now()
 );
 
+comment on column public.profiles.mvp_plus is
+  'MVP+ supporter: Builder code access, free Store items, and related perks while active.';
+
 create index if not exists profiles_handle_idx on public.profiles (lower(handle));
 
 -- Projects
@@ -76,6 +79,8 @@ create table if not exists public.payments (
   stripe_payment_intent text,
   amount_cents int,
   currency text default 'usd',
+  kind text,
+  donor_message text check (donor_message is null or char_length(donor_message) <= 120),
   status text not null default 'pending'
     check (status in ('pending', 'paid', 'failed', 'refunded')),
   created_at timestamptz not null default now()

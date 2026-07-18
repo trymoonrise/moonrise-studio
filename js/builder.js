@@ -107,6 +107,8 @@
     pro: false,
     mvpPlus: false,
     paidPlan: false,
+    hasActiveSubscription: false,
+    planStatus: "none",
     totalCredits: 0,
     generationCost: 5,
     builderOnboarded: false,
@@ -145,6 +147,9 @@
   /** Active /generate AbortController so sidebar cancel can stop the request. */
   let generateAbort = null;
   let generateInFlight = false;
+  let generateBootStarted = false;
+  const GEN_INFLIGHT_KEY = "ms_generate_inflight_v1";
+  const GEN_INFLIGHT_MAX_MS = 15 * 60 * 1000;
   let genProgressActive = false;
   let genProgressPct = 0;
   let genProgressTimer = null;
@@ -161,6 +166,106 @@
     description: "onb-description",
     mapsUrl: "onb-maps",
   };
+
+  const BUILDER_INTAKE_KEY = "ms_builder_intake_v1";
+
+  function pageKind() {
+    const page = document.body?.dataset?.page || "builder";
+    return page === "editor" ? "editor" : "builder";
+  }
+
+  function isBuilderFormPage() {
+    return pageKind() === "builder";
+  }
+
+  function isEditorPage() {
+    return pageKind() === "editor";
+  }
+
+  function shellChannelId() {
+    return "builder";
+  }
+
+  function editorPageUrl(query) {
+    const q = query instanceof URLSearchParams ? query : new URLSearchParams(query || {});
+    const s = q.toString();
+    return "editor.html" + (s ? "?" + s : "");
+  }
+
+  function redirectToEditor(extra) {
+    const q = new URLSearchParams(location.search);
+    if (extra && typeof extra === "object") {
+      Object.entries(extra).forEach(([k, v]) => {
+        if (v != null && v !== "") q.set(k, String(v));
+      });
+    }
+    location.replace(editorPageUrl(q));
+  }
+
+  function persistIntakeForEditorHandoff() {
+    captureOnboardDetails();
+    const notes = readUserGenerationPrompt();
+    try {
+      sessionStorage.setItem(
+        BUILDER_INTAKE_KEY,
+        JSON.stringify({
+          business: { ...state.business },
+          linkBusiness: { ...state.linkBusiness },
+          leadId: state.leadId || null,
+          fromFinder: !!state.fromFinder,
+          notes,
+          templateId: state.templateId,
+        })
+      );
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  function hydrateIntakeFromBuilderHandoff() {
+    try {
+      const raw = sessionStorage.getItem(BUILDER_INTAKE_KEY);
+      if (!raw) return false;
+      const data = JSON.parse(raw);
+      if (data.business && typeof data.business === "object") {
+        Object.assign(state.business, data.business);
+      }
+      if (data.linkBusiness && typeof data.linkBusiness === "object") {
+        Object.assign(state.linkBusiness, data.linkBusiness);
+      }
+      if (data.leadId) state.leadId = String(data.leadId);
+      if (data.fromFinder) state.fromFinder = true;
+      if (data.templateId) state.templateId = data.templateId;
+      if (data.notes) {
+        setUserGenerationPrompt(data.notes);
+      }
+      sessionStorage.removeItem(BUILDER_INTAKE_KEY);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function readUserGenerationPrompt() {
+    const ids = ["onb-generation-prompt", "biz-notes"];
+    for (let i = 0; i < ids.length; i += 1) {
+      const val = sanitizeClientText(document.getElementById(ids[i])?.value || "", 2000);
+      if (val) return val;
+    }
+    if (state._pendingNotes) {
+      return sanitizeClientText(state._pendingNotes, 2000);
+    }
+    return "";
+  }
+
+  function setUserGenerationPrompt(value) {
+    const next = sanitizeClientText(value || "", 2000);
+    state._pendingNotes = next || "";
+    ["onb-generation-prompt", "biz-notes"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.value = next;
+    });
+  }
 
   function businessValue(key) {
     const input = document.getElementById(BUSINESS_FIELDS[key]);
@@ -308,9 +413,9 @@
     document.body.classList.add("ms-lb-generating");
     document.documentElement.classList.remove("ms-lb-boot-generating");
     renderGenerateProgress(0, label || "Building your website…");
+    syncBuilderChannelGenerating({ cancellable: false });
     const startedAt = Date.now();
     const approachMs = 90000;
-    let kickTried = false;
     genProgressTimer = window.setInterval(() => {
       if (!genProgressActive) return;
       const elapsed = Date.now() - startedAt;
@@ -320,14 +425,6 @@
       const cap = generateAbort ? 95 : 90;
       const target = Math.floor(5 + eased * (cap - 5));
       if (target > genProgressPct) renderGenerateProgress(target);
-
-      // If prepare UI is orphaned (no in-flight generate), kick generate once.
-      if (!kickTried && elapsed > 2500 && !generateInFlight && !generateAbort) {
-        kickTried = true;
-        if (!(state.html && String(state.html).trim()) && hasFreshLeadIntake()) {
-          void generate({ fromFinder: true });
-        }
-      }
 
       // Hard stop so the bar never sits at 92% forever.
       if (elapsed > 165000 && !(state.html && String(state.html).trim())) {
@@ -339,6 +436,7 @@
         failGenerateProgress("Generation timed out. Please try again.");
         generateInFlight = false;
         generateAbort = null;
+        syncBuilderChannelGenerating();
       }
     }, 180);
     syncEmptyState();
@@ -356,6 +454,19 @@
       loading.hidden = true;
       loading.setAttribute("hidden", "");
     }
+    syncBuilderChannelGenerating();
+  }
+
+  function syncBuilderChannelGenerating(opts) {
+    const busy = !!(generateAbort || generateInFlight || genProgressActive);
+    window.StudioShell?.setChannelGenerating?.(
+      shellChannelId(),
+      busy,
+      {
+        // Cancel only while a live /generate AbortController exists.
+        cancellable: !!(busy && generateAbort && opts?.cancellable !== false),
+      }
+    );
   }
 
   function finishGenerateProgress() {
@@ -400,6 +511,7 @@
     }
     syncEmptyState();
     if (opts?.status) setStatus(opts.status);
+    setPublishEnabled();
   }
 
   function failGenerateProgress(msg) {
@@ -432,11 +544,11 @@
         setupStatus.textContent = "";
       }
     }
-    // Only show channel progress while a generate request is actually in flight
-    window.StudioShell?.setChannelGenerating?.("builder", !!busy && !!generateAbort);
+    // Channel progress tracks prepare + in-flight generate (not only AbortController).
+    syncBuilderChannelGenerating();
     if (!busy) {
       generateAbort = null;
-      window.StudioShell?.setChannelGenerating?.(null, false);
+      syncBuilderChannelGenerating();
       updateEmptyCopy(state.fromFinder);
     }
     syncEmptyState();
@@ -834,10 +946,6 @@
 
     if (state.fromFinder && (bizName || state.leadId)) {
       state.autoGeneratePending = p.get("auto_generate") !== "0";
-      const notesEl = document.getElementById("biz-notes");
-      if (notesEl && !String(notesEl.value || "").trim()) {
-        notesEl.value = buildFinderPrompt();
-      }
     }
     return filled;
   }
@@ -891,6 +999,25 @@
     return true;
   }
 
+  function readBuilderShellHidden() {
+    try {
+      return localStorage.getItem(BUILDER_SHELL_NAV_KEY) === "0";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function syncBuilderShellLayout() {
+    if (isEditorPage()) {
+      document.body.classList.add("ms-lb-hide-shell");
+      return;
+    }
+    const hideShell =
+      readBuilderShellHidden() && window.matchMedia("(min-width: 901px)").matches;
+    document.body.classList.toggle("ms-lb-hide-shell", hideShell);
+    window.dispatchEvent(new Event("resize"));
+  }
+
   function setBuilderPhase(phase) {
     const setup = document.getElementById("builder-setup");
     const workspace = document.getElementById("builder-workspace");
@@ -899,10 +1026,16 @@
     if (workspace) workspace.hidden = isSetup;
     document.body.classList.toggle("ms-lb-setup", isSetup);
     document.body.classList.toggle("ms-lb-workspace", !isSetup);
+    syncBuilderShellLayout();
     syncPromptActionUi();
   }
 
   function setOnboardOpen(open) {
+    if (isEditorPage()) {
+      if (!open) return;
+      location.href = "builder.html";
+      return;
+    }
     if (
       !open &&
       !state.onboardDone &&
@@ -910,14 +1043,16 @@
       !hasOpenProject() &&
       !hasFinderHandoff()
     ) {
-      setBuilderPhase("setup");
       return;
     }
-    setBuilderPhase(open ? "setup" : "workspace");
   }
 
-  /** Send the user back to the page they opened Builder from (Business Finder, Projects, Dashboard…). */
+  /** Send the user back to the page they opened from (Business Finder, Projects, Dashboard…). */
   function leaveBuilder() {
+    if (isEditorPage()) {
+      location.href = "builder.html";
+      return;
+    }
     const fallback = "dashboard.html";
     let target = fallback;
     try {
@@ -1037,6 +1172,9 @@
     });
     const notesEl = document.getElementById("biz-notes");
     if (notesEl) notesEl.value = "";
+    const promptEl = document.getElementById("onb-generation-prompt");
+    if (promptEl) promptEl.value = "";
+    state._pendingNotes = "";
     const codeEl = document.getElementById("code-editor");
     if (codeEl) codeEl.value = "";
 
@@ -1095,13 +1233,15 @@
     return !!(state.fromFinder || hasFreshLeadIntake());
   }
 
-  /** Keep incomplete setup on the survey page — cannot skip to the workspace. */
   function ensureOnboardSurvey() {
     // Existing project / Finder handoff opens are never the create survey.
     if (state.onboardDone || state.builderOnboarded || hasOpenProject() || hasFinderHandoff()) {
       return false;
     }
-    setBuilderPhase("setup");
+    if (isEditorPage()) {
+      location.href = "builder.html";
+      return true;
+    }
     showOnboardStep(1);
     updateOnboardContinue();
     return true;
@@ -1216,12 +1356,12 @@
     // Keep Generate in a loading state while Maps lookup or /generate is in flight.
     if (state.mapsScraping) {
       setOnboardGenerateLoading(true, "Looking up…");
-      window.StudioShell?.setChannelGenerating?.("builder", true, { cancellable: false });
+      window.StudioShell?.setChannelGenerating?.(shellChannelId(), true, { cancellable: false });
       return;
     }
-    if (generateAbort) {
+    if (generateAbort || generateInFlight || genProgressActive) {
       setOnboardGenerateLoading(true, "Generating…");
-      window.StudioShell?.setChannelGenerating?.("builder", true);
+      syncBuilderChannelGenerating();
       return;
     }
     setOnboardGenerateLoading(false);
@@ -1233,9 +1373,15 @@
     const category = String(document.getElementById("onb-category")?.value || "").trim();
     const phone = String(document.getElementById("onb-phone")?.value || "").trim();
     const address = String(document.getElementById("onb-address")?.value || "").trim();
+    const description = String(document.getElementById("onb-description")?.value || "").trim();
     const active = document.activeElement?.id;
-    const primaryFocused = active === "onb-name" || active === "onb-phone";
-    return !!(name || category || phone || address || primaryFocused);
+    const primaryFocused =
+      active === "onb-name" ||
+      active === "onb-phone" ||
+      active === "onb-category" ||
+      active === "onb-address" ||
+      active === "onb-description";
+    return !!(name || category || phone || address || description || primaryFocused);
   }
 
   function syncManualFieldsExpanded() {
@@ -1532,6 +1678,8 @@
     const name = businessValue("businessName");
     if (fromFinder && name && !state.onboardDone) {
       copy.textContent = "Add a Google link or manual details, then generate your site";
+    } else if (!state.onboardDone && !state.projectId && isEditorPage()) {
+      copy.textContent = "Open Builder to gather business details, then generate your site here";
     } else if (!state.onboardDone) {
       copy.textContent = "Add a Google link or manual details, then generate your site";
     } else if (fromFinder && name) {
@@ -1551,14 +1699,21 @@
     return owners.some((h) => String(h || "").toLowerCase() === handle);
   }
 
+  function hasActiveSubscription() {
+    return !!(state.hasActiveSubscription || isOwnerHandle());
+  }
+
   function hasPaidPlan() {
-    // MVP+ / paid access = any active Pricing subscription (Starter, Pro, Business),
-    // profile flag, or owner handle.
-    return !!(state.paidPlan || state.mvpPlus || isOwnerHandle());
+    return hasActiveSubscription();
   }
 
   function hasMvpPlus() {
-    return hasPaidPlan();
+    return !!(state.mvpPlus || hasActiveSubscription());
+  }
+
+  /** View Code / Download — MVP+ subscription or active paid plan. */
+  function canAccessCodeTools() {
+    return hasMvpPlus();
   }
 
   const MVP_STAR_TONES = 6;
@@ -1603,7 +1758,7 @@
     }
   }
 
-  /** Gate Code / Download — requires any active paid plan (Starter+). */
+  /** Gate Code / Download — MVP+ or active paid plan. */
   function denyPaidPlan(feature) {
     const label = feature === "download" ? "Download HTML" : "View Code";
     const btn =
@@ -1611,7 +1766,9 @@
         ? document.getElementById("btn-download-html")
         : document.querySelector('.is-mode[data-mode="code"]');
     cycleMvpStar(btn?.querySelector(".ms-mvp-star"));
-    window.StudioToast?.error?.(label + " requires a paid plan. Subscribe on Pricing to unlock.");
+    window.StudioToast?.error?.(
+      label + " unlocks with MVP+ (Donate) or an active Starter, Pro, or Business plan."
+    );
     if (state.mode === "code") {
       state.mode = "preview";
       try {
@@ -1620,20 +1777,20 @@
         /* ignore */
       }
     }
-    location.href = "pricing.html";
+    location.href = "donate.html";
     return false;
   }
 
   function requirePaidPlan(feature) {
-    if (hasPaidPlan()) return true;
+    if (canAccessCodeTools()) return true;
     return denyPaidPlan(feature);
   }
 
   async function requirePaidPlanAsync(feature) {
-    if (hasPaidPlan()) return true;
+    if (canAccessCodeTools()) return true;
     // Credits often load after first paint — refresh once before denying.
     await syncCreditsFromWorker();
-    if (hasPaidPlan()) return true;
+    if (canAccessCodeTools()) return true;
     return denyPaidPlan(feature);
   }
 
@@ -1643,28 +1800,56 @@
   }
 
   function syncMvpAccessUi() {
-    const locked = !hasPaidPlan();
+    const locked = !canAccessCodeTools();
     const codeBtn = document.querySelector('.is-mode[data-mode="code"]');
     const downloadBtn = document.getElementById("btn-download-html");
+    const lockHint = "Unlock with MVP+ (Donate) or an active Starter, Pro, or Business plan";
     if (codeBtn) {
       codeBtn.classList.toggle("is-mvp-locked", locked);
       codeBtn.setAttribute("aria-disabled", locked ? "true" : "false");
-      codeBtn.title = locked ? "Paid plan required - View Code" : "Code";
-      codeBtn.setAttribute("aria-label", locked ? "View Code (paid plan required)" : "Code");
+      codeBtn.title = locked ? lockHint : "Code";
+      codeBtn.setAttribute(
+        "aria-label",
+        locked ? "View Code (MVP+ or plan required)" : "Code"
+      );
       ensureMvpStar(codeBtn, locked);
     }
     if (downloadBtn) {
       downloadBtn.classList.toggle("is-mvp-locked", locked);
       downloadBtn.setAttribute("aria-disabled", locked ? "true" : "false");
-      downloadBtn.title = locked ? "Paid plan required - Download HTML" : "Download HTML";
+      downloadBtn.title = locked ? lockHint : "Download HTML";
       downloadBtn.setAttribute(
         "aria-label",
-        locked ? "Download HTML (paid plan required)" : "Download HTML"
+        locked ? "Download HTML (MVP+ or plan required)" : "Download HTML"
       );
       ensureMvpStar(downloadBtn, locked);
     }
-    // Never leave a non‑MVP+ user stuck in code mode.
+    // Never leave a locked user stuck in code mode.
     if (locked && state.mode === "code") {
+      state.mode = "preview";
+      try {
+        updatePreview();
+      } catch (_) {
+        /* ignore */
+      }
+    }
+  }
+
+  function applySubscriptionFromBalance(data) {
+    if (!data || typeof data !== "object") return;
+    state.planStatus = String(data.planStatus || "none");
+    state.hasActiveSubscription =
+      data.hasActiveSubscription === true ||
+      state.planStatus === "active" ||
+      isOwnerHandle();
+    state.mvpPlus = !!(data.mvpPlus || isOwnerHandle());
+    state.paidPlan = state.hasActiveSubscription;
+    state.pro = state.hasActiveSubscription;
+    if (data.totalCredits != null) {
+      state.totalCredits = Number(data.totalCredits) || 0;
+    }
+    syncMvpAccessUi();
+    if (state.mode === "code" && !canAccessCodeTools()) {
       state.mode = "preview";
       try {
         updatePreview();
@@ -1697,13 +1882,8 @@
       }
       const data = await res.json().catch(() => ({}));
       if (!res.ok) return false;
-      state.totalCredits = Number(data.totalCredits) || 0;
-      // Worker is source of truth; owner handle always keeps access.
-      state.paidPlan = !!(data.paidPlan || data.mvpPlus) || isOwnerHandle();
-      state.mvpPlus = state.paidPlan;
-      state.pro = state.paidPlan;
-      state.generationCost = Number(data.generationCost) || 5;
-      syncMvpAccessUi();
+      applySubscriptionFromBalance(data);
+      state.generationCost = Number(data.generationCost) || 0;
       document.dispatchEvent(new CustomEvent("ms:credits-changed", { detail: data }));
       return true;
     } catch (_) {
@@ -1712,21 +1892,9 @@
   }
 
   function syncMvpFromProfile(profile) {
-    const branding =
-      profile?.branding_defaults &&
-      typeof profile.branding_defaults === "object" &&
-      !Array.isArray(profile.branding_defaults)
-        ? profile.branding_defaults
-        : {};
-    // Unlock immediately from profile so Code / Download work before balance returns.
     if (profile?.mvp_plus || isOwnerHandle()) {
       state.mvpPlus = true;
-      state.paidPlan = true;
-      state.pro = true;
       syncMvpAccessUi();
-    }
-    if (state.mvpPlus && global.MoonriseMvpCosmetics) {
-      global.MoonriseMvpCosmetics.applyProfileCosmetics(branding);
     }
     return syncCreditsFromWorker();
   }
@@ -1747,57 +1915,13 @@
     }
   }
 
-  async function ensureCreditsForGeneration(fromOnboard) {
-    const synced = await syncCreditsFromWorker();
-    const cost = state.generationCost || 5;
-    if (synced && state.totalCredits >= cost) return true;
-    if (synced && state.totalCredits < cost) {
-      const msg = "Sorry, you need credits to generate a website. Visit our pricing page!";
-      if (fromOnboard) setOnboardError(msg);
-      else setError(msg);
-      window.StudioToast?.error?.(msg);
-      releaseFinderLeadHold();
-      return false;
-    }
-
-    // Worker sync failed — reuse Finder's StudioCredits check when available.
-    try {
-      if (window.StudioCredits?.canAffordGeneration) {
-        const check = await Promise.race([
-          window.StudioCredits.canAffordGeneration(),
-          new Promise((resolve) =>
-            window.setTimeout(() => resolve({ ok: false, reason: "timeout" }), 8000)
-          ),
-        ]);
-        if (check?.ok) {
-          if (check.totalCredits != null) {
-            state.totalCredits = Number(check.totalCredits) || state.totalCredits;
-          }
-          if (check.cost != null) state.generationCost = Number(check.cost) || cost;
-          return true;
-        }
-        if (check?.reason === "no_credits") {
-          const msg =
-            check.message ||
-            "Sorry, you need credits to generate a website. Visit our pricing page!";
-          if (fromOnboard) setOnboardError(msg);
-          else setError(msg);
-          window.StudioToast?.error?.(msg);
-          releaseFinderLeadHold();
-          return false;
-        }
-      }
-    } catch (_) {
-      /* fall through */
-    }
-
-    // Balance unknown (auth/network). Let /generate run; worker returns 402 if needed.
+  async function ensureCreditsForGeneration() {
     return true;
   }
 
   function readIntake() {
     captureOnboardDetails();
-    const notes = sanitizeClientText(document.getElementById("biz-notes")?.value || "", 2000);
+    const notes = readUserGenerationPrompt();
     const mapsUrl = sanitizeClientText(businessValue("mapsUrl"), 500);
     const businessName =
       sanitizeClientText(businessValue("businessName"), 120) ||
@@ -4192,8 +4316,8 @@
   }
 
   function updatePreview() {
-    // Hard gate: never render the code editor without MVP+.
-    if (state.mode === "code" && !hasMvpPlus()) {
+    // Hard gate: never render the code editor without an active subscription.
+    if (state.mode === "code" && !canAccessCodeTools()) {
       state.mode = "preview";
     }
     const frame = document.getElementById("preview-frame");
@@ -4278,10 +4402,58 @@
   }
 
   function setPublishEnabled() {
-    const ready = !!(state.projectId && state.html);
+    const ready = canPublishSite();
+    const isLive = !!liveSiteUrl();
+    const hasUpdates = isLive && hasUnpublishedChanges();
     const btn = document.getElementById("btn-publish-top");
-    if (btn) btn.disabled = !ready;
+    if (btn) btn.disabled = !ready || (isLive && !hasUpdates);
     syncPublishLiveUi();
+  }
+
+  const PAYMENT_POLICY_AGREE_KEY = "ms_lb_payment_policy_v1";
+
+  function paymentPolicyStorageKey() {
+    if (!state.projectId) return "";
+    return PAYMENT_POLICY_AGREE_KEY + "_" + (state.userId || "anon") + "_" + state.projectId;
+  }
+
+  function isPaymentPolicyAgreed() {
+    const box = document.getElementById("lb-payment-policy-agree");
+    if (box?.checked) return true;
+    try {
+      const key = paymentPolicyStorageKey();
+      return !!(key && localStorage.getItem(key) === "1");
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function rememberPaymentPolicyAgreement() {
+    try {
+      const key = paymentPolicyStorageKey();
+      if (key) localStorage.setItem(key, "1");
+    } catch (_) {
+      /* ignore */
+    }
+    const box = document.getElementById("lb-payment-policy-agree");
+    if (box) box.checked = true;
+  }
+
+  function syncPaymentPolicyAgreeUi() {
+    const box = document.getElementById("lb-payment-policy-agree");
+    if (!box) return;
+    let agreed = false;
+    try {
+      const key = paymentPolicyStorageKey();
+      agreed = !!(key && localStorage.getItem(key) === "1");
+    } catch (_) {
+      agreed = false;
+    }
+    box.checked = agreed;
+  }
+
+  function canPublishSite() {
+    return !!(state.projectId && state.html && isPaymentPolicyAgreed());
   }
 
   const PUBLISH_BTN_ICON =
@@ -4337,6 +4509,7 @@
   function syncPublishLiveUi({ showBanner = false } = {}) {
     const url = liveSiteUrl();
     const isLive = !!url;
+    const hasUpdates = isLive && hasUnpublishedChanges();
     const paid = isPaidProject(state.project);
     syncPreviewChromeUrl();
     const publishBtn = document.getElementById("btn-publish-top");
@@ -4348,11 +4521,31 @@
     const icon = publishBtn?.querySelector(".ms-lb-publish-icon");
 
     if (publishBtn) {
-      publishBtn.classList.toggle("is-live", isLive);
-      publishBtn.setAttribute("aria-label", isLive ? "Site is live - click to re-publish" : "Publish site");
+      publishBtn.classList.toggle("is-live", isLive && !hasUpdates);
+      publishBtn.classList.toggle("needs-update", hasUpdates);
+      publishBtn.setAttribute(
+        "aria-label",
+        !isLive
+          ? "Publish site"
+          : hasUpdates
+            ? "Publish changes to live site"
+            : "Site is live"
+      );
+      if (!canPublishSite()) {
+        publishBtn.disabled = true;
+      } else if (isLive) {
+        publishBtn.disabled = !hasUpdates;
+      } else {
+        publishBtn.disabled = false;
+      }
     }
-    if (label) label.textContent = isLive ? "Live" : "Publish";
-    if (icon) icon.innerHTML = isLive ? LIVE_BTN_ICON : PUBLISH_BTN_ICON;
+    if (label) label.textContent = publishTopLabel();
+    if (icon) icon.innerHTML = hasUpdates || !isLive ? PUBLISH_BTN_ICON : LIVE_BTN_ICON;
+    const settingsPublish = document.getElementById("lb-set-publish");
+    if (settingsPublish) {
+      settingsPublish.textContent = settingsPublishLabel();
+      settingsPublish.disabled = !canPublishSite() || (isLive && !hasUpdates);
+    }
     if (unpublishBtn) unpublishBtn.hidden = !isLive;
     if (settingsUnpublishBtn) settingsUnpublishBtn.hidden = !isLive;
     if (deleteBtn) deleteBtn.hidden = !state.projectId || paid;
@@ -4400,6 +4593,20 @@
   const DEFAULT_PRICE_CENTS = 50000;
   let priceCountUpToken = 0;
   let priceCountUpDone = false;
+
+  function cancelPriceCountUp() {
+    priceCountUpToken += 1;
+    priceCountUpDone = true;
+  }
+
+  function hasPendingProjectLoad() {
+    if (state.projectId) return true;
+    try {
+      return !!String(params().get("project_id") || "").trim();
+    } catch (_) {
+      return false;
+    }
+  }
 
   function formatPriceInputValue(cents) {
     const n = Number(cents) / 100;
@@ -4619,6 +4826,7 @@
       .maybeSingle();
     if (error) throw error;
     if (!data) throw new Error("Project not found");
+    cancelPriceCountUp();
     state.projectId = data.id;
     state.project = data;
     state.html = ensureMobileFriendlyHtml(data.html || "");
@@ -4636,26 +4844,28 @@
     } else {
       state.priceCents = DEFAULT_PRICE_CENTS;
     }
-    syncPriceUi({ animate: true });
+    syncPriceUi({ animate: false });
     state.templateId = data.template_id || state.templateId;
     state.leadId = data.lead_id || null;
     state.onboardDone = !!(state.html && state.html.trim());
     const ctx = data.business_context || {};
+    if (ctx.notes) {
+      setUserGenerationPrompt(ctx.notes);
+    }
     setBusinessValue("businessName", data.business_name || ctx.businessName || "");
     setBusinessValue("category", ctx.category || "");
     setBusinessValue("phone", ctx.phone || "");
     setBusinessValue("address", ctx.address || "");
     setBusinessValue("description", ctx.description || "");
     setBusinessValue("mapsUrl", ctx.mapsUrl || "");
-    if (ctx.notes && !state.onboardDone) {
-      // Only seed the ask bar during setup — after generate it is for edit prompts.
-      const notesEl = document.getElementById("biz-notes");
-      if (notesEl && !notesEl.value.trim()) notesEl.value = ctx.notes;
-    }
     syncBusinessToOnboard();
     syncOnboardTemplateSelection();
     syncPromptActionUi();
+    syncMvpAccessUi();
+    syncSiteSettingsUi();
+    syncPaymentPolicyAgreeUi();
     updatePreview();
+    schedulePreviewRepaint();
     requestAnimationFrame(() => {
       requestAnimationFrame(() => ensurePreviewPainted());
     });
@@ -4689,6 +4899,128 @@
     syncBusinessToOnboard(true);
   }
 
+  function readGenInflight() {
+    try {
+      const raw = sessionStorage.getItem(GEN_INFLIGHT_KEY);
+      if (!raw) return null;
+      const data = JSON.parse(raw);
+      if (!data || typeof data !== "object") return null;
+      const age = Date.now() - Number(data.startedAt || 0);
+      if (!data.requestId || age > GEN_INFLIGHT_MAX_MS) {
+        sessionStorage.removeItem(GEN_INFLIGHT_KEY);
+        return null;
+      }
+      return data;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function writeGenInflight(payload) {
+    try {
+      sessionStorage.setItem(
+        GEN_INFLIGHT_KEY,
+        JSON.stringify({
+          ...payload,
+          startedAt: payload.startedAt || Date.now(),
+        })
+      );
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  function clearGenInflight() {
+    try {
+      sessionStorage.removeItem(GEN_INFLIGHT_KEY);
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  function createGenerateRequestId(isRedesign) {
+    if (isRedesign) {
+      return typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : "gen-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+    }
+    const existing = readGenInflight();
+    if (existing?.requestId) return existing.requestId;
+    return typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : "gen-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+  }
+
+  function sleepMs(ms) {
+    return new Promise((resolve) => window.setTimeout(resolve, ms));
+  }
+
+  async function pollGenerateUntilDone(base, requestId, headers, signal) {
+    const deadline = Date.now() + GEN_INFLIGHT_MAX_MS;
+    while (Date.now() < deadline) {
+      if (signal?.aborted) {
+        const err = new Error("Generation cancelled.");
+        err.name = "AbortError";
+        throw err;
+      }
+      const res = await fetch(
+        base + "/generate/status?requestId=" + encodeURIComponent(requestId),
+        { headers, signal }
+      );
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.html) return data;
+      if (res.status === 404) break;
+      if (res.status >= 500 && data.code === "generation_failed") {
+        throw new Error(data.error || "Generation failed");
+      }
+      renderGenerateProgress(
+        Math.max(genProgressPct, 40),
+        "Still building your website…"
+      );
+      await sleepMs((Number(data.retryAfterSec) || 3) * 1000);
+    }
+    throw new Error(
+      "Generation is still running. Keep this tab open — it should finish shortly."
+    );
+  }
+
+  async function runGenerateRequest(base, requestId, intake, headers, signal) {
+    const res = await fetch(base + "/generate", {
+      method: "POST",
+      headers: {
+        ...headers,
+        "X-Request-Id": requestId,
+      },
+      body: JSON.stringify({
+        projectId: state.projectId,
+        requestId,
+        ...intake,
+      }),
+      signal,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 202 && data.inProgress) {
+      return pollGenerateUntilDone(
+        base,
+        String(data.requestId || requestId),
+        headers,
+        signal
+      );
+    }
+    if (res.status === 429 || data.code === "rate_limited") {
+      try {
+        return await pollGenerateUntilDone(base, requestId, headers, signal);
+      } catch (_) {
+        throw new Error(
+          data.error ||
+            "Too many generation attempts. Your site may still be building — wait a moment and refresh."
+        );
+      }
+    }
+    if (!res.ok) throw new Error(data.error || "Generation failed");
+    return data;
+  }
+
   function beginFinderGenerateUi() {
     state.fromFinder = true;
     setBuilderPhase("workspace");
@@ -4706,9 +5038,12 @@
     const fromOnboard = !!(opts && opts.fromOnboard);
     const fromFinderFlow = !!(opts && opts.fromFinder) || !!state.fromFinder || hasFreshLeadIntake();
     const isRedesign = !!(opts && opts.redesign);
-    // Allow only one live generate; a stuck flag without abort is cleared by the watchdog kick.
+    // One swipe = one generation flight. Resume uses the same requestId after refresh.
     if (generateInFlight && !isRedesign) return;
+    const inflight = readGenInflight();
+    if (inflight?.requestId && !isRedesign && generateInFlight) return;
     generateInFlight = true;
+    syncBuilderChannelGenerating({ cancellable: false });
     setError("");
     setOnboardError("");
     clearPreviewGenError();
@@ -4722,6 +5057,7 @@
       ensureOnboardSurvey();
       setError("Add a Google link or fill business details, then generate.");
       generateInFlight = false;
+      syncBuilderChannelGenerating();
       return;
     }
 
@@ -4729,6 +5065,7 @@
       if (!state.projectId || !(state.html && String(state.html).trim())) {
         setError("Generate a site first, then redesign.");
         generateInFlight = false;
+        syncBuilderChannelGenerating();
         return;
       }
     }
@@ -4759,6 +5096,7 @@
         updateOnboardContinue();
       } else setError(msg);
       generateInFlight = false;
+      syncBuilderChannelGenerating();
       return;
     }
 
@@ -4781,13 +5119,7 @@
     intake.usePresets = true;
     intake.fromFinder = fromFinderFlow;
     intake.redesign = isRedesign;
-    // Finder swipe: always rebuild notes from the lead so generation uses real facts.
-    if (fromFinderFlow && !isRedesign) {
-      const finderNotes = buildFinderPrompt();
-      intake.notes = finderNotes;
-      const notesEl = document.getElementById("biz-notes");
-      if (notesEl) notesEl.value = finderNotes;
-    }
+    intake.notes = readUserGenerationPrompt() || intake.notes || "";
     if (isRedesign) {
       const redesignNote =
         "REDESIGN: Create a completely different website — new layout, palette, typography, section order, and visual style. Do not reuse the previous design.";
@@ -4796,18 +5128,13 @@
         : redesignNote;
     }
 
-    if (!intake.notes) {
-      intake.notes = buildFinderPrompt();
-      const notesEl = document.getElementById("biz-notes");
-      if (notesEl) notesEl.value = intake.notes;
-    }
-
     try {
       assertSafePrompt(intake.notes);
     } catch (e) {
       if (fromOnboard) setOnboardError(e.message);
       else setError(e.message);
       generateInFlight = false;
+      syncBuilderChannelGenerating();
       return;
     }
 
@@ -4816,13 +5143,15 @@
       setBuilderPhase("workspace");
     }
 
-    renderGenerateProgress(Math.max(genProgressPct, 6), "Checking credits…");
+    renderGenerateProgress(Math.max(genProgressPct, 6), "Starting generation…");
     if (!genProgressActive) {
-      startGenerateProgress("Checking credits…");
+      startGenerateProgress("Starting generation…");
     }
 
-    if (!(await ensureCreditsForGeneration(fromOnboard))) {
+    if (!(await ensureCreditsForGeneration())) {
       generateInFlight = false;
+      failGenerateProgress("");
+      syncBuilderChannelGenerating();
       return;
     }
 
@@ -4853,39 +5182,15 @@
       }
       renderGenerateProgress(Math.max(genProgressPct, 18), "Building your website…");
       const headers = await authHeaders();
-      const requestId =
-        typeof crypto !== "undefined" && crypto.randomUUID
-          ? crypto.randomUUID()
-          : "gen-" + Date.now() + "-" + Math.random().toString(36).slice(2);
-      renderGenerateProgress(Math.max(genProgressPct, 25), "Building your website…");
-      const res = await fetch(base + "/generate", {
-        method: "POST",
-        headers: {
-          ...headers,
-          "X-Request-Id": requestId,
-        },
-        body: JSON.stringify({
-          projectId: state.projectId,
-          requestId,
-          redesign: isRedesign,
-          ...intake,
-        }),
-        signal,
+      const requestId = createGenerateRequestId(isRedesign);
+      writeGenInflight({
+        requestId,
+        projectId: state.projectId || null,
+        redesign: isRedesign,
       });
+      renderGenerateProgress(Math.max(genProgressPct, 25), "Building your website…");
+      const data = await runGenerateRequest(base, requestId, intake, headers, signal);
       renderGenerateProgress(Math.max(genProgressPct, 88), "Finishing your website…");
-      const data = await res.json().catch(() => ({}));
-      if (res.status === 402 || data.code === "INSUFFICIENT_CREDITS") {
-        const need = data.required || state.generationCost || 5;
-        const have = data.balance ?? state.totalCredits ?? 0;
-        const msg =
-          "Not enough credits (" + have + " available, " + need + " required). Top up on Pricing.";
-        failGenerateProgress(msg);
-        window.StudioToast?.error?.(msg);
-        releaseFinderLeadHold();
-        location.href = data.pricingUrl || "pricing.html";
-        return;
-      }
-      if (!res.ok) throw new Error(data.error || "Generation failed");
       if (data.credits) {
         state.totalCredits = Number(data.credits.totalCredits) || 0;
         document.dispatchEvent(new CustomEvent("ms:credits-changed", { detail: data.credits }));
@@ -4903,17 +5208,18 @@
       state.viewportWidths.desktop = null;
       state.viewportHeights.desktop = null;
       setEditSaveStatus("idle");
-      history.replaceState({}, "", "builder.html?project_id=" + encodeURIComponent(state.projectId));
+      history.replaceState({}, "", editorPageUrl({ project_id: state.projectId }));
       void markBuilderOnboarded();
       const statusMsg = isRedesign
-        ? "Redesign complete (" + (state.generationCost || 5) + " credits used)."
+        ? "Redesign complete."
         : data.presetCount
           ? "Generated with " + data.presetCount + " Website Presets. Watermark is on until payment."
           : "Generated. Watermark is on until payment.";
       await revealGeneratedSite(generatedHtmlKeep.html, { status: statusMsg });
+      clearGenInflight();
       generationSucceeded = true;
       generateAbort = null;
-      window.StudioShell?.setChannelGenerating?.(null, false);
+      syncBuilderChannelGenerating();
       void loadProject(state.projectId)
         .then(() => {
           if (generatedHtmlKeep.html) {
@@ -4927,8 +5233,6 @@
         .catch((loadErr) => {
           console.warn("loadProject after generate failed:", loadErr);
         });
-      const notesEl = document.getElementById("biz-notes");
-      if (notesEl) notesEl.value = "";
       const setupStatus = document.getElementById("builder-setup-status");
       if (setupStatus) {
         setupStatus.hidden = true;
@@ -4971,7 +5275,7 @@
       document.documentElement.classList.remove("ms-lb-boot-generating");
       if (generationSucceeded) {
         generateAbort = null;
-        window.StudioShell?.setChannelGenerating?.(null, false);
+        syncBuilderChannelGenerating();
       } else if (generatedHtmlKeep.html && String(generatedHtmlKeep.html).trim()) {
         // HTML arrived but success path failed mid-reveal — still finish.
         try {
@@ -4980,10 +5284,10 @@
           failGenerateProgress("Could not display the generated website. Please try again.");
         }
         generateAbort = null;
-        window.StudioShell?.setChannelGenerating?.(null, false);
+        syncBuilderChannelGenerating();
       } else {
         generateAbort = null;
-        window.StudioShell?.setChannelGenerating?.(null, false);
+        syncBuilderChannelGenerating();
       }
       updateOnboardContinue();
       syncEmptyState();
@@ -5101,6 +5405,11 @@
 
   async function publish() {
     setError("");
+    if (!isPaymentPolicyAgreed()) {
+      setError("Check the payment policy agreement before publishing.");
+      document.getElementById("lb-payment-policy-agree")?.focus();
+      return;
+    }
     if (ensureOnboardSurvey()) {
       setError("Add a Google link or fill business details, then generate.");
       return;
@@ -5121,6 +5430,8 @@
     // business owner pays there to remove the watermark (which auto-redeploys
     // the clean site).
     await persistPrice();
+    const wasLive = !!liveSiteUrl();
+    const hadUpdates = wasLive && hasUnpublishedChanges();
     const watermarked = !!state.project?.watermark_enabled;
     setStatus(watermarked ? "Publishing to Vercel (with watermark)…" : "Publishing to Vercel…");
     try {
@@ -5133,15 +5444,17 @@
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Publish failed");
       await loadProject(state.projectId);
+      rememberPaymentPolicyAgreement();
       const url = data.url || liveSiteUrl() || "done";
       syncPublishLiveUi({ showBanner: true });
       syncSiteSettingsUi();
+      const action = wasLive && hadUpdates ? "Updated" : "Published";
       setStatus(
         state.project?.watermark_enabled
-          ? "Published with watermark: " +
+          ? action + " with watermark: " +
               url +
               " - your client can pay on the live site to remove it."
-          : "Published: " + url
+          : action + ": " + url
       );
     } catch (e) {
       setError(e.message || "Publish failed");
@@ -5251,7 +5564,7 @@
         const live = liveSiteUrl();
         urlEl.textContent = live
           ? live.replace(/^https?:\/\//i, "")
-          : previewChromeUrlLabel();
+          : "Not published";
       }
       unpublishConfirmResolver = resolve;
       if (typeof dialog.showModal === "function") dialog.showModal();
@@ -5601,6 +5914,50 @@
     return String(state.project?.vercel_url || "").trim();
   }
 
+  /** Must match worker publishContentHash for publish/update detection. */
+  function publishContentHash(html) {
+    const str = String(html || "");
+    let h = 5381;
+    for (let i = 0; i < str.length; i++) {
+      h = ((h << 5) + h) ^ str.charCodeAt(i);
+    }
+    return (h >>> 0).toString(36);
+  }
+
+  function currentPublishHtml() {
+    if (state.mode === "edit") {
+      flushEditHtmlToState();
+    } else if (state.mode === "code") {
+      const editor = document.getElementById("code-editor");
+      if (editor) state.html = editor.value;
+    }
+    return ensureMobileFriendlyHtml(state.html || "");
+  }
+
+  function hasUnpublishedChanges() {
+    if (!liveSiteUrl()) return false;
+    const ctx = state.project?.business_context || {};
+    const publishedHash = String(ctx.publishedContentHash || "").trim();
+    const currentHash = publishContentHash(currentPublishHtml());
+    if (publishedHash) return currentHash !== publishedHash;
+    const lastPub = Date.parse(ctx.lastPublishedAt || "");
+    const updated = Date.parse(state.project?.updated_at || "");
+    if (Number.isFinite(lastPub) && Number.isFinite(updated)) {
+      return updated > lastPub + 1500;
+    }
+    return false;
+  }
+
+  function publishTopLabel() {
+    if (!liveSiteUrl()) return "Publish";
+    return hasUnpublishedChanges() ? "Update" : "Live";
+  }
+
+  function settingsPublishLabel() {
+    if (!liveSiteUrl()) return "Publish Site";
+    return hasUnpublishedChanges() ? "Update Site" : "Published";
+  }
+
   function isPaidProject(project) {
     const p = project || state.project;
     if (!p) return false;
@@ -5681,42 +6038,46 @@
     return slug;
   }
 
+  const PREVIEW_URL_UNPUBLISHED = "Publish to see your URL";
+
   function previewSiteUrl() {
     const live = liveSiteUrl();
-    if (live) {
-      return /^https?:\/\//i.test(live) ? live : "https://" + live.replace(/^\/\//, "");
-    }
-    return "https://" + buildPredictedVercelSlug() + ".vercel.app";
+    if (!live) return "";
+    return /^https?:\/\//i.test(live) ? live : "https://" + live.replace(/^\/\//, "");
   }
 
   function previewChromeUrlLabel() {
     const live = liveSiteUrl();
-    if (live) {
-      try {
-        return new URL(live).hostname;
-      } catch (_) {
-        return live.replace(/^https?:\/\//i, "").replace(/\/$/, "");
-      }
+    if (!live) return PREVIEW_URL_UNPUBLISHED;
+    try {
+      return new URL(live.startsWith("http") ? live : "https://" + live).hostname;
+    } catch (_) {
+      return live.replace(/^https?:\/\//i, "").replace(/\/$/, "");
     }
-    return buildPredictedVercelSlug() + ".vercel.app";
   }
 
   function syncPreviewChromeUrl() {
     const el = document.getElementById("lb-preview-chrome-url");
     const copyBtn = document.getElementById("lb-preview-chrome-copy");
-    const url = previewSiteUrl();
+    const live = liveSiteUrl();
+    const label = previewChromeUrlLabel();
     if (el) {
-      el.textContent = previewChromeUrlLabel();
-      el.title = url;
+      el.textContent = label;
+      el.classList.toggle("is-unpublished", !live);
+      el.title = live ? previewSiteUrl() : "Publish your site to get a live link";
     }
-    const ready = !!(state.html || liveSiteUrl());
-    if (copyBtn) copyBtn.disabled = !ready;
+    if (copyBtn) copyBtn.disabled = !live;
   }
 
   function bindPreviewChromeActions() {
     document.getElementById("lb-preview-chrome-copy")?.addEventListener("click", async () => {
+      const url = previewSiteUrl();
+      if (!url) {
+        window.StudioToast?.error?.("Publish first to get a public URL.");
+        return;
+      }
       try {
-        await copyText(previewSiteUrl());
+        await copyText(url);
         setStatus("Link copied.");
       } catch (e) {
         setError(e.message || "Could not copy link");
@@ -5778,7 +6139,6 @@
       if (shareUrl) shareUrl.value = url;
       if (shareHint) shareHint.textContent = "Anyone with this link can view your live site.";
       if (openBtn) openBtn.disabled = false;
-      if (publishBtn) publishBtn.textContent = "Re-publish Site";
     } else {
       if (liveUrlEl) {
         liveUrlEl.hidden = true;
@@ -5796,12 +6156,15 @@
           : "Generate and publish a site to share a link.";
       }
       if (openBtn) openBtn.disabled = true;
-      if (publishBtn) publishBtn.textContent = "Publish Site";
     }
 
-    if (publishBtn) publishBtn.disabled = !state.projectId || !state.html;
+    if (publishBtn) {
+      publishBtn.textContent = settingsPublishLabel();
+      publishBtn.disabled = !canPublishSite() || (!!url && !hasUnpublishedChanges());
+    }
     syncContactFormWidgetUi();
     syncCustomDomainWidgetUi();
+    syncLbToolsPanelLayout();
   }
 
   function readCustomDomainConfig() {
@@ -5811,6 +6174,20 @@
       ctx.customDomainEnabled === true ||
       (ctx.customDomainEnabled !== false && !!domain);
     return { enabled, domain };
+  }
+
+  function syncLbToolsPanelLayout(expandedWidget) {
+    const body = document.querySelector(".ms-lb-body");
+    if (!body) return;
+    const anyExpanded = !!body.querySelector(".ms-lb-side-controls .ms-lb-widget.is-expanded");
+    body.classList.toggle("is-tools-expanded", anyExpanded);
+    if (!expandedWidget?.classList?.contains("is-expanded")) return;
+    const controls = body.querySelector(".ms-lb-side-controls");
+    if (!controls) return;
+    window.clearTimeout(syncLbToolsPanelLayout._scrollTimer);
+    syncLbToolsPanelLayout._scrollTimer = window.setTimeout(() => {
+      expandedWidget.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }, 80);
   }
 
   function setLbWidgetExpanded(widget, body, checkbox, expanded, { animate = true, onChange } = {}) {
@@ -5824,6 +6201,7 @@
     }
     if (body) body.setAttribute("aria-hidden", expanded ? "false" : "true");
     if (onChange) onChange(!!expanded);
+    syncLbToolsPanelLayout(widget);
   }
 
   function syncCustomDomainWidgetUi() {
@@ -6161,6 +6539,7 @@
       });
       updatePreview();
       syncSiteSettingsUi();
+      setPublishEnabled();
       setSiteSettingsStatus("Branding applied.");
     } catch (e) {
       setSiteSettingsError(e.message || "Could not save branding");
@@ -6391,11 +6770,8 @@
         return;
       }
       captureOnboardDetails();
-      const notesEl = document.getElementById("biz-notes");
-      if (notesEl && !String(notesEl.value || "").trim()) {
-        notesEl.value = buildFinderPrompt();
-      }
-      generate({ fromOnboard: true });
+      persistIntakeForEditorHandoff();
+      redirectToEditor(new URLSearchParams({ from_builder: "1", auto_generate: "1" }));
     });
 
     document.getElementById("onb-maps")?.addEventListener("input", () => {
@@ -6456,6 +6832,21 @@
     document.getElementById("lb-back-menu")?.addEventListener("click", (event) => {
       event.stopPropagation();
       leaveBuilder();
+    });
+    document.getElementById("lb-shell-toggle")?.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (window.matchMedia("(max-width: 900px)").matches) {
+        document.getElementById("ms-menu-toggle")?.click();
+        return;
+      }
+      const hideShell = !document.body.classList.contains("ms-lb-hide-shell");
+      document.body.classList.toggle("ms-lb-hide-shell", hideShell);
+      try {
+        localStorage.setItem(BUILDER_SHELL_NAV_KEY, hideShell ? "0" : "1");
+      } catch (_) {
+        /* ignore */
+      }
+      window.dispatchEvent(new Event("resize"));
     });
   }
 
@@ -6548,7 +6939,7 @@
       (e) => {
         const codeBtn = e.target.closest?.('.is-mode[data-mode="code"]');
         if (codeBtn) {
-          if (!hasMvpPlus()) {
+          if (!canAccessCodeTools()) {
             e.preventDefault();
             e.stopPropagation();
             void requirePaidPlanAsync("code");
@@ -6557,7 +6948,7 @@
         }
         const downloadBtn = e.target.closest?.("#btn-download-html");
         if (downloadBtn) {
-          if (!hasMvpPlus()) {
+          if (!canAccessCodeTools()) {
             e.preventDefault();
             e.stopPropagation();
             void requirePaidPlanAsync("download");
@@ -6647,23 +7038,32 @@
       });
       priceInput.addEventListener("focus", () => {
         // Stop any in-flight count-up so the user can edit immediately.
-        priceCountUpToken += 1;
-        priceCountUpDone = true;
+        cancelPriceCountUp();
         priceInput.select();
       });
     }
-    // Animate once on first paint when no project load will follow.
-    if (!state.projectId) syncPriceUi({ animate: true });
-    else syncPriceUi();
+    if (hasPendingProjectLoad()) {
+      cancelPriceCountUp();
+      const inputEl = document.getElementById("lb-price-input");
+      if (inputEl && document.activeElement !== inputEl) inputEl.value = "";
+    } else {
+      syncPriceUi({ animate: true });
+    }
     document.getElementById("code-editor")?.addEventListener("input", () => {
-      if (!hasMvpPlus()) return;
+      if (!canAccessCodeTools()) return;
       state.html = document.getElementById("code-editor").value;
+      syncPublishLiveUi();
     });
     document.getElementById("btn-download-html")?.addEventListener("click", downloadHtml);
     document.getElementById("btn-qr-code")?.addEventListener("click", () => {
       void openQrBusinessCard();
     });
     document.getElementById("btn-publish-top")?.addEventListener("click", publish);
+    document.getElementById("lb-payment-policy-agree")?.addEventListener("change", () => {
+      setPublishEnabled();
+      const settingsPublish = document.getElementById("lb-set-publish");
+      if (settingsPublish) settingsPublish.disabled = !canPublishSite();
+    });
     document.getElementById("btn-redesign-top")?.addEventListener("click", () => {
       void redesignSite();
     });
@@ -6675,7 +7075,61 @@
     document.getElementById("lb-offline-banner-close")?.addEventListener("click", () => dismissOfflineBanner());
   }
 
-  async function boot() {
+  function startFinderGenerateOnce() {
+    if (generateBootStarted) return;
+    generateBootStarted = true;
+    beginFinderGenerateUi();
+    void generate({ fromFinder: true });
+  }
+
+  async function bootBuilderForm() {
+    bindOnboard();
+    document.addEventListener("ms:credits-changed", (e) => {
+      applySubscriptionFromBalance(e.detail);
+    });
+
+    const p = params();
+    if (p.get("project_id") || hasFreshLeadIntake(p)) {
+      redirectToEditor();
+      return;
+    }
+
+    if (document.body.dataset.msAuthFired !== "1") {
+      await new Promise((resolve) => {
+        const done = () => {
+          document.removeEventListener("ms:auth-ready", done);
+          resolve();
+        };
+        document.addEventListener("ms:auth-ready", done, { once: true });
+        window.setTimeout(done, 2500);
+      });
+    }
+
+    window.addEventListener("pagehide", () => {
+      if (generateAbort) return;
+      clearBuilderForNextVisit();
+    });
+
+    clearBuilderForNextVisit();
+    showOnboardStep(1);
+    updateOnboardContinue();
+
+    requestAnimationFrame(() => {
+      clearBuilderForNextVisit();
+      updateOnboardContinue();
+    });
+    window.setTimeout(() => {
+      clearBuilderForNextVisit();
+      updateOnboardContinue();
+    }, 250);
+
+    const maps = document.getElementById("onb-maps")?.value?.trim();
+    if (maps && isLooseLink(maps)) void scrapeMapsLink();
+    else if (isManualComplete()) updateOnboardContinue();
+  }
+
+  async function bootEditor() {
+    syncBuilderShellLayout();
     bindNavSwitch();
     bindFullscreenControls();
     bindPreviewChromeActions();
@@ -6686,7 +7140,9 @@
     bindUnpublishConfirm();
     bindRedesignConfirm();
     bindSiteSettings();
-    bindOnboard();
+    document.addEventListener("ms:credits-changed", (e) => {
+      applySubscriptionFromBalance(e.detail);
+    });
 
     // Finder swipe: show preparing progress before any auth wait so preview is never blank.
     const projectIdEarly = params().get("project_id");
@@ -6718,7 +7174,7 @@
     syncBuilderOnboardedFromProfile(state.profile);
     await inferBuilderOnboardedFromProjects();
     await syncMvpFromProfile(state.profile);
-    // Wipe blank setup visits on leave / bfcache restore. Never wipe while
+    // Wipe blank editor visits on leave / bfcache restore. Never wipe while
     // opening a project_id or Finder swipe handoff (tab switches would blank the editor).
     window.addEventListener("pagehide", () => {
       // Don't wipe in-flight generation — mobile browsers fire pagehide on tab switch.
@@ -6743,20 +7199,19 @@
         !generateAbort
       ) {
         clearBuilderForNextVisit();
-        setBuilderPhase("setup");
-        showOnboardStep(1);
-        updateOnboardContinue();
+        setBuilderPhase("workspace");
         updatePreview();
       }
     });
     const projectId = params().get("project_id");
     const finderHandoff = hasFreshLeadIntake();
-    // URL-first: never paint setup when opening a project or Finder lead.
+    // URL-first: always paint the editor workspace.
     if (projectId || finderHandoff) setBuilderPhase("workspace");
-    // Fresh blank setup visits only — never clear before Finder intake (wipes pick + flags).
+    // Fresh blank visits only — never clear before Finder intake (wipes pick + flags).
     if (!projectId && !finderHandoff) clearBuilderForNextVisit();
     const fromFinder = intakeFromQuery();
-    // Finder → Builder: claim this lead so it stays hidden in Business Finder.
+    hydrateIntakeFromBuilderHandoff();
+    // Finder → Editor: claim this lead so it stays hidden in Business Finder.
     if (state.fromFinder && state.leadId) {
       try {
         const key = "ms_lf_claimed_v1";
@@ -6768,7 +7223,7 @@
             id,
             name: businessValue("businessName") || "",
             at: new Date().toISOString(),
-            from: "builder",
+            from: "editor",
           };
           localStorage.setItem(key, JSON.stringify(map));
         }
@@ -6776,25 +7231,12 @@
         /* ignore */
       }
     }
-    // Beat browser autofill that may refill fields after paint.
-    if (!projectId && !finderHandoff && !fromFinder && !hasFreshLeadIntake()) {
-      requestAnimationFrame(() => {
-        clearBuilderForNextVisit();
-        updateOnboardContinue();
-      });
-      setTimeout(() => {
-        if (!hasFreshLeadIntake() && !params().get("project_id")) {
-          clearBuilderForNextVisit();
-          updateOnboardContinue();
-        }
-      }, 250);
-    }
     const skipSetup =
       !projectId &&
       state.fromFinder &&
       !!(businessValue("businessName") || state.leadId || businessValue("mapsUrl"));
 
-    setBuilderPhase(projectId || skipSetup || finderHandoff ? "workspace" : "setup");
+    setBuilderPhase("workspace");
     if (params().get("paid") === "1" && projectId) {
       setStatus("Payment received — removing watermark…");
       const sessionId = String(params().get("session_id") || "").trim();
@@ -6847,9 +7289,9 @@
           if (biz) {
             if (!businessValue("businessName")) setBusinessValue("businessName", biz);
             state.fromFinder = true;
-            void generate({ fromFinder: true });
+            startFinderGenerateOnce();
           } else {
-            setError("This project has no website yet. Swipe a lead again or fill details to generate.");
+            setError("This project has no website yet. Use Builder to add business details, then generate.");
           }
         }
       } catch (e) {
@@ -6863,10 +7305,12 @@
         document.body.classList.remove("ms-lb-project-loading");
         syncEmptyState();
       }
-    } else if (skipSetup || finderHandoff || finderEarly) {
+    } else if (skipSetup || finderHandoff || finderEarly || params().get("from_builder") === "1") {
       state.onboardDone = false;
       setBuilderPhase("workspace");
+      const fromBuilderHandoff = params().get("from_builder") === "1";
       const shouldAutoGen =
+        fromBuilderHandoff ||
         finderEarly ||
         state.autoGeneratePending ||
         params().get("auto_generate") === "1" ||
@@ -6875,35 +7319,31 @@
         !!finderHandoff;
       if (shouldAutoGen) {
         state.autoGeneratePending = false;
-        state.fromFinder = true;
-        beginFinderGenerateUi();
-        // Start immediately — do not wait for other UI sync.
-        void generate({ fromFinder: true });
-        // Retry only if the first call never armed a request and left no site/error.
-        window.setTimeout(() => {
-          if (generateInFlight || generateAbort) return;
-          if (state.html && String(state.html).trim()) return;
-          const err = document.getElementById("preview-gen-error");
-          if (err && !err.hidden) return;
-          beginFinderGenerateUi();
-          void generate({ fromFinder: true });
-        }, 2000);
+        if (fromBuilderHandoff) {
+          if (!generateBootStarted) {
+            generateBootStarted = true;
+            beginFinderGenerateUi();
+            void generate({ fromOnboard: true });
+          }
+        } else {
+          state.fromFinder = true;
+          startFinderGenerateOnce();
+        }
       } else {
         updateEmptyCopy(!!state.fromFinder);
         updatePreview();
       }
     } else {
       state.onboardDone = false;
-      setBuilderPhase("setup");
-      showOnboardStep(1);
-      syncSetupStepIndicators(1);
+      setBuilderPhase("workspace");
       updateEmptyCopy(fromFinder);
       updatePreview();
-      updateOnboardContinue();
-      const maps = document.getElementById("onb-maps")?.value?.trim();
-      if (maps && isLooseLink(maps)) void scrapeMapsLink();
-      else if (isManualComplete()) updateOnboardContinue();
     }
+  }
+
+  async function boot() {
+    if (isBuilderFormPage()) return bootBuilderForm();
+    return bootEditor();
   }
 
   boot();
