@@ -59,7 +59,7 @@ const WEBSITE_GENERATION_MODEL = String(
 /** Assemble output budget (output tokens dominate cost + latency). */
 const WEBSITE_MAX_OUTPUT_TOKENS = Math.max(
   8000,
-  Number(process.env.WEBSITE_MAX_OUTPUT_TOKENS || 14000)
+  Number(process.env.WEBSITE_MAX_OUTPUT_TOKENS || 12000)
 );
 /** Edit output budget. */
 const WEBSITE_EDIT_MAX_OUTPUT_TOKENS = Math.max(
@@ -152,7 +152,7 @@ const {
   TOPUP_MAX_DOLLARS,
   publicPlansCatalog,
 } = require("./credits");
-const { sendContactLeadEmail } = require("./contact-mail");
+const { sendContactLeadEmail, sendPurchaseInvoiceEmail } = require("./contact-mail");
 const {
   detectContactEndpoint,
   readContactFormConfig,
@@ -219,13 +219,16 @@ function hostingMaintenanceLineItem() {
   };
 }
 
-function goLiveUpfrontLineItem(amountCents) {
+function goLiveUpfrontLineItem(amountCents, businessName) {
+  const label = String(businessName || "").trim();
   return {
     price_data: {
       currency: "usd",
       product_data: {
-        name: "Website development",
-        description: "Remove Moonrise watermark.",
+        name: label ? `Website for ${label}` : "Website development",
+        description: label
+          ? `Website purchase and go-live for ${label}.`
+          : "Website purchase and go-live.",
       },
       unit_amount: amountCents,
     },
@@ -233,8 +236,21 @@ function goLiveUpfrontLineItem(amountCents) {
   };
 }
 
-function goLiveCheckoutLineItems(amountCents) {
-  return [goLiveUpfrontLineItem(amountCents), hostingMaintenanceLineItem()];
+function goLiveCheckoutLineItems(amountCents, businessName) {
+  return [goLiveUpfrontLineItem(amountCents, businessName), hostingMaintenanceLineItem()];
+}
+
+const MIN_GO_LIVE_AMOUNT_CENTS = 100;
+const MAX_GO_LIVE_AMOUNT_CENTS = 10000000;
+
+function resolveGoLiveAmountCents(...candidates) {
+  for (const raw of candidates) {
+    const cents = Math.round(Number(raw));
+    if (Number.isFinite(cents) && cents >= MIN_GO_LIVE_AMOUNT_CENTS) {
+      return Math.min(MAX_GO_LIVE_AMOUNT_CENTS, cents);
+    }
+  }
+  return Number(process.env.STRIPE_AMOUNT_CENTS || 50000);
 }
 
 function createGoLiveCheckoutSession(stripe, opts) {
@@ -248,10 +264,10 @@ function createGoLiveCheckoutSession(stripe, opts) {
     customerEmail,
     lineItems,
   } = opts;
+  const businessName = String(project?.business_name || "").trim();
   return stripe.checkout.sessions.create({
     mode: "subscription",
-    line_items:
-      lineItems || goLiveCheckoutLineItems(amountCents),
+    line_items: lineItems || goLiveCheckoutLineItems(amountCents, businessName),
     success_url: successUrl,
     cancel_url: cancelUrl,
     customer_email: customerEmail || undefined,
@@ -268,6 +284,43 @@ function createGoLiveCheckoutSession(stripe, opts) {
       },
     },
   });
+}
+
+/** Buyer email from a completed Checkout Session. */
+function buyerEmailFromSession(session) {
+  const email = String(
+    session?.customer_details?.email || session?.customer_email || ""
+  )
+    .trim()
+    .toLowerCase();
+  return email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : "";
+}
+
+/** Pull Stripe invoice PDF (base64) for email attachment. */
+async function loadGoLiveInvoicePdf(stripe, session) {
+  let amountCents =
+    session?.amount_total != null ? Number(session.amount_total) : null;
+  let pdfBase64 = null;
+  const invoiceId =
+    typeof session?.invoice === "string"
+      ? session.invoice
+      : session?.invoice?.id || null;
+  if (!stripe || !invoiceId) {
+    return { amountCents, pdfBase64 };
+  }
+  try {
+    const invoice = await stripe.invoices.retrieve(invoiceId);
+    if (invoice.amount_paid != null) amountCents = Number(invoice.amount_paid);
+    if (invoice.invoice_pdf) {
+      const pdfRes = await fetch(invoice.invoice_pdf);
+      if (pdfRes.ok) {
+        pdfBase64 = Buffer.from(await pdfRes.arrayBuffer()).toString("base64");
+      }
+    }
+  } catch (e) {
+    console.warn("Could not load invoice PDF:", e.message);
+  }
+  return { amountCents, pdfBase64 };
 }
 
 /**
@@ -297,6 +350,8 @@ async function unlockGoLiveAfterPayment(supabase, { projectId, session, userId }
       ? existingProject.business_context
       : {};
 
+  const invoiceEmailAlreadySent = !!priorCtx.purchaseInvoiceEmailSentAt;
+
   const { error: unlockErr } = await supabase
     .from("projects")
     .update({
@@ -307,7 +362,7 @@ async function unlockGoLiveAfterPayment(supabase, { projectId, session, userId }
         ...priorCtx,
         hostingSubscriptionId: subId || priorCtx.hostingSubscriptionId || null,
         hostingMonthlyCents: HOSTING_MONTHLY_CENTS,
-        paidAt: new Date().toISOString(),
+        paidAt: priorCtx.paidAt || new Date().toISOString(),
       },
     })
     .eq("id", projectId);
@@ -349,10 +404,55 @@ async function unlockGoLiveAfterPayment(supabase, { projectId, session, userId }
     }
   }
 
+  const siteUrl = redeploy?.url || fresh.vercel_url || null;
+
+  // Simple email + invoice PDF to the buyer. Idempotent across webhook + fulfill.
+  if (!invoiceEmailAlreadySent && session) {
+    try {
+      const email = buyerEmailFromSession(session);
+      if (email) {
+        const stripe = stripeClient();
+        const { amountCents, pdfBase64 } = await loadGoLiveInvoicePdf(stripe, session);
+        const safeName = String(fresh.business_name || "invoice")
+          .replace(/[^a-z0-9]+/gi, "-")
+          .replace(/^-|-$/g, "")
+          .slice(0, 40);
+        await sendPurchaseInvoiceEmail({
+          to: email,
+          businessName: fresh.business_name || "",
+          amountCents,
+          siteUrl,
+          pdfBase64,
+          pdfFilename: `${safeName || "invoice"}-invoice.pdf`,
+        });
+        const ctxAfter =
+          fresh.business_context &&
+          typeof fresh.business_context === "object" &&
+          !Array.isArray(fresh.business_context)
+            ? fresh.business_context
+            : {};
+        await supabase
+          .from("projects")
+          .update({
+            business_context: {
+              ...ctxAfter,
+              purchaseInvoiceEmailSentAt: new Date().toISOString(),
+              purchaseInvoiceEmailTo: email,
+            },
+          })
+          .eq("id", projectId);
+      } else {
+        console.warn("Go-live invoice email skipped: no buyer email on session", session.id);
+      }
+    } catch (mailErr) {
+      console.error("Go-live invoice email failed:", mailErr.message || mailErr);
+    }
+  }
+
   return {
     projectId,
     watermarkEnabled: false,
-    url: redeploy?.url || fresh.vercel_url || null,
+    url: siteUrl,
     redeployed: !!(redeploy && !redeploy.error),
     redeployError: redeploy?.error || null,
   };
@@ -1095,6 +1195,7 @@ async function openRouterChat({ model, system, user, temperature, maxTokens, tit
       "X-Title": title || "Moonrise Studio",
     },
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(Math.max(60000, Number(process.env.OPENROUTER_TIMEOUT_MS || 150000))),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
@@ -1287,6 +1388,35 @@ async function planAtmosphereAndPicks(ctx) {
 /**
  * Stage 2 — assemble only the collected kit into one HTML site.
  */
+function isTruncatedHtml(html) {
+  const raw = String(html || "");
+  if (!raw.trim()) return true;
+  if (!/<\/html>/i.test(raw)) return true;
+  if (!/<\/body>/i.test(raw)) return true;
+  const scripts = (raw.match(/<script\b(?![^>]*\/>)/gi) || []).length;
+  const scriptEnds = (raw.match(/<\/script>/gi) || []).length;
+  if (scripts > scriptEnds) return true;
+  return false;
+}
+
+function closeIncompleteHtml(html) {
+  let out = String(html || "");
+  if (!out.trim()) return out;
+  const openScript = (out.match(/<script\b(?![^>]*\/>)/gi) || []).length;
+  const closeScript = (out.match(/<\/script>/gi) || []).length;
+  if (openScript > closeScript) {
+    out += "\n</script>".repeat(openScript - closeScript);
+  }
+  const openStyle = (out.match(/<style\b/gi) || []).length;
+  const closeStyle = (out.match(/<\/style>/gi) || []).length;
+  if (openStyle > closeStyle) {
+    out += "\n</style>".repeat(openStyle - closeStyle);
+  }
+  if (/<body[\s>]/i.test(out) && !/<\/body>/i.test(out)) out += "\n</body>";
+  if (/<html[\s>]/i.test(out) && !/<\/html>/i.test(out)) out += "\n</html>";
+  return out;
+}
+
 function looksIncompleteSite(html, structure) {
   const raw = String(html || "");
   const sections = structure?.sections?.length || 10;
@@ -1294,6 +1424,8 @@ function looksIncompleteSite(html, structure) {
   const hasForm = /<form[\s>]/i.test(raw);
   const hasFooter = /<footer[\s>]/i.test(raw);
   const minSections = Math.min(7, Math.max(5, sections - 4));
+  // Truncation alone is fixed by closeIncompleteHtml — do not trigger a second
+  // full LLM call just for missing </html> (doubles latency to minutes).
   if (sectionTags < minSections) return true;
   if (!hasForm || !hasFooter) return true;
   if (raw.length < 6000 && sections >= 10) return true;
@@ -1336,18 +1468,20 @@ async function generateWithOpenRouter(ctx, presetPack, plan) {
   }
 
   let html = await assemble();
-  if (looksIncompleteSite(html, structure)) {
+  // Only retry when the page is structurally thin — not when tags are merely
+  // truncated (closeIncompleteHtml repairs that without another LLM round-trip).
+  if (looksIncompleteSite(html, structure) && html.length < 28000) {
     console.warn("Assembled page looks incomplete; retrying with expanded section requirements");
     const retryBudget = Math.min(
-      20000,
-      Math.max(WEBSITE_MAX_OUTPUT_TOKENS, Math.floor(WEBSITE_MAX_OUTPUT_TOKENS * 1.4))
+      16000,
+      Math.max(WEBSITE_MAX_OUTPUT_TOKENS, Math.floor(WEBSITE_MAX_OUTPUT_TOKENS * 1.25))
     );
     const retryHtml = await assemble({ retryIncomplete: true, maxTokens: retryBudget });
     if (!looksIncompleteSite(retryHtml, structure) || retryHtml.length > html.length) {
       html = retryHtml;
     }
   }
-  return html;
+  return closeIncompleteHtml(html);
 }
 
 /**
@@ -1472,6 +1606,7 @@ app.post("/generate", requireUser, generateLimiter, async (req, res) => {
       category: sanitizeUserText(req.body.category || "", 80),
       phone: sanitizeUserText(req.body.phone || "", 40),
       address: sanitizeUserText(req.body.address || "", 200),
+      description: sanitizeUserText(req.body.description || "", 500),
       mapsUrl: sanitizeUserText(req.body.mapsUrl || "", 500),
       website: sanitizeUserText(req.body.website || "", 500),
       hours: sanitizeUserText(req.body.hours || "", 200),
@@ -1480,6 +1615,13 @@ app.post("/generate", requireUser, generateLimiter, async (req, res) => {
       templateId: String(req.body.templateId || "local-service").replace(/[^a-z0-9-]/gi, "") || "local-service",
       fromFinder: req.body.fromFinder === true || req.body.fromFinder === "1",
     };
+
+    if (ctx.description && !/About the business:/i.test(String(ctx.notes || ""))) {
+      ctx.notes = [ctx.notes, "About the business: " + ctx.description + "."]
+        .filter(Boolean)
+        .join(" ")
+        .trim();
+    }
 
     if (ctx.mapsUrl && !/^https?:\/\//i.test(ctx.mapsUrl)) {
       return res.status(400).json({ error: "Maps link must start with http:// or https://" });
@@ -1672,18 +1814,11 @@ app.post("/checkout", requireUser, checkoutLimiter, async (req, res) => {
       });
     }
 
-    const allowedAmounts = new Set([100, 30000, 50000, 70000, 100000, 150000]);
-    const requestedAmount = Number(req.body.amountCents);
-    const amountCents = allowedAmounts.has(requestedAmount)
-      ? requestedAmount
-      : Number(project.price_cents) > 0
-        ? Number(project.price_cents)
-        : Number(process.env.STRIPE_AMOUNT_CENTS || 50000);
-    const priceId = process.env.STRIPE_PRICE_ID;
-    const lineItems =
-      priceId && !allowedAmounts.has(requestedAmount)
-        ? [{ price: priceId, quantity: 1 }, hostingMaintenanceLineItem()]
-        : goLiveCheckoutLineItems(amountCents);
+    const amountCents = resolveGoLiveAmountCents(
+      req.body.amountCents,
+      project.price_cents
+    );
+    const lineItems = goLiveCheckoutLineItems(amountCents, project.business_name);
 
     const session = await createGoLiveCheckoutSession(stripe, {
       project,
@@ -1738,7 +1873,11 @@ app.get("/credits/balance", requireUser, async (req, res) => {
         .select("stripe_subscription_id, period_start")
         .eq("user_id", req.user.id)
         .maybeSingle();
-      if (account?.stripe_subscription_id) {
+      // Only sync real Stripe subscription ids (skip manual grants like "manual_mvp_plus").
+      if (
+        account?.stripe_subscription_id &&
+        String(account.stripe_subscription_id).startsWith("sub_")
+      ) {
         try {
           const sub = await stripe.subscriptions.retrieve(account.stripe_subscription_id);
           const active = sub.status === "active" || sub.status === "trialing";
@@ -2253,10 +2392,7 @@ app.post("/public-checkout", publicCheckoutLimiter, async (req, res) => {
       return res.json({ alreadyPaid: true, url: liveUrl });
     }
 
-    const amount =
-      Number(project.price_cents) > 0
-        ? Number(project.price_cents)
-        : Number(process.env.STRIPE_AMOUNT_CENTS || 50000);
+    const amount = resolveGoLiveAmountCents(project.price_cents);
 
     const session = await createGoLiveCheckoutSession(stripe, {
       project,

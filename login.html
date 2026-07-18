@@ -141,7 +141,7 @@
           /* ignore */
         }
         window.StudioAuth.setFinanceOnboardingSoftSkip?.(false);
-        const destination = await StudioAuth.financeOnboardingRedirect(nextUrl);
+        const destination = await StudioAuth.studioOnboardingRedirect(nextUrl);
         location.replace(destination);
       }
       let mode = params.get("mode") === "signup" ? "signup"

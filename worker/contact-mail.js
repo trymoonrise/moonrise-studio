@@ -1,5 +1,6 @@
 /**
- * Send contact form leads via Resend (https://resend.com).
+ * Send transactional email via Resend (https://resend.com).
+ * Used for contact-form leads and website purchase invoices.
  */
 function formatLeadPlain({ businessName, fields, projectId }) {
   const lines = [
@@ -61,7 +62,7 @@ function escapeHtml(s) {
     .replace(/"/g, "&quot;");
 }
 
-async function sendContactLeadEmail({ to, businessName, fields, projectId }) {
+async function sendResendEmail({ to, subject, text, html, attachments }) {
   const apiKey = String(process.env.RESEND_API_KEY || "").trim();
   if (!apiKey) {
     throw new Error("Email delivery is not configured (RESEND_API_KEY missing)");
@@ -69,9 +70,17 @@ async function sendContactLeadEmail({ to, businessName, fields, projectId }) {
 
   const from =
     String(process.env.RESEND_FROM || "").trim() || "Moonrise Forms <onboarding@resend.dev>";
-  const subject = `New lead for ${businessName || "your website"}`;
-  const text = formatLeadPlain({ businessName, fields, projectId });
-  const html = formatLeadHtml({ businessName, fields, projectId });
+
+  const body = {
+    from,
+    to: [to],
+    subject,
+    text,
+    html,
+  };
+  if (Array.isArray(attachments) && attachments.length) {
+    body.attachments = attachments;
+  }
 
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -79,13 +88,7 @@ async function sendContactLeadEmail({ to, businessName, fields, projectId }) {
       Authorization: "Bearer " + apiKey,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      from,
-      to: [to],
-      subject,
-      text,
-      html,
-    }),
+    body: JSON.stringify(body),
   });
 
   const data = await res.json().catch(() => ({}));
@@ -95,8 +98,71 @@ async function sendContactLeadEmail({ to, businessName, fields, projectId }) {
   return data;
 }
 
+async function sendContactLeadEmail({ to, businessName, fields, projectId }) {
+  const subject = `New lead for ${businessName || "your website"}`;
+  const text = formatLeadPlain({ businessName, fields, projectId });
+  const html = formatLeadHtml({ businessName, fields, projectId });
+  return sendResendEmail({ to, subject, text, html });
+}
+
+/**
+ * Short payment email to the buyer with the Stripe invoice PDF attached.
+ */
+async function sendPurchaseInvoiceEmail({
+  to,
+  businessName,
+  amountCents,
+  siteUrl,
+  pdfBase64,
+  pdfFilename,
+}) {
+  const amount = Number.isFinite(Number(amountCents))
+    ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
+        Number(amountCents) / 100
+      )
+    : "";
+  const name = String(businessName || "your website").trim() || "your website";
+  const subject = `Invoice for ${name}`;
+  const text = [
+    `Thanks for your payment for ${name}.`,
+    amount ? `Amount: ${amount}` : "",
+    siteUrl ? `Your site: ${siteUrl}` : "",
+    pdfBase64 ? "Your invoice PDF is attached." : "",
+    "",
+    "— Moonrise",
+  ]
+    .filter(Boolean)
+    .join("\n");
+  const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;color:#0f172a;line-height:1.5;">
+<p style="margin:0 0 12px;">Thanks for your payment for <strong>${escapeHtml(name)}</strong>.</p>
+${amount ? `<p style="margin:0 0 12px;">Amount: ${escapeHtml(amount)}</p>` : ""}
+${
+  siteUrl
+    ? `<p style="margin:0 0 12px;">Your site: <a href="${escapeHtml(siteUrl)}">${escapeHtml(
+        siteUrl
+      )}</a></p>`
+    : ""
+}
+${pdfBase64 ? `<p style="margin:0 0 12px;">Your invoice PDF is attached.</p>` : ""}
+<p style="margin:20px 0 0;font-size:12px;color:#94a3b8;">Moonrise</p>
+</body></html>`;
+
+  const attachments =
+    pdfBase64
+      ? [
+          {
+            filename: pdfFilename || "invoice.pdf",
+            content: pdfBase64,
+          },
+        ]
+      : undefined;
+
+  return sendResendEmail({ to, subject, text, html, attachments });
+}
+
 module.exports = {
   sendContactLeadEmail,
+  sendPurchaseInvoiceEmail,
   formatLeadPlain,
   formatLeadHtml,
 };

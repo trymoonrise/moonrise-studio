@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome · Moonrise Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/studio.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body data-page="onboarding" class="ms-onboard-page">
+  <div class="ms-onboard">
+    <header class="ms-onboard-top">
+      <a class="ms-onboard-brand" href="index.html" aria-label="Moonrise Studio">
+        <img src="doc/MoonriseLogo.png" alt="" width="28" height="28">
+        <span>Moonrise</span>
+      </a>
+      <div class="ms-onboard-top-right">
+        <span class="ms-onboard-step-pill" id="onb-progress-label">1 / 6</span>
+      </div>
+    </header>
+
+    <div class="ms-onboard-progress" aria-hidden="true">
+      <div class="ms-onboard-progress-track">
+        <div class="ms-onboard-progress-fill" id="onb-progress-fill"></div>
+      </div>
+    </div>
+
+    <div class="ms-onboard-stage">
+    <main class="ms-onboard-main" id="onb-main">
+      <!-- 1 Introduction -->
+      <section class="ms-onboard-panel is-active" data-onb-step="1">
+        <h1>Introduction</h1>
+        <p class="ms-onboard-lead">
+          Moonrise is an AI-powered studio that allows you find local businesses, and generate a polished website in 1 swipe. All in one platform.
+        </p>
+        <div class="ms-onboard-actions">
+          <button type="button" class="ms-btn ms-onboard-next" data-onb-next>Continue</button>
+        </div>
+      </section>
+
+      <!-- 2 How it works -->
+      <section class="ms-onboard-panel ms-onboard-panel--path" data-onb-step="2" hidden>
+        <h1>How it works</h1>
+        <p class="ms-onboard-lead">Here’s the whole loop — from finding a business to getting paid.</p>
+        <ol class="ms-onboard-path">
+          <li>
+            <span class="ms-onboard-path-num" aria-hidden="true">1</span>
+            <div class="ms-onboard-path-copy">
+              <strong>Find a business</strong>
+              <p>Use Business Finder to search local businesses that need a website.</p>
+            </div>
+          </li>
+          <li>
+            <span class="ms-onboard-path-num" aria-hidden="true">2</span>
+            <div class="ms-onboard-path-copy">
+              <strong>Build &amp; set a price</strong>
+              <p>Generate the site in one swipe. Set what the owner will pay to unlock it.</p>
+            </div>
+          </li>
+          <li>
+            <span class="ms-onboard-path-num" aria-hidden="true">3</span>
+            <div class="ms-onboard-path-copy">
+              <strong>Publish with a watermark</strong>
+              <p>The live link is a preview. The watermark stays on until they pay, so they can see it before unlocking.</p>
+            </div>
+          </li>
+          <li>
+            <span class="ms-onboard-path-num" aria-hidden="true">4</span>
+            <div class="ms-onboard-path-copy">
+              <strong>Send the link</strong>
+              <p>Share that preview with the owner. You don’t collect money yourself.</p>
+            </div>
+          </li>
+          <li>
+            <span class="ms-onboard-path-num" aria-hidden="true">5</span>
+            <div class="ms-onboard-path-copy">
+              <strong>They unlock with Stripe</strong>
+              <p>They tap the watermark, pay once, and it comes off. The site stays live.</p>
+            </div>
+          </li>
+          <li>
+            <span class="ms-onboard-path-num" aria-hidden="true">6</span>
+            <div class="ms-onboard-path-copy">
+              <strong>You get paid</strong>
+              <p>They show up in My clients. Paid sites can’t be deleted. Then find the next one and repeat.</p>
+            </div>
+          </li>
+        </ol>
+        <div class="ms-onboard-actions">
+          <button type="button" class="ms-btn ms-btn-secondary" data-onb-back>Back</button>
+          <button type="button" class="ms-btn ms-onboard-next" data-onb-next>Continue</button>
+        </div>
+      </section>
+
+      <!-- 3 Policies -->
+      <section class="ms-onboard-panel" data-onb-step="3" hidden>
+        <h1>Policies</h1>
+        <p class="ms-onboard-lead">Please read these before you start selling.</p>
+        <div class="ms-onboard-legal-links">
+          <a class="ms-onboard-legal-card" href="privacy.html" target="_blank" rel="noopener">
+            <strong>Privacy Policy</strong>
+            <span>Open →</span>
+          </a>
+          <a class="ms-onboard-legal-card" href="terms.html" target="_blank" rel="noopener">
+            <strong>Terms of Service</strong>
+            <span>Open →</span>
+          </a>
+        </div>
+        <label class="ms-onboard-check">
+          <input type="checkbox" id="onb-legal-agree">
+          <span>I have read and agree to the Privacy Policy and Terms of Service.</span>
+        </label>
+        <div class="ms-onboard-actions">
+          <button type="button" class="ms-btn ms-btn-secondary" data-onb-back>Back</button>
+          <button type="button" class="ms-btn ms-onboard-next" data-onb-next>Continue</button>
+        </div>
+      </section>
+
+      <!-- 4 Phone -->
+      <section class="ms-onboard-panel" data-onb-step="4" hidden>
+        <h1>Your number</h1>
+        <p class="ms-onboard-lead">
+          Clients call this number for small website changes. Use a virtual number if you want to keep your personal line private.
+        </p>
+        <div class="ms-field">
+          <label class="ms-label" for="onb-phone">Phone number</label>
+          <div class="ms-phone" id="onb-phone-root">
+            <div class="ms-phone-country" id="onb-phone-country">
+              <button type="button" class="ms-phone-trigger" id="onb-phone-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Country code">
+                <span class="ms-phone-flag" id="onb-phone-flag" aria-hidden="true">🇺🇸</span>
+                <span class="ms-phone-dial" id="onb-phone-dial">+1</span>
+                <svg class="ms-phone-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+              <div class="ms-phone-menu" id="onb-phone-menu" role="listbox" hidden></div>
+            </div>
+            <input class="ms-input ms-phone-input" id="onb-phone" type="tel" required autocomplete="tel" inputmode="tel" placeholder="(555) 000-0000" data-country="US">
+          </div>
+        </div>
+        <p class="ms-onboard-chip-label">Get a free virtual number</p>
+        <div class="ms-onboard-chips" role="list">
+          <a class="ms-onboard-chip" role="listitem" href="https://voice.google.com/" target="_blank" rel="noopener">Google Voice</a>
+          <a class="ms-onboard-chip" role="listitem" href="https://www.textnow.com/" target="_blank" rel="noopener">TextNow</a>
+          <a class="ms-onboard-chip" role="listitem" href="https://www.openphone.com/" target="_blank" rel="noopener">OpenPhone</a>
+        </div>
+        <div class="ms-onboard-actions">
+          <button type="button" class="ms-btn ms-btn-secondary" data-onb-back>Back</button>
+          <button type="button" class="ms-btn ms-onboard-next" data-onb-next>Continue</button>
+        </div>
+      </section>
+
+      <!-- 5 Payout -->
+      <section class="ms-onboard-panel" data-onb-step="5" hidden>
+        <h1>Get paid</h1>
+        <p class="ms-onboard-lead">Confirm your email and add at least one payout method.</p>
+        <div class="ms-field">
+          <label class="ms-label" for="onb-email">Email</label>
+          <input class="ms-input" id="onb-email" type="email" required autocomplete="email" placeholder="you@studio.com">
+        </div>
+        <div class="ms-fin-methods ms-onboard-methods" id="onb-methods"></div>
+        <div class="ms-onboard-actions">
+          <button type="button" class="ms-btn ms-btn-secondary" data-onb-back>Back</button>
+          <button type="button" class="ms-btn ms-onboard-next" data-onb-next id="onb-finish-setup">Save &amp; continue</button>
+        </div>
+      </section>
+
+      <!-- 6 Ready -->
+      <section class="ms-onboard-panel" data-onb-step="6" hidden>
+        <h1>You’re ready</h1>
+        <p class="ms-onboard-lead">
+          Next: open Business Finder, filter for “No website,” and build your first site.
+        </p>
+        <div class="ms-onboard-actions ms-onboard-actions--stack">
+          <a class="ms-btn ms-onboard-next" id="onb-go-finder" href="leads.html">Find a business</a>
+          <a class="ms-btn ms-btn-secondary" id="onb-go-dash" href="dashboard.html">Go to dashboard</a>
+        </div>
+      </section>
+
+      <p class="ms-error" id="onb-error" hidden></p>
+    </main>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/site-branding.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/segment-switch.js"></script>
+  <script src="js/ui-motion.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/payout-profile.js"></script>
+  <script src="js/onboarding.js"></script>
+</body>
+</html>

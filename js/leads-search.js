@@ -709,7 +709,9 @@
         phone: String(row.phone || "").trim(),
         address: String(row.address || "").trim(),
         mapsUrl,
-        website: String(row.website_url || "").trim(),
+        website: window.LeadCsvFormat?.resolveLeadWebsite
+          ? window.LeadCsvFormat.resolveLeadWebsite(row)
+          : String(row.website_url || "").trim(),
         hours: String(row.hours || "").trim(),
         hasWebsite: window.LeadCsvFormat?.resolveLeadHasWebsite
           ? window.LeadCsvFormat.resolveLeadHasWebsite(row)
@@ -1197,7 +1199,10 @@
           address: pick.address || displayAddress(lead) || "",
           mapsUrl: pick.mapsUrl || String(lead.mapsUrl || lead.maps_url || "").trim(),
           website: pick.website || leadWebsite(lead) || "",
-          hours: pick.hours || "",
+          hours: pick.hours || String(lead.hours || "").trim(),
+          description: pick.description || String(lead.description || lead.about || "").trim(),
+          rating: pick.rating || lead.rating || lead.stars || "",
+          reviewCount: pick.reviewCount || lead.reviewCount || lead.reviews || "",
           price: pick.price || "",
         };
       }
@@ -1210,7 +1215,10 @@
       address: displayAddress(lead) || "",
       mapsUrl: String(lead.mapsUrl || lead.maps_url || "").trim(),
       website: leadWebsite(lead) || "",
-      hours: "",
+      hours: String(lead.hours || "").trim(),
+      description: String(lead.description || lead.about || "").trim(),
+      rating: lead.rating || lead.stars || "",
+      reviewCount: lead.reviewCount || lead.reviews || "",
       price: "",
     };
   }
@@ -1238,6 +1246,9 @@
     });
     if (pick.website) params.set("website", pick.website);
     if (pick.hours) params.set("hours", pick.hours);
+    if (pick.description) params.set("description", String(pick.description).slice(0, 400));
+    if (pick.rating) params.set("rating", String(pick.rating));
+    if (pick.reviewCount) params.set("reviews", String(pick.reviewCount));
     try {
       const json = JSON.stringify(pick);
       const b64 = btoa(unescape(encodeURIComponent(json)))

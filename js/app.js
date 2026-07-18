@@ -44,6 +44,7 @@
     discord: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.37a19.8 19.8 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.3 18.3 0 0 0-5.487 0 12.6 12.6 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.7 19.7 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.08.08 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.1 13.1 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.8 19.8 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>',
     spark: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.2 6.3L19 10l-5.8 1.7L12 18l-1.2-6.3L5 10l5.8-1.7L12 2z"/></svg>',
     logout: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>',
+    refresh: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>',
     layers: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>',
     user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
     users: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
@@ -368,6 +369,75 @@
   function initialFrom(text) {
     const s = String(text || "M").trim();
     return (s.charAt(0) || "M").toUpperCase();
+  }
+
+  function stripHardRefreshParam() {
+    try {
+      const url = new URL(location.href);
+      if (!url.searchParams.has("_ms_r")) return;
+      url.searchParams.delete("_ms_r");
+      const next = url.pathname + url.search + url.hash;
+      history.replaceState({}, "", next);
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  function hardRefreshSite() {
+    const btn = document.getElementById("ms-hard-refresh");
+    if (btn) {
+      btn.disabled = true;
+      btn.classList.add("is-spinning");
+    }
+    const reload = () => {
+      try {
+        const url = new URL(location.href);
+        url.searchParams.set("_ms_r", String(Date.now()));
+        location.replace(url.pathname + url.search + url.hash);
+      } catch (_) {
+        location.reload();
+      }
+    };
+    const jobs = [];
+    try {
+      if ("serviceWorker" in navigator) {
+        jobs.push(
+          navigator.serviceWorker.getRegistrations().then((regs) =>
+            Promise.all(regs.map((reg) => reg.unregister()))
+          )
+        );
+      }
+      if ("caches" in window) {
+        jobs.push(caches.keys().then((keys) => Promise.all(keys.map((key) => caches.delete(key)))));
+      }
+    } catch (_) {
+      /* ignore */
+    }
+    Promise.allSettled(jobs).then(reload, reload);
+  }
+
+  /** Fixed top-right hard refresh — all Studio pages / phones / tablets / desktop. */
+  function ensureHardRefreshButton() {
+    stripHardRefreshParam();
+    if (!document.body) return;
+    let btn = document.getElementById("ms-hard-refresh");
+    if (!btn) {
+      btn = document.createElement("button");
+      btn.type = "button";
+      btn.id = "ms-hard-refresh";
+      btn.className = "ms-hard-refresh";
+      btn.setAttribute("aria-label", "Hard refresh");
+      btn.title = "Hard refresh";
+      btn.innerHTML = ICONS.refresh;
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        hardRefreshSite();
+      });
+      document.body.appendChild(btn);
+    } else if (btn.parentElement !== document.body) {
+      document.body.appendChild(btn);
+    }
   }
 
   function buildShell(opts) {
@@ -1060,6 +1130,7 @@
 
   async function boot() {
     buildShell();
+    ensureHardRefreshButton();
     bindNavCancel();
     // Never restore a stale "generating" UI — only live /generate sets it
     try {
@@ -1074,7 +1145,10 @@
     if (window.StudioAuth?.requireAuth) {
       try {
         const session = await window.StudioAuth.requireAuth();
-        if (session && window.StudioAuth.ensureFinanceOnboarding) {
+        if (session && window.StudioAuth.ensureStudioOnboarding) {
+          const redirected = await window.StudioAuth.ensureStudioOnboarding();
+          if (redirected === "redirect") return;
+        } else if (session && window.StudioAuth.ensureFinanceOnboarding) {
           const redirected = await window.StudioAuth.ensureFinanceOnboarding();
           if (redirected === "redirect") return;
         }

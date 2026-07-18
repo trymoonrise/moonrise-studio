@@ -5,7 +5,7 @@
   const DEFAULT_GOAL = 1000;
   const MIN_GOAL = 1;
   const MAX_GOAL = 1000000;
-  const COMMISSION_RATE = 0.4;
+  const COMMISSION_RATE = 0.8;
 
   let goalTarget = DEFAULT_GOAL;
   let goalUserId = "";
@@ -17,8 +17,11 @@
   let projectSearchQuery = "";
   let projectSuggestIndex = -1;
   let projectPaintToken = 0;
-  const PREVIEW_LIMIT = 3;
-  const SEARCH_RESULT_LIMIT = 24;
+  let statsAnimFrame = 0;
+  let statsIntroPlayed = false;
+  /** Soft cap only for search results; default view shows every project. */
+  const SEARCH_RESULT_LIMIT = 100;
+  const STATS_INTRO_MS = 1100;
 
   function escapeHtml(s) {
     return String(s || "")
@@ -45,7 +48,13 @@
   }
 
   function formatCommission(n) {
-    return "$" + Number(n).toLocaleString("en-US", { maximumFractionDigits: 0 });
+    return (
+      "$" +
+      Number(n).toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+    );
   }
 
   function commissionFromProject(project) {
@@ -86,26 +95,55 @@
     return p.watermark_enabled === false;
   }
 
-  function renderSalesProgress() {
-    const el = document.getElementById("dash-sales-progress");
-    if (!el) return;
-    el.textContent = String(salesCount);
+  function isPaidProject(p) {
+    if (!p) return false;
+    if (p.watermark_enabled === false) return true;
+    return String(p.status || "").toLowerCase() === "paid";
   }
 
-  function renderProgress() {
-    const pct = goalTarget > 0 ? Math.min(100, Math.round((commissionEarned / goalTarget) * 100)) : 0;
-    const pctEl = document.getElementById("stat-goal-pct");
-    const ringEl = document.getElementById("stat-goal-ring");
-    const commissionEl = document.getElementById("stat-commission");
-    const labelEl = document.getElementById("stat-goal-pct-label");
+  function prefersReducedMotion() {
+    return !!window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  }
 
-    if (commissionEl) commissionEl.textContent = formatCommission(commissionEarned);
-    if (pctEl) pctEl.textContent = pct + "%";
-    if (labelEl) {
-      labelEl.textContent = "of goal";
-      labelEl.setAttribute(
+  function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+  }
+
+  function goalPct(commission, goal) {
+    const g = Number(goal);
+    if (!Number.isFinite(g) || g <= 0) return 0;
+    return Math.min(100, Math.round((Number(commission) / g) * 100));
+  }
+
+  function paintStatsValues({ goal, commission, sales, pct }) {
+    const goalEl = document.getElementById("stat-goal");
+    const salesEl = document.getElementById("dash-sales-progress");
+    const pctEl = document.getElementById("stat-goal-pct");
+    const commissionEl = document.getElementById("stat-commission");
+    const ringEl = document.getElementById("stat-goal-ring");
+    const ring = document.querySelector(".ms-dash-ring");
+    const input = document.getElementById("stat-goal-input");
+
+    if (goalEl) {
+      goalEl.textContent = formatGoal(goal);
+      goalEl.setAttribute(
         "aria-label",
-        formatCommission(commissionEarned) + " earned, " + pct + " percent of " + formatGoal(goalTarget) + " goal"
+        "Commission goal " + formatGoal(goal) + ", click to edit"
+      );
+    }
+    if (input && document.activeElement !== input) input.value = String(Math.round(goal));
+    if (salesEl) salesEl.textContent = String(Math.round(sales));
+    if (commissionEl) commissionEl.textContent = formatCommission(commission);
+    if (pctEl) pctEl.textContent = Math.round(pct) + "%";
+    if (ring) {
+      ring.setAttribute(
+        "aria-label",
+        Math.round(pct) +
+          " percent — " +
+          formatCommission(commission) +
+          " earned of " +
+          formatGoal(goal) +
+          " goal"
       );
     }
     if (ringEl) {
@@ -114,26 +152,91 @@
     }
   }
 
-  function renderGoal() {
-    const goalEl = document.getElementById("stat-goal");
-    const input = document.getElementById("stat-goal-input");
-    if (goalEl) {
-      goalEl.textContent = formatGoal(goalTarget);
-      goalEl.setAttribute(
-        "aria-label",
-        "Commission goal " + formatGoal(goalTarget) + ", click to edit"
-      );
+  function cancelStatsAnimation() {
+    if (statsAnimFrame) {
+      cancelAnimationFrame(statsAnimFrame);
+      statsAnimFrame = 0;
     }
-    if (input) input.value = String(goalTarget);
-    renderSalesProgress();
-    renderProgress();
   }
 
-  function setStats(salesProjects) {
+  function animateStatsToCurrent() {
+    cancelStatsAnimation();
+    const goal = goalTarget;
+    const commission = commissionEarned;
+    const sales = salesCount;
+    const pct = goalPct(commission, goal);
+    const ringEl = document.getElementById("stat-goal-ring");
+    const prevTransition = ringEl?.style.transition;
+
+    if (prefersReducedMotion()) {
+      paintStatsValues({ goal, commission, sales, pct });
+      return;
+    }
+
+    if (ringEl) ringEl.style.transition = "none";
+
+    const start = performance.now();
+    const from = { goal: 0, commission: 0, sales: 0, pct: 0 };
+
+    function frame(now) {
+      const t = Math.min(1, (now - start) / STATS_INTRO_MS);
+      const e = easeOutCubic(t);
+      paintStatsValues({
+        goal: from.goal + (goal - from.goal) * e,
+        commission: from.commission + (commission - from.commission) * e,
+        sales: from.sales + (sales - from.sales) * e,
+        pct: from.pct + (pct - from.pct) * e,
+      });
+      if (t < 1) {
+        statsAnimFrame = requestAnimationFrame(frame);
+      } else {
+        statsAnimFrame = 0;
+        paintStatsValues({ goal, commission, sales, pct });
+        if (ringEl) ringEl.style.transition = prevTransition || "";
+      }
+    }
+
+    paintStatsValues(from);
+    statsAnimFrame = requestAnimationFrame(frame);
+  }
+
+  function renderSalesProgress() {
+    const el = document.getElementById("dash-sales-progress");
+    if (!el) return;
+    el.textContent = String(salesCount);
+  }
+
+  function renderProgress() {
+    paintStatsValues({
+      goal: goalTarget,
+      commission: commissionEarned,
+      sales: salesCount,
+      pct: goalPct(commissionEarned, goalTarget),
+    });
+  }
+
+  function renderGoal() {
+    const input = document.getElementById("stat-goal-input");
+    if (input && document.activeElement !== input) input.value = String(goalTarget);
+    paintStatsValues({
+      goal: goalTarget,
+      commission: commissionEarned,
+      sales: salesCount,
+      pct: goalPct(commissionEarned, goalTarget),
+    });
+  }
+
+  function setStats(salesProjects, opts) {
     const sales = (salesProjects || []).filter(isSale);
     salesCount = sales.length;
     commissionEarned = calcCommission(sales);
-    renderGoal();
+    const animate = opts?.animate === true || (opts?.animate !== false && !statsIntroPlayed);
+    if (animate) {
+      statsIntroPlayed = true;
+      animateStatsToCurrent();
+    } else {
+      renderGoal();
+    }
   }
 
   async function persistGoal(value) {
@@ -165,10 +268,7 @@
     goalUserId = userId || "";
     goalTarget = DEFAULT_GOAL;
     const client = window.SiteSupabase?.getClient?.();
-    if (!client || !userId) {
-      renderGoal();
-      return;
-    }
+    if (!client || !userId) return;
     try {
       const { data, error } = await window.StudioAuth.withTimeout(
         client.from("profiles").select("goal_target").eq("id", userId).maybeSingle(),
@@ -182,7 +282,8 @@
       console.warn("loadGoal", e);
       goalTarget = DEFAULT_GOAL;
     }
-    renderGoal();
+    const input = document.getElementById("stat-goal-input");
+    if (input) input.value = String(goalTarget);
   }
 
   function bindGoalEditor() {
@@ -301,7 +402,7 @@
   function filteredProjects(list, query) {
     const q = String(query || "").trim().toLowerCase();
     const projects = list || [];
-    if (!q) return projects.slice(0, PREVIEW_LIMIT);
+    if (!q) return projects.slice();
     const matched = projects.filter((p) => projectHaystack(p).includes(q));
     return matched.slice(0, SEARCH_RESULT_LIMIT);
   }
@@ -493,6 +594,7 @@
   function projectPreview(p) {
     const name = p.business_name || "Untitled";
     const hasHtml = !!(p.html && String(p.html).trim());
+    const paid = isPaidProject(p);
     const shot = hasHtml
       ? '<div class="ms-dash-preview-shot" aria-hidden="true">' +
         '<iframe class="ms-dash-preview-iframe" data-preview-id="' +
@@ -503,24 +605,28 @@
         escapeHtml(name.slice(0, 1).toUpperCase()) +
         "</span></div>";
 
+    const deleteBtn = paid
+      ? ""
+      : '<button type="button" class="ms-dash-preview-delete" data-project-delete="' +
+        escapeAttr(p.id) +
+        '" aria-label="Delete ' +
+        escapeAttr(name) +
+        '">×</button>';
+
     return (
       '<article class="ms-dash-preview">' +
       shot +
-      '<button type="button" class="ms-dash-preview-delete" data-project-delete="' +
-      escapeAttr(p.id) +
-      '" aria-label="Delete ' +
-      escapeAttr(name) +
-      '">×</button>' +
+      deleteBtn +
       '<a class="ms-dash-preview-meta" href="builder.html?project_id=' +
       encodeURIComponent(p.id) +
-      '">' +
+      '" target="_blank" rel="noopener noreferrer">' +
       '<span class="ms-dash-preview-name">' +
       escapeHtml(name) +
       "</span>" +
       "</a>" +
       '<a class="ms-dash-preview-hit" href="builder.html?project_id=' +
       encodeURIComponent(p.id) +
-      '" aria-label="Open ' +
+      '" target="_blank" rel="noopener noreferrer" aria-label="Open ' +
       escapeAttr(name) +
       '"></a>' +
       "</article>"
@@ -596,6 +702,12 @@
     const message = document.getElementById("dash-project-delete-message");
     const error = document.getElementById("dash-project-delete-error");
     if (!dialog || !project) return;
+    if (isPaidProject(project)) {
+      window.StudioToast?.error?.(
+        "This website was paid for — it can’t be deleted."
+      );
+      return;
+    }
     deleteProjectId = project.id;
     if (error) {
       error.hidden = true;
@@ -620,6 +732,14 @@
     const error = document.getElementById("dash-project-delete-error");
     const submit = document.getElementById("dash-project-delete-submit");
     if (!deleteProjectId) return;
+    const project = allProjects.find((p) => p.id === deleteProjectId);
+    if (project && isPaidProject(project)) {
+      if (error) {
+        error.hidden = false;
+        error.textContent = "This website was paid for — it can’t be deleted.";
+      }
+      return;
+    }
     if (error) {
       error.hidden = true;
       error.textContent = "";
@@ -629,12 +749,20 @@
       const user = await window.StudioAuth.getUser();
       if (!user) throw new Error("Sign in required");
       const client = window.SiteSupabase.getClient();
-      const { error: dbError } = await window.StudioAuth.withTimeout(
-        client.from("projects").delete().eq("id", deleteProjectId).eq("user_id", user.id),
+      const { data, error: dbError } = await window.StudioAuth.withTimeout(
+        client
+          .from("projects")
+          .delete()
+          .eq("id", deleteProjectId)
+          .eq("user_id", user.id)
+          .select("id"),
         6000,
         "Delete project"
       );
       if (dbError) throw dbError;
+      if (!data?.length) {
+        throw new Error("This website was paid for — it can’t be deleted.");
+      }
       allProjects = allProjects.filter((p) => p.id !== deleteProjectId);
       setStats(allProjects.filter(isSale));
       await renderProjects(allProjects);
@@ -780,7 +908,6 @@
       commissionEarned = 0;
       salesCount = 0;
       setStats([]);
-      renderGoal();
       await renderProjects([]);
       return;
     }
@@ -790,6 +917,24 @@
   }
 
   let started = false;
+  let loadInFlight = null;
+
+  function refreshDashboard() {
+    if (document.visibilityState === "hidden") return;
+    if (loadInFlight) return;
+    loadInFlight = load()
+      .catch((e) => console.warn(e))
+      .finally(() => {
+        loadInFlight = null;
+      });
+  }
+
+  function bindDashboardRefresh() {
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") refreshDashboard();
+    });
+    window.addEventListener("focus", refreshDashboard);
+  }
 
   function start() {
     if (started) return;
@@ -798,7 +943,8 @@
     bindProjectsToggle();
     bindProjectSearch();
     bindProjectActions();
-    load().catch((e) => console.warn(e));
+    bindDashboardRefresh();
+    refreshDashboard();
   }
 
   if (document.body.dataset.msAuthFired === "1") start();

@@ -1,9 +1,9 @@
-﻿/**
+/**
  * Supabase Auth helpers + page gate for Studio.
  * Sign-in / sign-up / reset go through the worker so lockouts + rate limits apply.
  */
 (function (global) {
-  const PUBLIC_PAGES = new Set(["index", "login", "apply", "orders", "home"]);
+  const PUBLIC_PAGES = new Set(["index", "login", "apply", "orders", "home", "contact", "privacy", "terms"]);
   const AUTH_TIMEOUT_MS = 12000;
 
   function getClient() {
@@ -230,6 +230,14 @@
       : {};
   }
 
+  function brandingDefaultsFrom(profile) {
+    return profile?.branding_defaults &&
+      typeof profile.branding_defaults === "object" &&
+      !Array.isArray(profile.branding_defaults)
+      ? profile.branding_defaults
+      : {};
+  }
+
   function financeProfileComplete(profile) {
     const payout = payoutProfileFrom(profile);
     if (payout.onboardingStatus === "complete") return true;
@@ -241,6 +249,33 @@
       (method) => method?.enabled && String(method.handle || "").trim()
     );
     return !!(String(payout.email || "").trim() && String(payout.phone || "").trim() && hasMethod);
+  }
+
+  const FORCE_ONBOARDING_REPLAY_KEY = "ms_force_studio_onboarding_replay";
+
+  function hasForceOnboardingReplay() {
+    try {
+      return sessionStorage.getItem(FORCE_ONBOARDING_REPLAY_KEY) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function setForceOnboardingReplay(enabled) {
+    try {
+      if (enabled) sessionStorage.setItem(FORCE_ONBOARDING_REPLAY_KEY, "1");
+      else sessionStorage.removeItem(FORCE_ONBOARDING_REPLAY_KEY);
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  function studioOnboarded(profile) {
+    if (hasForceOnboardingReplay()) return false;
+    const branding = brandingDefaultsFrom(profile);
+    if (String(branding.studioOnboardedAt || "").trim()) return true;
+    // Backfill: existing creators who already finished payout setup.
+    return financeProfileComplete(profile);
   }
 
   const FINANCE_SOFT_SKIP_KEY = "ms_finance_onboarding_soft_skip";
@@ -267,40 +302,86 @@
   }
 
   async function financeOnboardingRedirect(nextUrl) {
+    return studioOnboardingRedirect(nextUrl);
+  }
+
+  async function studioOnboardingRedirect(nextUrl) {
     const destination = String(nextUrl || "dashboard.html");
     const profile = await getProfile();
-    if (financeOnboardingDone(profile)) {
+    if (studioOnboarded(profile)) {
       setFinanceOnboardingSoftSkip(false);
       return destination;
     }
-    return (
-      "finance.html?onboarding=1&next=" +
-      encodeURIComponent(destination)
-    );
+    return "onboarding.html?next=" + encodeURIComponent(destination);
   }
 
   async function ensureFinanceOnboarding() {
+    return ensureStudioOnboarding();
+  }
+
+  async function ensureStudioOnboarding() {
     const page = document.body?.dataset?.page || "";
     if (PUBLIC_PAGES.has(page)) return null;
-    const params = new URLSearchParams(location.search);
-    if (page === "finance" && params.get("onboarding") === "1") return null;
+    if (page === "onboarding") return null;
 
     const session = await getSession();
     if (!session) return null;
 
     const profile = await getProfile();
-    if (financeProfileComplete(profile)) {
+    if (studioOnboarded(profile)) {
       setFinanceOnboardingSoftSkip(false);
+      // Persist backfill so Settings → Replay can clear a real flag.
+      // Skip while a forced replay is in progress.
+      if (!hasForceOnboardingReplay()) {
+        const branding = brandingDefaultsFrom(profile);
+        if (!String(branding.studioOnboardedAt || "").trim() && financeProfileComplete(profile)) {
+          try {
+            const user = await getUser();
+            if (user) {
+              await getClient()
+                .from("profiles")
+                .update({
+                  branding_defaults: {
+                    ...branding,
+                    studioOnboardedAt: new Date().toISOString(),
+                  },
+                })
+                .eq("id", user.id);
+            }
+          } catch (_) {
+            /* non-fatal */
+          }
+        }
+      }
       return null;
     }
-    if (hasFinanceOnboardingSoftSkip()) return null;
 
     const next =
       (location.pathname.split("/").pop() || "dashboard.html") + location.search + location.hash;
+    const replayQs = hasForceOnboardingReplay() ? "replay=1&" : "";
     location.replace(
-      "finance.html?onboarding=1&next=" + encodeURIComponent(next)
+      "onboarding.html?" + replayQs + "next=" + encodeURIComponent(next)
     );
     return "redirect";
+  }
+
+  async function clearStudioOnboardingFlag() {
+    setForceOnboardingReplay(true);
+    const user = await getUser();
+    if (!user) throw new Error("Not signed in");
+    const sb = getClient();
+    if (!sb) throw new Error("Supabase is not configured");
+    const profile = await getProfile();
+    const branding = { ...brandingDefaultsFrom(profile) };
+    branding.studioOnboardedAt = null;
+    delete branding.studioOnboardedAt;
+    const { error } = await withTimeout(
+      sb.from("profiles").update({ branding_defaults: branding }).eq("id", user.id),
+      6000,
+      "Clear onboarding"
+    );
+    if (error) throw error;
+    return branding;
   }
 
   async function requestPasswordReset(email) {
@@ -375,6 +456,12 @@
     financeOnboardingDone,
     financeOnboardingRedirect,
     ensureFinanceOnboarding,
+    studioOnboarded,
+    studioOnboardingRedirect,
+    ensureStudioOnboarding,
+    clearStudioOnboardingFlag,
+    hasForceOnboardingReplay,
+    setForceOnboardingReplay,
     hasFinanceOnboardingSoftSkip,
     setFinanceOnboardingSoftSkip,
     signUp,

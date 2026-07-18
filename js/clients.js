@@ -1,14 +1,17 @@
 /**
  * My clients — businesses that paid to remove the watermark.
+ * Creators see their own paid clients. Site owner (moonrise) sees all,
+ * with an Admin badge.
  */
 (function () {
   const QUERY_MS = 10000;
   const PROJECT_SELECT =
-    "id, business_name, status, watermark_enabled, price_cents, vercel_url, business_context, updated_at, created_at";
+    "id, user_id, business_name, status, watermark_enabled, price_cents, vercel_url, business_context, updated_at, created_at";
 
   let clients = [];
   let searchQuery = "";
   let started = false;
+  let isAdmin = false;
 
   const $ = (id) => document.getElementById(id);
   const esc = (s) =>
@@ -57,6 +60,12 @@
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   }
 
+  function isPaidProjectRow(project) {
+    if (!project) return false;
+    if (project.watermark_enabled === false) return true;
+    return String(project.status || "").toLowerCase() === "paid";
+  }
+
   function statusLabel(row) {
     if (!row.has_paid) return "Unpaid";
     if (row.watermark_enabled === false) {
@@ -97,16 +106,31 @@
     el.textContent = msg;
   }
 
-  function mapProject(project, payment) {
-    if (!project || !payment) return null;
-    const amountCents = Number(payment.amount_cents);
+  function phoneFromProject(project) {
+    const ctx = project?.business_context;
+    if (!ctx || typeof ctx !== "object") return "";
+    return String(ctx.phone || ctx.businessPhone || "").trim();
+  }
+
+  function mapProject(project, payment, creatorHandle) {
+    if (!project) return null;
+    const amountFromPay = Number(payment?.amount_cents);
+    const amountFromProject = Number(project.price_cents);
+    const priceCents =
+      Number.isFinite(amountFromPay) && amountFromPay > 0
+        ? amountFromPay
+        : Number.isFinite(amountFromProject) && amountFromProject >= 0
+          ? amountFromProject
+          : null;
     return {
       id: project.id,
+      user_id: project.user_id || "",
+      creator_handle: creatorHandle || "",
       business_name: project.business_name || "Untitled business",
       phone: phoneFromProject(project),
       website: project.vercel_url || "",
-      price_cents: Number.isFinite(amountCents) && amountCents >= 0 ? amountCents : null,
-      paid_at: payment.created_at || project.updated_at || project.created_at,
+      price_cents: priceCents,
+      paid_at: payment?.created_at || project.updated_at || project.created_at,
       status: project.status,
       watermark_enabled: project.watermark_enabled,
       vercel_url: project.vercel_url || "",
@@ -114,17 +138,34 @@
     };
   }
 
-  function phoneFromProject(project) {
-    const ctx = project?.business_context;
-    if (!ctx || typeof ctx !== "object") return "";
-    return String(ctx.phone || ctx.businessPhone || "").trim();
+  function syncAdminChrome() {
+    const tag = $("ms-clients-admin-tag");
+    const title = $("ms-clients-section-title");
+    const creatorCol = $("ms-clients-creator-col");
+    const search = $("ms-clients-search");
+    if (tag) tag.hidden = !isAdmin;
+    if (title) title.textContent = isAdmin ? "All clients" : "Paid clients";
+    if (creatorCol) creatorCol.hidden = !isAdmin;
+    if (search) {
+      search.placeholder = isAdmin
+        ? "Search by business, creator, or site…"
+        : "Search by business or site…";
+    }
+    document.body.classList.toggle("ms-clients-admin", !!isAdmin);
   }
 
   function filteredRows() {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return clients.slice();
     return clients.filter((r) =>
-      [r.business_name, r.phone, siteDisplay(r.website), formatMoney(r.price_cents), statusLabel(r)]
+      [
+        r.business_name,
+        r.creator_handle,
+        r.phone,
+        siteDisplay(r.website),
+        formatMoney(r.price_cents),
+        statusLabel(r),
+      ]
         .join(" ")
         .toLowerCase()
         .includes(q)
@@ -151,7 +192,9 @@
         : "No clients yet";
       empty.querySelector(".ms-clients-empty-desc").textContent = searching
         ? "Try another business name or site."
-        : "When a business pays to remove the watermark on a live site, they show up here.";
+        : isAdmin
+          ? "Paid go-live checkouts across Moonrise will show up here."
+          : "When a business pays to remove the watermark on a live site, they show up here.";
       empty.hidden = false;
       return;
     }
@@ -180,12 +223,21 @@
             : esc(webDisp)
           : emptyCell();
         const paid = formatMoney(row.price_cents);
+        const creatorCell = isAdmin
+          ? "<td>" +
+            (row.creator_handle
+              ? '<span class="ms-clients-creator">@' + esc(row.creator_handle) + "</span>"
+              : emptyCell()) +
+            "</td>"
+          : "";
         return (
           '<tr data-client-id="' +
           id +
           '"><th scope="row" class="ms-clients-business">' +
           esc(row.business_name || "-") +
-          "</th><td>" +
+          "</th>" +
+          creatorCell +
+          "<td>" +
           phoneCell +
           '</td><td class="ms-clients-website-cell">' +
           webCell +
@@ -204,6 +256,30 @@
       .join("");
   }
 
+  async function loadCreatorHandles(sb, userIds) {
+    const ids = [...new Set((userIds || []).filter(Boolean))];
+    if (!ids.length) return new Map();
+    try {
+      const { data, error } = await withTimeout(
+        sb.from("profiles").select("id, handle, display_name").in("id", ids),
+        QUERY_MS,
+        "Loading creators"
+      );
+      if (error) throw error;
+      const map = new Map();
+      (Array.isArray(data) ? data : []).forEach((row) => {
+        const handle = String(row.handle || row.display_name || "")
+          .replace(/^@/, "")
+          .trim();
+        if (row.id) map.set(String(row.id), handle);
+      });
+      return map;
+    } catch (e) {
+      console.warn("loadCreatorHandles", e);
+      return new Map();
+    }
+  }
+
   async function loadClients() {
     setBanner("ms-clients-status", "");
     const sb = getSb();
@@ -218,14 +294,19 @@
       const user = await window.StudioAuth?.getUser?.();
       if (!user?.id) throw new Error("Sign in to see your clients.");
 
+      isAdmin = !!(await window.StudioOwner?.isSiteOwner?.());
+      syncAdminChrome();
+
+      let payQuery = sb
+        .from("payments")
+        .select("project_id, user_id, amount_cents, status, created_at")
+        .eq("status", "paid")
+        .not("project_id", "is", null)
+        .order("created_at", { ascending: false });
+      if (!isAdmin) payQuery = payQuery.eq("user_id", user.id);
+
       const { data: payments, error: payError } = await withTimeout(
-        sb
-          .from("payments")
-          .select("project_id, amount_cents, status, created_at")
-          .eq("user_id", user.id)
-          .eq("status", "paid")
-          .not("project_id", "is", null)
-          .order("created_at", { ascending: false }),
+        payQuery,
         QUERY_MS,
         "Loading payments"
       );
@@ -238,29 +319,60 @@
         paymentByProject.set(key, pay);
       });
 
-      const projectIds = [...paymentByProject.keys()];
-      if (!projectIds.length) {
-        clients = [];
-        renderClients();
-        return;
-      }
+      let projectQuery = sb
+        .from("projects")
+        .select(PROJECT_SELECT)
+        .or("watermark_enabled.eq.false,status.eq.paid")
+        .order("updated_at", { ascending: false });
+      if (!isAdmin) projectQuery = projectQuery.eq("user_id", user.id);
 
-      const { data: projects, error: projectError } = await withTimeout(
-        sb
-          .from("projects")
-          .select(PROJECT_SELECT)
-          .eq("user_id", user.id)
-          .in("id", projectIds)
-          .order("updated_at", { ascending: false }),
+      const { data: paidProjects, error: projectError } = await withTimeout(
+        projectQuery,
         QUERY_MS,
         "Loading clients"
       );
       if (projectError) throw projectError;
 
-      clients = (Array.isArray(projects) ? projects : [])
-        .map((project) => mapProject(project, paymentByProject.get(String(project.id))))
+      const projectsById = new Map();
+      (Array.isArray(paidProjects) ? paidProjects : []).forEach((project) => {
+        if (project?.id) projectsById.set(String(project.id), project);
+      });
+
+      // Pull any payment-linked projects that might not match the paid-project filter yet.
+      const missingIds = [...paymentByProject.keys()].filter((id) => !projectsById.has(id));
+      if (missingIds.length) {
+        let extraQuery = sb.from("projects").select(PROJECT_SELECT).in("id", missingIds);
+        if (!isAdmin) extraQuery = extraQuery.eq("user_id", user.id);
+        const { data: extraProjects, error: extraError } = await withTimeout(
+          extraQuery,
+          QUERY_MS,
+          "Loading paid projects"
+        );
+        if (extraError) throw extraError;
+        (Array.isArray(extraProjects) ? extraProjects : []).forEach((project) => {
+          if (project?.id) projectsById.set(String(project.id), project);
+        });
+      }
+
+      const creatorMap = isAdmin
+        ? await loadCreatorHandles(
+            sb,
+            [...projectsById.values()].map((p) => p.user_id)
+          )
+        : new Map();
+
+      clients = [...projectsById.values()]
+        .filter((project) => isPaidProjectRow(project) || paymentByProject.has(String(project.id)))
+        .map((project) =>
+          mapProject(
+            project,
+            paymentByProject.get(String(project.id)),
+            creatorMap.get(String(project.user_id || "")) || ""
+          )
+        )
         .filter(Boolean)
         .sort((a, b) => String(b.paid_at || "").localeCompare(String(a.paid_at || "")));
+
       renderClients();
     } catch (e) {
       clients = [];
@@ -278,16 +390,27 @@
       const t = String(v ?? "");
       return /[",\n\r]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
     };
-    const cols = [
-      ["business_name", "Business"],
-      ["phone", "Phone"],
-      ["website", "Live site"],
-      ["paid", "Paid"],
-      ["paid_at", "Date"],
-      ["status", "Status"],
-    ];
+    const cols = isAdmin
+      ? [
+          ["business_name", "Business"],
+          ["creator_handle", "Creator"],
+          ["phone", "Phone"],
+          ["website", "Live site"],
+          ["paid", "Paid"],
+          ["paid_at", "Date"],
+          ["status", "Status"],
+        ]
+      : [
+          ["business_name", "Business"],
+          ["phone", "Phone"],
+          ["website", "Live site"],
+          ["paid", "Paid"],
+          ["paid_at", "Date"],
+          ["status", "Status"],
+        ];
     const rows = clients.map((r) => ({
       business_name: r.business_name,
+      creator_handle: r.creator_handle ? "@" + r.creator_handle : "",
       phone: r.phone,
       website: siteDisplay(r.website),
       paid: formatMoney(r.price_cents),
@@ -302,7 +425,7 @@
     const blob = new Blob([content], { type: "text/csv;charset=utf-8" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "my-clients-" + stamp + ".csv";
+    a.download = (isAdmin ? "all-clients-" : "my-clients-") + stamp + ".csv";
     a.click();
     URL.revokeObjectURL(a.href);
   }

@@ -41,7 +41,7 @@
 #mr-wm-overlay-root[data-open="1"]{display:block!important;pointer-events:auto}
 .mr-wm-overlay{position:fixed;inset:0;z-index:2147483646;display:grid;place-items:center;padding:1rem;background:rgba(15,23,42,.55);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .22s ease,visibility .22s ease;font-family:var(--mr-font)}
 .mr-wm-overlay.is-open{opacity:1;visibility:visible;pointer-events:auto}
-.mr-wm-panel{width:min(420px,100%);max-height:min(90vh,640px);display:flex;flex-direction:column;overflow:auto;background:#fff;border:1px solid var(--mr-line,#e8edf3);border-radius:16px;box-shadow:0 20px 48px rgba(15,23,42,.22);transform:translateY(12px) scale(.985);opacity:.96;transition:transform .28s cubic-bezier(.22,1,.36,1),opacity .22s ease}
+.mr-wm-panel{width:min(440px,100%);max-height:min(92vh,720px);display:flex;flex-direction:column;overflow:auto;background:#fff;border:1px solid var(--mr-line,#e8edf3);border-radius:16px;box-shadow:0 20px 48px rgba(15,23,42,.22);transform:translateY(12px) scale(.985);opacity:.96;transition:transform .28s cubic-bezier(.22,1,.36,1),opacity .22s ease}
 .mr-wm-overlay.is-open .mr-wm-panel{transform:none;opacity:1}
 .mr-wm-head{display:flex;align-items:flex-start;gap:.85rem;padding:1.15rem 1.2rem 1rem;border-bottom:1px solid var(--mr-line,#e8edf3);flex-shrink:0}
 .mr-wm-head img{width:40px;height:40px;border-radius:12px;object-fit:cover;flex-shrink:0}
@@ -49,24 +49,27 @@
 .mr-wm-head p{margin:.3rem 0 0;color:var(--mr-muted,#64748b);font-size:.9rem;line-height:1.4}
 .mr-wm-close{appearance:none;margin-left:auto;width:34px;height:34px;border:1px solid var(--mr-line,#e8edf3);border-radius:10px;background:#fff;color:#94a3b8;font-size:1.15rem;line-height:1;cursor:pointer;flex-shrink:0}
 .mr-wm-close:hover{background:#f8fafc;color:#64748b}
-.mr-wm-body{padding:1.15rem 1.2rem 1.35rem;display:flex;flex-direction:column;gap:1.25rem}
-.mr-wm-offer{display:flex;flex-direction:column;gap:.75rem}
+.mr-wm-body{padding:1.2rem 1.25rem 1.4rem;display:flex;flex-direction:column;gap:1rem}
+.mr-wm-lead{margin:0;color:var(--mr-muted,#64748b);font-size:.95rem;line-height:1.5}
+.mr-wm-offer{display:flex;flex-direction:column;gap:.7rem}
 .mr-wm-timer{margin:0;padding:0;text-align:center;font-family:var(--mr-font);font-size:.85rem;font-weight:650;letter-spacing:-.01em;color:#2563eb}
-.mr-wm-pay{appearance:none;display:inline-flex;align-items:center;justify-content:center;min-height:3.75rem;border:1px solid rgba(255,255,255,.18);border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,.18) 0%,rgba(255,255,255,0) 42%),linear-gradient(135deg,#60a5fa 0%,#3b82f6 48%,#2563eb 100%);color:#fff;font:inherit;font-family:var(--mr-font);font-size:1.05rem;font-weight:600;letter-spacing:-.01em;cursor:pointer;box-shadow:0 1px 0 rgba(255,255,255,.28) inset,0 -1px 0 rgba(15,23,42,.12) inset,0 8px 18px rgba(37,99,235,.28),0 2px 4px rgba(37,99,235,.18)}
+.mr-wm-pay{appearance:none;display:inline-flex;align-items:center;justify-content:center;min-height:3.5rem;border:1px solid rgba(255,255,255,.18);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.18) 0%,rgba(255,255,255,0) 42%),linear-gradient(135deg,#60a5fa 0%,#3b82f6 48%,#2563eb 100%);color:#fff;font:inherit;font-family:var(--mr-font);font-size:1.05rem;font-weight:650;letter-spacing:-.01em;cursor:pointer;box-shadow:0 1px 0 rgba(255,255,255,.28) inset,0 -1px 0 rgba(15,23,42,.12) inset,0 8px 18px rgba(37,99,235,.28),0 2px 4px rgba(37,99,235,.18)}
 .mr-wm-pay:hover:not(:disabled){filter:brightness(1.03);transform:translateY(-.5px)}
 .mr-wm-pay:disabled{opacity:.55;cursor:not-allowed}
 .mr-wm-note{margin:0;text-align:center;font-size:.78rem;color:#94a3b8;line-height:1.4}
 .mr-wm-error{margin:0;color:#b91c1c;font-size:.85rem;font-weight:600;line-height:1.4}
-.mr-wm-faq{display:grid;gap:0;margin:0;border-top:1px solid var(--mr-line,#e8edf3)}
+.mr-wm-contact-btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;min-height:2.85rem;padding:.65rem 1rem;border:1px solid var(--mr-line,#e8edf3);border-radius:12px;background:#fff;color:var(--mr-ink,#0f172a);font:inherit;font-family:var(--mr-font);font-size:.92rem;font-weight:650;letter-spacing:-.01em;text-decoration:none;text-align:center;transition:border-color .15s ease,background .15s ease,color .15s ease}
+.mr-wm-contact-btn:hover{border-color:#bfdbfe;background:#f8fbff;color:#1d4ed8}
+.mr-wm-faq{display:grid;gap:0;margin:.15rem 0 0;border-top:1px solid var(--mr-line,#e8edf3)}
 .mr-wm-faq details{border:0;border-bottom:1px solid var(--mr-line,#e8edf3);background:transparent}
-.mr-wm-faq summary{list-style:none;cursor:pointer;padding:.85rem 0;font-size:.92rem;font-weight:600;color:var(--mr-ink,#0f172a);display:flex;align-items:center;justify-content:space-between;gap:.75rem}
+.mr-wm-faq summary{list-style:none;cursor:pointer;padding:.85rem 0;font-size:.9rem;font-weight:600;color:var(--mr-ink,#0f172a);display:flex;align-items:center;justify-content:space-between;gap:.75rem}
 .mr-wm-faq summary::-webkit-details-marker{display:none}
 .mr-wm-faq summary::after{content:"+";width:1.4rem;height:1.4rem;flex-shrink:0;display:grid;place-items:center;border-radius:999px;background:#f1f5f9;color:#64748b;font-size:.95rem;font-weight:600;line-height:1;transition:transform .25s ease,background-color .2s ease,color .2s ease}
 .mr-wm-faq details.is-open summary::after{content:"–";background:#e8f1ff;color:#2563eb}
 .mr-wm-faq-panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows .32s cubic-bezier(.22,1,.36,1)}
 .mr-wm-faq details.is-open .mr-wm-faq-panel{grid-template-rows:1fr}
 .mr-wm-faq-panel-inner{overflow:hidden;min-height:0}
-.mr-wm-faq details p{margin:0;padding:0 0 .9rem;color:var(--mr-muted,#64748b);font-size:.88rem;line-height:1.5;opacity:0;transform:translateY(-4px);transition:opacity .24s ease,transform .24s ease}
+.mr-wm-faq details p{margin:0;padding:0 0 .9rem;color:var(--mr-muted,#64748b);font-size:.86rem;line-height:1.5;opacity:0;transform:translateY(-4px);transition:opacity .24s ease,transform .24s ease}
 .mr-wm-faq details.is-open p{opacity:1;transform:none}
 .mr-wm-faq details a{color:#2563eb;font-weight:600;text-decoration:none}
 .mr-wm-faq details a:hover{text-decoration:underline}
@@ -81,6 +84,15 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
 `;
   }
 
+  function studioBaseUrl(workerUrl) {
+    const base = String(workerUrl || "https://moonrise-studio.vercel.app").replace(/\/$/, "");
+    return base || "https://moonrise-studio.vercel.app";
+  }
+
+  function contactPageUrl(workerUrl) {
+    return studioBaseUrl(workerUrl) + "/contact.html";
+  }
+
   function faqHtml() {
     const wrap = (q, a) =>
       "<details><summary>" +
@@ -89,20 +101,42 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
       a +
       "</p></div></div></details>";
     return [
-      wrap("Do I have to sign up?", "You can sign in or create an account when you locate your order."),
+      wrap(
+        "What is this?",
+        "This is a Moonrise website preview. The watermark stays until you complete checkout — then it comes off and the site stays live."
+      ),
       wrap(
         "What do I get?",
-        "Stripe confirms instantly. The watermark is removed and publishing unlocks for this site."
+        "Stripe confirms instantly. The watermark is removed and your site stays published with hosting included."
       ),
       wrap(
-        "Do I get to own the website?",
-        'The website stays managed by <a href="mailto:trymoonrise@gmail.com">@trymoonrise</a> instead of being handed off as code. We handle the technical work and include ongoing updates and unlimited redesigns, so your site can keep evolving with your business.'
+        "Do I own the website?",
+        'The site stays managed by <a href="mailto:trymoonrise@gmail.com">@trymoonrise</a>. We handle the technical work, updates, and redesigns so it can keep evolving with your business.'
       ),
       wrap(
-        "Need help or changes?",
-        'Message the <a href="mailto:trymoonrise@gmail.com">Moonrise</a> to make any changes such as uploading photos, changing hours, services, colors, infinite redesigns and so much more!'
+        "Need changes?",
+        'Message <a href="mailto:trymoonrise@gmail.com">Moonrise</a> for photos, hours, services, colors, redesigns, and more.'
       ),
     ].join("");
+  }
+
+  function panelBodyHtml(contactHref) {
+    return (
+      '<div class="mr-wm-body">' +
+      '<p class="mr-wm-lead">A seller built this preview for your business. Unlock it to remove the watermark and keep the site live.</p>' +
+      '<div class="mr-wm-offer">' +
+      '<p class="mr-wm-timer" id="mr-wm-timer" aria-live="polite"></p>' +
+      '<button type="button" class="mr-wm-pay" id="mr-wm-pay">Unlock site</button>' +
+      '<p class="mr-wm-error" id="mr-wm-error" hidden></p>' +
+      '<p class="mr-wm-note">Secure Stripe checkout · hosting included</p>' +
+      "</div>" +
+      '<a class="mr-wm-contact-btn" id="mr-wm-contact" href="' +
+      contactHref.replace(/"/g, "&quot;") +
+      '" target="_blank" rel="noopener noreferrer">Contact Moonrise</a>' +
+      '<div class="mr-wm-faq" id="mr-wm-faq">' +
+      faqHtml() +
+      "</div></div>"
+    );
   }
 
   function bindExclusiveFaq(root) {
@@ -252,17 +286,11 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
       '<header class="mr-wm-head"><img src="' +
       AVATAR +
       '" alt="" width="40" height="40" />' +
-      '<div><h2 id="mr-wm-title">Complete your order</h2>' +
-      "<p>Pay once to remove the watermark and unlock this website.</p></div>" +
+      '<div><h2 id="mr-wm-title">Unlock your website</h2>' +
+      '<p id="mr-wm-subtitle">Preview only — complete checkout to go live.</p></div>' +
       '<button type="button" class="mr-wm-close" id="mr-wm-close" aria-label="Close">×</button></header>' +
-      '<div class="mr-wm-body"><div class="mr-wm-offer">' +
-      '<p class="mr-wm-timer" id="mr-wm-timer" aria-live="polite"></p>' +
-      '<button type="button" class="mr-wm-pay" id="mr-wm-pay">Pay with Stripe</button>' +
-      '<p class="mr-wm-error" id="mr-wm-error" hidden></p>' +
-      '<p class="mr-wm-note">Upfront site fee plus $4/mo hosting &amp; maintenance · secure Stripe checkout</p></div>' +
-      '<div class="mr-wm-faq" id="mr-wm-faq">' +
-      faqHtml() +
-      "</div></div></div></div>";
+      panelBodyHtml(contactPageUrl(workerUrl)) +
+      "</div></div>";
 
     const chipParent = host || document.body;
     if (host) host.innerHTML = "";

@@ -176,8 +176,8 @@
       pointer-events: auto;
     }
     .mr-wm-panel {
-      width: min(420px, 100%);
-      max-height: min(90vh, 640px);
+      width: min(440px, 100%);
+      max-height: min(92vh, 720px);
       display: flex;
       flex-direction: column;
       overflow: auto;
@@ -235,10 +235,138 @@
     }
     .mr-wm-close:hover { background: #f8fafc; color: #64748b; }
     .mr-wm-body {
-      padding: 1.15rem 1.2rem 1.35rem;
+      padding: 1.2rem 1.25rem 1.4rem;
       display: flex;
       flex-direction: column;
-      gap: 1.25rem;
+      gap: 1rem;
+    }
+    .mr-wm-lead {
+      margin: 0;
+      color: var(--mr-muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    .mr-wm-contact-btn {
+      appearance: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 2.85rem;
+      padding: 0.65rem 1rem;
+      border: 1px solid var(--mr-line);
+      border-radius: 12px;
+      background: #fff;
+      color: var(--mr-ink);
+      font: inherit;
+      font-family: var(--mr-font);
+      font-size: 0.92rem;
+      font-weight: 650;
+      letter-spacing: -0.01em;
+      text-decoration: none;
+      text-align: center;
+      transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+    }
+    .mr-wm-contact-btn:hover {
+      border-color: #bfdbfe;
+      background: #f8fbff;
+      color: #1d4ed8;
+    }
+    .mr-wm-step[hidden] { display: none !important; }
+    .mr-wm-intro {
+      margin: 0;
+      color: var(--mr-muted);
+      font-size: 0.92rem;
+      line-height: 1.55;
+    }
+    .mr-wm-intro strong { color: var(--mr-ink); font-weight: 650; }
+    .mr-wm-paths { display: grid; gap: 0.65rem; margin-top: 0.15rem; }
+    .mr-wm-path {
+      appearance: none;
+      display: grid;
+      gap: 0.2rem;
+      text-align: left;
+      width: 100%;
+      padding: 0.95rem 1rem;
+      border: 1px solid var(--mr-line);
+      border-radius: 12px;
+      background: #fff;
+      cursor: pointer;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+      font: inherit;
+      font-family: var(--mr-font);
+      color: var(--mr-ink);
+    }
+    .mr-wm-path:hover {
+      border-color: #bfdbfe;
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.1);
+      transform: translateY(-1px);
+    }
+    .mr-wm-path strong {
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .mr-wm-path span {
+      font-size: 0.82rem;
+      color: var(--mr-muted);
+      line-height: 1.4;
+    }
+    .mr-wm-path--primary {
+      border-color: transparent;
+      background: linear-gradient(180deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 42%),
+        linear-gradient(135deg, #60a5fa 0%, #3b82f6 48%, #2563eb 100%);
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(37, 99, 235, 0.28);
+    }
+    .mr-wm-path--primary span { color: rgba(255, 255, 255, 0.86); }
+    .mr-wm-path--primary:hover { filter: brightness(1.03); border-color: transparent; }
+    .mr-wm-back {
+      appearance: none;
+      align-self: flex-start;
+      border: 0;
+      background: transparent;
+      color: #64748b;
+      font: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0;
+      margin: 0 0 0.15rem;
+    }
+    .mr-wm-back:hover { color: #2563eb; }
+    .mr-wm-contact { display: grid; gap: 0.55rem; }
+    .mr-wm-contact a {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.8rem 0.9rem;
+      border: 1px solid var(--mr-line);
+      border-radius: 12px;
+      text-decoration: none;
+      color: var(--mr-ink);
+      background: #fff;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+    .mr-wm-contact a:hover { border-color: #bfdbfe; background: #f8fbff; }
+    .mr-wm-contact-ico {
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 0.7rem;
+      display: grid;
+      place-items: center;
+      background: #eff6ff;
+      color: #2563eb;
+      flex-shrink: 0;
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+    .mr-wm-contact strong { display: block; font-size: 0.9rem; font-weight: 700; }
+    .mr-wm-contact em {
+      display: block;
+      font-style: normal;
+      font-size: 0.78rem;
+      color: var(--mr-muted);
+      margin-top: 0.1rem;
     }
     .mr-wm-offer { display: flex; flex-direction: column; gap: 0.75rem; }
     .mr-wm-timer {
@@ -435,41 +563,43 @@
       <header class="mr-wm-head">
         <img src="https://moonrise-studio.vercel.app/doc/MoonriseLogo.png" alt="" width="40" height="40" />
         <div>
-          <h2 id="mr-wm-title">Complete your order</h2>
-          <p>Pay once to remove the watermark and unlock this website.</p>
+          <h2 id="mr-wm-title">Unlock your website</h2>
+          <p id="mr-wm-subtitle">Preview only — complete checkout to go live.</p>
         </div>
         <button type="button" class="mr-wm-close" id="mr-wm-close" aria-label="Close">×</button>
       </header>
       <div class="mr-wm-body">
+        <p class="mr-wm-lead">A seller built this preview for your business. Unlock it to remove the watermark and keep the site live.</p>
         <div class="mr-wm-offer">
           <p class="mr-wm-timer" id="mr-wm-timer" aria-live="polite"></p>
-          <button type="button" class="mr-wm-pay" id="mr-wm-pay">Pay with Stripe</button>
+          <button type="button" class="mr-wm-pay" id="mr-wm-pay">Unlock site</button>
           <p class="mr-wm-error" id="mr-wm-error" hidden></p>
-          <p class="mr-wm-note">Upfront site fee plus $4/mo hosting &amp; maintenance · secure Stripe checkout</p>
+          <p class="mr-wm-note">Secure Stripe checkout · hosting included</p>
         </div>
+        <a class="mr-wm-contact-btn" id="mr-wm-contact" href="../contact.html" target="_blank" rel="noopener noreferrer">Contact Moonrise</a>
         <div class="mr-wm-faq" id="mr-wm-faq">
           <details>
-            <summary>Do I have to sign up?</summary>
+            <summary>What is this?</summary>
             <div class="mr-wm-faq-panel"><div class="mr-wm-faq-panel-inner">
-              <p>You can sign in or create an account when you locate your order.</p>
+              <p>This is a Moonrise website preview. The watermark stays until you complete checkout — then it comes off and the site stays live.</p>
             </div></div>
           </details>
           <details>
             <summary>What do I get?</summary>
             <div class="mr-wm-faq-panel"><div class="mr-wm-faq-panel-inner">
-              <p>Stripe confirms instantly. The watermark is removed and publishing unlocks for this site.</p>
+              <p>Stripe confirms instantly. The watermark is removed and your site stays published with hosting included.</p>
             </div></div>
           </details>
           <details>
-            <summary>Do I get to own the website?</summary>
+            <summary>Do I own the website?</summary>
             <div class="mr-wm-faq-panel"><div class="mr-wm-faq-panel-inner">
-              <p>The website stays managed by <a href="mailto:trymoonrise@gmail.com">@trymoonrise</a> instead of being handed off as code. We handle the technical work and include ongoing updates and unlimited redesigns, so your site can keep evolving with your business.</p>
+              <p>The site stays managed by <a href="mailto:trymoonrise@gmail.com">@trymoonrise</a>. We handle the technical work, updates, and redesigns so it can keep evolving with your business.</p>
             </div></div>
           </details>
           <details>
-            <summary>Need help or changes?</summary>
+            <summary>Need changes?</summary>
             <div class="mr-wm-faq-panel"><div class="mr-wm-faq-panel-inner">
-              <p>Message the <a href="mailto:trymoonrise@gmail.com">Moonrise</a> to make any changes such as uploading photos, changing hours, services, colors, infinite redesigns and so much more!</p>
+              <p>Message <a href="mailto:trymoonrise@gmail.com">Moonrise</a> for photos, hours, services, colors, redesigns, and more.</p>
             </div></div>
           </details>
         </div>
@@ -518,14 +648,25 @@
         if (timerEl) timerEl.textContent = formatRemaining(urgencyEndsAt);
       }
 
+      function stopTimer() {
+        if (timerId) {
+          clearInterval(timerId);
+          timerId = null;
+        }
+      }
+
+      function startTimer() {
+        stopTimer();
+        tickTimer();
+        timerId = setInterval(tickTimer, 1000);
+      }
+
       function openPanel() {
         chip?.style.setProperty("visibility", "hidden");
         overlay.classList.add("is-open");
         overlay.setAttribute("aria-hidden", "false");
         document.body.style.overflow = "hidden";
-        tickTimer();
-        if (timerId) clearInterval(timerId);
-        timerId = setInterval(tickTimer, 1000);
+        startTimer();
       }
 
       function closePanel() {
@@ -533,10 +674,7 @@
         overlay.classList.remove("is-open");
         overlay.setAttribute("aria-hidden", "true");
         document.body.style.overflow = "";
-        if (timerId) {
-          clearInterval(timerId);
-          timerId = null;
-        }
+        stopTimer();
       }
 
       openBtn?.addEventListener("click", (e) => {
@@ -554,8 +692,7 @@
         if (e.key === "Escape" && overlay.classList.contains("is-open")) closePanel();
       });
 
-      (function bindExclusiveFaq() {
-        const root = document.getElementById("mr-wm-faq");
+      function bindExclusiveFaq(root) {
         if (!root) return;
         const items = Array.from(root.querySelectorAll("details"));
         function closeItem(details) {
@@ -564,12 +701,12 @@
             return;
           }
           details.classList.remove("is-open");
-          const panel = details.querySelector(".mr-wm-faq-panel");
+          const faqPanel = details.querySelector(".mr-wm-faq-panel");
           const finish = () => {
             details.open = false;
-            panel?.removeEventListener("transitionend", finish);
+            faqPanel?.removeEventListener("transitionend", finish);
           };
-          if (panel) panel.addEventListener("transitionend", finish);
+          if (faqPanel) faqPanel.addEventListener("transitionend", finish);
           else details.open = false;
           setTimeout(finish, 360);
         }
@@ -587,7 +724,8 @@
             else openItem(details);
           });
         });
-      })();
+      }
+      bindExclusiveFaq(document.getElementById("mr-wm-faq"));
 
       tickTimer();
 

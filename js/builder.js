@@ -91,6 +91,12 @@
       tablet: null,
       phone: null,
     },
+    /** True only after the user manually resizes that viewport (keeps desktop fill by default). */
+    viewportCustomized: {
+      desktop: false,
+      tablet: false,
+      phone: false,
+    },
     priceCents: 30000,
     html: "",
     profile: null,
@@ -113,6 +119,7 @@
       category: "",
       phone: "",
       address: "",
+      description: "",
       mapsUrl: "",
       website: "",
       hours: "",
@@ -122,6 +129,7 @@
       category: "",
       phone: "",
       address: "",
+      description: "",
       mapsUrl: "",
       website: "",
       hours: "",
@@ -136,6 +144,11 @@
 
   /** Active /generate AbortController so sidebar cancel can stop the request. */
   let generateAbort = null;
+  let generateInFlight = false;
+  let genProgressActive = false;
+  let genProgressPct = 0;
+  let genProgressTimer = null;
+  let genProgressFinishTimer = null;
   let previewSizeLabelHideTimer = null;
   let previewSizeLabelFadeTimer = null;
   const PREVIEW_SIZE_LABEL_MS = 1400;
@@ -145,6 +158,7 @@
     category: "onb-category",
     phone: "onb-phone",
     address: "onb-address",
+    description: "onb-description",
     mapsUrl: "onb-maps",
   };
 
@@ -182,7 +196,13 @@
   }
 
   function sb() {
-    return window.SiteSupabase.getClient();
+    const client = window.SiteSupabase?.getClient?.();
+    if (!client) {
+      throw new Error(
+        "Supabase is not configured. Reload the page — if this persists, check that js/config.js loaded."
+      );
+    }
+    return client;
   }
 
   function params() {
@@ -211,6 +231,7 @@
     }
     if (!msg) {
       if (status) status.classList.remove("is-error");
+      if (!genProgressActive) clearPreviewGenError();
       window.StudioToast?.clear?.();
       return;
     }
@@ -219,33 +240,206 @@
       status.textContent = msg;
       status.classList.add("is-error");
     }
+    // Always surface the error in preview when there is no site yet.
+    if (!(state.html && String(state.html).trim())) {
+      failGenerateProgress(msg);
+    }
     window.StudioToast?.error?.(msg);
+  }
+
+  function clearPreviewGenError() {
+    const err = document.getElementById("preview-gen-error");
+    if (err) {
+      err.hidden = true;
+      err.setAttribute("hidden", "");
+    }
+  }
+
+  function showPreviewGenError(msg) {
+    stopGenerateProgressTick();
+    genProgressActive = false;
+    document.body.classList.remove("ms-lb-generating");
+    document.documentElement.classList.remove("ms-lb-boot-generating");
+    const loading = document.getElementById("preview-loading");
+    if (loading) {
+      loading.hidden = true;
+      loading.setAttribute("hidden", "");
+    }
+    const err = document.getElementById("preview-gen-error");
+    const copy = document.getElementById("preview-gen-error-copy");
+    if (copy) copy.textContent = String(msg || "Generation failed").trim();
+    if (err) {
+      err.hidden = false;
+      err.removeAttribute("hidden");
+    }
+    const empty = document.getElementById("preview-empty");
+    if (empty) empty.hidden = true;
+  }
+
+  function stopGenerateProgressTick() {
+    if (genProgressTimer) {
+      window.clearInterval(genProgressTimer);
+      genProgressTimer = null;
+    }
+    if (genProgressFinishTimer) {
+      window.clearTimeout(genProgressFinishTimer);
+      genProgressFinishTimer = null;
+    }
+  }
+
+  function renderGenerateProgress(pct, label) {
+    const clamped = Math.max(0, Math.min(100, Math.round(pct)));
+    genProgressPct = clamped;
+    const fill = document.getElementById("preview-progress-fill");
+    const pctEl = document.getElementById("preview-progress-pct");
+    const bar = document.getElementById("preview-progress");
+    const copy = document.getElementById("preview-loading-copy");
+    if (fill) fill.style.width = clamped + "%";
+    if (pctEl) pctEl.textContent = clamped + "%";
+    if (bar) bar.setAttribute("aria-valuenow", String(clamped));
+    if (label && copy) copy.textContent = label;
+  }
+
+  function startGenerateProgress(label) {
+    stopGenerateProgressTick();
+    clearPreviewGenError();
+    genProgressActive = true;
+    genProgressPct = 0;
+    document.body.classList.add("ms-lb-generating");
+    document.documentElement.classList.remove("ms-lb-boot-generating");
+    renderGenerateProgress(0, label || "Building your website…");
+    const startedAt = Date.now();
+    const approachMs = 90000;
+    let kickTried = false;
+    genProgressTimer = window.setInterval(() => {
+      if (!genProgressActive) return;
+      const elapsed = Date.now() - startedAt;
+      const t = Math.min(1, elapsed / approachMs);
+      const eased = 1 - Math.pow(1 - t, 2.2);
+      // Climb toward 95% while waiting; 100% is reserved for a finished site.
+      const cap = generateAbort ? 95 : 90;
+      const target = Math.floor(5 + eased * (cap - 5));
+      if (target > genProgressPct) renderGenerateProgress(target);
+
+      // If prepare UI is orphaned (no in-flight generate), kick generate once.
+      if (!kickTried && elapsed > 2500 && !generateInFlight && !generateAbort) {
+        kickTried = true;
+        if (!(state.html && String(state.html).trim()) && hasFreshLeadIntake()) {
+          void generate({ fromFinder: true });
+        }
+      }
+
+      // Hard stop so the bar never sits at 92% forever.
+      if (elapsed > 165000 && !(state.html && String(state.html).trim())) {
+        try {
+          generateAbort?.abort();
+        } catch (_) {
+          /* ignore */
+        }
+        failGenerateProgress("Generation timed out. Please try again.");
+        generateInFlight = false;
+        generateAbort = null;
+      }
+    }, 180);
+    syncEmptyState();
+  }
+
+  function clearGenerateProgressUi() {
+    stopGenerateProgressTick();
+    genProgressActive = false;
+    genProgressPct = 0;
+    document.body.classList.remove("ms-lb-generating");
+    document.documentElement.classList.remove("ms-lb-boot-generating");
+    renderGenerateProgress(0, "Building your website…");
+    const loading = document.getElementById("preview-loading");
+    if (loading) {
+      loading.hidden = true;
+      loading.setAttribute("hidden", "");
+    }
+  }
+
+  function finishGenerateProgress() {
+    return new Promise((resolve) => {
+      stopGenerateProgressTick();
+      genProgressActive = true;
+      document.body.classList.add("ms-lb-generating");
+      renderGenerateProgress(100, "Website ready");
+      syncEmptyState();
+      genProgressFinishTimer = window.setTimeout(() => {
+        clearGenerateProgressUi();
+        syncEmptyState();
+        resolve();
+      }, 380);
+    });
+  }
+
+  /** Paint the finished site and drive the bar to 100% — single completion path. */
+  async function revealGeneratedSite(html, opts) {
+    const next = ensureMobileFriendlyHtml(html || "");
+    if (!String(next || "").trim()) {
+      throw new Error("Generation returned empty HTML. Please try again.");
+    }
+    state.html = next;
+    state.onboardDone = true;
+    state.autoGeneratePending = false;
+    state.mode = "preview";
+    clearPreviewGenError();
+    setBuilderPhase("workspace");
+    renderGenerateProgress(100, "Website ready");
+    syncEmptyState();
+    updatePreview();
+    writePreviewDocument(state.html);
+    schedulePreviewRepaint();
+    syncPromptActionUi();
+    syncRedesignButtonUi();
+    await finishGenerateProgress();
+    // Re-assert paint after overlay hides (iframe can miss write while covered).
+    if (state.html) {
+      writePreviewDocument(state.html);
+      schedulePreviewRepaint();
+    }
+    syncEmptyState();
+    if (opts?.status) setStatus(opts.status);
+  }
+
+  function failGenerateProgress(msg) {
+    clearGenerateProgressUi();
+    if (msg) showPreviewGenError(msg);
+    else clearPreviewGenError();
+    syncEmptyState();
   }
 
   function setPromptBusy(busy, label) {
     const status = document.getElementById("builder-status");
-    const empty = document.getElementById("preview-empty");
-    document.body.classList.toggle("ms-lb-generating", !!busy);
-    empty?.classList.toggle("is-generating", !!busy);
+    const setupStatus = document.getElementById("builder-setup-status");
     if (busy) {
-      const copy = empty?.querySelector("p");
-      const name = businessValue("businessName");
-      if (copy) {
-        copy.textContent = name
-          ? "Generating a site for " + name + "…"
-          : "Generating your site…";
+      if (!genProgressActive) startGenerateProgress(label || "Building your website…");
+      else if (label) renderGenerateProgress(genProgressPct, label);
+      if (setupStatus) {
+        setupStatus.hidden = true;
+        setupStatus.textContent = "";
       }
+      if (status) status.textContent = "";
     } else {
-      updateEmptyCopy(state.fromFinder);
+      if (genProgressActive && genProgressPct < 100) {
+        clearGenerateProgressUi();
+      } else if (!genProgressActive) {
+        document.body.classList.remove("ms-lb-generating");
+        document.documentElement.classList.remove("ms-lb-boot-generating");
+      }
+      if (setupStatus) {
+        setupStatus.hidden = true;
+        setupStatus.textContent = "";
+      }
     }
     // Only show channel progress while a generate request is actually in flight
     window.StudioShell?.setChannelGenerating?.("builder", !!busy && !!generateAbort);
-    if (status && busy) status.textContent = label || "";
     if (!busy) {
       generateAbort = null;
       window.StudioShell?.setChannelGenerating?.(null, false);
-      syncEmptyState();
+      updateEmptyCopy(state.fromFinder);
     }
+    syncEmptyState();
   }
 
   function cancelActiveGeneration() {
@@ -538,13 +732,15 @@
     const maps = String(p.mapsUrl || p.maps || "").trim();
     const website = String(p.website || p.websiteUrl || "").trim();
     const hours = String(p.hours || "").trim();
-    if (p.leadId && !state.leadId) state.leadId = String(p.leadId);
+    const description = String(p.description || p.about || "").trim();
+    if (p.leadId) state.leadId = String(p.leadId);
     if (name) setBusinessValue("businessName", name, !force);
     if (category) setBusinessValue("category", category, !force);
     if (phone) setBusinessValue("phone", phone, !force);
     if (address) setBusinessValue("address", address, !force);
     if (website) setBusinessValue("website", website, !force);
     if (hours) setBusinessValue("hours", hours, !force);
+    if (description) setBusinessValue("description", description, !force);
     if (maps) {
       setBusinessValue("mapsUrl", maps, !force);
       state.mapsReady = true;
@@ -558,16 +754,25 @@
     const phone = businessValue("phone");
     const website = businessValue("website");
     const hours = businessValue("hours");
+    const description = businessValue("description");
+    const maps = businessValue("mapsUrl");
+    const rating = String(params().get("rating") || "").trim();
+    const reviews = String(params().get("reviews") || "").trim();
     const parts = [
-      "Build a clean, conversion-focused single-page website for " + name + ".",
+      "Create a complete multi-section landing page website for " + name + ".",
+      "Use ONLY the real business facts below in the hero, contact blocks, footer, and CTAs — never invent a different company name or phone.",
     ];
-    if (category) parts.push("Category: " + category + ".");
-    if (address) parts.push("Address: " + address + ".");
-    if (phone) parts.push("Phone: " + phone + ".");
-    if (website) parts.push("Existing website (reference only): " + website + ".");
+    if (category) parts.push("Trade/category: " + category + ".");
+    if (address) parts.push("Service address: " + address + ".");
+    if (phone) parts.push("Phone (click-to-call): " + phone + ".");
+    if (maps) parts.push("Google Maps link for directions: " + maps + ".");
+    if (website) parts.push("Existing website (reference only, do not iframe): " + website + ".");
     if (hours) parts.push("Hours: " + hours + ".");
+    if (description) parts.push("About: " + description + ".");
+    if (rating) parts.push("Google rating: " + rating + (reviews ? " (" + reviews + " reviews)" : "") + ".");
     parts.push(
-      "Include hero, services, social proof, and a clear call-to-action with accurate contact details. Mobile-first."
+      "Required page sections: sticky nav, hero with primary CTA, services, credibility/proof, about, testimonials, FAQ or pricing when relevant, contact form, and footer with phone + address.",
+      "Mobile-first, conversion-focused, ready to publish."
     );
     return parts.join(" ");
   }
@@ -576,12 +781,16 @@
     const p = params();
     if (!hasFreshLeadIntake(p)) {
       // Plain builder open — never reuse a leftover Finder pick.
-      clearBuilderForNextVisit();
+      // Keep state when opening an existing project by id.
+      if (!p.get("project_id")) clearBuilderForNextVisit();
       return false;
     }
 
     state.leadId = p.get("lead_id") || p.get("lead") || null;
-    state.fromFinder = p.get("from_finder") === "1" || p.get("auto_generate") === "1";
+    state.fromFinder =
+      p.get("from_finder") === "1" ||
+      p.get("auto_generate") === "1" ||
+      !!(p.get("lead_id") || p.get("lead") || p.get("pick"));
     try {
       if (!state.fromFinder && sessionStorage.getItem("lpc_lead_pick_pending_v1") === "1") {
         state.fromFinder = true;
@@ -590,7 +799,8 @@
       /* ignore */
     }
 
-    applyPickFromStorageOrQuery(p);
+    // Prefer sessionStorage / pick payload before query fields (more complete).
+    applyPickFromStorageOrQuery(p, { retain: true });
 
     applyLeadIntake(
       {
@@ -601,9 +811,10 @@
         mapsUrl: p.get("maps") || "",
         website: p.get("website") || "",
         hours: p.get("hours") || "",
+        description: p.get("description") || "",
         leadId: state.leadId,
       },
-      { force: false }
+      { force: true }
     );
 
     // Always push state into Step 1 inputs so the form shows the lead.
@@ -621,7 +832,7 @@
       }
     }
 
-    if (state.fromFinder && bizName) {
+    if (state.fromFinder && (bizName || state.leadId)) {
       state.autoGeneratePending = p.get("auto_generate") !== "0";
       const notesEl = document.getElementById("biz-notes");
       if (notesEl && !String(notesEl.value || "").trim()) {
@@ -631,7 +842,7 @@
     return filled;
   }
 
-  function applyPickFromStorageOrQuery(p) {
+  function applyPickFromStorageOrQuery(p, opts) {
     let pick = null;
     const pickParam = p.get("pick");
     if (pickParam) {
@@ -652,7 +863,7 @@
         /* ignore */
       }
     }
-    if (!pick || typeof pick !== "object") return;
+    if (!pick || typeof pick !== "object") return false;
 
     applyLeadIntake(
       {
@@ -664,15 +875,20 @@
         mapsUrl: pick.mapsUrl || pick.maps,
         website: pick.website || pick.websiteUrl,
         hours: pick.hours,
+        description: pick.description || pick.about,
       },
       { force: true }
     );
-    try {
-      sessionStorage.removeItem("lpc_lead_pick_pending_v1");
-      sessionStorage.removeItem("lpc_lead_pick_v1");
-    } catch (_) {
-      /* ignore */
+    // Keep the pick until /generate is armed so retries still have lead facts.
+    if (!opts?.retain) {
+      try {
+        sessionStorage.removeItem("lpc_lead_pick_pending_v1");
+        sessionStorage.removeItem("lpc_lead_pick_v1");
+      } catch (_) {
+        /* ignore */
+      }
     }
+    return true;
   }
 
   function setBuilderPhase(phase) {
@@ -687,7 +903,13 @@
   }
 
   function setOnboardOpen(open) {
-    if (!open && !state.onboardDone && !state.builderOnboarded) {
+    if (
+      !open &&
+      !state.onboardDone &&
+      !state.builderOnboarded &&
+      !hasOpenProject() &&
+      !hasFinderHandoff()
+    ) {
       setBuilderPhase("setup");
       return;
     }
@@ -863,9 +1085,22 @@
     );
   }
 
+  /** True when opening / editing an existing project (not a blank create visit). */
+  function hasOpenProject() {
+    return !!(state.projectId || params().get("project_id"));
+  }
+
+  /** Finder swipe / lead handoff — must not be wiped or sent to blank setup. */
+  function hasFinderHandoff() {
+    return !!(state.fromFinder || hasFreshLeadIntake());
+  }
+
   /** Keep incomplete setup on the survey page — cannot skip to the workspace. */
   function ensureOnboardSurvey() {
-    if (state.onboardDone || state.builderOnboarded) return false;
+    // Existing project / Finder handoff opens are never the create survey.
+    if (state.onboardDone || state.builderOnboarded || hasOpenProject() || hasFinderHandoff()) {
+      return false;
+    }
     setBuilderPhase("setup");
     showOnboardStep(1);
     updateOnboardContinue();
@@ -1290,9 +1525,13 @@
       syncEmptyState();
       return;
     }
+    if (genProgressActive) {
+      syncEmptyState();
+      return;
+    }
     const name = businessValue("businessName");
     if (fromFinder && name && !state.onboardDone) {
-      copy.textContent = "Generating a site for " + name + "…";
+      copy.textContent = "Add a Google link or manual details, then generate your site";
     } else if (!state.onboardDone) {
       copy.textContent = "Add a Google link or manual details, then generate your site";
     } else if (fromFinder && name) {
@@ -1303,9 +1542,19 @@
     syncEmptyState();
   }
 
+  function isOwnerHandle() {
+    const handle = String(state.profile?.handle || "")
+      .toLowerCase()
+      .replace(/^@/, "");
+    if (!handle) return false;
+    const owners = window.SITE_CONFIG?.ownerHandles || [];
+    return owners.some((h) => String(h || "").toLowerCase() === handle);
+  }
+
   function hasPaidPlan() {
-    // MVP+ / paid access = any active Pricing subscription (Starter, Pro, Business).
-    return !!(state.paidPlan || state.mvpPlus);
+    // MVP+ / paid access = any active Pricing subscription (Starter, Pro, Business),
+    // profile flag, or owner handle.
+    return !!(state.paidPlan || state.mvpPlus || isOwnerHandle());
   }
 
   function hasMvpPlus() {
@@ -1355,8 +1604,7 @@
   }
 
   /** Gate Code / Download — requires any active paid plan (Starter+). */
-  function requirePaidPlan(feature) {
-    if (hasPaidPlan()) return true;
+  function denyPaidPlan(feature) {
     const label = feature === "download" ? "Download HTML" : "View Code";
     const btn =
       feature === "download"
@@ -1374,6 +1622,19 @@
     }
     location.href = "pricing.html";
     return false;
+  }
+
+  function requirePaidPlan(feature) {
+    if (hasPaidPlan()) return true;
+    return denyPaidPlan(feature);
+  }
+
+  async function requirePaidPlanAsync(feature) {
+    if (hasPaidPlan()) return true;
+    // Credits often load after first paint — refresh once before denying.
+    await syncCreditsFromWorker();
+    if (hasPaidPlan()) return true;
+    return denyPaidPlan(feature);
   }
 
   /** @deprecated alias */
@@ -1416,20 +1677,37 @@
   async function syncCreditsFromWorker() {
     try {
       const base = workerUrl();
-      if (!base) return;
-      const headers = await authHeaders();
-      const res = await fetch(base + "/credits/balance", { headers });
+      if (!base) return false;
+      const headers = await Promise.race([
+        authHeaders(),
+        new Promise((_, reject) =>
+          window.setTimeout(() => reject(new Error("Sign in timed out")), 8000)
+        ),
+      ]);
+      const controller = new AbortController();
+      const timer = window.setTimeout(() => controller.abort(), 10000);
+      let res;
+      try {
+        res = await fetch(base + "/credits/balance", {
+          headers,
+          signal: controller.signal,
+        });
+      } finally {
+        window.clearTimeout(timer);
+      }
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) return;
+      if (!res.ok) return false;
       state.totalCredits = Number(data.totalCredits) || 0;
-      state.paidPlan = !!(data.paidPlan || data.mvpPlus);
+      // Worker is source of truth; owner handle always keeps access.
+      state.paidPlan = !!(data.paidPlan || data.mvpPlus) || isOwnerHandle();
       state.mvpPlus = state.paidPlan;
       state.pro = state.paidPlan;
       state.generationCost = Number(data.generationCost) || 5;
       syncMvpAccessUi();
       document.dispatchEvent(new CustomEvent("ms:credits-changed", { detail: data }));
+      return true;
     } catch (_) {
-      /* ignore */
+      return false;
     }
   }
 
@@ -1440,10 +1718,17 @@
       !Array.isArray(profile.branding_defaults)
         ? profile.branding_defaults
         : {};
-    if (profile?.mvp_plus && global.MoonriseMvpCosmetics) {
+    // Unlock immediately from profile so Code / Download work before balance returns.
+    if (profile?.mvp_plus || isOwnerHandle()) {
+      state.mvpPlus = true;
+      state.paidPlan = true;
+      state.pro = true;
+      syncMvpAccessUi();
+    }
+    if (state.mvpPlus && global.MoonriseMvpCosmetics) {
       global.MoonriseMvpCosmetics.applyProfileCosmetics(branding);
     }
-    void syncCreditsFromWorker();
+    return syncCreditsFromWorker();
   }
 
   function releaseFinderLeadHold() {
@@ -1463,15 +1748,51 @@
   }
 
   async function ensureCreditsForGeneration(fromOnboard) {
-    await syncCreditsFromWorker();
+    const synced = await syncCreditsFromWorker();
     const cost = state.generationCost || 5;
-    if (state.totalCredits >= cost) return true;
-    const msg = "Sorry, you need credits to generate a website. Visit our pricing page!";
-    if (fromOnboard) setOnboardError(msg);
-    else setError(msg);
-    window.StudioToast?.error?.(msg);
-    releaseFinderLeadHold();
-    return false;
+    if (synced && state.totalCredits >= cost) return true;
+    if (synced && state.totalCredits < cost) {
+      const msg = "Sorry, you need credits to generate a website. Visit our pricing page!";
+      if (fromOnboard) setOnboardError(msg);
+      else setError(msg);
+      window.StudioToast?.error?.(msg);
+      releaseFinderLeadHold();
+      return false;
+    }
+
+    // Worker sync failed — reuse Finder's StudioCredits check when available.
+    try {
+      if (window.StudioCredits?.canAffordGeneration) {
+        const check = await Promise.race([
+          window.StudioCredits.canAffordGeneration(),
+          new Promise((resolve) =>
+            window.setTimeout(() => resolve({ ok: false, reason: "timeout" }), 8000)
+          ),
+        ]);
+        if (check?.ok) {
+          if (check.totalCredits != null) {
+            state.totalCredits = Number(check.totalCredits) || state.totalCredits;
+          }
+          if (check.cost != null) state.generationCost = Number(check.cost) || cost;
+          return true;
+        }
+        if (check?.reason === "no_credits") {
+          const msg =
+            check.message ||
+            "Sorry, you need credits to generate a website. Visit our pricing page!";
+          if (fromOnboard) setOnboardError(msg);
+          else setError(msg);
+          window.StudioToast?.error?.(msg);
+          releaseFinderLeadHold();
+          return false;
+        }
+      }
+    } catch (_) {
+      /* fall through */
+    }
+
+    // Balance unknown (auth/network). Let /generate run; worker returns 402 if needed.
+    return true;
   }
 
   function readIntake() {
@@ -1488,6 +1809,7 @@
       category: sanitizeClientText(businessValue("category"), 80),
       phone: sanitizeClientText(businessValue("phone"), 40),
       address: sanitizeClientText(businessValue("address"), 200),
+      description: sanitizeClientText(businessValue("description"), 500),
       mapsUrl,
       website: sanitizeClientText(businessValue("website"), 500),
       hours: sanitizeClientText(businessValue("hours"), 200),
@@ -1532,13 +1854,60 @@
     return "";
   }
 
+  function setPreviewFrameViewportClass(frame, vp) {
+    if (!frame) return;
+    frame.classList.add("ms-preview-frame");
+    frame.classList.toggle("is-desktop", vp === "desktop");
+    frame.classList.toggle("is-tablet", vp === "tablet");
+    frame.classList.toggle("is-phone", vp === "phone");
+    frame.classList.toggle("is-fullscreen", vp === "fullscreen");
+  }
+
   function syncEmptyState() {
     const empty = document.getElementById("preview-empty");
+    const loading = document.getElementById("preview-loading");
+    const loadingCopy = document.getElementById("preview-loading-copy");
+    const genError = document.getElementById("preview-gen-error");
     const frame = document.getElementById("preview-frame");
     const hasHtml = !!(state.html && state.html.trim());
     const showCode = state.mode === "code";
-    if (empty) empty.hidden = hasHtml || showCode;
-    if (frame) frame.hidden = !hasHtml || showCode;
+    const projectLoading = document.body.classList.contains("ms-lb-project-loading");
+    // Overlay only while a real generate/load is active — never a fake "Generating…" state.
+    const showLoading = (genProgressActive || projectLoading) && !showCode;
+    const showGenError =
+      !!(genError && !genError.hidden) && !showLoading && !hasHtml && !showCode;
+    if (loading) {
+      if (showLoading) {
+        loading.hidden = false;
+        loading.removeAttribute("hidden");
+      } else {
+        loading.hidden = true;
+        loading.setAttribute("hidden", "");
+      }
+    }
+    if (loadingCopy && showLoading) {
+      if (genProgressActive) {
+        /* label owned by renderGenerateProgress */
+      } else if (projectLoading) {
+        loadingCopy.textContent = "Loading project…";
+        const fill = document.getElementById("preview-progress-fill");
+        const pctEl = document.getElementById("preview-progress-pct");
+        if (fill) fill.style.width = "35%";
+        if (pctEl) pctEl.textContent = "";
+      }
+    }
+    if (empty) empty.hidden = showLoading || showGenError || hasHtml || showCode;
+    // Never use display:none on the preview iframe — Safari/Firefox can drop
+    // written documents, leaving a blank preview when opening a project.
+    if (frame) {
+      frame.hidden = false;
+      frame.removeAttribute("hidden");
+      // Keep the frame visible whenever we have HTML — parking after generate
+      // was leaving a blank gray preview with a 1×1 invisible iframe.
+      const park = !hasHtml || showCode || ((genProgressActive || projectLoading) && !hasHtml);
+      frame.classList.toggle("is-parked", park);
+      if (!park) setPreviewFrameViewportClass(frame, state.viewport);
+    }
   }
 
   function syncFullscreenUi() {
@@ -1695,6 +2064,7 @@
     if (shouldEase) beginViewportEase(shell);
     state.viewportWidths[vp] = limitsDefaultWidth(vp);
     state.viewportHeights[vp] = limitsDefaultHeight(vp);
+    state.viewportCustomized[vp] = false;
     if (shouldEase) scheduleViewportSizeApply();
     else applyPreviewViewportSize();
   }
@@ -1752,7 +2122,15 @@
     if (!shell || !wrap) return;
 
     const vp = state.viewport;
-    const resizable = isResizableViewport(vp) && state.mode !== "code" && state.viewport !== "fullscreen";
+    // Desktop always fills the preview pane — resizing it collapses the shell
+    // into a blank gray panel with a thin vertical resizer line in the center.
+    const desktopFill = vp === "desktop" || vp === "fullscreen" || state.mode === "code";
+    const canResize =
+      !desktopFill &&
+      isResizableViewport(vp) &&
+      state.mode !== "code" &&
+      state.viewport !== "fullscreen";
+    const resizable = canResize;
     wrap.classList.toggle("is-vp-resizable", resizable);
     shell.className =
       "ms-preview-frame-shell" +
@@ -1760,9 +2138,17 @@
       (resizable ? " is-resizable" : "");
 
     if (!resizable) {
+      // Clear any leftover drag sizing so the iframe can fill edge-to-edge.
       shell.style.width = "";
       shell.style.height = "";
+      shell.style.maxWidth = "";
+      shell.style.maxHeight = "";
+      state.viewportCustomized.desktop = false;
+      state.viewportWidths.desktop = null;
+      state.viewportHeights.desktop = null;
       syncPreviewSizeLabel(null, null);
+      setPreviewFrameViewportClass(frame, vp);
+      if (state.mode === "edit") positionEditToolbar();
       return;
     }
 
@@ -1771,12 +2157,20 @@
     if (state.viewportWidths[vp] == null && vp !== "desktop") {
       state.viewportWidths[vp] = width;
     }
-    shell.style.width = width + "px";
-    shell.style.height = height + "px";
+    // Prefer measured wrap size; fall back after layout if wrap was still 0×0.
+    if ((wrap.clientWidth < 40 || wrap.clientHeight < 40) && wrap.dataset.msVpRetry !== "1") {
+      wrap.dataset.msVpRetry = "1";
+      requestAnimationFrame(() => {
+        delete wrap.dataset.msVpRetry;
+        applyPreviewViewportSize();
+      });
+    }
+    shell.style.width = Math.max(width, VIEWPORT_WIDTH_LIMITS[vp]?.min || 280) + "px";
+    shell.style.height = Math.max(height, VIEWPORT_HEIGHT_LIMITS[vp]?.min || 360) + "px";
 
     syncPreviewSizeLabel(width, height);
 
-    if (frame) frame.className = "ms-preview-frame is-" + vp;
+    setPreviewFrameViewportClass(frame, vp);
     if (state.mode === "edit") positionEditToolbar();
   }
 
@@ -1786,7 +2180,7 @@
 
   function applyViewportFrameClass() {
     const frame = document.getElementById("preview-frame");
-    if (frame) frame.className = "ms-preview-frame is-" + state.viewport;
+    setPreviewFrameViewportClass(frame, state.viewport);
     syncFullscreenUi();
     setModeUi();
     applyPreviewViewportSize();
@@ -1805,11 +2199,24 @@
       state.viewportBeforeFullscreen = vp;
     }
 
+    // Switching back to desktop always restores full-bleed preview.
+    if (vp === "desktop") {
+      state.viewportCustomized.desktop = false;
+      state.viewportWidths.desktop = null;
+      state.viewportHeights.desktop = null;
+      if (shell) {
+        shell.style.width = "";
+        shell.style.height = "";
+      }
+    }
+
     const shouldEase =
       shell &&
       prev !== vp &&
       isResizableViewport(prev) &&
       isResizableViewport(vp) &&
+      prev !== "desktop" &&
+      vp !== "desktop" &&
       state.mode !== "code";
 
     if (shouldEase) beginViewportEase(shell);
@@ -1817,8 +2224,7 @@
     state.viewport = vp;
     syncFullscreenUi();
     setModeUi();
-    const frame = document.getElementById("preview-frame");
-    if (frame) frame.className = "ms-preview-frame is-" + vp;
+    setPreviewFrameViewportClass(document.getElementById("preview-frame"), vp);
 
     if (shouldEase) scheduleViewportSizeApply();
     else applyPreviewViewportSize();
@@ -1845,10 +2251,12 @@
       const vp = state.viewport;
       if (width != null) {
         state.viewportWidths[vp] = width;
+        state.viewportCustomized[vp] = true;
         shell.style.width = width + "px";
       }
       if (height != null) {
         state.viewportHeights[vp] = height;
+        state.viewportCustomized[vp] = true;
         shell.style.height = height + "px";
       }
       syncPreviewSizeLabel(
@@ -1883,6 +2291,8 @@
     };
 
     const startDrag = (event, nextAxis, side) => {
+      // Desktop fills the pane — never enter resize mode (collapses the preview).
+      if (state.viewport === "desktop" || state.viewport === "fullscreen") return;
       if (!isResizableViewport(state.viewport) || state.mode === "code") return;
       if (event.button != null && event.button !== 0) return;
       const vp = state.viewport;
@@ -2057,6 +2467,8 @@
     drag: null,
     didDrag: false,
     dropImageEl: null,
+    previewObjectUrl: "",
+    previewPainted: false,
   };
 
   function rgbToHex(color) {
@@ -2103,8 +2515,43 @@
   function applyPreviewSandbox(mode) {
     const frame = getPreviewFrame();
     if (!frame) return;
-    frame.setAttribute("sandbox", mode === "edit" ? PREVIEW_SANDBOX_EDIT : PREVIEW_SANDBOX_PREVIEW);
+    const next = mode === "edit" ? PREVIEW_SANDBOX_EDIT : PREVIEW_SANDBOX_PREVIEW;
+    const prev = frame.getAttribute("sandbox") || "";
+    if (prev !== next) {
+      frame.setAttribute("sandbox", next);
+      // Changing sandbox resets the iframe document — force a rewrite next.
+      editState.lastWrittenHtml = "";
+    }
     editState.lastSandboxMode = mode;
+  }
+
+  /** Close dangling tags so truncated model output still paints in the iframe. */
+  function closeIncompleteHtml(html) {
+    let out = String(html || "");
+    if (!out.trim()) return out;
+    const openScript = (out.match(/<script\b(?![^>]*\/>)/gi) || []).length;
+    const closeScript = (out.match(/<\/script>/gi) || []).length;
+    if (openScript > closeScript) {
+      out += "\n</script>".repeat(openScript - closeScript);
+    }
+    const openStyle = (out.match(/<style\b/gi) || []).length;
+    const closeStyle = (out.match(/<\/style>/gi) || []).length;
+    if (openStyle > closeStyle) {
+      out += "\n</style>".repeat(openStyle - closeStyle);
+    }
+    if (/<body[\s>]/i.test(out) && !/<\/body>/i.test(out)) out += "\n</body>";
+    if (/<html[\s>]/i.test(out) && !/<\/html>/i.test(out)) out += "\n</html>";
+    return out;
+  }
+
+  function revokePreviewObjectUrl() {
+    if (!editState.previewObjectUrl) return;
+    try {
+      URL.revokeObjectURL(editState.previewObjectUrl);
+    } catch (_) {
+      /* ignore */
+    }
+    editState.previewObjectUrl = "";
   }
 
   /**
@@ -2175,18 +2622,131 @@
     return styleTag + out;
   }
 
+  function markPreviewPainted(ok) {
+    editState.previewPainted = !!ok;
+    syncEmptyState();
+  }
+
+  function previewDocLooksPainted(doc) {
+    if (!doc?.body) return false;
+    const bodyHtml = String(doc.body.innerHTML || "").trim();
+    if (!bodyHtml || bodyHtml === "<br>" || bodyHtml === "<br/>") return false;
+    return !!doc.querySelector("h1, h2, nav, header, main, section, .hero, footer, .nav, p, a");
+  }
+
   function writePreviewDocument(html) {
     const frame = getPreviewFrame();
     if (!frame || !html) return null;
-    const doc = frame.contentDocument;
-    if (!doc) return null;
-    const safeHtml = ensureMobileFriendlyHtml(html);
-    doc.open();
-    doc.write(safeHtml);
-    doc.close();
+    // Keep the frame in the layout tree — never display:none / parked while painting.
+    frame.hidden = false;
+    frame.removeAttribute("hidden");
+    frame.classList.remove("is-parked");
+    markPreviewPainted(false);
+    void frame.offsetWidth;
+    setPreviewFrameViewportClass(frame, state.viewport);
+    applyPreviewViewportSize();
+    const safeHtml = closeIncompleteHtml(ensureMobileFriendlyHtml(html));
+    revokePreviewObjectUrl();
+    try {
+      if (frame.getAttribute("src")) frame.removeAttribute("src");
+    } catch (_) {
+      /* ignore */
+    }
+
+    const finishPaint = () => {
+      bindPreviewScrollBridge();
+      frame.classList.remove("is-parked");
+      applyPreviewViewportSize();
+      let painted = false;
+      try {
+        painted = previewDocLooksPainted(frame.contentDocument);
+      } catch (_) {
+        painted = false;
+      }
+      // srcdoc/blob can be opaque briefly — treat a non-tiny frame as painted.
+      if (!painted && frame.clientWidth > 80 && frame.clientHeight > 80) {
+        painted = !frame.classList.contains("is-parked");
+      }
+      markPreviewPainted(painted);
+      if (!painted) {
+        window.setTimeout(() => {
+          try {
+            markPreviewPainted(previewDocLooksPainted(frame.contentDocument));
+          } catch (_) {
+            /* ignore */
+          }
+        }, 200);
+      }
+    };
+
+    // Prefer srcdoc; fall back to blob URL (requires CSP frame-src blob:).
+    let paintedViaWrite = false;
+    try {
+      const doc = frame.contentDocument;
+      if (doc) {
+        doc.open();
+        doc.write(safeHtml);
+        doc.close();
+        paintedViaWrite = previewDocLooksPainted(doc);
+      }
+    } catch (_) {
+      paintedViaWrite = false;
+    }
+
+    if (!paintedViaWrite) {
+      try {
+        frame.srcdoc = safeHtml;
+      } catch (_) {
+        const blob = new Blob([safeHtml], { type: "text/html;charset=utf-8" });
+        editState.previewObjectUrl = URL.createObjectURL(blob);
+        frame.src = editState.previewObjectUrl;
+      }
+    }
+
     editState.lastWrittenHtml = html;
-    bindPreviewScrollBridge();
-    return doc;
+    frame.addEventListener("load", finishPaint, { once: true });
+    window.setTimeout(finishPaint, 0);
+    window.setTimeout(finishPaint, 120);
+    try {
+      return frame.contentDocument;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /** Re-paint preview after layout — fixes blank iframe when opening a project in a new tab. */
+  function ensurePreviewPainted() {
+    if (!(state.html && String(state.html).trim())) return;
+    if (state.mode === "code") return;
+    const frame = getPreviewFrame();
+    if (!frame) return;
+    frame.classList.remove("is-parked");
+    applyPreviewViewportSize();
+    const doc = getPreviewDoc();
+    const ready = !doc || doc.readyState === "complete";
+    const contentMissing = !previewDocLooksPainted(doc);
+    if (editState.lastWrittenHtml !== state.html || (contentMissing && ready)) {
+      writePreviewDocument(state.html);
+      return;
+    }
+    if (!contentMissing) markPreviewPainted(true);
+  }
+
+  /** Schedule several paints — Finder swipe often finishes before the preview grid has height. */
+  function schedulePreviewRepaint() {
+    if (!(state.html && String(state.html).trim()) || state.mode === "code") return;
+    markPreviewPainted(false);
+    [0, 50, 150, 400, 900, 1800].forEach((ms) => {
+      window.setTimeout(() => {
+        if (!(state.html && String(state.html).trim()) || state.mode === "code") return;
+        writePreviewDocument(state.html);
+        ensurePreviewPainted();
+      }, ms);
+    });
+    // Never leave the spinner up forever if paint detection is flaky.
+    window.setTimeout(() => {
+      if (!editState.previewPainted && state.html) markPreviewPainted(true);
+    }, 4000);
   }
 
   /** Forward wheel/trackpad scroll into the preview iframe when chrome/overlays steal the event. */
@@ -3660,7 +4220,7 @@
       editor.hidden = true;
       editor.setAttribute("hidden", "");
     }
-    if (frame) frame.className = "ms-preview-frame is-" + state.viewport;
+    setPreviewFrameViewportClass(frame, state.viewport);
     syncFullscreenUi();
     syncEmptyState();
     applyPreviewViewportSize();
@@ -3680,10 +4240,15 @@
       applyPreviewSandbox("preview");
     }
 
+    const bodyHtml = String(getPreviewDoc()?.body?.innerHTML || "").trim();
+    const bodyLooksEmpty = !bodyHtml || bodyHtml === "<br>" || bodyHtml === "<br/>";
     const needsWrite =
       !!(state.html && frame) &&
       !editState.skipRewrite &&
-      (restoringFromEdit || editState.lastWrittenHtml !== state.html || !frame.contentDocument?.body);
+      (restoringFromEdit ||
+        editState.lastWrittenHtml !== state.html ||
+        !frame.contentDocument?.body ||
+        bodyLooksEmpty);
 
     if (needsWrite) {
       writePreviewDocument(state.html);
@@ -3697,6 +4262,19 @@
     setEditSaveStatus("idle");
     editState.skipRewrite = false;
     refreshWatermark();
+    if (state.html && state.mode !== "code") {
+      frame?.classList.remove("is-parked");
+      setPreviewFrameViewportClass(frame, state.viewport);
+      requestAnimationFrame(() => {
+        ensurePreviewPainted();
+        requestAnimationFrame(() => ensurePreviewPainted());
+      });
+      window.setTimeout(() => ensurePreviewPainted(), 120);
+      window.setTimeout(() => ensurePreviewPainted(), 400);
+      window.setTimeout(() => {
+        if (state.html) ensurePreviewPainted();
+      }, 900);
+    }
   }
 
   function setPublishEnabled() {
@@ -3759,10 +4337,12 @@
   function syncPublishLiveUi({ showBanner = false } = {}) {
     const url = liveSiteUrl();
     const isLive = !!url;
+    const paid = isPaidProject(state.project);
     syncPreviewChromeUrl();
     const publishBtn = document.getElementById("btn-publish-top");
     const unpublishBtn = document.getElementById("btn-unpublish-top");
     const deleteBtn = document.getElementById("btn-delete-top");
+    const settingsDeleteBtn = document.getElementById("lb-set-delete");
     const settingsUnpublishBtn = document.getElementById("lb-set-unpublish");
     const label = publishBtn?.querySelector(".ms-lb-publish-label");
     const icon = publishBtn?.querySelector(".ms-lb-publish-icon");
@@ -3775,7 +4355,14 @@
     if (icon) icon.innerHTML = isLive ? LIVE_BTN_ICON : PUBLISH_BTN_ICON;
     if (unpublishBtn) unpublishBtn.hidden = !isLive;
     if (settingsUnpublishBtn) settingsUnpublishBtn.hidden = !isLive;
-    if (deleteBtn) deleteBtn.hidden = !state.projectId;
+    if (deleteBtn) deleteBtn.hidden = !state.projectId || paid;
+    if (settingsDeleteBtn) {
+      settingsDeleteBtn.hidden = paid;
+      settingsDeleteBtn.disabled = paid;
+      settingsDeleteBtn.title = paid
+        ? "This website was paid for — it can’t be deleted."
+        : "";
+    }
     syncRedesignButtonUi();
 
     const offlineBanner = document.getElementById("lb-offline-banner");
@@ -3808,62 +4395,120 @@
     banner.hidden = isLiveBannerDismissed();
   }
 
-  const PRICE_CHAPTERS = [1, 300, 500, 700, 1000, 1500];
+  const MIN_PRICE_CENTS = 100;
+  const MAX_PRICE_CENTS = 10000000;
+  const DEFAULT_PRICE_CENTS = 50000;
+  let priceCountUpToken = 0;
+  let priceCountUpDone = false;
 
-  function formatPriceLabel(dollars) {
-    const n = Number(dollars);
-    if (!Number.isFinite(n)) return "$0";
+  function formatPriceInputValue(cents) {
+    const n = Number(cents) / 100;
+    if (!Number.isFinite(n)) return "";
     const hasCents = Math.round(n * 100) % 100 !== 0;
-    return (
-      "$" +
-      n.toLocaleString("en-US", {
-        minimumFractionDigits: hasCents ? 2 : 0,
-        maximumFractionDigits: 2,
-      })
-    );
+    return n.toLocaleString("en-US", {
+      minimumFractionDigits: hasCents ? 2 : 0,
+      maximumFractionDigits: 2,
+      useGrouping: true,
+    });
   }
 
-  function priceIndexFromCents(cents) {
-    const dollars = Math.round(Number(cents) / 100);
-    const idx = PRICE_CHAPTERS.indexOf(dollars);
-    return idx >= 0 ? idx : 0;
+  function clampPriceCents(cents) {
+    const n = Math.round(Number(cents));
+    if (!Number.isFinite(n)) return DEFAULT_PRICE_CENTS;
+    return Math.min(MAX_PRICE_CENTS, Math.max(MIN_PRICE_CENTS, n));
   }
 
-  function setPriceFromIndex(index, { persist = false } = {}) {
-    const idx = Math.max(0, Math.min(PRICE_CHAPTERS.length - 1, Number(index) || 0));
-    const dollars = PRICE_CHAPTERS[idx];
-    state.priceCents = dollars * 100;
-    syncPriceUi();
+  function parsePriceInput(raw) {
+    let s = String(raw || "").trim().replace(/\$/g, "").replace(/,/g, "").toLowerCase();
+    if (!s) return null;
+    const kMatch = s.match(/^(\d+(?:\.\d+)?)\s*k$/);
+    if (kMatch) {
+      const dollars = Number(kMatch[1]) * 1000;
+      if (!Number.isFinite(dollars)) return null;
+      return clampPriceCents(dollars * 100);
+    }
+    if (!/^\d+(\.\d{1,2})?$/.test(s)) return null;
+    const dollars = Number(s);
+    if (!Number.isFinite(dollars)) return null;
+    return clampPriceCents(Math.round(dollars * 100));
+  }
+
+  function prefersReducedMotion() {
+    try {
+      return !!window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function animatePriceCountUp(targetCents) {
+    const inputEl = document.getElementById("lb-price-input");
+    if (!inputEl) return;
+    const target = clampPriceCents(targetCents);
+    if (priceCountUpDone || prefersReducedMotion() || document.activeElement === inputEl) {
+      inputEl.value = formatPriceInputValue(target);
+      priceCountUpDone = true;
+      return;
+    }
+
+    const token = ++priceCountUpToken;
+    const durationMs = 900;
+    const start = performance.now();
+    inputEl.value = "0";
+
+    function easeOutCubic(t) {
+      return 1 - Math.pow(1 - t, 3);
+    }
+
+    function frame(now) {
+      if (token !== priceCountUpToken) return;
+      if (document.activeElement === inputEl) {
+        inputEl.value = formatPriceInputValue(target);
+        priceCountUpDone = true;
+        return;
+      }
+      const t = Math.min(1, (now - start) / durationMs);
+      const cents = Math.round(target * easeOutCubic(t));
+      inputEl.value = formatPriceInputValue(cents);
+      if (t < 1) {
+        requestAnimationFrame(frame);
+        return;
+      }
+      inputEl.value = formatPriceInputValue(target);
+      priceCountUpDone = true;
+    }
+
+    requestAnimationFrame(frame);
+  }
+
+  function setPriceCents(cents, { persist = false, syncInput = true } = {}) {
+    state.priceCents = clampPriceCents(cents);
+    syncPriceUi({ syncInput });
     if (persist) {
       void persistPrice().then(() => refreshWatermark());
     }
   }
 
-  function syncPriceUi() {
-    const idx = priceIndexFromCents(state.priceCents);
-    const dollars = PRICE_CHAPTERS[idx] || 300;
-    const pct = (idx / (PRICE_CHAPTERS.length - 1)) * 100;
-    const valueEl = document.getElementById("lb-price-value");
-    const commissionEl = document.getElementById("lb-commission-value");
-    const fillEl = document.getElementById("lb-price-fill");
-    const rangeEl = document.getElementById("lb-price-range");
-    if (valueEl) valueEl.textContent = formatPriceLabel(dollars);
-    if (commissionEl) commissionEl.textContent = formatPriceLabel(dollars * 0.4);
-    if (fillEl) fillEl.style.width = pct + "%";
-    if (rangeEl) {
-      rangeEl.max = String(PRICE_CHAPTERS.length - 1);
-      rangeEl.value = String(idx);
-      rangeEl.setAttribute("aria-valuetext", formatPriceLabel(dollars));
+  function syncPriceUi({ syncInput = true, animate = false } = {}) {
+    const cents = clampPriceCents(state.priceCents);
+    state.priceCents = cents;
+    const inputEl = document.getElementById("lb-price-input");
+    const statEl = inputEl?.closest(".ms-lb-price-stat");
+    if (syncInput && inputEl && document.activeElement !== inputEl) {
+      if (animate && !priceCountUpDone) {
+        animatePriceCountUp(cents);
+      } else {
+        inputEl.value = formatPriceInputValue(cents);
+      }
     }
-    document.querySelectorAll(".ms-lb-price-chapters [data-price]").forEach((btn) => {
-      const selected = Number(btn.dataset.price) === dollars;
-      btn.classList.toggle("is-active", selected);
-      btn.setAttribute("aria-pressed", String(selected));
-    });
-    document.querySelectorAll(".ms-lb-price-marks i").forEach((mark, markIdx) => {
-      mark.classList.toggle("is-reached", markIdx <= idx);
-      mark.classList.toggle("is-current", markIdx === idx);
-    });
+    if (statEl) {
+      const invalid =
+        inputEl &&
+        document.activeElement === inputEl &&
+        String(inputEl.value || "").trim() !== "" &&
+        parsePriceInput(inputEl.value) == null;
+      statEl.classList.toggle("is-invalid", !!invalid);
+    }
   }
 
   // Persist the seller-chosen price to the project row so the live watermark
@@ -3965,6 +4610,7 @@
 
   async function loadProject(id) {
     const user = await window.StudioAuth.getUser();
+    if (!user?.id) throw new Error("Sign in required to open this project.");
     const { data, error } = await sb()
       .from("projects")
       .select("*")
@@ -3976,15 +4622,21 @@
     state.projectId = data.id;
     state.project = data;
     state.html = ensureMobileFriendlyHtml(data.html || "");
-    const allowedPrices = [100, 30000, 50000, 70000, 100000, 150000];
+    editState.lastWrittenHtml = "";
+    editState.previewPainted = false;
+    state.viewportCustomized.desktop = false;
+    state.viewportWidths.desktop = null;
+    state.viewportHeights.desktop = null;
     const dbPrice = Number(data.price_cents);
     const savedPrice = Number(localStorage.getItem("ms_project_price_" + data.id));
-    if (allowedPrices.includes(dbPrice)) {
-      state.priceCents = dbPrice;
-    } else if (allowedPrices.includes(savedPrice)) {
-      state.priceCents = savedPrice;
+    if (Number.isFinite(dbPrice) && dbPrice >= MIN_PRICE_CENTS) {
+      state.priceCents = clampPriceCents(dbPrice);
+    } else if (Number.isFinite(savedPrice) && savedPrice >= MIN_PRICE_CENTS) {
+      state.priceCents = clampPriceCents(savedPrice);
+    } else {
+      state.priceCents = DEFAULT_PRICE_CENTS;
     }
-    syncPriceUi();
+    syncPriceUi({ animate: true });
     state.templateId = data.template_id || state.templateId;
     state.leadId = data.lead_id || null;
     state.onboardDone = !!(state.html && state.html.trim());
@@ -3993,6 +4645,7 @@
     setBusinessValue("category", ctx.category || "");
     setBusinessValue("phone", ctx.phone || "");
     setBusinessValue("address", ctx.address || "");
+    setBusinessValue("description", ctx.description || "");
     setBusinessValue("mapsUrl", ctx.mapsUrl || "");
     if (ctx.notes && !state.onboardDone) {
       // Only seed the ask bar during setup — after generate it is for edit prompts.
@@ -4003,46 +4656,138 @@
     syncOnboardTemplateSelection();
     syncPromptActionUi();
     updatePreview();
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => ensurePreviewPainted());
+    });
+  }
+
+  function hydrateIntakeFromFinderUrl() {
+    const p = params();
+    const name = String(p.get("name") || "").trim();
+    const category = String(p.get("category") || "").trim();
+    const phone = String(p.get("phone") || "").trim();
+    const address = String(p.get("address") || "").trim();
+    const maps = String(p.get("maps") || "").trim();
+    const website = String(p.get("website") || "").trim();
+    const hours = String(p.get("hours") || "").trim();
+    const description = String(p.get("description") || "").trim();
+    const leadId = String(p.get("lead_id") || p.get("lead") || "").trim();
+    // Finder swipe: always prefer URL/pick facts over empty onboard fields.
+    if (leadId) state.leadId = leadId;
+    if (name) setBusinessValue("businessName", name);
+    if (category) setBusinessValue("category", category);
+    if (phone) setBusinessValue("phone", phone);
+    if (address) setBusinessValue("address", address);
+    if (maps) {
+      setBusinessValue("mapsUrl", maps);
+      state.mapsReady = true;
+    }
+    if (website) setBusinessValue("website", website);
+    if (hours) setBusinessValue("hours", hours);
+    if (description) setBusinessValue("description", description);
+    if (!state.fromFinder && hasFreshLeadIntake(p)) state.fromFinder = true;
+    syncBusinessToOnboard(true);
+  }
+
+  function beginFinderGenerateUi() {
+    state.fromFinder = true;
+    setBuilderPhase("workspace");
+    clearPreviewGenError();
+    editState.previewPainted = false;
+    // Show preparing progress immediately so swipe never lands on "No code generated yet".
+    if (!genProgressActive && !(state.html && String(state.html).trim())) {
+      startGenerateProgress("Preparing your website…");
+    } else {
+      syncEmptyState();
+    }
   }
 
   async function generate(opts) {
     const fromOnboard = !!(opts && opts.fromOnboard);
-    const fromFinderFlow = !!(opts && opts.fromFinder) || !!state.fromFinder;
+    const fromFinderFlow = !!(opts && opts.fromFinder) || !!state.fromFinder || hasFreshLeadIntake();
     const isRedesign = !!(opts && opts.redesign);
+    // Allow only one live generate; a stuck flag without abort is cleared by the watchdog kick.
+    if (generateInFlight && !isRedesign) return;
+    generateInFlight = true;
     setError("");
     setOnboardError("");
+    clearPreviewGenError();
+
+    // Finder swipe: open workspace + preparing progress immediately.
+    if (fromFinderFlow && !isRedesign) beginFinderGenerateUi();
 
     // Dock generate is blocked until the first site exists — unless this is setup Generate
     // or a Business Finder auto-generate handoff.
     if (!fromOnboard && !fromFinderFlow && !isRedesign && !state.onboardDone) {
       ensureOnboardSurvey();
       setError("Add a Google link or fill business details, then generate.");
+      generateInFlight = false;
       return;
     }
 
     if (isRedesign) {
       if (!state.projectId || !(state.html && String(state.html).trim())) {
         setError("Generate a site first, then redesign.");
+        generateInFlight = false;
         return;
       }
     }
 
     if (fromOnboard) captureOnboardDetails();
+    if (fromFinderFlow) {
+      applyPickFromStorageOrQuery(params(), { retain: true });
+      hydrateIntakeFromFinderUrl();
+      syncBusinessToOnboard(true);
+    }
 
     const intake = readIntake();
+    if (!intake.businessName || intake.businessName === "Untitled business") {
+      if (fromFinderFlow) {
+        const fallback =
+          String(params().get("name") || "").trim() ||
+          (state.leadId ? "Local Business" : "");
+        if (fallback) {
+          intake.businessName = sanitizeClientText(fallback, 120) || "Local Business";
+          setBusinessValue("businessName", intake.businessName);
+        }
+      }
+    }
     if (!intake.businessName || intake.businessName === "Untitled business") {
       const msg = "Business name is required.";
       if (fromOnboard) {
         setOnboardError(msg);
         updateOnboardContinue();
       } else setError(msg);
+      generateInFlight = false;
       return;
+    }
+
+    // Guarantee Finder facts are on the payload even if onboard inputs were empty.
+    if (fromFinderFlow) {
+      const p = params();
+      if (!intake.category) intake.category = sanitizeClientText(p.get("category") || "", 80);
+      if (!intake.phone) intake.phone = sanitizeClientText(p.get("phone") || "", 40);
+      if (!intake.address) intake.address = sanitizeClientText(p.get("address") || "", 200);
+      if (!intake.mapsUrl) intake.mapsUrl = sanitizeClientText(p.get("maps") || "", 500);
+      if (!intake.website) intake.website = sanitizeClientText(p.get("website") || "", 500);
+      if (!intake.hours) intake.hours = sanitizeClientText(p.get("hours") || "", 200);
+      if (!intake.description) {
+        intake.description = sanitizeClientText(p.get("description") || "", 500);
+      }
+      if (!intake.leadId) intake.leadId = state.leadId || p.get("lead_id") || p.get("lead") || null;
     }
 
     intake.templateId = intake.templateId || state.templateId || "local-service";
     intake.usePresets = true;
     intake.fromFinder = fromFinderFlow;
     intake.redesign = isRedesign;
+    // Finder swipe: always rebuild notes from the lead so generation uses real facts.
+    if (fromFinderFlow && !isRedesign) {
+      const finderNotes = buildFinderPrompt();
+      intake.notes = finderNotes;
+      const notesEl = document.getElementById("biz-notes");
+      if (notesEl) notesEl.value = finderNotes;
+    }
     if (isRedesign) {
       const redesignNote =
         "REDESIGN: Create a completely different website — new layout, palette, typography, section order, and visual style. Do not reuse the previous design.";
@@ -4062,16 +4807,41 @@
     } catch (e) {
       if (fromOnboard) setOnboardError(e.message);
       else setError(e.message);
+      generateInFlight = false;
       return;
     }
 
-    if (!(await ensureCreditsForGeneration(fromOnboard))) return;
-
     setStatus("");
+    if ((fromOnboard || fromFinderFlow) && !isRedesign) {
+      setBuilderPhase("workspace");
+    }
+
+    renderGenerateProgress(Math.max(genProgressPct, 6), "Checking credits…");
+    if (!genProgressActive) {
+      startGenerateProgress("Checking credits…");
+    }
+
+    if (!(await ensureCreditsForGeneration(fromOnboard))) {
+      generateInFlight = false;
+      return;
+    }
+
     generateAbort = new AbortController();
     const signal = generateAbort.signal;
+    const GENERATE_TIMEOUT_MS = 160000;
+    const generateTimer = window.setTimeout(() => {
+      try {
+        generateAbort.abort();
+      } catch (_) {
+        /* ignore */
+      }
+    }, GENERATE_TIMEOUT_MS);
+    // Real generate request armed — consume the stored pick and show building progress.
+    applyPickFromStorageOrQuery(params(), { retain: false });
+    setPromptBusy(true, isRedesign ? "Redesigning your website…" : "Building your website…");
     updateOnboardContinue();
-    setPromptBusy(true, isRedesign ? "Redesigning…" : "Generating…");
+    const generatedHtmlKeep = { html: "" };
+    let generationSucceeded = false;
     try {
       const base = workerUrl();
       if (!base) throw new Error("Worker URL is not configured.");
@@ -4081,11 +4851,13 @@
         if (e?.name === "AbortError") throw e;
         throw new Error(workerUnreachableMessage(base, e?.message || e));
       }
+      renderGenerateProgress(Math.max(genProgressPct, 18), "Building your website…");
       const headers = await authHeaders();
       const requestId =
         typeof crypto !== "undefined" && crypto.randomUUID
           ? crypto.randomUUID()
           : "gen-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+      renderGenerateProgress(Math.max(genProgressPct, 25), "Building your website…");
       const res = await fetch(base + "/generate", {
         method: "POST",
         headers: {
@@ -4100,13 +4872,15 @@
         }),
         signal,
       });
+      renderGenerateProgress(Math.max(genProgressPct, 88), "Finishing your website…");
       const data = await res.json().catch(() => ({}));
       if (res.status === 402 || data.code === "INSUFFICIENT_CREDITS") {
         const need = data.required || state.generationCost || 5;
         const have = data.balance ?? state.totalCredits ?? 0;
-        window.StudioToast?.error?.(
-          "Not enough credits (" + have + " available, " + need + " required). Top up on Pricing."
-        );
+        const msg =
+          "Not enough credits (" + have + " available, " + need + " required). Top up on Pricing.";
+        failGenerateProgress(msg);
+        window.StudioToast?.error?.(msg);
         releaseFinderLeadHold();
         location.href = data.pricingUrl || "pricing.html";
         return;
@@ -4117,34 +4891,61 @@
         document.dispatchEvent(new CustomEvent("ms:credits-changed", { detail: data.credits }));
       }
       state.projectId = data.projectId;
-      state.html = ensureMobileFriendlyHtml(data.html || "");
-      state.onboardDone = true;
-      state.autoGeneratePending = false;
+      generatedHtmlKeep.html = ensureMobileFriendlyHtml(data.html || "");
+      if (!String(generatedHtmlKeep.html || "").trim()) {
+        throw new Error("Generation returned empty HTML. Please try again.");
+      }
       editState.history = [];
       editState.historyIndex = -1;
       editState.lastWrittenHtml = "";
+      editState.previewPainted = false;
+      state.viewportCustomized.desktop = false;
+      state.viewportWidths.desktop = null;
+      state.viewportHeights.desktop = null;
       setEditSaveStatus("idle");
-      await markBuilderOnboarded();
-      setBuilderPhase("workspace");
-      await loadProject(state.projectId);
+      history.replaceState({}, "", "builder.html?project_id=" + encodeURIComponent(state.projectId));
+      void markBuilderOnboarded();
+      const statusMsg = isRedesign
+        ? "Redesign complete (" + (state.generationCost || 5) + " credits used)."
+        : data.presetCount
+          ? "Generated with " + data.presetCount + " Website Presets. Watermark is on until payment."
+          : "Generated. Watermark is on until payment.";
+      await revealGeneratedSite(generatedHtmlKeep.html, { status: statusMsg });
+      generationSucceeded = true;
+      generateAbort = null;
+      window.StudioShell?.setChannelGenerating?.(null, false);
+      void loadProject(state.projectId)
+        .then(() => {
+          if (generatedHtmlKeep.html) {
+            state.html = generatedHtmlKeep.html;
+            writePreviewDocument(state.html);
+            schedulePreviewRepaint();
+          }
+          syncPublishLiveUi();
+          syncPriceUi({ animate: false });
+        })
+        .catch((loadErr) => {
+          console.warn("loadProject after generate failed:", loadErr);
+        });
       const notesEl = document.getElementById("biz-notes");
       if (notesEl) notesEl.value = "";
-      history.replaceState({}, "", "builder.html?project_id=" + encodeURIComponent(state.projectId));
-      setStatus(
-        isRedesign
-          ? "Redesign complete (" + (state.generationCost || 5) + " credits used)."
-          : data.presetCount
-            ? "Generated with " + data.presetCount + " Website Presets. Watermark is on until payment."
-            : "Generated. Watermark is on until payment."
-      );
-      state.mode = "preview";
-      updatePreview();
-      syncPromptActionUi();
-      syncRedesignButtonUi();
+      const setupStatus = document.getElementById("builder-setup-status");
+      if (setupStatus) {
+        setupStatus.hidden = true;
+        setupStatus.textContent = "";
+      }
     } catch (e) {
       if (e?.name === "AbortError") {
+        const msg = fromFinderFlow
+          ? "Generation timed out or was cancelled. Please try again."
+          : "Generation cancelled.";
+        failGenerateProgress(msg);
         setStatus("");
-        setError("");
+        const status = document.getElementById("builder-status");
+        if (status) {
+          status.textContent = msg;
+          status.classList.add("is-error");
+        }
         if (fromOnboard) setOnboardError("");
         return;
       }
@@ -4153,11 +4954,39 @@
         msg = workerUnreachableMessage(workerUrl(), msg);
       }
       if (fromOnboard) setOnboardError(msg);
-      setError(msg);
+      failGenerateProgress(msg);
+      const status = document.getElementById("builder-status");
+      if (status) {
+        status.textContent = msg;
+        status.classList.add("is-error");
+      }
+      window.StudioToast?.error?.(msg);
       setStatus("");
+      if ((fromOnboard || fromFinderFlow) && !isRedesign && !(state.html && String(state.html).trim())) {
+        setBuilderPhase("workspace");
+      }
     } finally {
-      setPromptBusy(false);
+      window.clearTimeout(generateTimer);
+      generateInFlight = false;
+      document.documentElement.classList.remove("ms-lb-boot-generating");
+      if (generationSucceeded) {
+        generateAbort = null;
+        window.StudioShell?.setChannelGenerating?.(null, false);
+      } else if (generatedHtmlKeep.html && String(generatedHtmlKeep.html).trim()) {
+        // HTML arrived but success path failed mid-reveal — still finish.
+        try {
+          await revealGeneratedSite(generatedHtmlKeep.html);
+        } catch (_) {
+          failGenerateProgress("Could not display the generated website. Please try again.");
+        }
+        generateAbort = null;
+        window.StudioShell?.setChannelGenerating?.(null, false);
+      } else {
+        generateAbort = null;
+        window.StudioShell?.setChannelGenerating?.(null, false);
+      }
       updateOnboardContinue();
+      syncEmptyState();
     }
   }
 
@@ -4462,6 +5291,10 @@
       setError("No project to delete");
       return;
     }
+    if (isPaidProject(state.project)) {
+      setError("This website was paid for — it can’t be deleted.");
+      return;
+    }
     if (!confirm("Delete this project permanently? This cannot be undone.")) return;
     setError("");
     setStatus("Deleting project…");
@@ -4477,12 +5310,16 @@
         }
       }
       const user = await window.StudioAuth.getUser();
-      const { error } = await sb()
+      const { data, error } = await sb()
         .from("projects")
         .delete()
         .eq("id", state.projectId)
-        .eq("user_id", user.id);
+        .eq("user_id", user.id)
+        .select("id");
       if (error) throw error;
+      if (!data?.length) {
+        throw new Error("This website was paid for — it can’t be deleted.");
+      }
       location.href = "dashboard.html";
     } catch (e) {
       setStatus("");
@@ -4490,12 +5327,8 @@
     }
   }
 
-  function downloadHtml() {
-    if (!requireMvpPlus("download")) return;
-    if (ensureOnboardSurvey()) {
-      setError("Add a Google link or fill business details, then generate.");
-      return;
-    }
+  async function downloadHtml() {
+    if (!(await requirePaidPlanAsync("download"))) return;
     if (!state.html || !state.html.trim()) {
       setError("Nothing to download yet - generate a site first.");
       return;
@@ -4505,13 +5338,225 @@
     } else if (state.mode === "edit") {
       flushEditHtmlToState();
     }
-    const blob = new Blob([state.html || ""], { type: "text/html" });
+    const html = String(state.html || "").trim();
+    if (!html) {
+      setError("Nothing to download yet - generate a site first.");
+      return;
+    }
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download =
-      (readIntake().businessName || "site").replace(/\s+/g, "-").toLowerCase() + ".html";
+      (readIntake().businessName || "site").replace(/[^\w\-]+/g, "-").replace(/-+/g, "-").toLowerCase() +
+      ".html";
+    a.rel = "noopener";
+    document.body.appendChild(a);
     a.click();
+    a.remove();
     URL.revokeObjectURL(a.href);
+  }
+
+  function qrBusinessName() {
+    return (
+      businessValue("businessName") ||
+      String(state.project?.business_name || "").trim() ||
+      String(state.project?.business_context?.businessName || "").trim() ||
+      readIntake().businessName ||
+      "Business"
+    );
+  }
+
+  function closeQrBusinessCard() {
+    const modal = document.getElementById("lb-qr-modal");
+    if (!modal) return;
+    modal.hidden = true;
+    document.body.classList.remove("ms-lb-qr-open");
+    const card = document.getElementById("lb-qr-card");
+    if (card) card.style.transform = "";
+  }
+
+  function bindQrCardTilt() {
+    const scene = document.getElementById("lb-qr-scene");
+    const card = document.getElementById("lb-qr-card");
+    if (!scene || !card || card.dataset.tiltBound === "1") return;
+    card.dataset.tiltBound = "1";
+    scene.addEventListener("pointermove", (e) => {
+      const rect = scene.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      card.style.transform =
+        "rotateY(" + (x * 18).toFixed(2) + "deg) rotateX(" + (-y * 14).toFixed(2) + "deg)";
+    });
+    scene.addEventListener("pointerleave", () => {
+      card.style.transform = "";
+    });
+  }
+
+  async function renderQrToCanvas(canvas, url) {
+    if (!canvas) throw new Error("QR canvas missing");
+    if (typeof QRCode === "undefined" || !QRCode.toCanvas) {
+      throw new Error("QR library failed to load. Refresh and try again.");
+    }
+    await QRCode.toCanvas(canvas, url, {
+      width: 220,
+      margin: 1,
+      color: { dark: "#0f172a", light: "#ffffff" },
+      errorCorrectionLevel: "M",
+    });
+  }
+
+  async function downloadQrBusinessCardPng() {
+    const url = liveSiteUrl();
+    const name = qrBusinessName();
+    if (!url) {
+      setError("Publish your website first before creating a QR business card.");
+      return;
+    }
+    const canvas = document.createElement("canvas");
+    const w = 900;
+    const h = 1280;
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const grad = ctx.createLinearGradient(0, 0, w, h);
+    grad.addColorStop(0, "#f8fafc");
+    grad.addColorStop(0.45, "#eef2ff");
+    grad.addColorStop(1, "#e0e7ff");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+
+    // Soft card panel
+    roundRect(ctx, 70, 90, w - 140, h - 180, 36);
+    ctx.fillStyle = "#ffffff";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(15, 23, 42, 0.08)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.fillStyle = "#3b82f6";
+    ctx.font = "600 28px DM Sans, system-ui, sans-serif";
+    ctx.fillText("moonrise", 120, 180);
+
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "700 54px DM Sans, system-ui, sans-serif";
+    wrapText(ctx, name, 120, 270, w - 240, 62);
+
+    const qrCanvas = document.createElement("canvas");
+    await renderQrToCanvas(qrCanvas, url);
+    const qrSize = 420;
+    const qrX = (w - qrSize) / 2;
+    const qrY = 430;
+    roundRect(ctx, qrX - 24, qrY - 24, qrSize + 48, qrSize + 48, 28);
+    ctx.fillStyle = "#ffffff";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(15, 23, 42, 0.1)";
+    ctx.stroke();
+    ctx.drawImage(qrCanvas, qrX, qrY, qrSize, qrSize);
+
+    ctx.fillStyle = "#334155";
+    ctx.font = "500 28px DM Sans, system-ui, sans-serif";
+    const link = url.replace(/^https?:\/\//, "");
+    wrapText(ctx, link, 120, 960, w - 240, 36);
+
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "500 24px DM Sans, system-ui, sans-serif";
+    ctx.fillText("Scan to visit the live website", 120, 1100);
+
+    const a = document.createElement("a");
+    a.href = canvas.toDataURL("image/png");
+    a.download =
+      name.replace(/[^\w\-]+/g, "-").replace(/-+/g, "-").toLowerCase().replace(/^-|-$/g, "") ||
+      "business-card";
+    a.download += "-qr-card.png";
+    a.click();
+    window.StudioToast?.success?.("Business card downloaded");
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    const radius = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.arcTo(x + w, y, x + w, y + h, radius);
+    ctx.arcTo(x + w, y + h, x, y + h, radius);
+    ctx.arcTo(x, y + h, x, y, radius);
+    ctx.arcTo(x, y, x + w, y, radius);
+    ctx.closePath();
+  }
+
+  function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+    const words = String(text || "").split(/\s+/).filter(Boolean);
+    let line = "";
+    let cy = y;
+    for (let i = 0; i < words.length; i++) {
+      const test = line ? line + " " + words[i] : words[i];
+      if (ctx.measureText(test).width > maxWidth && line) {
+        ctx.fillText(line, x, cy);
+        line = words[i];
+        cy += lineHeight;
+      } else {
+        line = test;
+      }
+    }
+    if (line) ctx.fillText(line, x, cy);
+  }
+
+  async function openQrBusinessCard() {
+    setError("");
+    const url = liveSiteUrl();
+    if (!url) {
+      setError("Publish your website first before creating a QR business card.");
+      return;
+    }
+
+    const name = qrBusinessName();
+    const modal = document.getElementById("lb-qr-modal");
+    const nameEl = document.getElementById("lb-qr-name");
+    const linkEl = document.getElementById("lb-qr-link");
+    const canvas = document.getElementById("lb-qr-canvas");
+    if (!modal || !nameEl || !linkEl || !canvas) return;
+
+    nameEl.textContent = name;
+    linkEl.href = url;
+    linkEl.textContent = url.replace(/^https?:\/\//, "");
+
+    try {
+      await renderQrToCanvas(canvas, url);
+    } catch (e) {
+      setError(e.message || "Could not create QR code");
+      return;
+    }
+
+    modal.hidden = false;
+    document.body.classList.add("ms-lb-qr-open");
+    bindQrCardTilt();
+  }
+
+  function bindQrBusinessCardUi() {
+    document.getElementById("lb-qr-close")?.addEventListener("click", closeQrBusinessCard);
+    document.getElementById("lb-qr-close-backdrop")?.addEventListener("click", closeQrBusinessCard);
+    document.getElementById("lb-qr-download")?.addEventListener("click", () => {
+      void downloadQrBusinessCardPng();
+    });
+    document.getElementById("lb-qr-copy")?.addEventListener("click", async () => {
+      const url = liveSiteUrl();
+      if (!url) {
+        setError("Publish your website first before creating a QR business card.");
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(url);
+        window.StudioToast?.success?.("Link copied");
+      } catch (_) {
+        setError("Could not copy link");
+      }
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !document.getElementById("lb-qr-modal")?.hidden) {
+        closeQrBusinessCard();
+      }
+    });
   }
 
   function setSiteSettingsError(msg) {
@@ -4554,6 +5599,13 @@
 
   function liveSiteUrl() {
     return String(state.project?.vercel_url || "").trim();
+  }
+
+  function isPaidProject(project) {
+    const p = project || state.project;
+    if (!p) return false;
+    if (p.watermark_enabled === false) return true;
+    return String(p.status || "").toLowerCase() === "paid";
   }
 
   const VERCEL_SLUG_STOP_WORDS = new Set([
@@ -4652,7 +5704,6 @@
   function syncPreviewChromeUrl() {
     const el = document.getElementById("lb-preview-chrome-url");
     const copyBtn = document.getElementById("lb-preview-chrome-copy");
-    const shareBtn = document.getElementById("lb-preview-chrome-share");
     const url = previewSiteUrl();
     if (el) {
       el.textContent = previewChromeUrlLabel();
@@ -4660,7 +5711,6 @@
     }
     const ready = !!(state.html || liveSiteUrl());
     if (copyBtn) copyBtn.disabled = !ready;
-    if (shareBtn) shareBtn.disabled = !ready;
   }
 
   function bindPreviewChromeActions() {
@@ -4670,25 +5720,6 @@
         setStatus("Link copied.");
       } catch (e) {
         setError(e.message || "Could not copy link");
-      }
-    });
-
-    document.getElementById("lb-preview-chrome-share")?.addEventListener("click", async () => {
-      const url = previewSiteUrl();
-      const title =
-        businessValue("businessName") ||
-        state.project?.business_name ||
-        "Website preview";
-      try {
-        if (navigator.share) {
-          await navigator.share({ title, url });
-          return;
-        }
-        await copyText(url);
-        setStatus("Link copied.");
-      } catch (e) {
-        if (e?.name === "AbortError") return;
-        setError(e.message || "Could not share link");
       }
     });
   }
@@ -5402,7 +6433,7 @@
       }, 120);
     });
 
-    ["onb-name", "onb-category", "onb-phone", "onb-address"].forEach((id) => {
+    ["onb-name", "onb-category", "onb-phone", "onb-address", "onb-description"].forEach((id) => {
       const el = document.getElementById(id);
       el?.addEventListener("input", () => {
         syncManualFieldsExpanded();
@@ -5506,6 +6537,11 @@
 
   function bindToolbar() {
     syncMvpAccessUi();
+    document.getElementById("preview-gen-error-retry")?.addEventListener("click", () => {
+      clearPreviewGenError();
+      setError("");
+      void generate({ fromFinder: !!state.fromFinder || hasFreshLeadIntake() });
+    });
     // Capture-phase: block Code / Download before any other handler runs.
     document.addEventListener(
       "click",
@@ -5515,7 +6551,7 @@
           if (!hasMvpPlus()) {
             e.preventDefault();
             e.stopPropagation();
-            requireMvpPlus("code");
+            void requirePaidPlanAsync("code");
           }
           return;
         }
@@ -5524,24 +6560,30 @@
           if (!hasMvpPlus()) {
             e.preventDefault();
             e.stopPropagation();
-            requireMvpPlus("download");
+            void requirePaidPlanAsync("download");
           }
         }
       },
       true
     );
     document.querySelectorAll(".is-mode").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        if (btn.dataset.mode === "code" && !hasMvpPlus()) return;
+      btn.addEventListener("click", async () => {
+        if (btn.dataset.mode === "code") {
+          if (!(await requirePaidPlanAsync("code"))) return;
+        }
         if (state.mode === "code") {
           state.html = document.getElementById("code-editor")?.value || state.html;
         } else if (state.mode === "edit") {
           flushEditHtmlToState();
           void flushEditAutosaveNow();
         }
-        const next = btn.dataset.mode === "code" && !hasMvpPlus() ? "preview" : btn.dataset.mode;
+        const next = btn.dataset.mode;
         if (next === "edit" && !(state.html && state.html.trim())) {
           setError("Generate a site first, then use Edit.");
+          return;
+        }
+        if (next === "code" && !(state.html && state.html.trim())) {
+          setError("Generate a site first, then view code.");
           return;
         }
         state.mode = next;
@@ -5576,28 +6618,51 @@
         updatePreview();
       });
     });
-    document.getElementById("lb-price-range")?.addEventListener("input", (e) => {
-      setPriceFromIndex(e.target.value);
-    });
-    document.getElementById("lb-price-range")?.addEventListener("change", (e) => {
-      setPriceFromIndex(e.target.value, { persist: true });
-    });
-    document.querySelectorAll(".ms-lb-price-chapters [data-price]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const idx =
-          btn.dataset.priceIndex != null
-            ? Number(btn.dataset.priceIndex)
-            : PRICE_CHAPTERS.indexOf(Number(btn.dataset.price));
-        if (idx < 0) return;
-        setPriceFromIndex(idx, { persist: true });
+    const priceInput = document.getElementById("lb-price-input");
+    if (priceInput) {
+      const commitPriceInput = () => {
+        const parsed = parsePriceInput(priceInput.value);
+        if (parsed == null) {
+          syncPriceUi({ syncInput: true });
+          return;
+        }
+        setPriceCents(parsed, { persist: true, syncInput: true });
+      };
+      priceInput.addEventListener("input", () => {
+        const parsed = parsePriceInput(priceInput.value);
+        if (parsed == null) {
+          syncPriceUi({ syncInput: false });
+          return;
+        }
+        setPriceCents(parsed, { persist: false, syncInput: false });
       });
-    });
-    syncPriceUi();
+      priceInput.addEventListener("change", commitPriceInput);
+      priceInput.addEventListener("blur", commitPriceInput);
+      priceInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          commitPriceInput();
+          priceInput.blur();
+        }
+      });
+      priceInput.addEventListener("focus", () => {
+        // Stop any in-flight count-up so the user can edit immediately.
+        priceCountUpToken += 1;
+        priceCountUpDone = true;
+        priceInput.select();
+      });
+    }
+    // Animate once on first paint when no project load will follow.
+    if (!state.projectId) syncPriceUi({ animate: true });
+    else syncPriceUi();
     document.getElementById("code-editor")?.addEventListener("input", () => {
       if (!hasMvpPlus()) return;
       state.html = document.getElementById("code-editor").value;
     });
     document.getElementById("btn-download-html")?.addEventListener("click", downloadHtml);
+    document.getElementById("btn-qr-code")?.addEventListener("click", () => {
+      void openQrBusinessCard();
+    });
     document.getElementById("btn-publish-top")?.addEventListener("click", publish);
     document.getElementById("btn-redesign-top")?.addEventListener("click", () => {
       void redesignSite();
@@ -5617,23 +6682,51 @@
     bindPreviewViewportResizer();
     bindPaneResizer();
     bindToolbar();
+    bindQrBusinessCardUi();
     bindUnpublishConfirm();
     bindRedesignConfirm();
     bindSiteSettings();
     bindOnboard();
+
+    // Finder swipe: show preparing progress before any auth wait so preview is never blank.
+    const projectIdEarly = params().get("project_id");
+    const finderEarly = !projectIdEarly && hasFreshLeadIntake();
+    if (finderEarly) {
+      state.fromFinder = true;
+      state.autoGeneratePending = params().get("auto_generate") !== "0";
+      setBuilderPhase("workspace");
+      beginFinderGenerateUi();
+      intakeFromQuery();
+      hydrateIntakeFromFinderUrl();
+    }
+
+    // Wait briefly for shell auth so project load / generate has a session.
+    // Finder handoff uses a shorter wait — generate must start ASAP.
+    if (document.body.dataset.msAuthFired !== "1") {
+      await new Promise((resolve) => {
+        const done = () => {
+          document.removeEventListener("ms:auth-ready", done);
+          resolve();
+        };
+        document.addEventListener("ms:auth-ready", done, { once: true });
+        window.setTimeout(done, finderEarly ? 800 : 2500);
+      });
+    }
     const bootUser = await window.StudioAuth.getUser();
     state.userId = bootUser?.id || "";
     state.profile = await window.StudioAuth.getProfile();
     syncBuilderOnboardedFromProfile(state.profile);
     await inferBuilderOnboardedFromProjects();
-    syncMvpFromProfile(state.profile);
-    // Clear the builder whenever the user leaves, and again if the browser
-    // restores this page from the back/forward cache, so it's always empty and
-    // ready for new business info on the next visit.
+    await syncMvpFromProfile(state.profile);
+    // Wipe blank setup visits on leave / bfcache restore. Never wipe while
+    // opening a project_id or Finder swipe handoff (tab switches would blank the editor).
     window.addEventListener("pagehide", () => {
+      // Don't wipe in-flight generation — mobile browsers fire pagehide on tab switch.
+      if (generateAbort) return;
       if (state.mode === "edit" && state.projectId) {
         flushEditHtmlToState();
       }
+      if (hasOpenProject() || hasFinderHandoff()) return;
       clearBuilderForNextVisit();
     });
     window.addEventListener("visibilitychange", () => {
@@ -5642,7 +6735,13 @@
       }
     });
     window.addEventListener("pageshow", (e) => {
-      if (e.persisted && !params().get("project_id") && !hasFreshLeadIntake()) {
+      if (
+        e.persisted &&
+        !hasOpenProject() &&
+        !hasFinderHandoff() &&
+        !hasFreshLeadIntake() &&
+        !generateAbort
+      ) {
         clearBuilderForNextVisit();
         setBuilderPhase("setup");
         showOnboardStep(1);
@@ -5651,8 +6750,11 @@
       }
     });
     const projectId = params().get("project_id");
-    // Fresh setup visits start blank unless a lead was handed in via the URL.
-    if (!projectId) clearBuilderForNextVisit();
+    const finderHandoff = hasFreshLeadIntake();
+    // URL-first: never paint setup when opening a project or Finder lead.
+    if (projectId || finderHandoff) setBuilderPhase("workspace");
+    // Fresh blank setup visits only — never clear before Finder intake (wipes pick + flags).
+    if (!projectId && !finderHandoff) clearBuilderForNextVisit();
     const fromFinder = intakeFromQuery();
     // Finder → Builder: claim this lead so it stays hidden in Business Finder.
     if (state.fromFinder && state.leadId) {
@@ -5675,7 +6777,7 @@
       }
     }
     // Beat browser autofill that may refill fields after paint.
-    if (!projectId && !fromFinder && !hasFreshLeadIntake()) {
+    if (!projectId && !finderHandoff && !fromFinder && !hasFreshLeadIntake()) {
       requestAnimationFrame(() => {
         clearBuilderForNextVisit();
         updateOnboardContinue();
@@ -5687,9 +6789,12 @@
         }
       }, 250);
     }
-    const skipSetup = !projectId && state.fromFinder && !!businessValue("businessName");
+    const skipSetup =
+      !projectId &&
+      state.fromFinder &&
+      !!(businessValue("businessName") || state.leadId || businessValue("mapsUrl"));
 
-    setBuilderPhase(projectId || skipSetup ? "workspace" : "setup");
+    setBuilderPhase(projectId || skipSetup || finderHandoff ? "workspace" : "setup");
     if (params().get("paid") === "1" && projectId) {
       setStatus("Payment received — removing watermark…");
       const sessionId = String(params().get("session_id") || "").trim();
@@ -5722,34 +6827,70 @@
     }
     if (projectId) {
       try {
+        setStatus("Loading project…");
+        document.body.classList.add("ms-lb-project-loading");
+        syncEmptyState();
         await loadProject(projectId);
-        if (!state.onboardDone) {
-          setBuilderPhase("setup");
-          showOnboardStep(1);
-          updateOnboardContinue();
-          const maps = document.getElementById("onb-maps")?.value?.trim();
-          if (maps && isLooseLink(maps)) void scrapeMapsLink();
-        } else {
-          setBuilderPhase("workspace");
-        }
+        // Existing projects always open in the editor — even with empty HTML.
+        state.onboardDone = true;
+        setBuilderPhase("workspace");
+        setStatus("");
         updateEmptyCopy(fromFinder);
-      } catch (e) {
-        setError(e.message);
-        state.onboardDone = false;
-        setBuilderPhase("setup");
-        showOnboardStep(1);
-        updateOnboardContinue();
         updatePreview();
+        schedulePreviewRepaint();
+        // Empty project (failed/aborted generate) — start generation instead of blank parked iframe.
+        if (!(state.html && String(state.html).trim())) {
+          const biz =
+            businessValue("businessName") ||
+            state.project?.business_name ||
+            String(params().get("name") || "").trim();
+          if (biz) {
+            if (!businessValue("businessName")) setBusinessValue("businessName", biz);
+            state.fromFinder = true;
+            void generate({ fromFinder: true });
+          } else {
+            setError("This project has no website yet. Swipe a lead again or fill details to generate.");
+          }
+        }
+      } catch (e) {
+        setBuilderPhase("workspace");
+        state.onboardDone = false;
+        setError(e.message || "Could not open project");
+        window.StudioToast?.error?.(e.message || "Could not open project");
+        updateEmptyCopy(false);
+        updatePreview();
+      } finally {
+        document.body.classList.remove("ms-lb-project-loading");
+        syncEmptyState();
       }
-    } else if (skipSetup) {
+    } else if (skipSetup || finderHandoff || finderEarly) {
       state.onboardDone = false;
       setBuilderPhase("workspace");
-      updateEmptyCopy(!!state.fromFinder);
-      updatePreview();
-      if (state.fromFinder) setStatus("Generating site from Business Finder details…");
-      if (state.autoGeneratePending) {
+      const shouldAutoGen =
+        finderEarly ||
+        state.autoGeneratePending ||
+        params().get("auto_generate") === "1" ||
+        params().get("from_finder") === "1" ||
+        !!state.fromFinder ||
+        !!finderHandoff;
+      if (shouldAutoGen) {
         state.autoGeneratePending = false;
+        state.fromFinder = true;
+        beginFinderGenerateUi();
+        // Start immediately — do not wait for other UI sync.
         void generate({ fromFinder: true });
+        // Retry only if the first call never armed a request and left no site/error.
+        window.setTimeout(() => {
+          if (generateInFlight || generateAbort) return;
+          if (state.html && String(state.html).trim()) return;
+          const err = document.getElementById("preview-gen-error");
+          if (err && !err.hidden) return;
+          beginFinderGenerateUi();
+          void generate({ fromFinder: true });
+        }, 2000);
+      } else {
+        updateEmptyCopy(!!state.fromFinder);
+        updatePreview();
       }
     } else {
       state.onboardDone = false;

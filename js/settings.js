@@ -910,6 +910,40 @@
     location.href = "index.html";
   });
 
+  document.getElementById("set-replay-onboarding")?.addEventListener("click", async () => {
+    const btn = document.getElementById("set-replay-onboarding");
+    const errEl = document.getElementById("set-onboard-error");
+    if (errEl) {
+      errEl.hidden = true;
+      errEl.textContent = "";
+    }
+    if (btn) btn.disabled = true;
+    const target =
+      "onboarding.html?replay=1&next=" + encodeURIComponent("settings.html");
+    try {
+      window.StudioAuth.setForceOnboardingReplay?.(true);
+      try {
+        localStorage.removeItem("ms_studio_onboarding_draft_v1");
+      } catch (_) {
+        /* ignore */
+      }
+      // Clear DB flag when possible, but always navigate into the wizard.
+      try {
+        await window.StudioAuth.clearStudioOnboardingFlag?.();
+      } catch (clearErr) {
+        console.warn("clearStudioOnboardingFlag", clearErr);
+      }
+      location.assign(target);
+    } catch (e) {
+      if (errEl) {
+        errEl.hidden = false;
+        errEl.textContent = e.message || "Could not start onboarding replay.";
+      }
+      window.StudioToast?.error?.(e.message || "Could not start onboarding replay.");
+      if (btn) btn.disabled = false;
+    }
+  });
+
   bindPayoutUi();
 
   async function start() {

@@ -15,14 +15,17 @@
   <div id="page-body" class="ms-clients-page">
     <header class="ms-page-head">
       <div class="ms-page-head-copy">
-        <h1>My clients</h1>
+        <h1>
+          My clients
+          <span class="ms-clients-admin-tag" id="ms-clients-admin-tag" hidden>Admin</span>
+        </h1>
       </div>
     </header>
 
     <section class="ms-card ms-clients-card" aria-label="Clients">
       <header class="ms-clients-section-head">
         <div class="ms-clients-section-copy">
-          <h2>Paid clients</h2>
+          <h2 id="ms-clients-section-title">Paid clients</h2>
           <span class="ms-clients-count" id="ms-clients-count" aria-live="polite"></span>
         </div>
         <div class="ms-clients-toolbar">
@@ -55,6 +58,7 @@
           <thead>
             <tr>
               <th scope="col">Business</th>
+              <th scope="col" id="ms-clients-creator-col" hidden>Creator</th>
               <th scope="col">Phone</th>
               <th scope="col">Live site</th>
               <th scope="col">Paid</th>

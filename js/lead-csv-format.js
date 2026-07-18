@@ -101,9 +101,18 @@
     if (!href) return "";
     try {
       const parsed = new URL(href);
-      if (parsed.hostname.includes("google.") && parsed.pathname.includes("/url")) {
-        const target = parsed.searchParams.get("q") || parsed.searchParams.get("url");
-        if (target) return raw(target);
+      const host = parsed.hostname.toLowerCase();
+      if (host.includes("google.") && (parsed.pathname.includes("/url") || parsed.pathname.includes("/aclk"))) {
+        const candidates = [
+          parsed.searchParams.get("adurl"),
+          parsed.searchParams.get("q"),
+          parsed.searchParams.get("url"),
+          parsed.searchParams.get("continue"),
+        ];
+        for (const target of candidates) {
+          const next = raw(target);
+          if (next && /^https?:\/\//i.test(next)) return next;
+        }
       }
     } catch (_) {
       /* keep original */
@@ -111,35 +120,57 @@
     return href;
   }
 
+  function isGoogleNoiseWebsiteUrl(url) {
+    const low = raw(url).toLowerCase();
+    if (!low) return true;
+    return (
+      low.includes("google.com/maps") ||
+      low.includes("google.com/aclk") ||
+      low.includes("googleadservices.com") ||
+      low.includes("doubleclick.net") ||
+      low.includes("gstatic.com") ||
+      low.includes("google.com/url") ||
+      low.includes("maps.app.goo.gl") ||
+      low.includes("goo.gl/maps")
+    );
+  }
+
   function isValidWebsiteUrl(url) {
     const u = unwrapGoogleRedirect(raw(url));
     if (!u) return false;
     const low = u.toLowerCase();
     if (!low.startsWith("http://") && !low.startsWith("https://")) return false;
-    if (
-      low.includes("google.com/maps") ||
-      low.includes("google.com/aclk") ||
-      low.includes("gstatic.com") ||
-      low.includes("google.com/url")
-    ) {
+    if (isGoogleNoiseWebsiteUrl(u)) return false;
+    try {
+      const host = new URL(u).hostname.toLowerCase();
+      if (!host || host === "localhost") return false;
+      if (host.includes("google.") || host.endsWith(".google")) return false;
+    } catch (_) {
       return false;
     }
     return true;
   }
 
   function normalizeWebsiteUrl(url) {
-    const u = unwrapGoogleRedirect(raw(url));
+    let u = unwrapGoogleRedirect(raw(url));
+    if (!u) return "";
+    // Bare domains from Maps labels: weathertightroofing.com
+    if (!/^https?:\/\//i.test(u) && /^[a-z0-9.-]+\.[a-z]{2,}([/?#].*)?$/i.test(u)) {
+      u = "https://" + u.replace(/^\/\//, "");
+    }
     return isValidWebsiteUrl(u) ? u : "";
   }
 
   /**
-   * Official business website only — not booking, menu, or order links.
+   * Official business website only — not booking, menu, order, or Google Ads click URLs.
    */
   function resolveWebsiteUrl(row) {
     const primary = raw(
       cell(row, "website") || row.website || row.websiteUrl || row["lcr4fd href"] || row.website_url
     );
-    if (isValidWebsiteUrl(primary)) return normalizeWebsiteUrl(primary);
+    const normalized = normalizeWebsiteUrl(primary);
+    if (normalized) return normalized;
+    // Label-only fallback never invents a URL — only reject ad noise.
     return "";
   }
 
@@ -435,6 +466,7 @@
     looksLikeStreetAddress,
     cleanAddressCandidate,
     isValidWebsiteUrl,
+    isGoogleNoiseWebsiteUrl,
     normalizeWebsiteUrl,
     unwrapGoogleRedirect,
     resolveWebsiteUrl,

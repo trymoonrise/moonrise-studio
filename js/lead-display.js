@@ -753,6 +753,9 @@
         mapsUrl,
         website,
         hours: hours || "",
+        description: raw(lead?.description || lead?.about || lead?.reviewQuote),
+        rating: lead?.rating != null ? lead.rating : "",
+        reviewCount: lead?.reviewCount != null ? lead.reviewCount : "",
         price: global.LeadDisplay.priceTierFromReviewCount(lead?.reviewCount),
       };
     },

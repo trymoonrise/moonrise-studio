@@ -22,9 +22,19 @@
 
   function needsWebsiteCheck(lead) {
     const fmt = global.LeadCsvFormat;
+    // Valid official site already present — skip.
     if (fmt?.resolveLeadHasWebsite?.(lead)) return false;
     const maps = mapsKey(lead);
     if (!maps.startsWith("http")) return false;
+    // Stale Google Ads / aclk URLs must be re-checked even if marked enriched.
+    const rawSite = String(lead?.website || lead?.website_url || lead?.websiteUrl || "").trim();
+    const storedIsNoise =
+      rawSite &&
+      (fmt?.isValidWebsiteUrl ? !fmt.isValidWebsiteUrl(rawSite) : /google\.com\/aclk/i.test(rawSite));
+    if (storedIsNoise) {
+      if (checked.has(maps)) return false;
+      return true;
+    }
     if (lead?.websiteStatus === "missing" || lead?.websiteEnriched === true) return false;
     if (checked.has(maps)) return false;
     return true;

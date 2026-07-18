@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact · Moonrise</title>
+  <meta name="description" content="Call, email, or save Moonrise contact details.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/studio.css">
+</head>
+<body data-page="contact" class="ms-contact-public">
+  <div class="ms-orders-field" aria-hidden="true">
+    <div class="ms-orders-wash"></div>
+  </div>
+
+  <header class="ms-orders-nav">
+    <a class="ms-home-brand" href="index.html">
+      <img src="doc/MoonriseLogo.png" alt="" width="36" height="36">
+      <strong>Moonrise Studio</strong>
+    </a>
+    <nav class="ms-orders-nav-links" aria-label="Page">
+      <a class="ms-orders-nav-link" href="index.html">Home</a>
+      <a class="ms-orders-nav-link" href="mailto:trymoonrise@gmail.com">Email</a>
+    </nav>
+  </header>
+
+  <main class="ms-contact-main">
+    <header class="ms-page-head ms-contact-head">
+      <div class="ms-page-head-copy">
+        <h1>Contact</h1>
+        <p class="ms-contact-lead">Questions about your website preview? Reach Moonrise anytime.</p>
+      </div>
+    </header>
+
+    <section class="ms-help-vcard" aria-label="Moonrise contact card">
+      <div class="ms-help-vcard-hero" aria-hidden="true"></div>
+      <div class="ms-help-vcard-body">
+        <div class="ms-help-vcard-top">
+          <span class="ms-help-vcard-brand">moonrise</span>
+          <button type="button" class="ms-help-vcard-share" id="help-share-contact" aria-label="Share contact" title="Share">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/>
+              <polyline points="16 6 12 2 8 6"/>
+              <line x1="12" y1="2" x2="12" y2="15"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="ms-help-vcard-avatar">
+          <img src="doc/MoonriseLogo.png" alt="" width="88" height="88">
+        </div>
+
+        <div class="ms-help-vcard-identity">
+          <h2 class="ms-help-vcard-name">Moonrise</h2>
+          <p class="ms-help-vcard-role"><a href="https://trymoonrise.com" target="_blank" rel="noopener">trymoonrise.com</a></p>
+        </div>
+
+        <button type="button" class="ms-help-vcard-save" id="help-save-contact">Save Contact</button>
+
+        <ul class="ms-help-vcard-links">
+          <li>
+            <a class="ms-help-vcard-link" href="tel:+14013000957">
+              <span class="ms-help-vcard-icon ms-help-vcard-icon--phone" aria-hidden="true">
+                <img src="doc/iMessages.jpg" alt="" width="46" height="46" loading="lazy" decoding="async">
+              </span>
+              <span class="ms-help-vcard-link-text">
+                <strong>Number</strong>
+                <em>(401) 300-0957</em>
+              </span>
+            </a>
+          </li>
+          <li>
+            <a class="ms-help-vcard-link" href="mailto:trymoonrise@gmail.com">
+              <span class="ms-help-vcard-icon ms-help-vcard-icon--email" aria-hidden="true">
+                <img src="doc/Gmail.jpg" alt="" width="46" height="46" loading="lazy" decoding="async">
+              </span>
+              <span class="ms-help-vcard-link-text">
+                <strong>Email</strong>
+                <em>trymoonrise@gmail.com</em>
+              </span>
+            </a>
+          </li>
+          <li>
+            <a
+              class="ms-help-vcard-link"
+              href="https://discord.gg/yFJajbBNj"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span class="ms-help-vcard-icon ms-help-vcard-icon--discord" aria-hidden="true">
+                <img src="doc/Discord.jpg" alt="" width="46" height="46" loading="lazy" decoding="async">
+              </span>
+              <span class="ms-help-vcard-link-text">
+                <strong>Discord</strong>
+                <em>Join the community</em>
+              </span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/toast.js"></script>
+  <script>
+    (function () {
+      const saveBtn = document.getElementById("help-save-contact");
+      const shareBtn = document.getElementById("help-share-contact");
+
+      const CONTACT = {
+        name: "Moonrise",
+        org: "Moonrise Studio",
+        title: "trymoonrise.com",
+        phone: "+14013000957",
+        phoneDisplay: "(401) 300-0957",
+        email: "trymoonrise@gmail.com",
+        url: "https://trymoonrise.com",
+      };
+
+      function buildVCard() {
+        return [
+          "BEGIN:VCARD",
+          "VERSION:3.0",
+          "N:Moonrise;;;;",
+          "FN:" + CONTACT.name,
+          "ORG:" + CONTACT.org,
+          "TITLE:" + CONTACT.title,
+          "TEL;TYPE=CELL,VOICE:" + CONTACT.phone,
+          "EMAIL;TYPE=INTERNET:" + CONTACT.email,
+          "URL:" + CONTACT.url,
+          "NOTE:trymoonrise.com — Moonrise Studio",
+          "END:VCARD",
+        ].join("\r\n");
+      }
+
+      function downloadVCard() {
+        const blob = new Blob([buildVCard()], { type: "text/vcard;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "Moonrise.vcf";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        window.StudioToast?.clear?.();
+      }
+
+      saveBtn?.addEventListener("click", downloadVCard);
+
+      shareBtn?.addEventListener("click", async () => {
+        const shareData = {
+          title: "Moonrise",
+          text: "Moonrise · trymoonrise.com\n" + CONTACT.phoneDisplay + "\n" + CONTACT.email,
+          url: location.href.split("#")[0],
+        };
+        try {
+          if (navigator.share) {
+            await navigator.share(shareData);
+            return;
+          }
+        } catch (e) {
+          if (e?.name === "AbortError") return;
+        }
+        try {
+          await navigator.clipboard.writeText(
+            shareData.title + "\n" + shareData.text + "\n" + shareData.url
+          );
+        } catch (_) {
+          downloadVCard();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

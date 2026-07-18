@@ -1258,8 +1258,19 @@
       });
       const website = String(pick.website || lead.website || lead.websiteUrl || "").trim();
       const hours = String(pick.hours || lead.hours || "").trim();
+      const description = String(
+        pick.description || lead.description || lead.about || ""
+      ).trim();
+      const rating = pick.rating != null ? pick.rating : lead.rating;
+      const reviewCount =
+        pick.reviewCount != null ? pick.reviewCount : lead.reviewCount;
       if (website) params.set("website", website);
       if (hours) params.set("hours", hours);
+      if (description) params.set("description", description.slice(0, 400));
+      if (rating != null && rating !== "") params.set("rating", String(rating));
+      if (reviewCount != null && reviewCount !== "") {
+        params.set("reviews", String(reviewCount));
+      }
       try {
         const json = JSON.stringify(pick);
         const b64 = btoa(unescape(encodeURIComponent(json)))
@@ -1274,8 +1285,10 @@
     } catch (e) {
       console.warn("Generate site fallback failed", e);
       window.location.href =
-        "builder.html?lead_id=" + encodeURIComponent(id) +
-        "&name=" + encodeURIComponent(String(lead?.name || "").trim());
+        "builder.html?from_finder=1&auto_generate=1&lead_id=" +
+        encodeURIComponent(id) +
+        "&name=" +
+        encodeURIComponent(String(lead?.name || "").trim());
     }
   }
 
@@ -2186,12 +2199,15 @@
   }
 
   function visitWebsiteUrl(lead) {
+    const fmt = global.LeadCsvFormat;
+    if (fmt?.resolveLeadWebsite) return fmt.resolveLeadWebsite(lead);
     const w = String(lead?.website || "").trim();
     if (!w.startsWith("http://") && !w.startsWith("https://")) return "";
     const low = w.toLowerCase();
     if (
       low.includes("google.com/maps") ||
       low.includes("google.com/aclk") ||
+      low.includes("googleadservices.com") ||
       low.includes("gstatic.com")
     ) {
       return "";
