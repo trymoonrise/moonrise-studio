@@ -3,6 +3,7 @@
 /template-previews
 worker/node_modules
 node_modules
+leadfinder-cloud
 .agents
 supabase
 **/*.mp4
