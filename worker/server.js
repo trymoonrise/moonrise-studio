@@ -537,6 +537,7 @@ app.use(applySecurityHeaders);
  * open to all origins, so allow `*` before the stricter global CORS runs.
  */
 const PUBLIC_PATHS = new Set([
+  "/health",
   "/public-checkout",
   "/fulfill-go-live",
   "/embed.js",

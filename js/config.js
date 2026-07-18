@@ -83,15 +83,32 @@ window.isLocalDevHost = function isLocalDevHost() {
   }
 };
 
+function isMoonriseProductionHost(hostname) {
+  const host = String(hostname || "").toLowerCase();
+  if (host === "trymoonrise.com" || host === "www.trymoonrise.com") return true;
+  if (host === "moonrise-studio.vercel.app") return true;
+  if (host.endsWith(".vercel.app") && host.includes("moonrise")) return true;
+  return false;
+}
+
+/** Cached after a successful /health probe (see pingMoonriseWorker). */
+window.__MOONRISE_RESOLVED_WORKER_URL = "";
+
 /**
  * Resolve the worker base URL for the current page host.
- * Public hosts always use the cloud worker.
- * Local/LAN pages also use the cloud worker by default so generate works
- * without a local `npm start`. Opt into local with:
+ * Production Studio hosts use same-origin API routes (Vercel rewrites).
+ * Local/LAN pages use the cloud worker by default so generate works without
+ * `npm start`. Opt into local with:
  *   localStorage.setItem("ms_use_local_worker", "1")
  */
 window.resolveWorkerUrl = function resolveWorkerUrl() {
-  const cloud = String(window.SITE_CONFIG?.workerUrl || "").replace(/\/$/, "");
+  if (window.__MOONRISE_RESOLVED_WORKER_URL) {
+    return window.__MOONRISE_RESOLVED_WORKER_URL;
+  }
+  const cloud = String(window.SITE_CONFIG?.workerUrl || "https://moonrise-studio.vercel.app").replace(
+    /\/$/,
+    ""
+  );
   const localConfigured = String(window.SITE_CONFIG?.localWorkerUrl || "http://127.0.0.1:8787").replace(
     /\/$/,
     ""
@@ -115,10 +132,83 @@ window.resolveWorkerUrl = function resolveWorkerUrl() {
       }
       return local.origin;
     }
+    if (isMoonriseProductionHost(pageHost)) {
+      return location.origin;
+    }
   } catch (_) {
     /* keep cloud */
   }
   return cloud || localConfigured;
+};
+
+/** Ordered worker bases to try when probing reachability (primary → cloud → page origin). */
+window.workerUrlCandidates = function workerUrlCandidates() {
+  const out = [];
+  const push = (url) => {
+    const base = String(url || "")
+      .trim()
+      .replace(/\/$/, "");
+    if (base && !out.includes(base)) out.push(base);
+  };
+  push(typeof window.resolveWorkerUrl === "function" ? window.resolveWorkerUrl() : "");
+  push(window.SITE_CONFIG?.workerUrl);
+  try {
+    if (typeof location !== "undefined") push(location.origin);
+  } catch (_) {
+    /* ignore */
+  }
+  return out;
+};
+
+/**
+ * Probe /health across workerUrlCandidates(); caches the first reachable base.
+ * @returns {Promise<string>} reachable worker base URL
+ */
+window.pingMoonriseWorker = async function pingMoonriseWorker(signal) {
+  const cached = String(window.__MOONRISE_RESOLVED_WORKER_URL || "")
+    .trim()
+    .replace(/\/$/, "");
+  if (cached) return cached;
+
+  const candidates = window.workerUrlCandidates();
+  let lastErr = null;
+
+  for (const base of candidates) {
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      if (signal?.aborted) {
+        const err = new Error("Aborted");
+        err.name = "AbortError";
+        throw err;
+      }
+      const ctrl = new AbortController();
+      const timer = window.setTimeout(() => ctrl.abort(), 15000);
+      const onParentAbort = () => ctrl.abort();
+      signal?.addEventListener("abort", onParentAbort);
+      try {
+        const health = await fetch(base + "/health", {
+          method: "GET",
+          cache: "no-store",
+          signal: ctrl.signal,
+        });
+        if (!health.ok) throw new Error("Worker health check failed (" + health.status + ")");
+        window.__MOONRISE_RESOLVED_WORKER_URL = base;
+        return base;
+      } catch (e) {
+        if (signal?.aborted || (e?.name === "AbortError" && signal?.aborted)) {
+          const err = new Error("Aborted");
+          err.name = "AbortError";
+          throw err;
+        }
+        lastErr = e;
+        await new Promise((resolve) => window.setTimeout(resolve, 350 * (attempt + 1)));
+      } finally {
+        window.clearTimeout(timer);
+        signal?.removeEventListener("abort", onParentAbort);
+      }
+    }
+  }
+
+  throw lastErr || new Error("Worker unreachable");
 };
 
 /**

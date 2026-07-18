@@ -18,6 +18,7 @@
   const AREA_LOCATION_LABEL = "Using your location";
   const DISPLAY_PAGE = 80;
   const LOADING_CARD_COUNT = 6;
+  const MIN_SEARCH_RESULTS = 50;
   let listView = "default";
   let allLeads = [];
   let leadsReady = false;
@@ -877,8 +878,9 @@
     const body = {
       type: t,
       location: loc,
-      query: q || undefined,
+      minResults: MIN_SEARCH_RESULTS,
     };
+    if (q) body.query = q;
     if (hasGeo) {
       body.latitude = Number(geo.latitude);
       body.longitude = Number(geo.longitude);
@@ -937,6 +939,112 @@
     window.StudioToast?.error?.(msg);
   }
 
+  const US_STATE_NAMES = new Set([
+    "alabama",
+    "alaska",
+    "arizona",
+    "arkansas",
+    "california",
+    "colorado",
+    "connecticut",
+    "delaware",
+    "florida",
+    "georgia",
+    "hawaii",
+    "idaho",
+    "illinois",
+    "indiana",
+    "iowa",
+    "kansas",
+    "kentucky",
+    "louisiana",
+    "maine",
+    "maryland",
+    "massachusetts",
+    "michigan",
+    "minnesota",
+    "mississippi",
+    "missouri",
+    "montana",
+    "nebraska",
+    "nevada",
+    "new hampshire",
+    "new jersey",
+    "new mexico",
+    "new york",
+    "north carolina",
+    "north dakota",
+    "ohio",
+    "oklahoma",
+    "oregon",
+    "pennsylvania",
+    "rhode island",
+    "south carolina",
+    "south dakota",
+    "tennessee",
+    "texas",
+    "utah",
+    "vermont",
+    "virginia",
+    "washington",
+    "west virginia",
+    "wisconsin",
+    "wyoming",
+    "district of columbia",
+  ]);
+
+  function isLikelyPlaceText(text) {
+    const raw = String(text || "").trim();
+    if (!raw) return false;
+    const low = raw.toLowerCase();
+    if (US_STATE_NAMES.has(low)) return true;
+    if (/^[a-z\s.'-]+,\s*[a-z]{2}$/i.test(raw)) return true;
+    if (/^\d{5}(-\d{4})?$/.test(raw)) return true;
+    if (/\b(county|parish)\b/i.test(raw)) return true;
+    return false;
+  }
+
+  function parseCombinedSearchText(text) {
+    const raw = String(text || "").trim();
+    if (!raw || raw.length < 3) return null;
+    const loader = window.LeadsLoader;
+    if (!loader || typeof loader.parseSearchQuery !== "function") return null;
+    const parsed = loader.parseSearchQuery(raw);
+    const niche = String(parsed?.niche || "").trim();
+    const location = String(parsed?.location || "").trim();
+    if (niche && location) return { type: niche, location };
+    if (niche && isLikelyPlaceText(niche) && !location) return { type: "", location: niche };
+    return null;
+  }
+
+  /** Normalize Business type + Location fields into scrape-ready type/location. */
+  function normalizeSearchInputs(typeRaw, locationRaw) {
+    let type = String(typeRaw || "").trim();
+    let location = String(locationRaw || "").trim();
+
+    const fromType = type ? parseCombinedSearchText(type) : null;
+    if (fromType) {
+      type = fromType.type || type;
+      location = location || fromType.location || "";
+    }
+
+    const fromLocation = location ? parseCombinedSearchText(location) : null;
+    if (fromLocation) {
+      if (fromLocation.type) type = type || fromLocation.type;
+      location = fromLocation.location || location;
+    }
+
+    if (!type && location && isLikelyPlaceText(location)) {
+      return { type: "", location };
+    }
+
+    if (type && !location && isLikelyPlaceText(type)) {
+      return { type: "", location: type };
+    }
+
+    return { type, location };
+  }
+
   function buildQuery(type, location) {
     const t = String(type || "").trim();
     const loc = String(location || "").trim();
@@ -945,7 +1053,9 @@
       return "Businesses near you";
     }
     if (t && loc) return t + " in " + loc;
-    return t || loc;
+    if (t && !loc) return t;
+    if (!t && loc) return "Businesses in " + loc;
+    return "";
   }
 
   function rankLeadsForView(leads, options) {
@@ -1999,16 +2109,11 @@
     try {
       const base = leadFinderBaseUrl();
       if (base) {
-        const scraped = await scrapeViaLeadFinder(
-          scrapeType,
-          "",
-          query,
-          {
-            latitude: userCoords.lat,
-            longitude: userCoords.lng,
-            radiusMiles: NEARBY_RADIUS_MILES,
-          }
-        );
+        const scraped = await scrapeViaLeadFinder(scrapeType, "", "", {
+          latitude: userCoords.lat,
+          longitude: userCoords.lng,
+          radiusMiles: NEARBY_RADIUS_MILES,
+        });
         if (scraped.ok && scraped.leads?.length) {
           scrapedFresh = true;
           leads = applyWebsiteFilter(scraped.leads, websiteFilter);
@@ -2074,12 +2179,16 @@
     }
 
     const opts = options && typeof options === "object" ? options : {};
-    const typeRaw = typeInput?.value || "";
-    let location = locationInput?.value || "";
+    const normalized = normalizeSearchInputs(typeInput?.value || "", locationInput?.value || "");
+    let searchType = normalized.type;
+    let location = normalized.location;
     const websiteFilter = getWebsiteFilter();
-    let searchType = typeRaw.trim();
 
-    const query = buildQuery(searchType, location) || "All leads";
+    const query = buildQuery(searchType, location);
+    if (!searchType && !location.trim()) {
+      setError("Enter a business type, a location, or both.");
+      return;
+    }
     setError("");
     setStatus("");
     hideAllSuggests();
@@ -2097,20 +2206,25 @@
       const canScrape = Boolean(leadFinderBaseUrl()) && (searchType || location.trim());
 
       if (canScrape) {
-        const scraped = await scrapeViaLeadFinder(
-          searchType,
-          location,
-          query === "All leads" ? "" : query,
-          null
-        );
+        const scraped = await scrapeViaLeadFinder(searchType, location, "", null);
         if (scraped.ok && scraped.leads?.length) {
           scrapedFresh = true;
           leads = applyWebsiteFilter(scraped.leads, websiteFilter);
           mergeScrapedIntoAllLeads(scraped.leads);
+          if (scraped.leads.length < MIN_SEARCH_RESULTS) {
+            console.warn(
+              "LeadFinder returned",
+              scraped.leads.length,
+              "results (target",
+              MIN_SEARCH_RESULTS + ")"
+            );
+          }
         } else if (!scraped.skipped) {
           remoteError = scraped.error || "Live scrape returned no leads";
           console.warn("LeadFinder scrape:", remoteError);
         }
+      } else if (!leadFinderBaseUrl()) {
+        remoteError = "Live search is unavailable. Sign in and try again.";
       }
 
       if (!leads.length && allLeads.length) {

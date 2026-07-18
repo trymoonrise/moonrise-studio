@@ -8371,24 +8371,6 @@ body.ms-lb-fullscreen .ms-lb-price {
   line-height: 1.4;
 }
 
-.ms-lb-gen-prompt {
-  margin-bottom: 0.75rem;
-}
-
-.ms-lb-gen-prompt .ms-label {
-  display: block;
-  margin-bottom: 0.35rem;
-  font-size: 0.78rem;
-  font-weight: 650;
-  color: #64748b;
-}
-
-.ms-lb-gen-prompt-input {
-  min-height: 4.75rem;
-  resize: vertical;
-  line-height: 1.45;
-}
-
 .ms-lb-onboard-maps-shell {
   display: flex;
   align-items: center;
@@ -11343,6 +11325,7 @@ body.ms-legal-site {
   body[data-page="editor"].ms-lb-workspace {
     overflow: hidden;
     height: 100dvh;
+    --ms-lb-mobile-chrome-h: calc(7.85rem + env(safe-area-inset-top, 0px));
   }
   body[data-page="builder"].ms-lb-workspace #builder-workspace,
   body[data-page="builder"].ms-lb-workspace .ms-builder-page,
@@ -11355,6 +11338,9 @@ body.ms-legal-site {
     margin: 0 !important;
     width: 100% !important;
     max-width: none !important;
+  }
+  body.ms-lb-fullscreen .ms-lb-body {
+    padding-top: max(0.55rem, env(safe-area-inset-top, 0px));
   }
   .ms-lb-nav-btn {
     padding: 0.42rem 0.72rem;
@@ -11369,12 +11355,18 @@ body.ms-legal-site {
   }
   .ms-lb-body {
     --ms-lb-tools-max: min(34dvh, 360px);
-    grid-template-columns: 1fr;
-    grid-template-rows: auto minmax(220px, 1fr) auto;
+    display: flex;
+    flex-direction: column;
     gap: 0.55rem;
-    padding: 0 0.65rem max(0.55rem, env(safe-area-inset-bottom, 0px));
+    padding:
+      var(--ms-lb-mobile-chrome-h)
+      0.65rem
+      max(0.55rem, env(safe-area-inset-bottom, 0px));
     min-height: 0;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
 
   .ms-lb-body.is-tools-expanded {
@@ -11384,12 +11376,29 @@ body.ms-legal-site {
     display: none;
   }
   .ms-lb-body > .ms-lb-chrome-bar {
-    grid-column: 1;
-    grid-row: 1;
-    order: 1;
-    z-index: 5;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    order: 0;
     gap: 0.45rem;
-    padding: 0.1rem 0 0;
+    margin: 0;
+    padding:
+      max(0.35rem, env(safe-area-inset-top, 0px))
+      0.65rem
+      0.45rem;
+    background:
+      linear-gradient(
+        180deg,
+        rgba(243, 245, 248, 0.98) 0%,
+        rgba(243, 245, 248, 0.94) 72%,
+        rgba(243, 245, 248, 0.88) 100%
+      );
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.88);
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.07);
   }
   .ms-lb-body > .ms-lb-chrome-bar .ms-lb-viewports {
     min-height: 52px;
@@ -11406,33 +11415,29 @@ body.ms-legal-site {
     height: 42px;
   }
   .ms-lb-main {
-    grid-column: 1;
-    grid-row: 2;
-    order: 2;
-    min-height: 0;
+    order: 1;
+    flex: 0 0 auto;
+    width: 100%;
+    min-height: min(48dvh, 380px);
   }
   .ms-lb-side {
-    grid-column: 1;
-    grid-row: 3;
-    order: 3;
+    order: 2;
+    flex: 0 0 auto;
     min-height: 0;
     height: auto;
-    max-height: var(--ms-lb-tools-max);
-    overflow: hidden;
+    max-height: none;
+    overflow: visible;
     justify-content: flex-start;
     gap: 0;
     padding: 0.15rem 0.15rem max(0.5rem, env(safe-area-inset-bottom, 0px));
-    transition: max-height 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: none;
   }
   .ms-lb-side-controls {
     min-height: 0;
-    flex: 1 1 auto;
+    flex: 0 0 auto;
     gap: 0.65rem;
     padding: 0.15rem 0 0.35rem;
-    overflow-x: hidden;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
+    overflow: visible;
     touch-action: pan-y;
   }
 

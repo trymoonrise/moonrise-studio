@@ -247,11 +247,6 @@
   }
 
   function readUserGenerationPrompt() {
-    const ids = ["onb-generation-prompt", "biz-notes"];
-    for (let i = 0; i < ids.length; i += 1) {
-      const val = sanitizeClientText(document.getElementById(ids[i])?.value || "", 2000);
-      if (val) return val;
-    }
     if (state._pendingNotes) {
       return sanitizeClientText(state._pendingNotes, 2000);
     }
@@ -259,12 +254,7 @@
   }
 
   function setUserGenerationPrompt(value) {
-    const next = sanitizeClientText(value || "", 2000);
-    state._pendingNotes = next || "";
-    ["onb-generation-prompt", "biz-notes"].forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) el.value = next;
-    });
+    state._pendingNotes = sanitizeClientText(value || "", 2000) || "";
   }
 
   function businessValue(key) {
@@ -281,6 +271,10 @@
   }
 
   function workerUrl() {
+    const cached = String(window.__MOONRISE_RESOLVED_WORKER_URL || "")
+      .trim()
+      .replace(/\/$/, "");
+    if (cached) return cached;
     if (typeof window.resolveWorkerUrl === "function") return window.resolveWorkerUrl();
     return String(window.SITE_CONFIG?.workerUrl || "").replace(/\/$/, "");
   }
@@ -1170,10 +1164,6 @@
       const input = document.getElementById(id);
       if (input) input.value = "";
     });
-    const notesEl = document.getElementById("biz-notes");
-    if (notesEl) notesEl.value = "";
-    const promptEl = document.getElementById("onb-generation-prompt");
-    if (promptEl) promptEl.value = "";
     state._pendingNotes = "";
     const codeEl = document.getElementById("code-editor");
     if (codeEl) codeEl.value = "";
@@ -4785,40 +4775,14 @@
     );
   }
 
-  async function pingWorker(base, signal) {
-    let lastErr = null;
-    for (let attempt = 0; attempt < 3; attempt += 1) {
-      if (signal?.aborted) {
-        const err = new Error("Aborted");
-        err.name = "AbortError";
-        throw err;
-      }
-      const ctrl = new AbortController();
-      const timer = window.setTimeout(() => ctrl.abort(), 15000);
-      const onParentAbort = () => ctrl.abort();
-      signal?.addEventListener("abort", onParentAbort);
-      try {
-        const health = await fetch(base + "/health", {
-          method: "GET",
-          cache: "no-store",
-          signal: ctrl.signal,
-        });
-        if (!health.ok) throw new Error("Worker health check failed (" + health.status + ")");
-        return true;
-      } catch (e) {
-        if (signal?.aborted || (e?.name === "AbortError" && signal?.aborted)) {
-          const err = new Error("Aborted");
-          err.name = "AbortError";
-          throw err;
-        }
-        lastErr = e;
-        await new Promise((resolve) => window.setTimeout(resolve, 350 * (attempt + 1)));
-      } finally {
-        window.clearTimeout(timer);
-        signal?.removeEventListener("abort", onParentAbort);
-      }
+  async function pingWorker(_base, signal) {
+    if (typeof window.pingMoonriseWorker === "function") {
+      return window.pingMoonriseWorker(signal);
     }
-    throw lastErr || new Error("Worker unreachable");
+    const base = workerUrl();
+    const health = await fetch(base + "/health", { method: "GET", cache: "no-store", signal });
+    if (!health.ok) throw new Error("Worker health check failed (" + health.status + ")");
+    return base;
   }
 
   async function authHeaders() {
@@ -5187,13 +5151,14 @@
     const generatedHtmlKeep = { html: "" };
     let generationSucceeded = false;
     try {
-      const base = workerUrl();
+      let base = workerUrl();
       if (!base) throw new Error("Worker URL is not configured.");
       try {
-        await pingWorker(base, signal);
+        base = await pingWorker(base, signal);
       } catch (e) {
         if (e?.name === "AbortError") throw e;
-        throw new Error(workerUnreachableMessage(base, e?.message || e));
+        const tried = (window.workerUrlCandidates?.() || [base]).join(", ");
+        throw new Error(workerUnreachableMessage(tried || base, e?.message || e));
       }
       renderGenerateProgress(Math.max(genProgressPct, 18), "Building your website…");
       const headers = await authHeaders();
