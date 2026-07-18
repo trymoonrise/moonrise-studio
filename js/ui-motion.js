@@ -217,6 +217,117 @@
     });
   }
 
+  const PAGE_MOTION_SKIP = new Set(["editor", "builder", "home", "onboarding"]);
+  const PAGE_MOTION_NO_SHELL = new Set([
+    "login",
+    "orders",
+    "contact",
+    "terms",
+    "privacy",
+    "pricing",
+    "apply",
+  ]);
+  const PAGE_MOTION_SELECTORS = [
+    "#page-body > .ms-page-head",
+    "#page-body > .ms-donate-channel",
+    "#page-body > .ms-lf-search",
+    "#page-body > .ms-lf-popular",
+    "#page-body > .ms-help-toc",
+    "#page-body > .ms-help-vcard",
+    "#page-body > .ms-help-contact-actions",
+    "#page-body > .ms-store-mvp-note",
+    "#page-body > .ms-settings-stack > .ms-card",
+    "#page-body > .ms-dash-stack > .ms-card",
+    "#page-body .ms-help-guide > .ms-card",
+    "#page-body .ms-donate-channel > .ms-donate-card",
+    "#page-body .ms-donate-channel > .ms-donate-wall",
+    "#page-body .ms-store-grid > .ms-store-product",
+    "#page-body > .ms-card",
+    "#page-body > section:not(.ms-motion-skip)",
+    "#page-body > .ms-pricing-content",
+    "#page-body > .ms-course-video",
+    ".ms-auth-card",
+    ".ms-orders-head",
+    ".ms-orders-toolbar",
+    ".ms-orders-main > section",
+    ".ms-contact-head",
+    ".ms-contact-main > section",
+    ".ms-legal-hero",
+    ".ms-legal-wrap > .ms-card",
+    ".ms-legal-wrap > section",
+  ];
+
+  function pageMotionShouldSkip() {
+    const body = document.body;
+    if (!body) return true;
+    if (body.classList.contains("ms-onboard-page")) return true;
+    if (body.classList.contains("ms-page-motion-ready")) return true;
+    const page = body.dataset.page || "";
+    if (PAGE_MOTION_SKIP.has(page)) return true;
+    return prefersReducedMotion();
+  }
+
+  function isMotionCandidate(el) {
+    if (!el || el.nodeType !== 1) return false;
+    if (el.classList.contains("ms-motion-skip")) return false;
+    if (el.classList.contains("ms-lf-skeleton")) return false;
+    if (el.closest("[hidden]")) return false;
+    if (el.closest(".ms-lf-results, .ms-lf-slide, dialog")) return false;
+    return true;
+  }
+
+  function markPageMotionItems() {
+    const seen = new Set();
+    const items = [];
+
+    PAGE_MOTION_SELECTORS.forEach(function (sel) {
+      document.querySelectorAll(sel).forEach(function (el) {
+        if (!isMotionCandidate(el) || seen.has(el)) return;
+        seen.add(el);
+        items.push(el);
+      });
+    });
+
+    items.forEach(function (el, index) {
+      el.style.setProperty("--ms-motion-i", String(index));
+      el.classList.add("ms-motion-item");
+    });
+
+    return items;
+  }
+
+  function playPageMotion() {
+    if (pageMotionShouldSkip()) return;
+    markPageMotionItems();
+
+    const sidebar = document.getElementById("ms-sidebar");
+    if (sidebar) sidebar.classList.add("ms-motion-sidebar");
+
+    global.requestAnimationFrame(function () {
+      global.requestAnimationFrame(function () {
+        document.body.classList.add("ms-page-motion-ready");
+      });
+    });
+  }
+
+  function schedulePageMotion() {
+    if (pageMotionShouldSkip()) return;
+
+    const page = document.body?.dataset?.page || "";
+    const usesShell = document.getElementById("shell") && !PAGE_MOTION_NO_SHELL.has(page);
+
+    if (usesShell) {
+      document.addEventListener("ms:shell-ready", playPageMotion, { once: true });
+      return;
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", playPageMotion, { once: true });
+    } else {
+      playPageMotion();
+    }
+  }
+
   function boot() {
     if (!document.body || document.body.dataset.msMotion === "1") return;
     document.body.dataset.msMotion = "1";
@@ -224,6 +335,7 @@
     document.addEventListener("keydown", onPointer, true);
     document.addEventListener("click", onClick, true);
     bootFaq();
+    schedulePageMotion();
   }
 
   if (document.readyState === "loading") {
@@ -238,5 +350,6 @@
     showPanel: showPanel,
     hidePanel: hidePanel,
     prefersReducedMotion: prefersReducedMotion,
+    playPageMotion: playPageMotion,
   };
 })(window);

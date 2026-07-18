@@ -6,139 +6,95 @@
   <title>Donate · Moonrise Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css?v=20260722-onetime-amount">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/studio.css?v=20260718-studio-motion">
+  <link rel="stylesheet" href="css/donate.css?v=20260718-donate-simple">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body data-page="donate">
   <div id="shell"></div>
-  <div id="page-body" class="ms-settings-page ms-donate-page">
-    <header class="ms-donate-hero">
-      <div class="ms-donate-hero-glow" aria-hidden="true"></div>
-      <div class="ms-donate-hero-inner">
-        <p class="ms-donate-eyebrow">Support Moonrise</p>
-        <h1>Fuel the mission</h1>
-        <p class="ms-donate-hero-lead">
-          Keep <a href="https://trymoonrise.com" target="_blank" rel="noopener noreferrer">trymoonrise.com</a> free for everyone by donating! Unlock MVP+ perks, and leave a note on your way to the donation leaderboard.
-        </p>
+  <div id="page-body" class="ms-content-page ms-donate-page">
+    <header class="ms-page-head ms-donate-head">
+      <div class="ms-page-head-copy">
+        <h1>Donate</h1>
+        <p class="lead ms-muted">Support Moonrise. MVP+ unlocks perks — one-time gifts show on the wall.</p>
       </div>
     </header>
 
-    <div class="ms-donate-layout">
-      <div class="ms-donate-main">
-        <section class="ms-card ms-settings-card ms-donate-checkout-card" id="donate-checkout-card" aria-labelledby="donate-mvp-heading">
-          <div class="ms-donate-active-banner" id="donate-active-banner" hidden>
-            <span class="ms-donate-active-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-            </span>
-            <div class="ms-donate-active-copy">
-              <p class="ms-donate-active-title">MVP+ is active</p>
-              <p class="ms-donate-active-sub">Thank you for supporting Moonrise. Your membership perks are unlocked on this account.</p>
-            </div>
-          </div>
-
-          <div class="ms-donate-card-head" id="donate-pricing-head">
-            <div class="ms-donate-card-intro">
-              <p class="ms-donate-section-kicker">Membership</p>
-              <h2 class="ms-donate-card-title" id="donate-mvp-heading">MVP+ Support</h2>
-              <p class="ms-donate-status-line" id="donate-status-copy">
-                <span id="donate-price-copy">From $5/mo</span> · cancel anytime · perks while subscribed
-              </p>
-            </div>
-            <div class="ms-donate-price-pill" id="donate-price-pill" aria-hidden="true">From $5/mo</div>
-          </div>
-
-          <div class="ms-donate-perks-block">
-            <p class="ms-donate-section-label" id="donate-perks-label">What&apos;s included</p>
-            <ul class="ms-donate-perks" id="donate-benefits"></ul>
-          </div>
-
-          <div class="ms-donate-pay-wrap" id="donate-pay-wrap">
-            <div class="ms-donate-support-panel">
-              <div class="ms-donate-support-head">
-                <p class="ms-donate-section-label" id="donate-support-label">Choose support</p>
-                <p class="ms-donate-support-hint" id="donate-support-hint">Monthly MVP+ is $5/mo. Pick any one-time amount — it counts toward the leaderboard.</p>
-              </div>
-
-              <div class="ms-donate-plan-actions">
-                <button type="button" class="ms-donate-plan-btn is-primary" id="btn-donate">
-                  <span class="ms-donate-plan-btn-title">Monthly</span>
-                  <span class="ms-donate-plan-btn-meta" id="donate-monthly-meta">$5/mo · MVP+</span>
-                </button>
-                <button type="button" class="ms-donate-plan-btn" id="btn-donate-once">
-                  <span class="ms-donate-plan-btn-title">One-time</span>
-                  <span class="ms-donate-plan-btn-meta" id="donate-once-meta">$25</span>
-                </button>
-              </div>
-
-              <div class="ms-donate-amount-panel" id="donate-onetime-amount-panel">
-                <label class="ms-donate-amount-label" for="donate-onetime-amount">One-time amount (USD)</label>
-                <div class="ms-donate-amount-row">
-                  <div class="ms-donate-amount-input-wrap" id="donate-onetime-amount-wrap">
-                    <span class="ms-donate-amount-currency" aria-hidden="true">$</span>
-                    <input
-                      type="number"
-                      id="donate-onetime-amount"
-                      class="ms-donate-amount-input"
-                      inputmode="decimal"
-                      min="5"
-                      max="1000"
-                      step="1"
-                      value="25"
-                      aria-describedby="donate-onetime-amount-hint donate-onetime-amount-error"
-                    >
-                  </div>
-                  <p class="ms-donate-amount-hint" id="donate-onetime-amount-hint">$5 – $1,000 · you choose the gift amount</p>
-                </div>
-                <p class="ms-donate-amount-error" id="donate-onetime-amount-error" hidden role="alert"></p>
-                <div class="ms-donate-presets" id="donate-onetime-presets" role="group" aria-label="Suggested one-time amounts">
-                  <button type="button" class="ms-donate-preset" data-donate-preset="5">$5</button>
-                  <button type="button" class="ms-donate-preset" data-donate-preset="10">$10</button>
-                  <button type="button" class="ms-donate-preset is-active" data-donate-preset="25">$25</button>
-                  <button type="button" class="ms-donate-preset" data-donate-preset="50">$50</button>
-                  <button type="button" class="ms-donate-preset" data-donate-preset="100">$100</button>
-                </div>
-              </div>
-
-              <div class="ms-donate-message-wrap" id="donate-message-wrap">
-                <label class="ms-donate-message-label" for="donate-message">Leaderboard message</label>
-                <textarea
-                  id="donate-message"
-                  class="ms-donate-message"
-                  rows="2"
-                  maxlength="120"
-                  placeholder="Optional — a short note shown with your name on the supporter wall."
-                  aria-describedby="donate-message-count"
-                ></textarea>
-                <p class="ms-donate-message-meta">
-                  <span id="donate-message-count">0 / 120</span>
-                </p>
-              </div>
-
-              <div class="ms-donate-footer-actions">
-                <button type="button" class="ms-donate-manage-link" id="btn-manage-stripe" hidden>Manage subscription in Stripe</button>
-              </div>
-            </div>
-          </div>
-
-          <p class="ms-settings-status is-ok" id="donate-ok" hidden></p>
-          <p class="ms-error" id="donate-error" hidden></p>
-        </section>
-      </div>
-
-      <aside class="ms-donate-leaderboard" aria-labelledby="donate-lb-heading">
-        <div class="ms-donate-leaderboard-head">
+    <div class="ms-donate-channel">
+      <section class="ms-donate-card" id="donate-checkout-card" aria-label="Donate">
+        <div class="ms-donate-active" id="donate-active-banner" hidden>
+          <span class="ms-donate-active-dot" aria-hidden="true"></span>
           <div>
-            <p class="ms-donate-lb-eyebrow">Community</p>
-            <h2 id="donate-lb-heading">Top supporters</h2>
+            <strong>MVP+ is active</strong>
+            <p>Your perks are unlocked on this account.</p>
           </div>
-          <span class="ms-donate-lb-badge">Top 10</span>
         </div>
-        <p class="ms-donate-lb-copy">Ranked by total contributed — monthly and one-time gifts count.</p>
+
+        <div class="ms-donate-modes" id="donate-modes" role="tablist" aria-label="Donation type">
+          <button type="button" class="ms-donate-mode is-active" id="donate-tab-monthly" role="tab" aria-selected="true" aria-controls="donate-panel-monthly" data-mode="monthly">MVP+ monthly</button>
+          <button type="button" class="ms-donate-mode" id="donate-tab-once" role="tab" aria-selected="false" aria-controls="donate-panel-once" data-mode="once">One-time</button>
+        </div>
+
+        <div class="ms-donate-panel" id="donate-panel-monthly" role="tabpanel" aria-labelledby="donate-tab-monthly">
+          <p class="ms-donate-price" id="donate-monthly-price">$5<span>/mo</span></p>
+          <p class="ms-donate-panel-copy">Cancel anytime. Perks stay on while subscribed.</p>
+          <ul class="ms-donate-perks" id="donate-benefits"></ul>
+        </div>
+
+        <div class="ms-donate-panel" id="donate-panel-once" role="tabpanel" aria-labelledby="donate-tab-once" hidden>
+          <label class="ms-donate-field-label" for="donate-onetime-amount">Amount (USD)</label>
+          <div class="ms-donate-amount-wrap" id="donate-onetime-amount-wrap">
+            <span class="ms-donate-amount-prefix" aria-hidden="true">$</span>
+            <input
+              type="number"
+              id="donate-onetime-amount"
+              class="ms-donate-amount-input"
+              inputmode="decimal"
+              min="1"
+              max="1000"
+              step="1"
+              value="25"
+              aria-describedby="donate-onetime-amount-hint donate-onetime-amount-error"
+            >
+          </div>
+          <p class="ms-donate-field-hint" id="donate-onetime-amount-hint">$1 – $1,000</p>
+          <p class="ms-donate-field-error" id="donate-onetime-amount-error" hidden role="alert"></p>
+          <div class="ms-donate-presets" id="donate-onetime-presets" role="group" aria-label="Suggested amounts">
+            <button type="button" class="ms-donate-preset" data-donate-preset="1">$1</button>
+            <button type="button" class="ms-donate-preset" data-donate-preset="10">$10</button>
+            <button type="button" class="ms-donate-preset is-active" data-donate-preset="25">$25</button>
+            <button type="button" class="ms-donate-preset" data-donate-preset="50">$50</button>
+            <button type="button" class="ms-donate-preset" data-donate-preset="100">$100</button>
+          </div>
+        </div>
+
+        <label class="ms-donate-field" for="donate-message">
+          <span class="ms-donate-field-label">Wall note <span class="ms-muted">(optional)</span></span>
+          <input
+            type="text"
+            id="donate-message"
+            class="ms-donate-note-input"
+            maxlength="120"
+            placeholder="Short message on the supporter wall"
+            aria-describedby="donate-message-count"
+          >
+        </label>
+        <p class="ms-donate-field-meta" id="donate-message-count">0 / 120</p>
+
+        <button type="button" class="ms-btn ms-donate-submit" id="btn-donate-continue">Continue to checkout</button>
+        <button type="button" class="ms-donate-link" id="btn-manage-stripe" hidden>Manage subscription</button>
+
+        <p class="ms-settings-status is-ok" id="donate-ok" hidden></p>
+        <p class="ms-error" id="donate-error" hidden></p>
+      </section>
+
+      <section class="ms-donate-wall" aria-labelledby="donate-lb-heading">
+        <h2 class="ms-donate-wall-title" id="donate-lb-heading">Supporter wall</h2>
         <ol class="ms-donate-lb-list" id="donate-leaderboard-list" aria-live="polite">
-          <li class="ms-donate-lb-empty" id="donate-leaderboard-loading">Loading supporters…</li>
+          <li class="ms-donate-lb-empty" id="donate-leaderboard-loading">Loading…</li>
         </ol>
-      </aside>
+      </section>
     </div>
   </div>
 
@@ -152,6 +108,6 @@
   <script src="js/income.js?v=20260722-donate-pro"></script>
   <script src="js/app.js?v=20260718-shell-fix"></script>
   <script src="js/mvp-perks.js"></script>
-  <script src="js/donate.js?v=20260722-leaderboard"></script>
+  <script src="js/donate.js?v=20260718-donate-simple"></script>
 </body>
 </html>

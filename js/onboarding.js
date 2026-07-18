@@ -339,15 +339,19 @@
 
   function showVerifiedCard(card) {
     const el = document.getElementById("onb-security-card-verified");
+    const wrap = document.getElementById("onb-security-card-verified-wrap");
     const mount = document.getElementById("onb-security-card-mount");
-    if (el) {
-      el.hidden = !card;
-      el.textContent = card
-        ? "Payout card connected: " + SC.formatCardLabel(card)
-        : "";
-    }
-    if (mount && card) {
-      mount.hidden = true;
+    const retryBtn = document.getElementById("onb-retry-card");
+    const panel = document.getElementById("onb-security-card-panel");
+    if (card) {
+      if (el) el.textContent = SC.formatCardLabel(card);
+      if (wrap) wrap.hidden = false;
+      if (mount) mount.hidden = true;
+      if (retryBtn) retryBtn.hidden = true;
+      panel?.classList.remove("is-load-error");
+    } else {
+      if (wrap) wrap.hidden = true;
+      if (el) el.textContent = "";
     }
   }
 

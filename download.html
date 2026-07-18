@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Download app · Moonrise Studio</title>
+  <meta name="description" content="Install Moonrise Studio on your phone or desktop for quick access from your home screen.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/studio.css?v=20260718-download-page">
+  <link rel="stylesheet" href="css/download.css?v=20260718-download-page">
+  <meta name="color-scheme" content="light">
+  <script src="js/config.js"></script>
+  <script src="js/site-branding.js"></script>
+</head>
+<body data-page="download" class="ms-download-page">
+  <main class="ms-download-main">
+    <a class="ms-download-back" href="index.html">← Home</a>
+
+    <div class="ms-download-card">
+      <div class="ms-download-brand">
+        <img id="download-icon" src="https://moonrise-studio.vercel.app/doc/MoonriseLogo.png" alt="" width="56" height="56" decoding="async">
+        <div>
+          <strong id="download-title">Moonrise</strong>
+          <p class="ms-muted">Moonrise Studio</p>
+        </div>
+      </div>
+
+      <h1>Download the app</h1>
+      <p class="ms-download-lead">
+        Install Moonrise on your phone or computer for faster access — like a native app from your home screen or taskbar.
+      </p>
+
+      <div class="ms-settings-install-done" id="download-install-done" hidden>
+        <p class="ms-settings-status is-ok">You’re using the installed Moonrise app.</p>
+        <p class="ms-muted ms-download-done-note">Open Moonrise from your home screen or apps list anytime.</p>
+      </div>
+
+      <div class="ms-settings-install" id="download-install-panel">
+        <div class="ms-settings-install-preview">
+          <img class="ms-settings-install-icon" id="download-install-icon" src="" alt="" width="56" height="56" decoding="async">
+          <div class="ms-settings-install-copy">
+            <strong id="download-install-title">Moonrise</strong>
+            <span class="ms-muted" id="download-install-status">Checking install options…</span>
+          </div>
+        </div>
+        <p class="ms-settings-install-steps ms-muted" id="download-install-instructions"></p>
+        <button type="button" class="ms-btn ms-download-install-btn" id="download-install-btn" hidden>Install app</button>
+      </div>
+
+      <div class="ms-download-actions">
+        <a class="ms-btn" href="login.html">Sign in</a>
+        <a class="ms-btn ms-btn-secondary" href="dashboard.html">Open studio</a>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/install-hint.js?v=20260718-download-page"></script>
+  <script src="js/ui-motion.js"></script>
+  <script src="js/download-page.js?v=20260718-download-page"></script>
+</body>
+</html>

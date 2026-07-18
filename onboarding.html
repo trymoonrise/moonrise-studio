@@ -16,14 +16,15 @@
     .ms-onboard-main .ms-onboard-panel[hidden] { display: none !important; }
     /* Before JS: keep step 1 readable. Do not override animated steps (ms-panel-anim). */
     .ms-onboard-main .ms-onboard-panel.is-active:not(.ms-panel-anim) .ms-onboard-panel-scroll > *,
-    .ms-onboard-main .ms-onboard-panel.is-active:not(.ms-panel-anim) > .ms-onboard-actions {
+    .ms-onboard-main .ms-onboard-panel.is-active:not(.ms-panel-anim) > .ms-onboard-actions,
+    .ms-onboard-main .ms-onboard-panel.is-active:not(.ms-panel-anim) .ms-onboard-legal-links .ms-onboard-legal-card {
       opacity: 1;
       transform: none;
       filter: none;
     }
   </style>
-  <link rel="stylesheet" href="css/studio.css?v=20260718-onboard-legal-fix">
-  <link rel="stylesheet" href="css/onboarding-premium.css?v=20260718-onboard-legal-fix">
+  <link rel="stylesheet" href="css/studio.css?v=20260718-sec-card-verified">
+  <link rel="stylesheet" href="css/onboarding-premium.css?v=20260718-onboard-legal-blur-fix">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body data-page="onboarding" class="ms-onboard-page">
@@ -126,7 +127,7 @@
             <p class="ms-onboard-lead">Read these before you start selling.</p>
             <div class="ms-creator-policy-notice ms-onboard-policy" role="note">
               <strong>Creators do not charge business owners.</strong>
-              <p>Owners pay through the watermark on their live site. That payment goes to your connected card.</p>
+              <p>Owners pay through the watermark on their live site. You receive your 80% creator share from Moonrise after each sale.</p>
               <p>No cash, Venmo, Zelle, PayPal, or off-platform payments. Violations may lead to <strong>account termination and withheld payouts</strong>.</p>
             </div>
             <div class="ms-onboard-legal-links">
@@ -206,7 +207,7 @@
             <header class="ms-onboard-panel-head">
               <h1>How you get paid</h1>
             </header>
-            <p class="ms-onboard-lead">Connect a card so we can verify and keep on file.</p>
+            <p class="ms-onboard-lead">Connect a card so we can verify and keep on file. Each card can only be used on one Moonrise account — use a different card if yours is already linked elsewhere.</p>
             <div class="ms-onboard-form-block">
               <div class="ms-field">
                 <label class="ms-label" for="onb-email">Payout email</label>
@@ -214,17 +215,26 @@
               </div>
               <div class="ms-sec-card-panel" id="onb-security-card-panel">
                 <div id="onb-security-card-mount"></div>
+                <div class="ms-sec-card-verified-row" id="onb-security-card-verified-wrap" hidden>
+                  <span class="ms-sec-card-verified-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                  </span>
+                  <div class="ms-sec-card-verified-copy">
+                    <span class="ms-sec-card-verified-kicker">Security card connected</span>
+                    <span class="ms-sec-card-verified-text" id="onb-security-card-verified"></span>
+                  </div>
+                </div>
                 <button
                   type="button"
-                  class="ms-sec-card-retry"
+                  class="ms-sec-card-retry ms-sec-card-retry--reload"
                   id="onb-retry-card"
                   hidden
                   aria-label="Reload card form"
                   title="Reload card form"
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
+                  <span>Reload card form</span>
                 </button>
-                <p class="ms-settings-status is-ok" id="onb-security-card-verified" hidden></p>
               </div>
             </div>
             <label class="ms-onboard-check">
@@ -273,6 +283,6 @@
   <script src="js/toast.js"></script>
   <script src="js/payout-profile.js?v=20260718-auto-payout"></script>
   <script src="js/security-card.js?v=20260718-no-card-hint"></script>
-  <script src="js/onboarding.js?v=20260718-onboard-blur"></script>
+  <script src="js/onboarding.js?v=20260718-sec-card-verified"></script>
 </body>
 </html>

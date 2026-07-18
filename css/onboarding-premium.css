@@ -312,7 +312,6 @@ body.ms-onboard-page.is-transitioning .ms-onboard-bg {
 /* Content reveal — soft blur + rise (panel crossfade handles step shell) */
 .ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-lead,
 .ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-creator-policy-notice,
-.ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-legal-links,
 .ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-check,
 .ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-form-block,
 .ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-chip-label,
@@ -365,14 +364,15 @@ body.ms-onboard-page.is-transitioning .ms-onboard-bg {
 .ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-legal-links {
   opacity: 1;
   transform: none;
+  filter: none;
   animation: none;
 }
 
 .ms-onboard-panel.is-active.is-visible .ms-onboard-legal-links .ms-onboard-legal-card {
   opacity: 0;
   transform: translate3d(0, 10px, 0);
-  filter: blur(var(--onb-blur-content));
-  animation: ms-onb-soft-in var(--onb-dur-med) var(--onb-ease-soft) forwards;
+  filter: none;
+  animation: ms-onb-legal-in var(--onb-dur-med) var(--onb-ease-soft) forwards;
   backface-visibility: hidden;
 }
 
@@ -467,6 +467,13 @@ body.ms-onboard-page.is-transitioning .ms-onboard-bg {
     opacity: 1;
     transform: translate3d(0, 0, 0);
     filter: blur(0);
+  }
+}
+
+@keyframes ms-onb-legal-in {
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
   }
 }
 

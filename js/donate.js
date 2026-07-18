@@ -1,9 +1,10 @@
 /**
- * Donate — MVP+ via Stripe + supporter leaderboard.
+ * Donate — MVP+ via Stripe + supporter wall.
  */
 (function () {
   const MESSAGE_KEY = "ms_donate_message_draft_v1";
   const AMOUNT_KEY = "ms_donate_amount_draft_v1";
+  let donateMode = "monthly";
   let donateConfig = {
     mvpPlus: false,
     hasActiveSubscription: false,
@@ -12,7 +13,7 @@
     monthlyDefaultDollars: 5,
     oneTimePriceLabel: "$25",
     oneTimeDefaultDollars: 25,
-    donateMinDollars: 5,
+    donateMinDollars: 1,
     donateMaxDollars: 1000,
     donorMessageMax: 120,
   };
@@ -147,7 +148,47 @@
   }
 
   function monthlyAmountLabel() {
-    return `${formatDollars(donateConfig.monthlyDefaultDollars)}/mo`;
+    return formatDollars(donateConfig.monthlyDefaultDollars);
+  }
+
+  function syncMonthlyPrice() {
+    const price = document.getElementById("donate-monthly-price");
+    if (!price) return;
+    const dollars = monthlyAmountLabel();
+    price.innerHTML = `${escapeHtml(dollars)}<span>/mo</span>`;
+  }
+
+  function syncSubmitLabel() {
+    const btn = document.getElementById("btn-donate-continue");
+    if (!btn || btn.classList.contains("is-loading")) return;
+    if (donateMode === "once") {
+      const quote = readOneTimeAmount();
+      btn.textContent = quote ? `Donate ${quote.priceLabel}` : "Continue to checkout";
+      return;
+    }
+    btn.textContent = `Start MVP+ · ${monthlyAmountLabel()}/mo`;
+  }
+
+  function setDonateMode(mode) {
+    const next = mode === "once" ? "once" : "monthly";
+    if (next === "monthly" && donateConfig.mvpPlus) {
+      donateMode = "once";
+    } else {
+      donateMode = next;
+    }
+
+    const monthlyTab = document.getElementById("donate-tab-monthly");
+    const onceTab = document.getElementById("donate-tab-once");
+    const monthlyPanel = document.getElementById("donate-panel-monthly");
+    const oncePanel = document.getElementById("donate-panel-once");
+
+    monthlyTab?.classList.toggle("is-active", donateMode === "monthly");
+    onceTab?.classList.toggle("is-active", donateMode === "once");
+    monthlyTab?.setAttribute("aria-selected", donateMode === "monthly" ? "true" : "false");
+    onceTab?.setAttribute("aria-selected", donateMode === "once" ? "true" : "false");
+    if (monthlyPanel) monthlyPanel.hidden = donateMode !== "monthly";
+    if (oncePanel) oncePanel.hidden = donateMode !== "once";
+    syncSubmitLabel();
   }
 
   function syncOneTimeAmountUi() {
@@ -168,7 +209,7 @@
       }
     }
     if (hint) {
-      hint.textContent = `${formatDollars(min)} – ${formatDollars(max)} · you choose the gift amount`;
+      hint.textContent = `${formatDollars(min)} – ${formatDollars(max)}`;
     }
 
     const quote = readOneTimeAmount();
@@ -189,42 +230,15 @@
       });
     }
 
-    syncMonthlyMeta();
-    syncOneTimeButton();
+    syncSubmitLabel();
   }
 
-  function syncOneTimeButton() {
-    const meta = document.getElementById("donate-once-meta");
-    const quote = readOneTimeAmount();
-    const label = quote?.priceLabel || formatDollars(donateConfig.oneTimeDefaultDollars);
-    if (meta) meta.textContent = label;
-  }
-
-  function syncMonthlyMeta() {
-    const meta = document.getElementById("donate-monthly-meta");
-    const price = monthlyAmountLabel();
-    if (meta) meta.textContent = `${price} · MVP+`;
-  }
-
-  function resetDonateButtons() {
-    const monthlyBtn = document.getElementById("btn-donate");
-    const onceBtn = document.getElementById("btn-donate-once");
-    if (monthlyBtn) {
-      monthlyBtn.disabled = false;
-      monthlyBtn.classList.remove("is-loading");
-    }
-    if (onceBtn) {
-      onceBtn.disabled = false;
-      onceBtn.classList.remove("is-loading");
-    }
-  }
-
-  function syncPriceUi() {
-    const priceCopy = document.getElementById("donate-price-copy");
-    const pricePill = document.getElementById("donate-price-pill");
-    const label = monthlyAmountLabel();
-    if (priceCopy) priceCopy.textContent = label;
-    if (pricePill) pricePill.textContent = label;
+  function resetDonateButton() {
+    const btn = document.getElementById("btn-donate-continue");
+    if (!btn) return;
+    btn.disabled = false;
+    btn.classList.remove("is-loading");
+    syncSubmitLabel();
   }
 
   function syncMessageUi() {
@@ -259,40 +273,20 @@
   function setActiveUi(active, canManage) {
     const card = document.getElementById("donate-checkout-card");
     const activeBanner = document.getElementById("donate-active-banner");
-    const pricingHead = document.getElementById("donate-pricing-head");
-    const pricePill = document.getElementById("donate-price-pill");
-    const donateBtn = document.getElementById("btn-donate");
-    const perksLabel = document.getElementById("donate-perks-label");
-    const supportLabel = document.getElementById("donate-support-label");
-    const supportHint = document.getElementById("donate-support-hint");
     const manageBtn = document.getElementById("btn-manage-stripe");
-    const payWrap = document.getElementById("donate-pay-wrap");
-    const copy = document.getElementById("donate-status-copy");
 
     card?.classList.toggle("is-mvp-active", !!active);
     if (activeBanner) activeBanner.hidden = !active;
-    if (pricingHead) pricingHead.hidden = !!active;
-    if (pricePill) pricePill.hidden = !!active;
-    if (payWrap) payWrap.hidden = false;
-    if (donateBtn) donateBtn.hidden = !!active;
     if (manageBtn) manageBtn.hidden = !canManage;
-    if (perksLabel) perksLabel.textContent = active ? "Your perks" : "What's included";
-    if (supportLabel) supportLabel.textContent = active ? "Additional support" : "Choose support";
-    if (supportHint) {
-      supportHint.textContent = active
-        ? "Pick any one-time amount below — it counts toward the leaderboard."
-        : "Monthly MVP+ is $5/mo. Pick any one-time amount — it counts toward the leaderboard.";
-    }
 
-    if (copy && !active) {
-      copy.innerHTML =
-        '<span id="donate-price-copy">' +
-        escapeHtml(monthlyAmountLabel()) +
-        "</span> · cancel anytime · perks while subscribed";
+    if (active) {
+      setDonateMode("once");
+    } else {
+      setDonateMode(donateMode === "once" ? "once" : "monthly");
     }
 
     syncOneTimeAmountUi();
-    syncPriceUi();
+    syncMonthlyPrice();
   }
 
   function rankClass(rank) {
@@ -308,7 +302,7 @@
 
     if (!Array.isArray(entries) || !entries.length) {
       list.innerHTML =
-        '<li class="ms-donate-lb-empty">Be the first on the wall — donate and leave a message.</li>';
+        '<li class="ms-donate-lb-empty">Be the first on the wall — donate and leave a note.</li>';
       return;
     }
 
@@ -319,7 +313,7 @@
         const total = escapeHtml(entry.totalLabel || "");
         const message = String(entry.message || "").trim();
         const avatar = entry.avatarUrl
-          ? `<img class="ms-donate-lb-avatar" src="${escapeHtml(entry.avatarUrl)}" alt="" width="44" height="44" loading="lazy" decoding="async">`
+          ? `<img class="ms-donate-lb-avatar" src="${escapeHtml(entry.avatarUrl)}" alt="" width="32" height="32" loading="lazy" decoding="async">`
           : `<span class="ms-donate-lb-avatar is-fallback" aria-hidden="true">${escapeHtml(entry.initials || "?")}</span>`;
         const quote = message
           ? `<blockquote class="ms-donate-lb-quote">“${escapeHtml(message)}”</blockquote>`
@@ -384,14 +378,14 @@
       monthlyDefaultDollars: Number(data.monthlyDefaultDollars) || 5,
       oneTimePriceLabel: String(data.oneTimePriceLabel || "$25"),
       oneTimeDefaultDollars: Number(data.oneTimeDefaultDollars) || 25,
-      donateMinDollars: Number(data.donateMinDollars) || 5,
+      donateMinDollars: Number(data.donateMinDollars) || 1,
       donateMaxDollars: Number(data.donateMaxDollars) || 1000,
       donorMessageMax: Number(data.donorMessageMax) || 120,
     };
 
     renderBenefits(defaultBenefits());
     syncOneTimeAmountUi();
-    syncPriceUi();
+    syncMonthlyPrice();
     syncMessageUi();
     setActiveUi(donateConfig.mvpPlus, donateConfig.canManageBilling);
     if (Array.isArray(data.leaderboardEntries)) {
@@ -402,8 +396,7 @@
 
   async function startCheckout(mode) {
     const isOneTime = mode === "once";
-    const btn = document.getElementById(isOneTime ? "btn-donate-once" : "btn-donate");
-    const otherBtn = document.getElementById(isOneTime ? "btn-donate" : "btn-donate-once");
+    const btn = document.getElementById("btn-donate-continue");
     setError("");
     setOk("");
 
@@ -423,8 +416,8 @@
     if (btn) {
       btn.disabled = true;
       btn.classList.add("is-loading");
+      btn.textContent = "Opening checkout…";
     }
-    if (otherBtn) otherBtn.disabled = true;
 
     try {
       const base = workerUrl();
@@ -446,14 +439,14 @@
       if (!isOneTime && data.alreadyActive) {
         setActiveUi(true, donateConfig.canManageBilling);
         setOk("You already have an active MVP+ subscription.");
-        resetDonateButtons();
+        resetDonateButton();
         return;
       }
       if (!data.url) throw new Error("No checkout URL returned");
       location.href = data.url;
     } catch (e) {
       setError(e.message || "Could not start checkout");
-      resetDonateButtons();
+      resetDonateButton();
     }
   }
 
@@ -480,7 +473,7 @@
       setError(e.message || "Could not open Stripe billing");
       if (btn) {
         btn.disabled = false;
-        btn.textContent = "Manage subscription in Stripe";
+        btn.textContent = "Manage subscription";
       }
     }
   }
@@ -533,26 +526,34 @@
   }
 
   function bindUi() {
-    document.getElementById("btn-donate")?.addEventListener("click", () => {
-      void startCheckout("monthly");
+    document.getElementById("donate-modes")?.addEventListener("click", (event) => {
+      const tab = event.target.closest("[data-mode]");
+      if (!tab) return;
+      setDonateMode(tab.getAttribute("data-mode"));
     });
-    document.getElementById("btn-donate-once")?.addEventListener("click", () => {
-      void startCheckout("once");
+
+    document.getElementById("btn-donate-continue")?.addEventListener("click", () => {
+      void startCheckout(donateMode);
     });
+
     document.getElementById("btn-manage-stripe")?.addEventListener("click", () => {
       void openBillingPortal();
     });
+
     document.getElementById("donate-message")?.addEventListener("input", () => {
       updateMessageCount();
       saveMessageDraft(readDonorMessage());
     });
+
     document.getElementById("donate-onetime-amount")?.addEventListener("input", () => {
       saveOneTimeAmountDraft(document.getElementById("donate-onetime-amount")?.value);
       syncOneTimeAmountUi();
     });
+
     document.getElementById("donate-onetime-amount")?.addEventListener("blur", () => {
       syncOneTimeAmountUi();
     });
+
     document.getElementById("donate-onetime-presets")?.addEventListener("click", (event) => {
       const btn = event.target.closest("[data-donate-preset]");
       if (!btn) return;

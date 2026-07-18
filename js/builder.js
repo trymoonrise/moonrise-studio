@@ -5961,8 +5961,8 @@
   function isPaidProject(project) {
     const p = project || state.project;
     if (!p) return false;
-    if (p.watermark_enabled === false) return true;
-    return String(p.status || "").toLowerCase() === "paid";
+    if (window.StudioProjects?.isClientPaidProject) return window.StudioProjects.isClientPaidProject(p);
+    return p.watermark_enabled === false;
   }
 
   const VERCEL_SLUG_STOP_WORDS = new Set([

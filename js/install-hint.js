@@ -7,7 +7,7 @@
   if (window.__msInstallHintBooted) return;
   window.__msInstallHintBooted = true;
 
-  const PUBLIC_PAGES = new Set(["index", "login", "apply", "orders", "home", ""]);
+  const PUBLIC_PAGES = new Set(["index", "login", "apply", "orders", "home", "download", ""]);
   const PWA_BASE_URL = new URL("../", document.currentScript?.src || window.location.href);
   const PWA_MANIFEST_URL = new URL("manifest.json", PWA_BASE_URL).href;
   const PWA_SW_URL = new URL("sw.js", PWA_BASE_URL).href;

@@ -97,7 +97,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
             Security card
           </h2>
-          <p class="ms-settings-hint ms-muted">Required for creator onboarding. Moonrise may charge this card for fraud, chargebacks, or Terms violations (including off-platform payments).</p>
+          <p class="ms-settings-hint ms-muted">Required for creator onboarding. Each card can only be linked to one Moonrise account. Moonrise may charge this card for fraud, chargebacks, or Terms violations (including off-platform payments).</p>
 
           <p class="ms-settings-status is-ok" id="set-payout-card-status" hidden></p>
           <p class="ms-settings-hint ms-muted" id="set-payout-card-empty">No security card on file yet.</p>
@@ -109,13 +109,14 @@
             </div>
             <button
               type="button"
-              class="ms-sec-card-retry"
+              class="ms-sec-card-retry ms-sec-card-retry--reload"
               id="set-payout-card-retry"
               hidden
               aria-label="Reload card form"
               title="Reload card form"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
+              <span>Reload card form</span>
             </button>
           </div>
 

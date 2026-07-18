@@ -168,6 +168,16 @@
     mountPoint.id = opts?.elementId || "ms-sec-card-element";
     mountPoint.className = "ms-sec-card-element";
     wrap.appendChild(mountPoint);
+
+    const hint = document.createElement("p");
+    hint.className = "ms-settings-hint ms-muted ms-sec-card-hint";
+    const support = String(config.supportEmail || "support@trymoonrise.com").trim();
+    hint.textContent =
+      "Each card can only be linked to one Moonrise account. If you have trouble, contact " +
+      support +
+      ".";
+    wrap.appendChild(hint);
+
     hostEl.appendChild(wrap);
 
     elements = stripe.elements({

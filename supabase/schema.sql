@@ -14,6 +14,7 @@ create table if not exists public.profiles (
   mvp_plus boolean not null default false,
   branding_defaults jsonb not null default '{}'::jsonb,
   payout_profile jsonb not null default '{}'::jsonb,
+  security_card_fingerprint text,
   notification_prefs jsonb not null default '{"email": true}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()

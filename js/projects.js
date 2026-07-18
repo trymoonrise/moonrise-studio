@@ -27,13 +27,13 @@
   }
 
   function isLiveProject(p) {
+    if (window.StudioProjects?.isLiveProject) return window.StudioProjects.isLiveProject(p);
     return String(p?.status || "").toLowerCase() === "published";
   }
 
-  function isPaidProject(p) {
-    if (!p) return false;
-    if (p.watermark_enabled === false) return true;
-    return String(p.status || "").toLowerCase() === "paid";
+  function canDeleteProject(p) {
+    if (window.StudioProjects?.canDeleteProject) return window.StudioProjects.canDeleteProject(p);
+    return p?.watermark_enabled !== false;
   }
 
   function projectContext(p) {
@@ -227,7 +227,7 @@
   function projectPreview(p) {
     const name = p.business_name || "Untitled";
     const hasHtml = !!(p.html && String(p.html).trim());
-    const paid = isPaidProject(p);
+    const paid = !canDeleteProject(p);
     const live = isLiveProject(p);
     const liveBadge = live ? '<span class="ms-dash-preview-live" aria-label="Live site">Live</span>' : "";
     const shot = hasHtml
@@ -349,7 +349,7 @@
     const message = document.getElementById("projects-delete-message");
     const error = document.getElementById("projects-delete-error");
     if (!dialog || !project) return;
-    if (isPaidProject(project)) {
+    if (!canDeleteProject(project)) {
       window.StudioToast?.error?.("This website was paid for — it can’t be deleted.");
       return;
     }
@@ -359,7 +359,9 @@
       error.textContent = "";
     }
     if (message) {
-      message.textContent = 'Delete "' + (project.business_name || "Untitled") + '"? This cannot be undone.';
+      const liveNote = isLiveProject(project) ? " It will be taken offline first." : "";
+      message.textContent =
+        'Delete "' + (project.business_name || "Untitled") + '"? This cannot be undone.' + liveNote;
     }
     dialog.showModal();
   }
@@ -374,7 +376,7 @@
     const submit = document.getElementById("projects-delete-submit");
     if (!deleteProjectId) return;
     const project = allProjects.find((p) => p.id === deleteProjectId);
-    if (project && isPaidProject(project)) {
+    if (project && !canDeleteProject(project)) {
       if (error) {
         error.hidden = false;
         error.textContent = "This website was paid for — it can’t be deleted.";
@@ -389,6 +391,9 @@
     try {
       const user = await window.StudioAuth.getUser();
       if (!user) throw new Error("Sign in required");
+      if (project && isLiveProject(project) && window.StudioProjects?.unpublishProject) {
+        await window.StudioProjects.unpublishProject(project.id);
+      }
       const client = window.SiteSupabase.getClient();
       const { data, error: dbError } = await window.StudioAuth.withTimeout(
         client.from("projects").delete().eq("id", deleteProjectId).eq("user_id", user.id).select("id"),
@@ -396,7 +401,12 @@
         "Delete project"
       );
       if (dbError) throw dbError;
-      if (!data?.length) throw new Error("This website was paid for — it can’t be deleted.");
+      if (!data?.length) {
+        if (project && !canDeleteProject(project)) {
+          throw new Error("This website was paid for — it can’t be deleted.");
+        }
+        throw new Error("Could not delete project. Refresh and try again.");
+      }
       allProjects = allProjects.filter((p) => p.id !== deleteProjectId);
       await paintProjects();
       closeDeleteDialog();

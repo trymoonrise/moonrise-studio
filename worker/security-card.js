@@ -12,11 +12,28 @@ const MAX_ENFORCEMENT_CENTS = Math.max(
   Number(process.env.SECURITY_CARD_MAX_CHARGE_CENTS || 500000)
 );
 
+const CARD_DUPLICATE_CODE = "card_already_registered";
+
+function supportContactLabel() {
+  const email = String(process.env.MOONRISE_SUPPORT_EMAIL || "support@trymoonrise.com").trim();
+  return email || "support@trymoonrise.com";
+}
+
+function cardAlreadyRegisteredMessage() {
+  return (
+    "This card is already linked to another Moonrise account. Use a different card. " +
+    "If you think this is a mistake, contact support at " +
+    supportContactLabel() +
+    "."
+  );
+}
+
 function normalizeSecurityCard(raw) {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
   const verifiedAt = String(raw.verifiedAt || raw.verified_at || "").trim();
   const paymentMethodId = String(raw.paymentMethodId || raw.payment_method_id || "").trim();
   if (!verifiedAt || !paymentMethodId) return null;
+  const fingerprint = String(raw.fingerprint || "").trim();
   return {
     verifiedAt,
     paymentMethodId,
@@ -25,6 +42,7 @@ function normalizeSecurityCard(raw) {
     last4: String(raw.last4 || "").trim() || null,
     expMonth: Number(raw.expMonth || raw.exp_month) || null,
     expYear: Number(raw.expYear || raw.exp_year) || null,
+    fingerprint: fingerprint || null,
   };
 }
 
@@ -53,12 +71,71 @@ async function saveSecurityCard(supabase, userId, payoutProfile, securityCard) {
     ...(payoutProfile && typeof payoutProfile === "object" ? payoutProfile : {}),
     securityCard,
   };
+  const fingerprint = String(securityCard?.fingerprint || "").trim() || null;
   const { error } = await supabase
     .from("profiles")
-    .update({ payout_profile: next, updated_at: new Date().toISOString() })
+    .update({
+      payout_profile: next,
+      security_card_fingerprint: fingerprint,
+      updated_at: new Date().toISOString(),
+    })
     .eq("id", userId);
-  if (error) throw error;
+  if (error) {
+    if (error.code === "23505") {
+      throw Object.assign(new Error(cardAlreadyRegisteredMessage()), {
+        status: 409,
+        code: CARD_DUPLICATE_CODE,
+      });
+    }
+    throw error;
+  }
   return next;
+}
+
+async function findOtherProfileWithFingerprint(supabase, fingerprint, excludeUserId) {
+  const fp = String(fingerprint || "").trim();
+  if (!fp) return null;
+
+  const { data: byColumn, error: columnErr } = await supabase
+    .from("profiles")
+    .select("id, handle")
+    .neq("id", excludeUserId)
+    .eq("security_card_fingerprint", fp)
+    .limit(1);
+  if (columnErr && !/security_card_fingerprint|column/i.test(String(columnErr.message || ""))) {
+    throw columnErr;
+  }
+  if (byColumn?.length) return byColumn[0];
+
+  const { data: byJson, error: jsonErr } = await supabase
+    .from("profiles")
+    .select("id, handle")
+    .neq("id", excludeUserId)
+    .filter("payout_profile->securityCard->>fingerprint", "eq", fp)
+    .limit(1);
+  if (jsonErr) throw jsonErr;
+  return byJson?.[0] || null;
+}
+
+async function assertCardFingerprintAvailable(supabase, fingerprint, userId) {
+  const fp = String(fingerprint || "").trim();
+  if (!fp) {
+    throw Object.assign(new Error("Could not verify this card. Try a different card or contact support."), {
+      status: 400,
+    });
+  }
+
+  const profile = await loadProfile(supabase, userId);
+  const existing = normalizeSecurityCard(profile?.payout_profile?.securityCard);
+  if (existing?.fingerprint === fp) return;
+
+  const other = await findOtherProfileWithFingerprint(supabase, fp, userId);
+  if (other) {
+    throw Object.assign(new Error(cardAlreadyRegisteredMessage()), {
+      status: 409,
+      code: CARD_DUPLICATE_CODE,
+    });
+  }
 }
 
 async function getOrCreateStripeCustomer(stripe, supabase, userId, email) {
@@ -161,6 +238,12 @@ async function completeSecurityCardVerification(stripe, supabase, userId, paymen
     }
   }
 
+  const pm = await stripe.paymentMethods.retrieve(paymentMethodId);
+  const card = pm.card || {};
+  const fingerprint = String(card.fingerprint || "").trim();
+
+  await assertCardFingerprintAvailable(supabase, fingerprint, userId);
+
   await stripe.paymentMethods.attach(paymentMethodId, { customer: customerId }).catch((e) => {
     if (!/already been attached/i.test(String(e.message || ""))) throw e;
   });
@@ -169,8 +252,6 @@ async function completeSecurityCardVerification(stripe, supabase, userId, paymen
     invoice_settings: { default_payment_method: paymentMethodId },
   });
 
-  const pm = await stripe.paymentMethods.retrieve(paymentMethodId);
-  const card = pm.card || {};
   const verifiedAt = new Date().toISOString();
   const securityCard = {
     verifiedAt,
@@ -180,6 +261,7 @@ async function completeSecurityCardVerification(stripe, supabase, userId, paymen
     last4: card.last4 || null,
     expMonth: card.exp_month || null,
     expYear: card.exp_year || null,
+    fingerprint: fingerprint || null,
   };
 
   const profile = await loadProfile(supabase, userId);
@@ -281,6 +363,8 @@ function publicSecurityCardConfig() {
         ? `$${SECURITY_VERIFY_CENTS / 100}`
         : `$${(SECURITY_VERIFY_CENTS / 100).toFixed(2)}`,
     publishableKey: String(process.env.STRIPE_PUBLISHABLE_KEY || "").trim(),
+    supportEmail: supportContactLabel(),
+    oneCardPerAccount: true,
   };
 }
 
@@ -295,6 +379,8 @@ function publicSecurityCardStatus(profile) {
 module.exports = {
   SECURITY_VERIFY_CENTS,
   MAX_ENFORCEMENT_CENTS,
+  CARD_DUPLICATE_CODE,
+  cardAlreadyRegisteredMessage,
   normalizeSecurityCard,
   securityCardFromProfile,
   startSecurityCardVerification,

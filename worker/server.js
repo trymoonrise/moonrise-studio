@@ -2336,7 +2336,11 @@ app.post("/security-card/complete", requireUser, checkoutLimiter, async (req, re
     });
   } catch (e) {
     console.error(e);
-    respondApiError(res, e, "Could not connect security card");
+    const status = Number(e.status) || 500;
+    res.status(status).json({
+      error: e.message || "Could not connect security card",
+      code: e.code || undefined,
+    });
   }
 });
 
@@ -3614,8 +3618,27 @@ async function handleUnpublishProject(req, res) {
     .maybeSingle();
   if (error) throw error;
   if (!project) return res.status(404).json({ error: "Project not found" });
-  if (!String(project.vercel_url || "").trim()) {
+
+  const hasUrl = !!String(project.vercel_url || "").trim();
+  const isPublished = String(project.status || "").toLowerCase() === "published";
+
+  if (!hasUrl && !isPublished) {
     return res.status(400).json({ error: "This site is not published" });
+  }
+
+  if (!hasUrl && isPublished) {
+    const nextStatus = project.watermark_enabled ? "draft" : "paid";
+    const { error: updateError } = await supabase
+      .from("projects")
+      .update({
+        status: nextStatus,
+        vercel_url: null,
+        vercel_deployment_id: null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", project.id);
+    if (updateError) throw updateError;
+    return res.json({ ok: true, status: nextStatus, reset: true });
   }
 
   const result = await unpublishProjectFromVercel(supabase, project);

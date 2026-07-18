@@ -131,6 +131,7 @@
       last4: String(raw.last4 || "").trim(),
       expMonth: Number(raw.expMonth || raw.exp_month) || null,
       expYear: Number(raw.expYear || raw.exp_year) || null,
+      fingerprint: String(raw.fingerprint || "").trim() || undefined,
     };
   }
 

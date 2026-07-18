@@ -3,7 +3,7 @@
   --ms-lf-slide-x: 0px;
   --ms-lf-slide-fill: 52px;
   --ms-lf-slide-pad: 4px;
-  --ms-lf-slide-radius: 999px;
+  --ms-lf-slide-radius: 12px;
 }
 
 .ms-lf-slide-track {
@@ -49,6 +49,6 @@
   margin: 0 !important;
   margin-inline: 0 !important;
   flex: none !important;
-  border-radius: 999px !important;
+  border-radius: 12px !important;
   transform: translate3d(var(--ms-lf-slide-x), -50%, 0) !important;
 }

@@ -86,7 +86,18 @@
   }
 
   function isLiveProject(p) {
+    if (window.StudioProjects?.isLiveProject) return window.StudioProjects.isLiveProject(p);
     return String(p?.status || "").toLowerCase() === "published";
+  }
+
+  function isPaidProject(p) {
+    if (window.StudioProjects?.isClientPaidProject) return window.StudioProjects.isClientPaidProject(p);
+    return p?.watermark_enabled === false;
+  }
+
+  function canDeleteProject(p) {
+    if (window.StudioProjects?.canDeleteProject) return window.StudioProjects.canDeleteProject(p);
+    return !isPaidProject(p);
   }
 
   function statusLabel(p) {
@@ -109,12 +120,6 @@
   function isSale(p) {
     if (window.StudioIncome?.isPaidSale) return window.StudioIncome.isPaidSale(p);
     return p.watermark_enabled === false;
-  }
-
-  function isPaidProject(p) {
-    if (!p) return false;
-    if (p.watermark_enabled === false) return true;
-    return String(p.status || "").toLowerCase() === "paid";
   }
 
   function prefersReducedMotion() {
@@ -713,7 +718,7 @@
   function projectPreview(p) {
     const name = p.business_name || "Untitled";
     const hasHtml = !!(p.html && String(p.html).trim());
-    const paid = isPaidProject(p);
+    const paid = !canDeleteProject(p);
     const live = isLiveProject(p);
     const liveBadge = live
       ? '<span class="ms-dash-preview-live" aria-label="Live site">Live</span>'
@@ -827,7 +832,7 @@
     const message = document.getElementById("dash-project-delete-message");
     const error = document.getElementById("dash-project-delete-error");
     if (!dialog || !project) return;
-    if (isPaidProject(project)) {
+    if (!canDeleteProject(project)) {
       window.StudioToast?.error?.(
         "This website was paid for — it can’t be deleted."
       );
@@ -839,10 +844,14 @@
       error.textContent = "";
     }
     if (message) {
+      const liveNote = isLiveProject(project)
+        ? " It will be taken offline first."
+        : "";
       message.textContent =
         'Delete "' +
         (project.business_name || "Untitled") +
-        '"? This cannot be undone.';
+        '"? This cannot be undone.' +
+        liveNote;
     }
     dialog.showModal();
   }
@@ -858,7 +867,7 @@
     const submit = document.getElementById("dash-project-delete-submit");
     if (!deleteProjectId) return;
     const project = allProjects.find((p) => p.id === deleteProjectId);
-    if (project && isPaidProject(project)) {
+    if (project && !canDeleteProject(project)) {
       if (error) {
         error.hidden = false;
         error.textContent = "This website was paid for — it can’t be deleted.";
@@ -873,6 +882,9 @@
     try {
       const user = await window.StudioAuth.getUser();
       if (!user) throw new Error("Sign in required");
+      if (project && isLiveProject(project) && window.StudioProjects?.unpublishProject) {
+        await window.StudioProjects.unpublishProject(project.id);
+      }
       const client = window.SiteSupabase.getClient();
       const { data, error: dbError } = await window.StudioAuth.withTimeout(
         client
@@ -886,7 +898,10 @@
       );
       if (dbError) throw dbError;
       if (!data?.length) {
-        throw new Error("This website was paid for — it can’t be deleted.");
+        if (project && !canDeleteProject(project)) {
+          throw new Error("This website was paid for — it can’t be deleted.");
+        }
+        throw new Error("Could not delete project. Refresh and try again.");
       }
       allProjects = allProjects.filter((p) => p.id !== deleteProjectId);
       setStats(allProjects.filter(isSale));

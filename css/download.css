@@ -1,0 +1,117 @@
+/* Download app — public landing page */
+
+body.ms-download-page {
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(ellipse 120% 80% at 50% -20%, rgba(37, 99, 235, 0.08), transparent 58%),
+    #f3f5f8;
+}
+
+.ms-download-main {
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: 1.25rem 1.15rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.ms-download-back {
+  align-self: flex-start;
+  max-width: 28rem;
+  width: 100%;
+  margin: 0 auto 0.85rem;
+  font-size: 0.88rem;
+  font-weight: 650;
+  color: #64748b;
+  text-decoration: none;
+}
+
+.ms-download-back:hover {
+  color: #2563eb;
+}
+
+.ms-download-card {
+  width: min(100%, 28rem);
+  padding: 1.35rem 1.25rem 1.4rem;
+  border-radius: 20px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+}
+
+.ms-download-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 1.15rem;
+}
+
+.ms-download-brand img {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  object-fit: cover;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+.ms-download-brand strong {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+
+.ms-download-brand p {
+  margin: 0.15rem 0 0;
+  font-size: 0.86rem;
+}
+
+.ms-download-card h1 {
+  margin: 0 0 0.45rem;
+  font-size: clamp(1.55rem, 5vw, 1.85rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #0f172a;
+}
+
+.ms-download-lead {
+  margin: 0 0 1.15rem;
+  font-size: 0.94rem;
+  line-height: 1.55;
+  color: #64748b;
+}
+
+.ms-download-install-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.ms-download-done-note {
+  margin: 0.35rem 0 0;
+  font-size: 0.88rem;
+}
+
+.ms-download-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+  margin-top: 1.15rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eef2f7;
+}
+
+.ms-download-actions .ms-btn {
+  justify-content: center;
+  text-align: center;
+}
+
+@media (max-width: 420px) {
+  .ms-download-actions {
+    grid-template-columns: 1fr;
+  }
+}

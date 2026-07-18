@@ -48,7 +48,7 @@ const TOPUP_MAX_DOLLARS = Math.max(
   Number(process.env.TOPUP_MAX_DOLLARS || 1000)
 );
 
-const DONATE_MIN_DOLLARS = Math.max(5, Number(process.env.DONATE_MIN_DOLLARS || 5));
+const DONATE_MIN_DOLLARS = Math.max(1, Number(process.env.DONATE_MIN_DOLLARS || 1));
 const DONATE_MAX_DOLLARS = Math.max(
   DONATE_MIN_DOLLARS,
   Number(process.env.DONATE_MAX_DOLLARS || 1000)

@@ -9,12 +9,13 @@
     "https://moonrise-studio.vercel.app/doc/MoonriseLogo.png";
   const embed =
     String(cfg.embedImageUrl || "").trim() ||
-    "https://moonrise-studio.vercel.app/doc/embed.png";
+    "https://github.com/trymoonrise/moonrise-studio/blob/main/doc/embed.png?raw=true";
   const siteName = String(cfg.companyName || "Moonrise Studio").trim();
   const pageTitle = String(document.title || siteName).trim();
   const pageDesc =
     document.querySelector('meta[name="description"]')?.getAttribute("content")?.trim() ||
-    "Build websites. Get paid. Moonrise Studio helps business owners and creators launch premium sites.";
+    String(cfg.siteDescription || "").trim() ||
+    "Moonrise is an AI-powered platform that lets you create professional websites in minutes for local business owners, creators, and more! It's designed to make website creation fast, simple, effortless, and get paid.";
   const canonical = String(window.location.href || "").split("#")[0];
 
   function upsertLink(rel, href, extra) {
@@ -51,6 +52,7 @@
   upsertMeta("property", "og:type", "website");
   upsertMeta("property", "og:site_name", siteName);
   upsertMeta("property", "og:title", pageTitle);
+  upsertMeta("name", "description", pageDesc);
   upsertMeta("property", "og:description", pageDesc);
   upsertMeta("property", "og:image", embed);
   upsertMeta("property", "og:url", canonical);
