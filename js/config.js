@@ -7,14 +7,14 @@ window.SITE_CONFIG = {
   /** Default social / link preview description (Discord, iMessage, Twitter, etc.). */
   siteDescription:
     "Moonrise is an AI-powered platform that lets you create professional websites in minutes for local business owners, creators, and more! It's designed to make website creation fast, simple, effortless, and get paid.",
-  /** Absolute CDN base for brand assets (watermarks / OG tags on other origins). */
-  assetCdnUrl: "https://moonrise-studio.vercel.app/doc/",
-  brandLogoUrl: "https://moonrise-studio.vercel.app/doc/MoonriseLogo.png",
+  /** Brand assets — relative paths work on Vercel and after custom-domain DNS is pointed here. */
+  assetCdnUrl: "doc/",
+  brandLogoUrl: "doc/MoonriseLogo.png",
   /** Social / link preview image (Discord, iMessage, Twitter, etc.). */
   embedImageUrl:
     "https://github.com/trymoonrise/moonrise-studio/blob/main/doc/embed.png?raw=true",
   /** Default profile picture when a user has not uploaded one. */
-  defaultAvatarUrl: "https://moonrise-studio.vercel.app/doc/pfp.png",
+  defaultAvatarUrl: "doc/pfp.png",
   docBaseUrl: "doc/",
 
   /** Moonrise Studio Supabase project (public anon / publishable key only). */

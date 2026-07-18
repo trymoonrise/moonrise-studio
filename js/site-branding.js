@@ -6,7 +6,7 @@
   const cfg = window.SITE_CONFIG || {};
   const logo =
     String(cfg.brandLogoUrl || "").trim() ||
-    "https://moonrise-studio.vercel.app/doc/MoonriseLogo.png";
+    "doc/MoonriseLogo.png";
   const embed =
     String(cfg.embedImageUrl || "").trim() ||
     "https://github.com/trymoonrise/moonrise-studio/blob/main/doc/embed.png?raw=true";
