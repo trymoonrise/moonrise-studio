@@ -6,7 +6,7 @@
     { id: "dashboard", href: "dashboard.html", label: "Dashboard", icon: "grid" },
     { id: "leads", href: "leads.html", label: "Business Finder", icon: "search" },
     { id: "builder", href: "builder.html", label: "Builder", icon: "hammer" },
-    { id: "clients", href: "clients.html", label: "My clients", icon: "users" },
+    { id: "clients", href: "clients.html", label: "My Clients", icon: "users" },
     { id: "donate", href: "donate.html", label: "Donate", icon: "heart" },
     { id: "store", href: "store.html", label: "Store", icon: "bag" },
   ];
@@ -559,7 +559,12 @@
       if (!window.matchMedia("(max-width: 900px)").matches) return;
       const link = event.target.closest?.("a[href]");
       if (link?.dataset.externalRedirect === "true") {
+        event.preventDefault();
         setNavOpen(false);
+        openRedirectConfirm(
+          link.getAttribute("data-external-url") || telegramUrl(),
+          link.getAttribute("data-external-label") || "Telegram"
+        );
         return;
       }
       if (
@@ -1273,6 +1278,9 @@
     setChannelGenerating(null, false);
     document.body.classList.add("ms-ready");
     document.dispatchEvent(new Event("ms:shell-ready"));
+    window.requestAnimationFrame(function () {
+      window.StudioMotion?.playPageMotion?.();
+    });
     clearLegacyProfileCosmetics();
 
     void hydrateUser().catch(() => ({ handle: "", avatarUrl: "" }));

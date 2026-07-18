@@ -1060,6 +1060,8 @@ body > div, main, .page, .wrapper, .site, .layout, .site-wrap, .app, #app, #root
   .about-badge{right:.75rem!important;bottom:.75rem!important}
   .cred-strip,.hero-btns,.cta-btns{gap:.75rem}
 }
+#mr-wm-chip-root,.mr-wm,[data-moonrise-watermark]{z-index:2147483000!important;pointer-events:none}
+.mr-wm-chip,#mr-wm-open{pointer-events:auto!important}
 `.trim();
 
   const styleTag = `<style data-ms-mobile-fit="1">${css}</style>`;
@@ -2535,83 +2537,35 @@ app.post("/donate-checkout", requireUser, checkoutLimiter, async (req, res) => {
     const supabase = db();
     const balance = await getBalance(supabase, req.user.id);
     const donorMessage = sanitizeDonorMessage(req.body?.message);
-    const mode = String(req.body?.mode || "monthly").toLowerCase();
+    const mode = String(req.body?.mode || "once").toLowerCase();
     const isOneTime =
       mode === "once" || mode === "onetime" || mode === "one_time" || mode === "one-time";
 
-    if (isOneTime) {
-      const quote = quoteDonation(req.body?.amountDollars ?? DONATE_DEFAULT_DOLLARS);
-      if (!quote) {
-        return res.status(400).json({
-          error: `Enter an amount between $${DONATE_MIN_DOLLARS} and $${DONATE_MAX_DOLLARS}`,
-        });
-      }
-
-      const session = await stripe.checkout.sessions.create({
-        mode: "payment",
-        line_items: donateOneTimeLineItem(quote),
-        success_url: `${PUBLIC_APP_URL}/donate.html?paid=1&mode=once&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${PUBLIC_APP_URL}/donate.html?canceled=1`,
-        customer: balance.stripeCustomerId || undefined,
-        customer_email: balance.stripeCustomerId ? undefined : req.user.email || undefined,
-        client_reference_id: req.user.id,
-        metadata: {
-          type: "mvp_donation_onetime",
-          userId: req.user.id,
-          priceCents: String(quote.priceCents),
-          ...(donorMessage ? { donorMessage } : {}),
-        },
+    if (!isOneTime) {
+      return res.status(400).json({
+        error: "Only one-time donations are supported. Choose an amount and try again.",
       });
-
-      await supabase.from("payments").upsert(
-        {
-          user_id: req.user.id,
-          project_id: null,
-          stripe_session_id: session.id,
-          amount_cents: quote.priceCents,
-          currency: "usd",
-          status: "pending",
-          kind: "mvp_donation",
-          donor_message: donorMessage,
-        },
-        { onConflict: "stripe_session_id" }
-      );
-
-      return res.json({ url: session.url, sessionId: session.id, mode: "once", quote });
     }
 
-    if (hasActiveMvpDonationSubscription(balance)) {
-      return res.json({ alreadyActive: true, url: `${PUBLIC_APP_URL}/donate.html` });
-    }
-
-    const monthlyDefaultDollars = donateAmountCents() / 100;
-    const monthlyQuote = quoteDonation(monthlyDefaultDollars);
-    if (!monthlyQuote) {
+    const quote = quoteDonation(req.body?.amountDollars ?? DONATE_DEFAULT_DOLLARS);
+    if (!quote) {
       return res.status(400).json({
         error: `Enter an amount between $${DONATE_MIN_DOLLARS} and $${DONATE_MAX_DOLLARS}`,
       });
     }
 
     const session = await stripe.checkout.sessions.create({
-      mode: "subscription",
-      line_items: donateSubscriptionLineItem(monthlyQuote),
-      success_url: `${PUBLIC_APP_URL}/donate.html?paid=1&session_id={CHECKOUT_SESSION_ID}`,
+      mode: "payment",
+      line_items: donateOneTimeLineItem(quote),
+      success_url: `${PUBLIC_APP_URL}/donate.html?paid=1&mode=once&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${PUBLIC_APP_URL}/donate.html?canceled=1`,
       customer: balance.stripeCustomerId || undefined,
       customer_email: balance.stripeCustomerId ? undefined : req.user.email || undefined,
       client_reference_id: req.user.id,
-      subscription_data: {
-        metadata: {
-          type: "mvp_donation",
-          userId: req.user.id,
-          priceCents: String(monthlyQuote.priceCents),
-          ...(donorMessage ? { donorMessage } : {}),
-        },
-      },
       metadata: {
-        type: "mvp_donation",
+        type: "mvp_donation_onetime",
         userId: req.user.id,
-        priceCents: String(monthlyQuote.priceCents),
+        priceCents: String(quote.priceCents),
         ...(donorMessage ? { donorMessage } : {}),
       },
     });
@@ -2621,7 +2575,7 @@ app.post("/donate-checkout", requireUser, checkoutLimiter, async (req, res) => {
         user_id: req.user.id,
         project_id: null,
         stripe_session_id: session.id,
-        amount_cents: monthlyQuote.priceCents,
+        amount_cents: quote.priceCents,
         currency: "usd",
         status: "pending",
         kind: "mvp_donation",
@@ -2630,7 +2584,7 @@ app.post("/donate-checkout", requireUser, checkoutLimiter, async (req, res) => {
       { onConflict: "stripe_session_id" }
     );
 
-    res.json({ url: session.url, sessionId: session.id, mode: "monthly", quote: monthlyQuote });
+    res.json({ url: session.url, sessionId: session.id, mode: "once", quote });
   } catch (e) {
     console.error(e);
     respondApiError(res, e, "Donate checkout failed");
@@ -3094,24 +3048,86 @@ app.post("/edit", requireUser, editLimiter, async (req, res) => {
 });
 
 /**
+ * Unpaid preview sites carry the paywall widget until the business owner pays.
+ */
+function isWatermarkActive(project) {
+  return !!project && project.watermark_enabled !== false;
+}
+
+/** Keep runtime embed scripts out of stored HTML (publish injects them). */
+function stripRuntimeEmbedsFromStoredHtml(html) {
+  return String(html || "")
+    .replace(/<script\b[^>]*src=["'][^"']*\/embed\.js[^"']*["'][^>]*>\s*<\/script>/gi, "")
+    .replace(/<script\b[^>]*src=["'][^"']*\/contact-form\.js[^"']*["'][^>]*>\s*<\/script>/gi, "")
+    .replace(/<!--\s*moonrise:watermark\s*-->/gi, "");
+}
+
+/** Allow the worker embed + Stripe checkout from generated CSP meta tags. */
+function patchHtmlCspForWatermark(html, workerBase) {
+  let out = String(html || "");
+  let origin = "";
+  try {
+    origin = new URL(workerBase).origin;
+  } catch (_) {
+    return out;
+  }
+  if (!origin) return out;
+
+  return out.replace(
+    /<meta[^>]+http-equiv=["']Content-Security-Policy["'][^>]*content=["']([^"']*)["'][^>]*>/gi,
+    (full, policy) => {
+      let next = policy;
+      if (/script-src/i.test(next)) {
+        if (!next.includes(origin)) {
+          next = next.replace(/script-src([^;]*)/i, (m, rest) => `script-src${rest} ${origin}`);
+        }
+      } else {
+        next = `${next}; script-src 'self' 'unsafe-inline' ${origin} https://js.stripe.com`;
+      }
+      if (/connect-src/i.test(next)) {
+        if (!next.includes(origin)) {
+          next = next.replace(
+            /connect-src([^;]*)/i,
+            (m, rest) => `connect-src${rest} ${origin} https://api.stripe.com`
+          );
+        }
+      } else {
+        next = `${next}; connect-src 'self' ${origin} https://api.stripe.com`;
+      }
+      if (/frame-src/i.test(next)) {
+        if (!next.includes("checkout.stripe.com")) {
+          next = next.replace(
+            /frame-src([^;]*)/i,
+            (m, rest) => `${m} https://js.stripe.com https://checkout.stripe.com https://hooks.stripe.com`
+          );
+        }
+      }
+      return full.replace(policy, next);
+    }
+  );
+}
+
+/**
  * Inject the Moonrise watermark widget into the HTML that goes live.
  * The widget is only added while the project is unpaid (watermark_enabled).
  * The clean HTML is always kept in the DB, so removal = redeploy without this.
  */
 function injectWatermarkEmbed(html, project) {
-  const src = String(html || "");
   const workerBase = resolveWorkerPublicUrl();
+  let src = stripRuntimeEmbedsFromStoredHtml(String(html || ""));
+  src = patchHtmlCspForWatermark(src, workerBase);
   const urgency = String(project?.urgency_ends_at || "").trim();
   const urgencyAttr = urgency
-    ? ` data-urgency-ends-at="${String(urgency).replace(/"/g, "")}"`
+    ? ` data-urgency-ends-at="${escapeHtmlAttr(urgency)}"`
     : "";
-  // Avoid defer so the widget can read data-* attributes via currentScript
-  // immediately; also keeps the badge visible as soon as the page paints.
+  const projectId = escapeHtmlAttr(String(project?.id || "").trim());
+  const workerAttr = escapeHtmlAttr(workerBase);
+  // Synchronous load (no defer/async) so embed.js can read data-* via currentScript.
   const tag =
-    `\n<script src="${workerBase}/embed.js" ` +
-    `data-project-id="${project.id}" ` +
-    `data-worker="${workerBase}"${urgencyAttr}></` +
-    `script>\n`;
+    `\n<!-- moonrise:watermark -->\n` +
+    `<script src="${workerAttr}/embed.js" ` +
+    `data-project-id="${projectId}" ` +
+    `data-worker="${workerAttr}"${urgencyAttr}></script>\n`;
   if (/<\/body>/i.test(src)) {
     return src.replace(/<\/body>/i, `${tag}</body>`);
   }
@@ -3163,8 +3179,10 @@ function injectContactFormHandler(html, project) {
 }
 
 function preparePublishedHtml(project) {
-  let html = ensureMobileFriendlyHtml(project.html || "<!doctype html><title>Site</title>");
-    if (project.watermark_enabled) {
+  let html = ensureMobileFriendlyHtml(
+    stripRuntimeEmbedsFromStoredHtml(project.html || "<!doctype html><title>Site</title>")
+  );
+  if (isWatermarkActive(project)) {
     html = injectWatermarkEmbed(html, project);
   }
   html = injectContactFormHandler(html, project);
@@ -3488,6 +3506,9 @@ function publishContentHash(html) {
  */
 async function deployProjectToVercel(supabase, project) {
   const html = preparePublishedHtml(project);
+  if (isWatermarkActive(project) && !html.includes("embed.js")) {
+    console.warn("Watermark embed missing from published HTML for project", project.id);
+  }
 
     const token = process.env.VERCEL_TOKEN;
     if (!token) {
@@ -3511,7 +3532,7 @@ async function deployProjectToVercel(supabase, project) {
         business_context: ctx,
       })
       .eq("id", project.id);
-    return { url: fakeUrl, fallback: true, watermarked: !!project.watermark_enabled };
+    return { url: fakeUrl, fallback: true, watermarked: isWatermarkActive(project) };
   }
 
   const headers = vercelApiHeaders(token);
@@ -3566,7 +3587,7 @@ async function deployProjectToVercel(supabase, project) {
     })
     .eq("id", project.id);
 
-  return { url, deployment: deployData, watermarked: !!project.watermark_enabled, vercelSlug: slug };
+  return { url, deployment: deployData, watermarked: isWatermarkActive(project), vercelSlug: slug };
 }
 
 async function unpublishProjectFromVercel(supabase, project) {
@@ -3664,9 +3685,23 @@ app.post("/publish", requireUser, publishLimiter, async (req, res) => {
     if (error) throw error;
     if (!project) return res.status(404).json({ error: "Project not found" });
 
+    // Ensure unpaid projects stay watermarked through publish (DB default is true).
+    let publishProject = project;
+    if (isWatermarkActive(project) && project.watermark_enabled !== true) {
+      const { data: fixed, error: fixErr } = await supabase
+        .from("projects")
+        .update({ watermark_enabled: true })
+        .eq("id", projectId)
+        .eq("user_id", req.user.id)
+        .select("*")
+        .maybeSingle();
+      if (!fixErr && fixed) publishProject = fixed;
+      else publishProject = { ...project, watermark_enabled: true };
+    }
+
     // Publishing is allowed while watermarked: the live site carries the
     // paywall widget so the business owner can pay to remove it.
-    const result = await deployProjectToVercel(supabase, project);
+    const result = await deployProjectToVercel(supabase, publishProject);
     res.json(result);
   } catch (e) {
     console.error(e);

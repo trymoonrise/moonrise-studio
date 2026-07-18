@@ -1357,7 +1357,10 @@
         "Leads are set to load from the database but Supabase keys are missing in js/config.js"
       );
     }
-    return loadFromJson();
+    return {
+      meta: { source: "scrape", total: 0, valid: 0, withPhone: 0 },
+      leads: [],
+    };
   }
 
   function scheduleBackgroundRefresh(options) {
@@ -1383,6 +1386,14 @@
     const options = opts && typeof opts === "object" ? opts : {};
     const onLeadsPage = !!options.watch || isLeadsExperienceActive();
     watchActive = onLeadsPage;
+
+    if (!isDatabaseRequired()) {
+      clearCache();
+      return {
+        meta: { source: "scrape", total: 0, valid: 0, withPhone: 0 },
+        leads: [],
+      };
+    }
 
     if (onLeadsPage) {
       bindSyncHooks();

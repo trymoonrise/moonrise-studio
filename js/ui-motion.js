@@ -229,7 +229,6 @@
   ]);
   const PAGE_MOTION_SELECTORS = [
     "#page-body > .ms-page-head",
-    "#page-body > .ms-donate-channel",
     "#page-body > .ms-lf-search",
     "#page-body > .ms-lf-popular",
     "#page-body > .ms-help-toc",
@@ -308,6 +307,12 @@
         document.body.classList.add("ms-page-motion-ready");
       });
     });
+
+    global.setTimeout(function () {
+      if (!document.body.classList.contains("ms-page-motion-ready")) {
+        document.body.classList.add("ms-page-motion-ready");
+      }
+    }, 1500);
   }
 
   function schedulePageMotion() {
@@ -317,7 +322,16 @@
     const usesShell = document.getElementById("shell") && !PAGE_MOTION_NO_SHELL.has(page);
 
     if (usesShell) {
+      if (document.getElementById("ms-sidebar")) {
+        playPageMotion();
+        return;
+      }
       document.addEventListener("ms:shell-ready", playPageMotion, { once: true });
+      global.setTimeout(function () {
+        if (!document.body.classList.contains("ms-page-motion-ready")) {
+          playPageMotion();
+        }
+      }, 900);
       return;
     }
 

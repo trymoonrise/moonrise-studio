@@ -127,7 +127,7 @@
   function scrapeErrorMessage(err) {
     const msg = String(err?.message || err || "").trim();
     if (/failed to fetch|networkerror|network error|load failed/i.test(msg)) {
-      return "Scrape server unreachable — showing nearby leads from the database.";
+      return "Live search server unreachable — check your connection and try again.";
     }
     return msg || "Nearby scrape unavailable";
   }
@@ -299,6 +299,21 @@
     }
   }
 
+  function isDbConnected() {
+    return window.LeadsLoader?.isDatabaseRequired?.() === true;
+  }
+
+  function showSearchPrompt() {
+    clearLoadingCards();
+    setStatus("");
+    setError("");
+    setListCount(0);
+    if (!resultsEl) return;
+    resultsEl.hidden = false;
+    resultsEl.innerHTML =
+      '<div class="ms-dash-empty">Enter a business type and location, then tap <strong>Find businesses</strong> for live Maps results.</div>';
+  }
+
   function restoreNormalList() {
     setError("");
     setStatus("");
@@ -308,7 +323,7 @@
     setFindBusy(false);
 
     let pool = allLeads;
-    if (!pool.length) {
+    if (!pool.length && isDbConnected()) {
       const cached = window.LeadsLoader?.peekCache?.();
       if (cached?.leads?.length) {
         pool = rankLeadList(cached.leads.slice());
@@ -319,6 +334,11 @@
 
     if (pool.length) {
       renderLeads(pool, "All leads");
+      return;
+    }
+
+    if (!isDbConnected()) {
+      showSearchPrompt();
       return;
     }
 
@@ -1892,6 +1912,13 @@
   }
 
   async function preloadAllLeads() {
+    if (!isDbConnected()) {
+      window.LeadsLoader?.clearCache?.();
+      allLeads = [];
+      leadsReady = false;
+      showSearchPrompt();
+      return;
+    }
     if (leadsLoading) return;
     const loader = window.LeadsLoader;
     if (!loader?.load) {
@@ -2006,40 +2033,8 @@
         });
       }
 
-      const cityContext = await reverseGeocodeSearchContext(userCoords);
-
-      if (!leads.length && window.LeadsLoader?.searchRemote) {
-        try {
-          const remoteQuery = cityContext?.label
-            ? searchType
-              ? searchType + " in " + cityContext.label
-              : cityContext.label
-            : searchType || scrapeType;
-          const result = await window.LeadsLoader.searchRemote(remoteQuery, {
-            limit: 400,
-            websiteFilter: websiteFilter,
-          });
-          if (result?.ok && Array.isArray(result.leads) && result.leads.length) {
-            const filtered = applyWebsiteFilter(result.leads, websiteFilter);
-            const byDistance = applyNearbyFilterAndSort(filtered, userCoords, NEARBY_RADIUS_MILES, {
-              includeUnknownDistance: false,
-            });
-            const byCity = cityContext ? leadsMatchingSearchCity(filtered, cityContext) : [];
-            leads = mergeNearbyResults(byDistance, byCity);
-            leads = applyNearbyFilterAndSort(leads, userCoords, NEARBY_RADIUS_MILES, {
-              trustScrapeRadius: byDistance.length === 0 && byCity.length > 0,
-              includeUnknownDistance: byDistance.length === 0,
-            });
-          } else if (result?.error) {
-            remoteError = remoteError || String(result.error);
-          }
-        } catch (e) {
-          remoteError = remoteError || scrapeErrorMessage(e);
-        }
-      }
-
       if (!leads.length) {
-        if (remoteError && !/showing nearby leads from the database/i.test(remoteError)) {
+        if (remoteError) {
           setError(remoteError);
         }
       } else {
@@ -2120,29 +2115,6 @@
 
       if (!leads.length && allLeads.length) {
         leads = filterLocalLeads(searchType, location);
-      }
-
-      if (!leads.length && !scrapedFresh && window.LeadsLoader?.searchRemote && (searchType || location.trim())) {
-        try {
-          const remoteQuery = buildQuery(searchType, location) || searchType || location;
-          const result = await window.LeadsLoader.searchRemote(remoteQuery, {
-            limit: 250,
-            websiteFilter: websiteFilter,
-          });
-          if (result?.ok && Array.isArray(result.leads) && result.leads.length) {
-            leads = applyWebsiteFilter(result.leads, websiteFilter);
-          } else if (result && result.ok === false && result.error) {
-            remoteError = remoteError || String(result.error);
-            console.warn("Business Finder search failed:", remoteError);
-          }
-        } catch (e) {
-          remoteError = remoteError || e?.message || String(e);
-          console.warn(e);
-        }
-      }
-
-      if (!leads.length && allLeads.length && !searchType && !location.trim()) {
-        leads = allLeads.slice();
       }
 
       setStatus("");
@@ -2514,7 +2486,7 @@
 
   function bootLeadsSearch() {
     if (booted || document.body?.dataset?.page !== "leads") return;
-    showLoadingCards();
+    if (isDbConnected()) showLoadingCards();
     const run = () => {
       if (booted) return;
       booted = true;
@@ -2564,6 +2536,7 @@
 
   window.addEventListener("leads-cache-refreshed", (e) => {
     if (document.body?.dataset?.page !== "leads") return;
+    if (!isDbConnected()) return;
     if (shouldSkipBulkPaint()) return;
     const payload = e.detail;
     if (!payload?.leads?.length) return;

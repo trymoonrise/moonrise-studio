@@ -255,26 +255,12 @@ function hasCreditPlanSubscription(balance) {
 }
 
 function publicDonateConfig(balance) {
-  const cents = donateMonthlyAmountCents();
-  const monthlyDefaultDollars = cents / 100;
-  const mvpPlus = !!balance?.mvpPlus;
-  const hasActiveSubscription = hasActiveMvpDonationSubscription(balance);
-  const canManageBilling =
-    !!balance?.stripeCustomerId && (hasActiveSubscription || mvpPlus);
   const oneTimeQuote = quoteDonation(DONATE_DEFAULT_DOLLARS);
-  const monthlyQuote = quoteDonation(monthlyDefaultDollars);
   return {
-    mvpPlus,
-    hasActiveSubscription,
-    canManageBilling,
-    monthlyPriceCents: cents,
-    monthlyPriceLabel: donateMonthlyPriceLabel(),
-    monthlyDefaultDollars: monthlyQuote?.dollars || monthlyDefaultDollars,
     oneTimeDefaultDollars: oneTimeQuote?.dollars || DONATE_DEFAULT_DOLLARS,
     oneTimePriceLabel: oneTimeQuote?.priceLabel || `$${DONATE_DEFAULT_DOLLARS}`,
     donateMinDollars: DONATE_MIN_DOLLARS,
     donateMaxDollars: DONATE_MAX_DOLLARS,
-    benefits: DONATE_BENEFITS,
   };
 }
 

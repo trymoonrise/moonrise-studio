@@ -44,7 +44,7 @@ window.SITE_CONFIG = {
   /** Urgency timer length for unpaid previews (hours). */
   watermarkUrgencyHours: 48,
 
-  useSupabaseLeads: true,
+  useSupabaseLeads: false,
 
   /** Profile handles reserved for the official Moonrise account. */
   ownerHandles: ["moonrise"],

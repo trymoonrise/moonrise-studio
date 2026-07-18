@@ -12,9 +12,9 @@
  *  1) ATMOSPHERE + PICKS  — MiniMax decides the vibe + collects preset IDs (JSON)
  *  2) ASSEMBLE            — adapt only those collected components into one HTML site
  *
- * Presets are the parts bin. Atmosphere is the filter. Speed comes from never
- * dumping the whole gallery into one giant "invent from scratch" call — and, by
- * default, from skipping the extra planning round-trip entirely.
+ * Presets are the parts bin. Atmosphere is the filter. The assembler normalizes
+ * every kit into ONE shared design system (.btn, .card, .container, :root tokens)
+ * so output reads as a single professional site — not a collage of demo blocks.
  */
 
 const {
@@ -56,6 +56,8 @@ Rules:
 - roles should cover a full landing: nav, hero, features (or cards/sections), proof (testimonials/hooks), cta, form, footer. Optional: buttons, backgrounds.
 - Match atmosphere to the trade (plumber ≠ florist ≠ law firm).
 - picks must support a FULL page (not hero-only): always include nav, hero, services/features, proof, form, footer.
+- Cohesion: prefer presets that share a visual language (similar tags: minimal, card, grid, clean, modern). Avoid mixing flashy animation heroes with ultra-minimal footers unless you can unify them.
+- Prefer kit combinations that reuse the same layout primitives (card grids, button styles, section headers) so the assembler can normalize them into one design system.
 - Color palette (critical): invent a cohesive 5-color scheme in the spirit of Coolors (https://coolors.co/) — harmonious, intentional, and distinctive for THIS trade. Not a generic blue SaaS kit.
   - bg / surface / ink / muted / accent must work together as one palette (shared undertone or clear complementary accent).
   - ink on bg and ink on surface must stay highly readable (strong contrast). Accent must pop on both light and dark surfaces used in the plan.
@@ -70,12 +72,44 @@ You receive business facts, an atmosphere/palette plan, a trade-specific page bo
 
 Return ONLY one complete HTML document (doctype + html). No markdown fences. No preamble. No commentary.
 
+## Assembly method (read first)
+1) Define ONE unified design system (:root tokens + shared utility classes) in a single <style> block.
+2) Adapt each kit item into its mapped bone-structure section using those shared primitives — same buttons, cards, containers, and type scale on every section.
+3) The finished site must read as ONE premium local-business product, not a collage of unrelated demo blocks.
+
+## Unified component reuse (critical)
+1) Before any section markup, lock a shared token set in :root:
+   --bg, --surface, --ink, --muted, --accent, --accent-soft, --border, --radius-sm, --radius-md, --radius-lg,
+   --shadow-sm, --shadow-md, --section-y, --container-max, --font-display, --font-body.
+2) Define shared utility classes ONCE and reuse everywhere (nav, hero, services, proof, CTA, form, footer):
+   - .container — max-width + horizontal padding (use --container-max)
+   - .section — vertical rhythm (use --section-y)
+   - .section-head, .eyebrow, .section-title, .section-lead — consistent section headers
+   - .btn, .btn--primary, .btn--secondary — ONE button system for all CTAs (nav, hero, bands, form submit)
+   - .card — shared surface, radius, shadow, padding for services, testimonials, pricing, team
+   - .grid, .grid--2, .grid--3 — responsive auto-fit/minmax card grids
+3) When adapting kit presets: keep each preset's layout skeleton (grid, media placement, content hierarchy) but normalize colors to :root vars and map preset buttons/cards to the shared classes above.
+4) Never ship 3+ different button styles or mismatched card treatments on one page.
+5) Load ONE Google Fonts pairing in <head> and use it consistently — no per-section font swaps.
+6) Merge ALL CSS into ONE compact <style> block. Deduplicate repeated rules from kit snippets.
+
+## Professional modern quality bar
+- Target Stripe / Linear / high-end agency polish: confident whitespace, crisp hierarchy, restrained motion.
+- Hero: business name or strong outcome headline (4–10 words), one supportive line, primary + secondary CTA.
+- Nav: clean top bar, business name as wordmark, 3–5 anchor links, one prominent CTA button (reuse .btn--primary).
+- Services/features: 3–6 equal .card tiles in a responsive grid with icons or pack images — not a wall of text.
+- Proof: concise trust strip or 2–3 testimonial cards — no fake star counts, review scores, or invented awards.
+- CTA band: short headline + one button, visually distinct but same design system.
+- Contact form: clean stacked fields inside a .card or .container panel — not a bare unstyled form.
+- Footer: dark or muted surface, business name, phone, address, hours when provided.
+- Avoid: default AI purple/indigo SaaS, neon gradients, clip-art icons, busy backgrounds, mismatched border radii, lorem-style filler, per-section color themes.
+
 ## Website Presets kit rule (critical)
 1) The kit is NOT optional inspiration. For every kit item, ADAPT that preset's real HTML structure and CSS patterns into the matching bone-structure section.
-2) Keep the preset's layout skeleton: wrappers, grids, media placement, button styles, spacing rhythm. Recolor to the palette. Rewrite ALL demo/placeholder copy with THIS business's facts.
-3) Do NOT invent a generic hero or section layout when a kit preset already covers that role. Start from the kit markup, then customize.
+2) Keep the preset's layout skeleton: wrappers, grids, media placement, spacing rhythm. Recolor to the palette. Rewrite ALL demo/placeholder copy with THIS business's facts.
+3) Do NOT invent a generic hero or section layout when a kit preset already covers that role. Start from the kit markup, then customize through the shared design system.
 4) Merge kit CSS into ONE <style> block. Strip demo chrome, toggles, and gallery controls.
-5) Sections without a kit preset: still build them in the same design system (palette, fonts, spacing, stock media).
+5) Sections without a kit preset: still build them using the shared design system (palette, fonts, spacing, stock media).
 
 ## Full-page requirement (critical)
 1) Build EVERY section listed in the bone structure, in order, as real on-page sections.
@@ -83,16 +117,17 @@ Return ONLY one complete HTML document (doctype + html). No markdown fences. No 
 3) Different trades get different structures. Follow the bone structure you are given; do not collapse everything into one hero block.
 
 ## Design system
-1) Lock :root CSS variables from the palette (--bg, --surface, --ink, --muted, --accent, plus soft accents if useful).
+1) Lock :root CSS variables from the palette (--bg, --surface, --ink, --muted, --accent, plus --accent-soft, --border, radius, shadow, spacing tokens).
 2) Color quality bar (Coolors-level): treat the provided palette like a curated Coolors scheme (https://coolors.co/). Apply it consistently across the whole page — backgrounds, cards, buttons, links, borders, focus rings, and hover states.
    - One cohesive family: surfaces related to bg; muted derived from ink; accent used sparingly for CTAs, highlights, and key UI.
    - Readable contrast for text and buttons. Never place low-contrast muted text on muted backgrounds.
    - Buttons: solid accent (or ink) with clear hover; outline secondary that still reads on phone.
    - Avoid default “AI purple / indigo on white” and flat #3b82f6-only looks unless the trade truly fits.
    - Optional tasteful gradients or soft tints must stay inside the same palette — no random rainbow.
-3) Map each bone-structure section to a kit preset by role when available.
-4) Adapt presets: rewrite demo copy with business facts, recolor every hard-coded demo color to the palette variables, strip demo chrome/toggles.
-5) Prefer short selectors. No CSS comments. No unused rules.
+3) Typography: fluid scale with clamp() — eyebrow (small caps or label), h1 hero, h2 section titles, body, muted captions. One display + one body family only.
+4) Map each bone-structure section to a kit preset by role when available; normalize all adapted presets through the shared utility classes.
+5) Adapt presets: rewrite demo copy with business facts, recolor every hard-coded demo color to palette variables, strip demo chrome/toggles.
+6) Prefer short selectors. No CSS comments. No unused rules.
 
 ## Media (mandatory aesthetics)
 - Use ONLY URLs from the stock media pack. Never invent URLs. Never leave ../stock/ relative paths.
@@ -202,6 +237,7 @@ Return ONLY the full updated HTML document (no markdown fences, no commentary).
 
 Rules:
 - Apply the user's request carefully. Keep the site coherent and premium.
+- Preserve the unified design system: shared .btn/.card/.container classes, :root palette vars, and one font pairing unless the user asks to redesign.
 - Preserve real contact details unless the user asks to change them.
 - Keep the required contact form (Name, Phone, How can we help you?) unless explicitly told to change it.
 - Prefer meaningful redesigns when asked — do not make token-only tweaks if the user wants a real change.
@@ -264,20 +300,22 @@ function buildPlanUserPrompt(ctx, catalog) {
 function formatPresetPack(presetPack, media) {
   const presets = Array.isArray(presetPack) ? presetPack : [];
   if (!presets.length) {
-    return "(No kit components loaded. Build every bone-structure section using the palette and stock media pack.)";
+    return "(No kit components loaded. Build every bone-structure section using the shared design system blueprint and stock media pack.)";
   }
   return presets
     .map((p, i) => {
       const role = p.role || p.category || "component";
+      const tags = Array.isArray(p.tags) && p.tags.length ? p.tags.join(", ") : "";
       const html = media
         ? rewriteStockPathsInHtml(String(p.html || "").trim(), media)
         : String(p.html || "").trim();
       return [
         `### Kit ${i + 1} | role: ${role} | ${p.title || p.id || "untitled"}`,
-        `id: ${p.id || ""}`,
+        `id: ${p.id || ""}${tags ? ` | tags: ${tags}` : ""}`,
         `REQUIRED: Adapt this preset into the "${role}" bone-structure section.`,
-        "Keep its HTML structure and CSS patterns. Rewrite every placeholder with the business facts above. Recolor to the palette.",
-        "Do not replace this with a generic invented layout.",
+        "Keep its HTML grid/layout skeleton and media placement. Rewrite placeholder copy with business facts.",
+        "Recolor hard-coded demo colors → :root palette vars. Map buttons → .btn classes. Map tiles → .card.",
+        "Do not replace with a generic invented layout. Strip demo-only animation if it fights the unified system.",
         "```html",
         html,
         "```",
@@ -295,7 +333,94 @@ function formatPlanForAssembly(plan) {
     `Voice: ${plan.voice || ""}`,
     `Palette: bg=${palette.bg || ""} surface=${palette.surface || ""} ink=${palette.ink || ""} muted=${palette.muted || ""} accent=${palette.accent || ""}`,
     `Type: display=${type.display || ""} body=${type.body || ""}`,
+    suggestGoogleFontsHint(type),
   ].join("\n");
+}
+
+/** Concrete Google Fonts pairing from atmosphere type hints. */
+function suggestGoogleFontsHint(type) {
+  const display = String(type?.display || "").toLowerCase();
+  const body = String(type?.body || "").toLowerCase();
+  const combined = `${display} ${body}`;
+  if (/serif|elegant|refined|characterful|classic/.test(combined)) {
+    return 'Fonts: load `DM Serif Display` (headings) + `DM Sans` (body) from Google Fonts.';
+  }
+  if (/rounded|friendly|playful|warm/.test(combined)) {
+    return 'Fonts: load `Nunito` (headings) + `Inter` (body) from Google Fonts.';
+  }
+  if (/condensed|bold|grotesk|sharp|modern|studio|tech/.test(combined)) {
+    return 'Fonts: load `Plus Jakarta Sans` (headings) + `Inter` (body) from Google Fonts.';
+  }
+  return "Fonts: load `Inter` (400–700) from Google Fonts — weight 700+ for headings.";
+}
+
+/**
+ * Blueprint the assembler should follow before touching kit markup.
+ */
+function formatDesignSystemBlueprint(plan) {
+  const palette = plan?.palette && typeof plan.palette === "object" ? plan.palette : {};
+  const type = plan?.type && typeof plan.type === "object" ? plan.type : {};
+  const bg = palette.bg || "#f8fafc";
+  const surface = palette.surface || "#ffffff";
+  const ink = palette.ink || "#0f172a";
+  const muted = palette.muted || "#64748b";
+  const accent = palette.accent || "#2563eb";
+  return [
+    "## Unified design system blueprint (define ONCE — reuse in every section)",
+    `Palette lock: bg=${bg} surface=${surface} ink=${ink} muted=${muted} accent=${accent}`,
+    suggestGoogleFontsHint(type),
+    "",
+    "Required :root tokens (derive --accent-soft and --border from palette):",
+    "--bg, --surface, --ink, --muted, --accent, --accent-soft, --border,",
+    "--radius-sm (8px), --radius-md (14px), --radius-lg (22px),",
+    "--shadow-sm, --shadow-md, --section-y (clamp(3rem, 6vw, 5.5rem)), --container-max (min(1120px, 92vw)),",
+    "--font-display, --font-body",
+    "",
+    "Required shared classes (same markup patterns on nav, hero, cards, CTA, form, footer):",
+    ".container | .section | .section-head | .eyebrow | .section-title | .section-lead",
+    ".btn | .btn--primary | .btn--secondary | .card | .grid | .grid--2 | .grid--3",
+    "",
+    "Kit adaptation rule: preserve each preset's grid/media hierarchy; remap colors to vars; map buttons → .btn; map tiles → .card.",
+  ].join("\n");
+}
+
+/**
+ * Maps bone-structure sections to kit items so the model assembles in order.
+ */
+function formatAssemblyMap(structure, presetPack) {
+  const sections = structure?.sections || [];
+  const labels = structure?.labels || sections;
+  const kits = Array.isArray(presetPack) ? presetPack : [];
+  if (!sections.length) return "";
+
+  const kitByRole = new Map();
+  for (const kit of kits) {
+    const role = String(kit.role || kit.category || "").trim().toLowerCase();
+    if (role && !kitByRole.has(role)) kitByRole.set(role, kit);
+  }
+
+  const lines = [
+    "## Section → kit assembly map",
+    "Build every section below in order. Adapt the listed kit; if none, build from the shared design system.",
+    "",
+  ];
+
+  sections.forEach((section, i) => {
+    const label = labels[i] || section;
+    const role = String(section).toLowerCase();
+    const kit = kitByRole.get(role);
+    if (kit) {
+      lines.push(
+        `${i + 1}. ${label} (\`${section}\`) → Kit "${kit.title || kit.id}" [id: ${kit.id}, role: ${kit.role || kit.category}]`
+      );
+    } else {
+      lines.push(
+        `${i + 1}. ${label} (\`${section}\`) → no kit — build with shared .section/.card/.btn primitives + stock media`
+      );
+    }
+  });
+
+  return lines.join("\n");
 }
 
 function buildGenerationUserPrompt(ctx, presetPack, plan, media, options = {}) {
@@ -303,6 +428,7 @@ function buildGenerationUserPrompt(ctx, presetPack, plan, media, options = {}) {
   const structureBlock = plan?.structure
     ? formatStructureForPrompt(plan.structure)
     : "(Navigation, Hero, Credibility, Services, About, Testimonials, CTA, Contact form, Footer)";
+  const structure = plan?.structure || null;
   const sectionCount = plan?.structure?.sections?.length || 10;
   const retryNote = options.retryIncomplete
     ? "\nIMPORTANT: Your previous draft was incomplete (hero-only or missing sections). This time include ALL bone-structure sections through the footer."
@@ -324,24 +450,30 @@ function buildGenerationUserPrompt(ctx, presetPack, plan, media, options = {}) {
     "## Atmosphere plan",
     formatPlanForAssembly(plan),
     "",
+    formatDesignSystemBlueprint(plan),
+    "",
     `## Page bone structure (mandatory: all ${sectionCount} sections)`,
     structureBlock,
+    "",
+    structure ? formatAssemblyMap(structure, presetPack) : "",
     "",
     formatStockMediaForPrompt(stock),
     "",
     "## Website Presets component kit",
-    "These kit components are REQUIRED building blocks. Adapt each one into its matching bone-structure section.",
-    "Keep preset structure/CSS. Replace demo copy with business facts. Do not freestyle a different layout when a kit item exists for that role.",
+    "These kit components are REQUIRED building blocks. Adapt each into its mapped section using the shared design system.",
+    "One cohesive page: same buttons, cards, fonts, and spacing everywhere — not a patchwork of demo styles.",
     formatPresetPack(presetPack, stock),
     "",
     "## Task",
     `Assemble one complete single-page site with all ${sectionCount} bone-structure sections.`,
-    "Build from the Website Presets kit above (adapt, do not ignore).",
-    "Hero must include real image or muted looping video from the pack.",
+    "Step 1: Write :root tokens + shared utility classes (.container, .section, .btn, .card, .grid).",
+    "Step 2: Build each section in assembly-map order by adapting its kit (or shared primitives if no kit).",
+    "Step 3: Hero must include real image or muted looping video from the pack.",
     "Include contact form and footer. Do not use em dashes in visible copy.",
     ctx.notes
       ? "Honor the creator generation instructions in Business facts — they override generic layout/style defaults when specific."
       : "",
+    "Quality bar: professional, modern, premium local-business — generous whitespace, crisp hierarchy, consistent components.",
     "Responsive essentials: viewport meta, no horizontal scroll, fluid grids/images, clamp type, mobile nav that fits, columns stack on small screens, touch-friendly CTAs.",
     "Apply the palette consistently (Coolors-level harmony + contrast) via :root CSS variables across the whole page.",
     "If you need more images than unique pack slots, reuse pack URLs — never invent media links.",
@@ -599,6 +731,9 @@ module.exports = {
   buildEditUserPrompt,
   formatPresetPack,
   formatPresetCatalog,
+  formatDesignSystemBlueprint,
+  formatAssemblyMap,
+  suggestGoogleFontsHint,
   trimHtmlForEdit,
   ensurePaletteContrast,
   assessSiteCompleteness,
