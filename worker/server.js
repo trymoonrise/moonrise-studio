@@ -3744,7 +3744,7 @@ app.post("/lead-finder/search", requireUser, leadFinderLimiter, async (req, res)
   if (!upstream) {
     return res.status(503).json({
       ok: false,
-      error: "Nearby business scrape is not configured. Set LEADFINDER_SEARCH_URL on the worker.",
+      error: "Business Finder live search is not configured. Set LEADFINDER_SEARCH_URL on the worker.",
     });
   }
 
@@ -3771,7 +3771,7 @@ app.post("/lead-finder/search", requireUser, leadFinderLimiter, async (req, res)
     console.error("LeadFinder proxy failed:", e?.message || e);
     res.status(502).json({
       ok: false,
-      error: aborted ? "Nearby scrape timed out" : e?.message || "LeadFinder proxy failed",
+      error: aborted ? "Live search timed out" : e?.message || "LeadFinder proxy failed",
     });
   } finally {
     clearTimeout(timer);

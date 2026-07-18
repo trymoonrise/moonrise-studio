@@ -26,6 +26,9 @@ Thumbs.db
 
 # deps / build
 worker/node_modules/
+leadfinder-cloud/node_modules/
+leadfinder-cloud/data/
+leadfinder-cloud/desktop/
 **/node_modules/
 dist/
 .cache/

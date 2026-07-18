@@ -1,0 +1,55 @@
+# LeadFinder Cloud — on-demand Business Finder search + optional hourly cron
+#
+# Deploy: Render Dashboard → New → Blueprint → tryymoonrise/moonrise-studio
+# Set SUPABASE_* if uploads are enabled (SKIP_SUPABASE=1 disables DB writes).
+
+services:
+  - type: web
+    name: leadfinder-search
+    runtime: docker
+    rootDir: leadfinder-cloud
+    dockerfilePath: ./Dockerfile.search
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: HEADLESS
+        value: "1"
+      - key: SKIP_SUPABASE
+        value: "1"
+      - key: MIN_SEARCH_RESULTS
+        value: "50"
+      - key: MAX_SCROLLS
+        value: "220"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+
+  - type: cron
+    name: leadfinder-cloud
+    runtime: docker
+    rootDir: leadfinder-cloud
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    schedule: "0 * * * *"
+    envVars:
+      - key: DISCORD_WEBHOOK_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: HEADLESS
+        value: "1"
+      - key: QUERIES_PER_RUN
+        value: "3"
+      - key: DISCORD_BATCH_SIZE
+        value: "1000"
+      - key: SCRAPE_EVERY_TIME
+        value: "1"
+      - key: MAX_SCROLLS
+        value: "220"
+      - key: LEADFINDER_STATE_BUCKET
+        value: "leadfinder-cloud"
+      - key: LEADFINDER_STATE_OBJECT
+        value: "cloud-state.json"

@@ -1,0 +1,659 @@
+Prefix group:
+- Tutoring
+- Chiropractors
+- House Cleaning
+- Cleaning Services
+- Daycare
+- Junk Removal
+- Tree Service
+- Pet Services
+- Medical
+- Plumbing
+- Computer Repair
+- Fire Station
+- Repair shops
+- Phone repair
+- Dry wall
+- Roofing
+- HVAC
+- Landscaping
+- Lawn Care
+- Pest Control
+- Pool Services
+- Handyman Services
+- Flooring Contractors
+- Painters
+- Fence Companies
+- Gutter Cleaning
+- Pressure Washing
+- Window Cleaning
+- Garage Door Repair
+- Appliance Repair
+- Carpet Cleaning
+- Home Inspectors
+- Concrete Contractors
+- Deck Builders
+- Kitchen Remodeling
+- Bathroom Remodeling
+- Cabinet Installers
+- Moving Companies
+- Locksmiths
+- Auto Repair Shops
+- Mobile Mechanics
+- Auto Detailing
+- Car Washes
+- Towing Companies
+- Windshield Repair
+- Oil Change Centers
+- Transmission Repair
+- Auto Body Shops
+- Wrap & Tint Shops
+- Pet Groomers
+- Dog Trainers
+- Veterinarians
+- Electronics Repair
+- Dentists
+- Orthodontists
+- Optometrists
+- Physical Therapy
+- Urgent Care
+- Med Spas
+- Massage Therapy
+- Hair Salons
+- Nail Salons
+- Barbershop
+- Personal Trainers
+- Gyms
+- Yoga Studios
+- Martial Arts Schools
+- Dance Studios
+- Photographers
+- Videographers
+- Wedding Planners
+- Event Venues
+- Caterers
+- Restaurants
+- Coffee Shops
+- Bakeries
+- Florists
+- Real Estate Agents
+- Mortgage Brokers
+- Insurance Agents
+- Tax Preparers
+- Accountants
+- Bookkeepers
+- Attorneys
+- Notaries
+- Print Shops
+- Sign Shops
+- Marketing Agencies
+- Web Design
+- IT Services
+- Security Systems
+- Solar Installers
+- Electricians
+- Septic Services
+- Water Damage Restoration
+- Mold Remediation
+- Demolition Contractors
+- Excavation Contractors
+- Paving Contractors
+- Masonry Contractors
+- Stucco Contractors
+- Door Installers
+- Window Installers
+- Siding Contractors
+- Insulation Contractors
+- Chimney Sweeps
+- Fireplace Installers
+- Garage Organizers
+- Home Staging
+- Interior Designers
+- Architects
+- Property Management
+- Senior Care
+- Home Health Care
+- Assisted Living
+- Storage Facilities
+- Party Rentals
+- Equipment Rentals
+- Boat Repair
+- RV Repair
+- Motorcycle Repair
+- Bicycle Shops
+
+Suffix group:
+Murrieta
+Wildomar
+Temecula
+Menifee
+Canyon Lake
+Lake Elsinore
+Fallbrook
+Perris
+Hemet
+San Jacinto
+Rancho Santa Margarita
+Moreno Valley
+San Clemente
+Ladera Ranch
+San Juan Capistrano
+Mission Viejo
+Oceanside
+Vista
+Lake Forest
+Carlsbad
+San Marcos
+Laguna Niguel
+Aliso Viejo
+Dana Point
+Laguna Hills
+Laguna Woods
+Beaumont
+Riverside
+Escondido
+Banning
+Calimesa
+Corona
+Laguna Beach
+Norco
+Redlands
+Grand Terrace
+Yucaipa
+Eastvale
+Irvine
+Jurupa Valley
+Loma Linda
+Cabazon
+Colton
+Encinitas
+Tustin
+Fontana
+Newport Beach
+San Bernardino
+Solana Beach
+Villa Park
+Santa Ana
+Highland
+Rialto
+Del Mar
+Costa Mesa
+Poway
+Orange
+Chino
+Chino Hills
+Yorba Linda
+Ontario
+Placentia
+Palm Springs
+Fountain Valley
+Garden Grove
+Mira Mesa
+Fullerton
+Montclair
+Rancho Cucamonga
+Pomona
+Diamond Bar
+Cathedral City
+Brea
+Westminster
+Anaheim
+Huntington Beach
+Upland
+Rancho Mirage
+Lake Arrowhead
+Claremont
+Stanton
+Walnut
+Rowland Heights
+La Habra
+Buena Park
+La Verne
+Santee
+Big Bear Lake
+La Habra Heights
+Cypress
+Lakeside
+La Mirada
+San Dimas
+Indian Wells
+La Palma
+Los Alamitos
+Seal Beach
+Pacific Beach
+La Puente
+Hawaiian Gardens
+Palm Desert
+Cerritos
+Industry
+Artesia
+Hacienda Heights
+Glendora
+Desert Hot Springs
+West Covina
+Covina
+Norwalk
+Azusa
+La Mesa
+El Cajon
+Irwindale
+Whittier
+Lakewood
+Baldwin Park
+Santa Fe Springs
+Bellflower
+Indio
+Signal Hill
+Lemon Grove
+San Diego
+Long Beach
+Pico Rivera
+South El Monte
+Downey
+Paramount
+El Monte
+Duarte
+Bradbury
+Coachella
+Coronado
+Hesperia
+Montebello
+Monrovia
+National City
+Yucca Valley
+Rosemead
+Temple City
+Point Loma
+Arcadia
+Commerce
+Bell
+Lynwood
+Cudahy
+Monterey Park
+Bonita
+South Gate
+Bell Gardens
+San Pedro
+San Gabriel
+Compton
+Carson
+Maywood
+Chula Vista
+East Los Angeles
+Sierra Madre
+Alhambra
+Huntington Park
+San Marino
+Joshua Tree
+Lomita
+Torrance
+Victorville
+Los Angeles
+Vernon
+South Pasadena
+Gardena
+Avalon
+Rolling Hills
+Pasadena
+Apple Valley
+Imperial Beach
+Rancho Palos Verdes
+Rolling Hills Estates
+Highland Park
+Altadena
+Lawndale
+Palos Verdes Estates
+Hawthorne
+Redondo Beach
+Silver Lake
+Inglewood
+Hermosa Beach
+Manhattan Beach
+Adelanto
+La Cañada Flintridge
+Los Feliz
+El Segundo
+Westchester
+Hollywood
+Culver City
+Glendale
+La Crescenta-Montrose
+Burbank
+West Hollywood
+Beverly Hills
+Marina del Rey
+Twentynine Palms
+Venice
+West Los Angeles
+North Hollywood
+Studio City
+Santa Monica
+Sun Valley
+Sherman Oaks
+San Fernando Valley
+Pacific Palisades
+Van Nuys
+Acton
+Pacoima
+Palmdale
+Lake Balboa
+San Fernando
+Topanga
+Tarzana
+Reseda
+Granada Hills
+Winnetka
+Malibu
+Porter Ranch
+Hidden Hills
+Calabasas
+Barstow
+Chatsworth
+Quartz Hill
+Lancaster
+Santa Clarita
+La Quinta
+Agoura Hills
+Westmorland
+Westlake Village
+Valencia
+Calipatria
+Thousand Oaks
+Simi Valley
+Boron
+Castaic
+Brawley
+Imperial
+Moorpark
+El Centro
+Fillmore
+Camarillo
+Calexico
+California City
+Holtville
+Santa Paula
+Port Hueneme
+Oxnard
+Ventura
+Tehachapi
+Ojai
+Carpinteria
+Ridgecrest
+Arvin
+Blythe
+Santa Barbara
+Maricopa
+Bakersfield
+Taft
+Needles
+Goleta
+Shafter
+Santa Ynez
+Solvang
+Buellton
+Wasco
+McFarland
+Delano
+Lompoc
+Porterville
+Santa Maria
+Lindsay
+Guadalupe
+Exeter
+Tulare
+Corcoran
+Arroyo Grande
+Farmersville
+Grover Beach
+Pismo Beach
+Visalia
+Woodlake
+San Luis Obispo
+Avenal
+Hanford
+Atascadero
+Dinuba
+Lemoore
+Morro Bay
+Kingsburg
+Orange Cove
+Paso Robles
+Reedley
+Huron
+Parlier
+Selma
+Coalinga
+Fowler
+Sanger
+Clovis
+San Joaquin
+Fresno
+Kerman
+Bishop
+Madera
+Mendota
+King City
+Firebaugh
+Greenfield
+Mammoth Lakes
+Chowchilla
+Soledad
+Dos Palos
+Gonzales
+Merced
+Los Banos
+Atwater
+Hollister
+Livingston
+Salinas
+Gustine
+San Juan Bautista
+Del Rey Oaks
+Seaside
+Sand City
+Newman
+Marina
+Monterey
+Carmel-by-the-Sea
+Pacific Grove
+Turlock
+Gilroy
+Waterford
+Watsonville
+Hughson
+Ceres
+Patterson
+Morgan Hill
+Sonora
+Modesto
+Oakdale
+Riverbank
+Capitola
+Santa Cruz
+Escalon
+Scotts Valley
+Angels Camp
+Ripon
+Los Gatos
+Manteca
+Monte Sereno
+Campbell
+Tracy
+Lathrop
+Saratoga
+San Jose
+Santa Clara
+Milpitas
+Cupertino
+Sunnyvale
+Mountain House
+Stockton
+Mountain View
+Los Altos
+Los Altos Hills
+Livermore
+Fremont
+Newark
+Pleasanton
+Palo Alto
+Jackson
+Portola Valley
+East Palo Alto
+Menlo Park
+Lodi
+Atherton
+Union City
+Woodside
+Redwood City
+Dublin
+Sutter Creek
+Ione
+Amador City
+Brentwood
+San Carlos
+Hayward
+Danville
+Belmont
+Castro Valley
+San Ramon
+Foster City
+Oakley
+Plymouth
+Galt
+San Mateo
+San Leandro
+Half Moon Bay
+Clayton
+Antioch
+Burlingame
+South Lake Tahoe
+Hillsborough
+Isleton
+Millbrae
+San Francisco
+Walnut Creek
+Moraga
+Oakland
+Pittsburg
+Rio Vista
+Alameda
+San Bruno
+Concord
+Lafayette
+Brisbane
+South San Francisco
+Bay Point
+Elk Grove
+Pacifica
+Orinda
+Pleasant Hill
+Piedmont
+Placerville
+Colma
+Emeryville
+Daly City
+Berkeley
+Martinez
+Albany
+Kensington
+El Cerrito
+Rancho Cordova
+Folsom
+Benicia
+El Sobrante
+Hercules
+Fair Oaks
+Pinole
+Richmond
+Tiburon
+San Pablo
+Belvedere
+Sausalito
+Citrus Heights
+Sacramento
+Suisun City
+Roseville
+Fairfield
+Mill Valley
+West Sacramento
+Corte Madera
+Vacaville
+Vallejo
+Loomis
+Larkspur
+Dixon
+San Rafael
+Rocklin
+American Canyon
+Ross
+Davis
+San Anselmo
+Fairfax
+Truckee
+Auburn
+Lincoln
+Winters
+Colfax
+Novato
+Napa
+Woodland
+Sonoma
+Yountville
+Wheatland
+Grass Valley
+Petaluma
+Nevada City
+Cotati
+Rohnert Park
+St. Helena
+Loyalton
+Marysville
+Yuba City
+Santa Rosa
+Calistoga
+Sebastopol
+Windsor
+Live Oak
+Portola
+Healdsburg
+Gridley
+Colusa
+Williams
+Biggs
+Oroville
+Clearlake
+Cloverdale
+Paradise
+Lakeport
+Willows
+Chico
+Orland
+Ukiah
+Susanville
+Point Arena
+Corning
+Tehama
+Willits
+Red Bluff
+Fort Bragg
+Anderson
+Redding
+Shasta Lake
+Alturas
+Dunsmuir
+Mount Shasta
+Rio Dell
+Weed
+Fortuna
+Ferndale
+Tulelake
+Blue Lake
+Eureka
+Etna
+Arcata
+Montague
+Dorris
+Yreka
+Fort Jones
+Trinidad
+Crescent City

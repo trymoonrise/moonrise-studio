@@ -130,7 +130,7 @@
     if (/failed to fetch|networkerror|network error|load failed/i.test(msg)) {
       return "Live search server unreachable — check your connection and try again.";
     }
-    return msg || "Nearby scrape unavailable";
+    return msg || "Live search unavailable";
   }
 
   function isWorkerLeadFinderBase(base) {

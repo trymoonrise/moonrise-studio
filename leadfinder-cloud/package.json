@@ -1,0 +1,23 @@
+{
+  "name": "leadfinder-cloud",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Cloud LeadFinder: hourly Playwright Maps scraper + Discord CSV batches of 1000.",
+  "scripts": {
+    "start": "node src/cloudRun.js",
+    "clean": "node src/cleanRun.js",
+    "search": "node src/searchScrape.js",
+    "search:server": "node src/searchServer.js",
+    "dry-run": "node src/cloudRun.js --limit=1 --dry-run",
+    "test:discord": "node src/discord.js --test"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
+    "dotenv": "^16.4.7",
+    "playwright": "^1.51.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

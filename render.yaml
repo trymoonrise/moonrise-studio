@@ -1,0 +1,20 @@
+# Moonrise Studio — Render Blueprint (LeadFinder live search)
+# Dashboard: New → Blueprint → connect tryymoonrise/moonrise-studio
+
+services:
+  - type: web
+    name: leadfinder-search
+    runtime: docker
+    rootDir: leadfinder-cloud
+    dockerfilePath: ./Dockerfile.search
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: HEADLESS
+        value: "1"
+      - key: SKIP_SUPABASE
+        value: "1"
+      - key: MIN_SEARCH_RESULTS
+        value: "50"
+      - key: MAX_SCROLLS
+        value: "220"
