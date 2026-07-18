@@ -40,6 +40,74 @@ function initialsFromName(name) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
+async function recordOneTimeDonationPayment(supabase, session, donorMessageOverride) {
+  const userId = String(session?.metadata?.userId || "").trim();
+  if (!userId) return { skipped: true, reason: "no_user" };
+
+  const donorMessage = sanitizeDonorMessage(
+    donorMessageOverride ?? session?.metadata?.donorMessage,
+  );
+  const paidCents = Math.max(
+    0,
+    Number(session?.amount_total || session?.metadata?.priceCents || 0),
+  );
+  const paymentIntent =
+    typeof session?.payment_intent === "string"
+      ? session.payment_intent
+      : session?.payment_intent?.id || null;
+
+  const { error } = await supabase.from("payments").upsert(
+    {
+      user_id: userId,
+      project_id: null,
+      stripe_session_id: session.id,
+      stripe_payment_intent: paymentIntent,
+      amount_cents: paidCents,
+      currency: session.currency || "usd",
+      status: "paid",
+      kind: "mvp_donation",
+      donor_message: donorMessage,
+    },
+    { onConflict: "stripe_session_id" },
+  );
+  if (error) throw error;
+  return { ok: true, paidCents };
+}
+
+async function reconcilePendingDonationPayments(supabase, stripe, userId) {
+  if (!stripe || !userId) return { reconciled: 0 };
+
+  const { data: pending, error } = await supabase
+    .from("payments")
+    .select("stripe_session_id, donor_message")
+    .eq("user_id", userId)
+    .eq("kind", "mvp_donation")
+    .eq("status", "pending")
+    .is("project_id", null)
+    .order("created_at", { ascending: false })
+    .limit(5);
+
+  if (error) throw error;
+
+  let reconciled = 0;
+  for (const row of pending || []) {
+    const sessionId = String(row.stripe_session_id || "").trim();
+    if (!sessionId.startsWith("cs_")) continue;
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    const kind = String(session.metadata?.type || "").toLowerCase();
+    if (session.status !== "complete" || session.payment_status === "unpaid") continue;
+    if (kind !== "mvp_donation_onetime" && kind !== "mvp_donation") continue;
+    if (String(session.metadata?.userId || "") !== String(userId)) continue;
+
+    if (kind === "mvp_donation_onetime") {
+      await recordOneTimeDonationPayment(supabase, session, row.donor_message);
+      reconciled += 1;
+    }
+  }
+
+  return { reconciled };
+}
+
 async function getDonationLeaderboard(supabase, limit = 10) {
   const cap = Math.min(Math.max(Number(limit) || 10, 1), 25);
 
@@ -114,6 +182,8 @@ async function getDonationLeaderboard(supabase, limit = 10) {
 module.exports = {
   DONOR_MESSAGE_MAX,
   sanitizeDonorMessage,
+  recordOneTimeDonationPayment,
+  reconcilePendingDonationPayments,
   getDonationLeaderboard,
   formatDonationTotal,
 };

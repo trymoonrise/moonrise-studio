@@ -263,8 +263,7 @@
     }
 
     try {
-      const headers = await authHeaders();
-      const res = await fetch(base + "/donate/leaderboard?limit=10", { headers });
+      const res = await fetch(base + "/donate/leaderboard?limit=10");
       const data = await res.json().catch(() => ({}));
 
       if (res.ok && Array.isArray(data.entries)) {
@@ -272,19 +271,13 @@
         return;
       }
 
-      const configRes = await fetch(base + "/donate/config", { headers });
-      const configData = await configRes.json().catch(() => ({}));
-      if (configRes.ok && Array.isArray(configData.leaderboardEntries)) {
-        renderLeaderboard(configData.leaderboardEntries);
-        return;
-      }
-
-      throw new Error(data.error || configData.error || "Could not load leaderboard");
-    } catch (_) {
+      throw new Error(data.error || "Could not load leaderboard");
+    } catch (e) {
       if (list) {
         list.innerHTML =
           '<li class="ms-donate-lb-empty">Leaderboard unavailable right now. Try again in a moment.</li>';
       }
+      console.warn("Donate leaderboard:", e?.message || e);
     }
   }
 

@@ -169,6 +169,8 @@ const {
 const {
   DONOR_MESSAGE_MAX,
   sanitizeDonorMessage,
+  recordOneTimeDonationPayment,
+  reconcilePendingDonationPayments,
   getDonationLeaderboard,
 } = require("./donate-leaderboard");
 const {
@@ -778,28 +780,7 @@ app.post("/webhooks/stripe", express.raw({ type: "application/json" }), async (r
           { onConflict: "stripe_session_id" }
         );
       } else if (kind === "mvp_donation_onetime" && userId) {
-        const donorMessage = sanitizeDonorMessage(session.metadata?.donorMessage);
-        const paidCents = Math.max(
-          0,
-          Number(session.amount_total || session.metadata?.priceCents || 0)
-        );
-        await supabase.from("payments").upsert(
-          {
-            user_id: userId,
-            project_id: null,
-            stripe_session_id: session.id,
-            stripe_payment_intent:
-              typeof session.payment_intent === "string"
-                ? session.payment_intent
-                : session.payment_intent?.id || null,
-            amount_cents: paidCents,
-            currency: session.currency || "usd",
-            status: "paid",
-            kind: "mvp_donation",
-            donor_message: donorMessage,
-          },
-          { onConflict: "stripe_session_id" }
-        );
+        await recordOneTimeDonationPayment(supabase, session);
       } else if (projectId) {
         // Business-owner go-live payment (type=go_live or legacy sessions):
         // remove watermark + redeploy clean HTML without embed.js.
@@ -2481,6 +2462,10 @@ app.get("/mvp-status", requireUser, async (req, res) => {
 app.get("/donate/config", requireUser, async (req, res) => {
   try {
     const supabase = db();
+    const stripe = stripeClient();
+    if (stripe) {
+      await reconcilePendingDonationPayments(supabase, stripe, req.user.id);
+    }
     const balance = await getBalance(supabase, req.user.id);
     const leaderboardLimit = Math.min(Math.max(Number(req.query.leaderboard) || 10, 1), 25);
     const leaderboardEntries = await getDonationLeaderboard(supabase, leaderboardLimit);
@@ -2495,7 +2480,7 @@ app.get("/donate/config", requireUser, async (req, res) => {
   }
 });
 
-app.get("/donate/leaderboard", requireUser, async (req, res) => {
+app.get("/donate/leaderboard", async (req, res) => {
   try {
     const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 25);
     const entries = await getDonationLeaderboard(db(), limit);
@@ -2616,22 +2601,9 @@ app.post("/donate-fulfill", requireUser, checkoutLimiter, async (req, res) => {
 
     const supabase = db();
     const donorMessage = sanitizeDonorMessage(session.metadata?.donorMessage);
-    const paymentUpdate = {
-      status: "paid",
-      kind: "mvp_donation",
-      donor_message: donorMessage,
-      stripe_payment_intent:
-        typeof session.payment_intent === "string"
-          ? session.payment_intent
-          : session.payment_intent?.id || null,
-    };
 
     if (kind === "mvp_donation_onetime") {
-      paymentUpdate.amount_cents = Math.max(
-        0,
-        Number(session.amount_total || session.metadata?.priceCents || 0)
-      );
-      await supabase.from("payments").update(paymentUpdate).eq("stripe_session_id", session.id);
+      await recordOneTimeDonationPayment(supabase, session, donorMessage);
       const balance = await getBalance(supabase, userId);
       return res.json({ ...balance, oneTime: true });
     }
@@ -2655,11 +2627,26 @@ app.post("/donate-fulfill", requireUser, checkoutLimiter, async (req, res) => {
       stripeSubscriptionId: subId,
       periodEnd,
     });
-    paymentUpdate.amount_cents = Math.max(
-      0,
-      Number(session.amount_total || session.metadata?.priceCents || donateAmountCents())
+    await supabase.from("payments").upsert(
+      {
+        user_id: userId,
+        project_id: null,
+        stripe_session_id: session.id,
+        stripe_payment_intent:
+          typeof session.payment_intent === "string"
+            ? session.payment_intent
+            : session.payment_intent?.id || null,
+        amount_cents: Math.max(
+          0,
+          Number(session.amount_total || session.metadata?.priceCents || donateAmountCents()),
+        ),
+        currency: session.currency || "usd",
+        status: "paid",
+        kind: "mvp_donation",
+        donor_message: donorMessage,
+      },
+      { onConflict: "stripe_session_id" },
     );
-    await supabase.from("payments").update(paymentUpdate).eq("stripe_session_id", session.id);
 
     const balance = await getBalance(supabase, userId);
     res.json({ ...balance, mvpPlus: true });
