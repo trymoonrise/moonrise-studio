@@ -4232,19 +4232,27 @@
     return state.html;
   }
 
+  function stripRuntimeEmbedsFromStoredHtml(html) {
+    return String(html || "")
+      .replace(/<script\b[^>]*src=["'][^"']*\/embed\.js[^"']*["'][^>]*>\s*<\/script>/gi, "")
+      .replace(/<script\b[^>]*src=["'][^"']*\/contact-form\.js[^"']*["'][^>]*>\s*<\/script>/gi, "")
+      .replace(/<!--\s*moonrise:watermark\s*-->/gi, "");
+  }
+
   async function persistHtmlQuiet(html) {
     if (!state.projectId) return;
+    const clean = stripRuntimeEmbedsFromStoredHtml(html);
     const user = await window.StudioAuth.getUser();
     const { error } = await sb()
       .from("projects")
       .update({
-        html,
+        html: clean,
         updated_at: new Date().toISOString(),
       })
       .eq("id", state.projectId)
       .eq("user_id", user.id);
     if (error) throw error;
-    if (state.project) state.project.html = html;
+    if (state.project) state.project.html = clean;
   }
 
   function scheduleEditAutosave() {
@@ -4741,12 +4749,19 @@
   }
 
   function refreshWatermark() {
-    // Builder preview stays clean — do not mount the "Complete your order"
-    // widget here. Publish still injects embed.js on the live site when
-    // watermark_enabled is true (see worker injectWatermarkEmbed).
     const host = document.getElementById("watermark-host");
     window.MoonriseWatermarkEmbed?.unmount?.();
     if (host) host.innerHTML = "";
+
+    const unpaid = state.project?.watermark_enabled !== false;
+    if (host && unpaid && state.projectId && window.MoonriseWatermarkEmbed?.mount) {
+      window.MoonriseWatermarkEmbed.mount({
+        host,
+        projectId: state.projectId,
+        workerUrl: workerUrl(),
+        urgencyEndsAt: state.project?.urgency_ends_at || "",
+      });
+    }
     setPublishEnabled();
   }
 
@@ -5432,7 +5447,7 @@
     await persistPrice();
     const wasLive = !!liveSiteUrl();
     const hadUpdates = wasLive && hasUnpublishedChanges();
-    const watermarked = !!state.project?.watermark_enabled;
+    const watermarked = state.project?.watermark_enabled !== false;
     setStatus(watermarked ? "Publishing to Vercel (with watermark)…" : "Publishing to Vercel…");
     try {
       const headers = await authHeaders();
@@ -5450,7 +5465,7 @@
       syncSiteSettingsUi();
       const action = wasLive && hadUpdates ? "Updated" : "Published";
       setStatus(
-        state.project?.watermark_enabled
+        state.project?.watermark_enabled !== false
           ? action + " with watermark: " +
               url +
               " - your client can pay on the live site to remove it."
@@ -5705,12 +5720,35 @@
     });
   }
 
-  async function renderQrToCanvas(canvas, url) {
-    if (!canvas) throw new Error("QR canvas missing");
+  async function ensureQrLibrary() {
+    if (typeof QRCode !== "undefined" && QRCode.toCanvas) return QRCode;
+    await new Promise((resolve, reject) => {
+      const existing = document.querySelector('script[data-ms-qrcode="1"]');
+      if (existing) {
+        existing.addEventListener("load", () => resolve(), { once: true });
+        existing.addEventListener("error", () => reject(new Error("QR library failed to load")), {
+          once: true,
+        });
+        if (typeof QRCode !== "undefined" && QRCode.toCanvas) resolve();
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = "js/vendor/qrcode.min.js?v=1.5.1";
+      script.dataset.msQrcode = "1";
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error("QR library failed to load. Refresh and try again."));
+      document.head.appendChild(script);
+    });
     if (typeof QRCode === "undefined" || !QRCode.toCanvas) {
       throw new Error("QR library failed to load. Refresh and try again.");
     }
-    await QRCode.toCanvas(canvas, url, {
+    return QRCode;
+  }
+
+  async function renderQrToCanvas(canvas, url) {
+    if (!canvas) throw new Error("QR canvas missing");
+    const lib = await ensureQrLibrary();
+    await lib.toCanvas(canvas, url, {
       width: 220,
       margin: 1,
       color: { dark: "#0f172a", light: "#ffffff" },
