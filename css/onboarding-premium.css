@@ -317,6 +317,7 @@ body.ms-onboard-page.is-transitioning .ms-onboard-bg {
 .ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-chip-label,
 .ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-chips,
 .ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onb-celebrate-mark,
+.ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onb-celebrate-video,
 .ms-onboard-panel.is-active.is-visible > .ms-onboard-actions {
   opacity: 0;
   transform: translate3d(0, 10px, 0);
@@ -352,6 +353,7 @@ body.ms-onboard-page.is-transitioning .ms-onboard-bg {
 }
 
 .ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-lead { --onb-stagger: 0.05s; }
+.ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onb-celebrate-video { --onb-stagger: 0.1s; }
 .ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-creator-policy-notice { --onb-stagger: 0.1s; }
 .ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-form-block { --onb-stagger: 0.08s; }
 .ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-chip-label { --onb-stagger: 0.12s; }
@@ -383,8 +385,129 @@ body.ms-onboard-page.is-transitioning .ms-onboard-bg {
   animation-delay: calc(var(--onb-content-base-delay) + 0.13s);
 }
 
-/* Compact path grid — fits on one screen */
-.ms-onboard-panel--path .ms-onboard-path {
+/* Compact path grid — flip cards */
+.ms-onboard-panel--path .ms-onboard-path.ms-onboard-path--flip {
+  --onb-path-num: 1.35rem;
+  --onb-flip-h: 5.75rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ms-onboard-panel--path .ms-onboard-path--flip li {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  perspective: 920px;
+}
+
+.ms-onboard-panel--path .ms-onboard-path--flip li:not(:last-child)::after {
+  display: none;
+}
+
+.ms-onboard-flip-card {
+  display: block;
+  width: 100%;
+  min-height: var(--onb-flip-h);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ms-onboard-flip-card:focus-visible {
+  outline: none;
+}
+
+.ms-onboard-flip-card:focus-visible .ms-onboard-flip-card-inner {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ms-accent, #2563eb) 28%, transparent);
+}
+
+.ms-onboard-flip-card-inner {
+  display: block;
+  position: relative;
+  width: 100%;
+  min-height: var(--onb-flip-h);
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.4, 0.2, 0.2, 1);
+  border-radius: 12px;
+  will-change: transform;
+}
+
+.ms-onboard-flip-card-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #e8edf3;
+  border-radius: 12px;
+  background: #f8fafc;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.ms-onboard-flip-card-front {
+  transform: rotateY(0deg);
+}
+
+.ms-onboard-flip-card-back {
+  transform: rotateY(180deg);
+  background: linear-gradient(145deg, #eff6ff 0%, #f8fafc 100%);
+  border-color: #bfdbfe;
+}
+
+.ms-onboard-panel--path .ms-onboard-path--flip .ms-onboard-path-num {
+  width: var(--onb-path-num);
+  height: var(--onb-path-num);
+  font-size: 0.72rem;
+  border-width: 1.5px;
+  box-shadow: none;
+  flex: none;
+}
+
+.ms-onboard-flip-card-title {
+  display: block;
+  margin: 0;
+  color: #0f172a;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.ms-onboard-flip-card-back p {
+  margin: 0;
+  color: #475569;
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ms-onboard-flip-card:hover .ms-onboard-flip-card-inner,
+  .ms-onboard-flip-card:focus-visible .ms-onboard-flip-card-inner {
+    transform: rotateY(180deg);
+  }
+}
+
+.ms-onboard-flip-card.is-flipped .ms-onboard-flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+/* Legacy path list (non-flip) */
+.ms-onboard-panel--path .ms-onboard-path:not(.ms-onboard-path--flip) {
   --onb-path-num: 1.35rem;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -394,7 +517,7 @@ body.ms-onboard-page.is-transitioning .ms-onboard-bg {
   list-style: none;
 }
 
-.ms-onboard-panel--path .ms-onboard-path li {
+.ms-onboard-panel--path .ms-onboard-path:not(.ms-onboard-path--flip) li {
   display: grid;
   grid-template-columns: var(--onb-path-num) minmax(0, 1fr);
   column-gap: 0.45rem;
@@ -405,11 +528,11 @@ body.ms-onboard-page.is-transitioning .ms-onboard-bg {
   background: #f8fafc;
 }
 
-.ms-onboard-panel--path .ms-onboard-path li:not(:last-child)::after {
+.ms-onboard-panel--path .ms-onboard-path:not(.ms-onboard-path--flip) li:not(:last-child)::after {
   display: none;
 }
 
-.ms-onboard-panel--path .ms-onboard-path-num {
+.ms-onboard-panel--path .ms-onboard-path:not(.ms-onboard-path--flip) .ms-onboard-path-num {
   width: var(--onb-path-num);
   height: var(--onb-path-num);
   font-size: 0.72rem;
@@ -680,6 +803,12 @@ body.ms-onboard-page.is-transitioning .ms-onboard-bg {
   height: 1.35rem;
 }
 
+.ms-onboard-panel--celebrate .ms-onb-celebrate-video {
+  width: 100%;
+  max-width: none;
+  margin: 0.85rem 0 0.15rem;
+}
+
 .ms-onboard-error {
   flex: 0 0 auto;
   width: 100%;
@@ -723,7 +852,8 @@ body.ms-onboard-page.is-transitioning .ms-onboard-bg {
     border-radius: 16px;
   }
 
-  .ms-onboard-panel--path .ms-onboard-path {
+  .ms-onboard-panel--path .ms-onboard-path,
+  .ms-onboard-panel--path .ms-onboard-path.ms-onboard-path--flip {
     grid-template-columns: 1fr;
   }
 
@@ -750,12 +880,17 @@ body.ms-onboard-page.is-transitioning .ms-onboard-bg {
     margin-bottom: 0.55rem;
   }
 
-  .ms-onboard-panel--path .ms-onboard-path {
+  .ms-onboard-panel--path .ms-onboard-path,
+  .ms-onboard-panel--path .ms-onboard-path.ms-onboard-path--flip {
     gap: 0.35rem;
   }
 
-  .ms-onboard-panel--path .ms-onboard-path li {
+  .ms-onboard-panel--path .ms-onboard-path:not(.ms-onboard-path--flip) li {
     padding: 0.35rem 0.45rem;
+  }
+
+  .ms-onboard-panel--path .ms-onboard-path--flip {
+    --onb-flip-h: 5.35rem;
   }
 
   .ms-onboard-actions {
@@ -768,6 +903,38 @@ body.ms-onboard-page.is-transitioning .ms-onboard-bg {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .ms-onboard-flip-card-inner {
+    transition: none;
+  }
+
+  .ms-onboard-flip-card:hover .ms-onboard-flip-card-inner,
+  .ms-onboard-flip-card.is-flipped .ms-onboard-flip-card-inner {
+    transform: none;
+  }
+
+  .ms-onboard-flip-card-back {
+    position: relative;
+    inset: auto;
+    transform: none;
+    margin-top: 0.35rem;
+    display: none;
+  }
+
+  .ms-onboard-flip-card.is-flipped .ms-onboard-flip-card-back,
+  .ms-onboard-flip-card:focus-visible .ms-onboard-flip-card-back {
+    display: flex;
+  }
+
+  .ms-onboard-flip-card-front {
+    position: relative;
+    inset: auto;
+  }
+
+  .ms-onboard-flip-card.is-flipped .ms-onboard-flip-card-front,
+  .ms-onboard-flip-card:focus-visible .ms-onboard-flip-card-front {
+    display: none;
+  }
+
   .ms-onboard,
   .ms-onboard-bg,
   .ms-onboard-main.is-step-pulse,

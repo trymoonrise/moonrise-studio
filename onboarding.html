@@ -24,7 +24,7 @@
     }
   </style>
   <link rel="stylesheet" href="css/studio.css?v=20260718-sec-card-verified">
-  <link rel="stylesheet" href="css/onboarding-premium.css?v=20260718-onboard-legal-blur-fix">
+  <link rel="stylesheet" href="css/onboarding-premium.css?v=20260718-celebrate-video">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body data-page="onboarding" class="ms-onboard-page">
@@ -67,48 +67,84 @@
               <h1>How it works</h1>
             </header>
             <p class="ms-onboard-lead">From finding a business to getting paid.</p>
-            <ol class="ms-onboard-path">
+            <ol class="ms-onboard-path ms-onboard-path--flip">
               <li>
-                <span class="ms-onboard-path-num" aria-hidden="true">1</span>
-                <div class="ms-onboard-path-copy">
-                  <strong>Find a business</strong>
-                  <p>Search local businesses that need a website.</p>
-                </div>
+                <button type="button" class="ms-onboard-flip-card" aria-pressed="false" aria-label="Step 1: Find a business">
+                  <span class="ms-onboard-flip-card-inner">
+                    <span class="ms-onboard-flip-card-face ms-onboard-flip-card-front">
+                      <span class="ms-onboard-path-num" aria-hidden="true">1</span>
+                      <strong class="ms-onboard-flip-card-title">Find a business</strong>
+                    </span>
+                    <span class="ms-onboard-flip-card-face ms-onboard-flip-card-back">
+                      <p>Search local businesses that need a website.</p>
+                    </span>
+                  </span>
+                </button>
               </li>
               <li>
-                <span class="ms-onboard-path-num" aria-hidden="true">2</span>
-                <div class="ms-onboard-path-copy">
-                  <strong>Swipe to build Website</strong>
-                  <p>Generate the site and set the unlock price on the watermark.</p>
-                </div>
+                <button type="button" class="ms-onboard-flip-card" aria-pressed="false" aria-label="Step 2: Swipe to build Website">
+                  <span class="ms-onboard-flip-card-inner">
+                    <span class="ms-onboard-flip-card-face ms-onboard-flip-card-front">
+                      <span class="ms-onboard-path-num" aria-hidden="true">2</span>
+                      <strong class="ms-onboard-flip-card-title">Swipe to build Website</strong>
+                    </span>
+                    <span class="ms-onboard-flip-card-face ms-onboard-flip-card-back">
+                      <p>Generate the site and set the unlock price on the watermark.</p>
+                    </span>
+                  </span>
+                </button>
               </li>
               <li>
-                <span class="ms-onboard-path-num" aria-hidden="true">3</span>
-                <div class="ms-onboard-path-copy">
-                  <strong>Publish it</strong>
-                  <p>Live link is a preview until they pay to remove the watermark.</p>
-                </div>
+                <button type="button" class="ms-onboard-flip-card" aria-pressed="false" aria-label="Step 3: Publish it">
+                  <span class="ms-onboard-flip-card-inner">
+                    <span class="ms-onboard-flip-card-face ms-onboard-flip-card-front">
+                      <span class="ms-onboard-path-num" aria-hidden="true">3</span>
+                      <strong class="ms-onboard-flip-card-title">Publish it</strong>
+                    </span>
+                    <span class="ms-onboard-flip-card-face ms-onboard-flip-card-back">
+                      <p>Live link is a preview until they pay to remove the watermark.</p>
+                    </span>
+                  </span>
+                </button>
               </li>
               <li>
-                <span class="ms-onboard-path-num" aria-hidden="true">4</span>
-                <div class="ms-onboard-path-copy">
-                  <strong>Send client the link</strong>
-                  <p>Share the preview link. They pay only through Moonrise.</p>
-                </div>
+                <button type="button" class="ms-onboard-flip-card" aria-pressed="false" aria-label="Step 4: Send client the link">
+                  <span class="ms-onboard-flip-card-inner">
+                    <span class="ms-onboard-flip-card-face ms-onboard-flip-card-front">
+                      <span class="ms-onboard-path-num" aria-hidden="true">4</span>
+                      <strong class="ms-onboard-flip-card-title">Send client the link</strong>
+                    </span>
+                    <span class="ms-onboard-flip-card-face ms-onboard-flip-card-back">
+                      <p>Share the preview link. They pay only through Moonrise.</p>
+                    </span>
+                  </span>
+                </button>
               </li>
               <li>
-                <span class="ms-onboard-path-num" aria-hidden="true">5</span>
-                <div class="ms-onboard-path-copy">
-                  <strong>They pay</strong>
-                  <p>They tap the watermark, pay once, and it comes off.</p>
-                </div>
+                <button type="button" class="ms-onboard-flip-card" aria-pressed="false" aria-label="Step 5: They pay">
+                  <span class="ms-onboard-flip-card-inner">
+                    <span class="ms-onboard-flip-card-face ms-onboard-flip-card-front">
+                      <span class="ms-onboard-path-num" aria-hidden="true">5</span>
+                      <strong class="ms-onboard-flip-card-title">They pay</strong>
+                    </span>
+                    <span class="ms-onboard-flip-card-face ms-onboard-flip-card-back">
+                      <p>They tap the watermark, pay once, and it comes off.</p>
+                    </span>
+                  </span>
+                </button>
               </li>
               <li>
-                <span class="ms-onboard-path-num" aria-hidden="true">6</span>
-                <div class="ms-onboard-path-copy">
-                  <strong>You get paid</strong>
-                  <p>You keep 80%. Find the next business and repeat.</p>
-                </div>
+                <button type="button" class="ms-onboard-flip-card" aria-pressed="false" aria-label="Step 6: You get paid">
+                  <span class="ms-onboard-flip-card-inner">
+                    <span class="ms-onboard-flip-card-face ms-onboard-flip-card-front">
+                      <span class="ms-onboard-path-num" aria-hidden="true">6</span>
+                      <strong class="ms-onboard-flip-card-title">You get paid</strong>
+                    </span>
+                    <span class="ms-onboard-flip-card-face ms-onboard-flip-card-back">
+                      <p>You keep 80%. Find the next business and repeat.</p>
+                    </span>
+                  </span>
+                </button>
               </li>
             </ol>
           </div>
@@ -229,11 +265,11 @@
                   class="ms-sec-card-retry ms-sec-card-retry--reload"
                   id="onb-retry-card"
                   hidden
-                  aria-label="Reload card form"
-                  title="Reload card form"
+                  aria-label="Try again"
+                  title="Try again"
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
-                  <span>Reload card form</span>
+                  <span>Try again</span>
                 </button>
               </div>
             </div>
@@ -242,10 +278,9 @@
               <span>I authorize Moonrise to store this card and charge it for fraud, chargebacks, or violations of the Terms of Service.</span>
             </label>
           </div>
-          <footer class="ms-onboard-actions ms-onboard-actions--split">
+          <footer class="ms-onboard-actions">
             <button type="button" class="ms-btn ms-btn-secondary" data-onb-back>Back</button>
-            <button type="button" class="ms-btn ms-btn-secondary" id="onb-verify-card">Connect card</button>
-            <button type="button" class="ms-btn ms-onboard-next" data-onb-next id="onb-finish-setup" disabled>Save &amp; continue</button>
+            <button type="button" class="ms-btn ms-onboard-next" data-onb-next id="onb-finish-setup" disabled>Continue</button>
           </footer>
         </section>
 
@@ -264,6 +299,15 @@
             <p class="ms-onboard-lead">
               Open Business Finder and build your first free site.
             </p>
+            <div class="ms-course-video ms-onb-celebrate-video">
+              <iframe
+                src="https://www.youtube.com/embed/9XvXF1LrWgA"
+                title="Moonrise Studio course video"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allowfullscreen
+              ></iframe>
+            </div>
           </div>
           <footer class="ms-onboard-actions ms-onboard-actions--stack">
             <a class="ms-btn ms-onboard-next" id="onb-go-finder" href="leads.html">Find a business</a>
@@ -282,7 +326,7 @@
   <script src="js/ui-motion.js"></script>
   <script src="js/toast.js"></script>
   <script src="js/payout-profile.js?v=20260718-auto-payout"></script>
-  <script src="js/security-card.js?v=20260718-no-card-hint"></script>
-  <script src="js/onboarding.js?v=20260718-sec-card-verified"></script>
+  <script src="js/security-card.js?v=20260718-auto-card"></script>
+  <script src="js/onboarding.js?v=20260718-auto-card"></script>
 </body>
 </html>

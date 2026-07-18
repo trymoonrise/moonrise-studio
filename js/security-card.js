@@ -6,6 +6,7 @@
   let elements = null;
   let cardElement = null;
   let mountedHost = null;
+  let cardComplete = false;
 
   function workerUrl() {
     const cloud = String(global.SITE_CONFIG?.workerUrl || "").replace(/\/$/, "");
@@ -144,6 +145,7 @@
     }
     cardElement = null;
     elements = null;
+    cardComplete = false;
     if (mountedHost) mountedHost.innerHTML = "";
     mountedHost = null;
   }
@@ -202,7 +204,15 @@
       },
     });
     cardElement.mount("#" + mountPoint.id);
+    cardElement.on("change", (event) => {
+      cardComplete = Boolean(event.complete);
+      if (opts?.onChange) opts.onChange(event);
+    });
     return config;
+  }
+
+  function isCardComplete() {
+    return cardComplete;
   }
 
   async function verifyCard(opts) {
@@ -274,5 +284,6 @@
     verifyCard,
     fetchStatus,
     formatCardLabel,
+    isCardComplete,
   };
 })(window);

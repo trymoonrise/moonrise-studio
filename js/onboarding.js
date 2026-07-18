@@ -50,6 +50,28 @@
   let verifiedCard = null;
   let cachedPayout = P.normalizeProfile({});
   let phoneField = null;
+  let autoVerifyTimer = null;
+
+  function canAutoVerifyCard() {
+    if (verifying || cardVerified) return false;
+    const email = String(document.getElementById("onb-email")?.value || "").trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return false;
+    if (!document.getElementById("onb-card-agree")?.checked) return false;
+    return SC.isCardComplete?.() === true;
+  }
+
+  function setCardRetryVisible(visible) {
+    const retryBtn = document.getElementById("onb-retry-card");
+    if (retryBtn) retryBtn.hidden = !visible;
+  }
+
+  function scheduleAutoVerifyCard() {
+    clearTimeout(autoVerifyTimer);
+    if (!canAutoVerifyCard()) return;
+    autoVerifyTimer = window.setTimeout(() => {
+      void verifySecurityCard({ auto: true });
+    }, 450);
+  }
 
   function sb() {
     return window.SiteSupabase.getClient();
@@ -341,13 +363,12 @@
     const el = document.getElementById("onb-security-card-verified");
     const wrap = document.getElementById("onb-security-card-verified-wrap");
     const mount = document.getElementById("onb-security-card-mount");
-    const retryBtn = document.getElementById("onb-retry-card");
     const panel = document.getElementById("onb-security-card-panel");
     if (card) {
       if (el) el.textContent = SC.formatCardLabel(card);
       if (wrap) wrap.hidden = false;
       if (mount) mount.hidden = true;
-      if (retryBtn) retryBtn.hidden = true;
+      setCardRetryVisible(false);
       panel?.classList.remove("is-load-error");
     } else {
       if (wrap) wrap.hidden = true;
@@ -372,15 +393,20 @@
     if (!host || cardVerified) return;
     host.hidden = false;
     panel?.classList.remove("is-load-error");
+    setCardRetryVisible(false);
     host.classList.add("is-loading");
     setError("");
     try {
       host.innerHTML = "";
-      await SC.mountCard(host, { elementId: "onb-security-card-element" });
+      await SC.mountCard(host, {
+        elementId: "onb-security-card-element",
+        onChange: () => {
+          scheduleAutoVerifyCard();
+        },
+      });
     } catch (e) {
       panel?.classList.add("is-load-error");
-      const retryBtn = document.getElementById("onb-retry-card");
-      if (retryBtn) retryBtn.hidden = false;
+      setCardRetryVisible(true);
       setError(e.message || "Could not load card form");
     } finally {
       host.classList.remove("is-loading");
@@ -431,43 +457,49 @@
     return null;
   }
 
-  async function verifySecurityCard() {
+  async function verifySecurityCard(options) {
+    const opts = options && typeof options === "object" ? options : {};
     if (verifying || cardVerified) return;
     const email = String(document.getElementById("onb-email")?.value || "").trim();
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError("Enter a valid email first.");
+      if (!opts.auto) setError("Enter a valid email first.");
       return;
     }
     if (!document.getElementById("onb-card-agree")?.checked) {
-      setError("Please authorize storing your card for payouts.");
+      if (!opts.auto) setError("Please authorize storing your card for payouts.");
+      return;
+    }
+    if (SC.isCardComplete?.() !== true) {
+      if (!opts.auto) setError("Enter your full card details first.");
       return;
     }
 
     verifying = true;
-    const btn = document.getElementById("onb-verify-card");
-    const prev = btn?.textContent;
+    const btn = document.getElementById("onb-finish-setup");
+    const prevLabel = btn?.textContent || "Continue";
     if (btn) {
       btn.disabled = true;
       btn.textContent = "Connecting…";
     }
     setError("");
+    setCardRetryVisible(false);
     try {
       const card = await SC.verifyCard({ email });
       applyVerifiedCard(card);
-      window.StudioToast?.success?.("Payout card connected.");
+      if (!opts.auto) {
+        window.StudioToast?.success?.("Payout card connected.");
+      }
     } catch (e) {
       setError(e.message || "Could not connect payout card");
+      setCardRetryVisible(true);
       const host = document.getElementById("onb-security-card-mount");
-      if (host && !cardVerified) {
-        host.hidden = false;
-        await mountSecurityCard();
-      }
+      if (host && !cardVerified) host.hidden = false;
     } finally {
       verifying = false;
       if (btn) {
-        btn.disabled = cardVerified;
-        btn.textContent = cardVerified ? "Connected" : prev || "Connect card";
+        btn.textContent = prevLabel;
       }
+      syncFinishButton();
     }
   }
 
@@ -601,6 +633,18 @@
     }
   }
 
+  function bindFlipCards() {
+    const cards = document.querySelectorAll(".ms-onboard-flip-card");
+    if (!cards.length) return;
+
+    cards.forEach((card) => {
+      card.addEventListener("click", () => {
+        const flipped = card.classList.toggle("is-flipped");
+        card.setAttribute("aria-pressed", flipped ? "true" : "false");
+      });
+    });
+  }
+
   async function boot() {
     document.querySelector(".ms-onboard")?.classList.add("is-ready");
     syncPanelVisibility(1);
@@ -650,18 +694,30 @@
       if (document.getElementById("onb-legal-agree")?.checked) setError("");
     });
 
-    document.getElementById("onb-verify-card")?.addEventListener("click", (e) => {
-      e.preventDefault();
-      void verifySecurityCard();
+    document.getElementById("onb-card-agree")?.addEventListener("change", () => {
+      if (document.getElementById("onb-card-agree")?.checked) {
+        setError("");
+        scheduleAutoVerifyCard();
+      }
+    });
+
+    document.getElementById("onb-email")?.addEventListener("input", () => {
+      scheduleAutoVerifyCard();
     });
 
     document.getElementById("onb-retry-card")?.addEventListener("click", (e) => {
       e.preventDefault();
-      const retryBtn = document.getElementById("onb-retry-card");
-      if (retryBtn) retryBtn.hidden = true;
+      setError("");
+      setCardRetryVisible(false);
+      if (SC.isCardComplete?.() && !cardVerified) {
+        void verifySecurityCard();
+        return;
+      }
       void mountSecurityCard().then(() => {
         const panel = document.getElementById("onb-security-card-panel");
-        if (panel?.classList.contains("is-load-error") && retryBtn) retryBtn.hidden = false;
+        if (panel?.classList.contains("is-load-error")) {
+          setCardRetryVisible(true);
+        }
       });
     });
 
@@ -673,6 +729,8 @@
     document.querySelector(".ms-onboard-brand")?.addEventListener("click", (e) => {
       e.preventDefault();
     });
+
+    bindFlipCards();
 
     await showStep(1, { direction: "none", force: true });
   }

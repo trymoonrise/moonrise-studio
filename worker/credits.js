@@ -205,7 +205,7 @@ function donateOneTimeLineItem(quote) {
         currency: "usd",
         product_data: {
           name: "Moonrise Studio Support",
-          description: "One-time donation — thank you for fueling Moonrise.",
+          description: "Thank you for fueling Moonrise.",
         },
         unit_amount: quote.priceCents,
       },

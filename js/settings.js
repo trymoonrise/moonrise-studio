@@ -1,5 +1,5 @@
 /**
- * Settings — profile, password, payments, session.
+ * Settings — profile, password, session.
  */
 (async function () {
   const BUCKET = "studio-avatars";
@@ -170,156 +170,10 @@
     return url + (url.includes("?") ? "&" : "?") + "t=" + Date.now();
   }
 
-  const P = window.MoonrisePayoutProfile;
-  const SC = window.MoonriseSecurityCard;
-
-  let payoutProfile = {};
-  let payoutBusy = false;
-
-  function setPayoutError(msg) {
-    const el = document.getElementById("set-payout-error");
-    const okEl = document.getElementById("set-payout-ok");
-    if (okEl) okEl.hidden = true;
-    if (el) {
-      el.hidden = true;
-      el.textContent = "";
-    }
-    if (!msg) return;
-    window.StudioToast?.error?.(friendlyMessage(msg, "Could not update payout settings."));
-  }
-
-  function setPayoutOk(msg) {
-    setPayoutError("");
-    const el = document.getElementById("set-payout-ok");
-    if (!el) return;
-    el.hidden = !msg;
-    el.textContent = msg || "";
-  }
-
-  function renderPayoutCardStatus() {
-    const statusEl = document.getElementById("set-payout-card-status");
-    const emptyEl = document.getElementById("set-payout-card-empty");
-    const updateBtn = document.getElementById("set-payout-update-card");
-    const card = P?.normalizeSecurityCard?.(payoutProfile?.securityCard);
-
-    if (card && P?.isVerifiedSecurityCard?.(card)) {
-      const label = SC?.formatCardLabel?.(card) || "Card connected";
-      if (statusEl) {
-        statusEl.hidden = false;
-        statusEl.textContent = "Security card: " + label;
-      }
-      if (emptyEl) emptyEl.hidden = true;
-      if (updateBtn) {
-        updateBtn.hidden = false;
-        updateBtn.textContent = "Update security card";
-      }
-    } else {
-      if (statusEl) {
-        statusEl.hidden = true;
-        statusEl.textContent = "";
-      }
-      if (emptyEl) emptyEl.hidden = false;
-      if (updateBtn) {
-        updateBtn.hidden = false;
-        updateBtn.textContent = "Connect security card";
-      }
-    }
-  }
-
-  function closePayoutCardPanel() {
-    const panel = document.getElementById("set-payout-card-panel");
-    if (panel) panel.hidden = true;
-    SC?.unmountCard?.();
-  }
-
-  async function openPayoutCardPanel() {
-    const panel = document.getElementById("set-payout-card-panel");
-    const mount = document.getElementById("set-payout-card-mount");
-    const retry = document.getElementById("set-payout-card-retry");
-    if (!panel || !mount || !SC) {
-      setPayoutError("Payout card setup is not available.");
-      return;
-    }
-    setPayoutError("");
-    panel.hidden = false;
-    try {
-      await SC.mountCard(mount, { elementId: "set-payout-card-element" });
-      if (retry) retry.hidden = true;
-    } catch (e) {
-      if (retry) retry.hidden = false;
-      setPayoutError(e.message || "Could not load payout card form.");
-    }
-  }
-
-  async function saveVerifiedCard(card) {
-    const user = await window.StudioAuth.getUser();
-    if (!user) throw new Error("Not signed in");
-    const next = P.normalizeProfile({
-      ...payoutProfile,
-      securityCard: card,
-      email: payoutProfile.email || user.email || "",
-    });
-    await window.StudioAuth.ensureProfile?.(user);
-    const client = window.SiteSupabase.getClient();
-    const { data, error } = await client
-      .from("profiles")
-      .update({ payout_profile: next, updated_at: new Date().toISOString() })
-      .eq("id", user.id)
-      .select("payout_profile")
-      .maybeSingle();
-    if (error) throw error;
-    payoutProfile = P.normalizeProfile(data?.payout_profile || next);
-  }
-
-  async function verifyPayoutCard() {
-    if (payoutBusy || !SC) return;
-    payoutBusy = true;
-    const btn = document.getElementById("set-payout-update-card");
-    const prev = btn?.textContent;
-    if (btn) {
-      btn.disabled = true;
-      btn.textContent = "Connecting…";
-    }
-    setPayoutError("");
-    try {
-      const user = await window.StudioAuth.getUser();
-      const card = await SC.verifyCard({
-        email: payoutProfile.email || user?.email || "",
-      });
-      await saveVerifiedCard(card);
-      closePayoutCardPanel();
-      setPayoutOk("Security card connected.");
-      renderPayoutCardStatus();
-    } catch (e) {
-      setPayoutError(e.message || "Could not connect payout card.");
-    } finally {
-      payoutBusy = false;
-      if (btn) {
-        btn.disabled = false;
-        btn.textContent = prev || "Update payout card";
-      }
-      renderPayoutCardStatus();
-    }
-  }
-
-  function bindPayoutUi() {
-    document.getElementById("set-payout-update-card")?.addEventListener("click", () => {
-      void openPayoutCardPanel();
-    });
-    document.getElementById("set-payout-verify-card")?.addEventListener("click", () => {
-      void verifyPayoutCard();
-    });
-    document.getElementById("set-payout-card-retry")?.addEventListener("click", () => {
-      void openPayoutCardPanel();
-    });
-  }
-
   async function load() {
     const user = await window.StudioAuth.getUser();
     if (!user) {
       setError("Sign in to manage settings.");
-      payoutProfile = {};
-      renderPayoutCardStatus();
       return;
     }
 
@@ -336,7 +190,6 @@
         .replace(/^@/, "");
       document.getElementById("set-display").value = profile.display_name || "";
       avatarUrl = String(profile.avatar_url || "").trim();
-      payoutProfile = P?.normalizeProfile?.(profile.payout_profile) || {};
     } else {
       const fallback =
         user.user_metadata?.handle ||
@@ -346,10 +199,8 @@
         .replace(/^@/, "");
       document.getElementById("set-display").value = "";
       avatarUrl = "";
-      payoutProfile = {};
     }
     refreshPreview();
-    renderPayoutCardStatus();
   }
 
   fileInput?.addEventListener("change", async () => {
@@ -527,8 +378,6 @@
       if (btn) btn.disabled = false;
     }
   });
-
-  bindPayoutUi();
 
   async function start() {
     if (started) return;
