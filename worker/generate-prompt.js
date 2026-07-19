@@ -3,6 +3,9 @@
  *
  * Master prompt reference: docs/WEBSITE-GENERATION-PROMPT.md
  *
+ * Preset kit source (worker): GitHub main branch
+ *   https://github.com/trymoonrise/moonrise-studio/tree/main/Website%20Presets/presets
+ * Cached in-memory; local folder is fallback only.
  * Default pipeline (fast, single MiniMax call):
  *  - The worker picks the component kit + palette LOCALLY from trade heuristics
  *    (no network / no atmosphere LLM), then does ONE ASSEMBLE call.

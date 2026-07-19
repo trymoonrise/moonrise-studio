@@ -25,6 +25,13 @@ function loadWorkerEnv() {
       process.env[key] = value;
     }
   }
+
+  // Optional local vault (gitignored) for dev tokens — never committed.
+  const vaultPath = path.join(__dirname, "..", "..", "accesstokens.env");
+  if (fs.existsSync(vaultPath) && !String(process.env.GITHUB_TOKEN || "").trim()) {
+    const vault = dotenv.parse(fs.readFileSync(vaultPath));
+    if (vault.GITHUB_TOKEN) process.env.GITHUB_TOKEN = vault.GITHUB_TOKEN;
+  }
 }
 loadWorkerEnv();
 
@@ -133,6 +140,7 @@ const {
   getBusinessStructure,
   getStructurePresetRoles,
 } = require("./business-structures");
+const githubPresets = require("./github-presets");
 
 const security = require("./security");
 const { mountAuthRoutes } = require("./auth-routes");
@@ -640,7 +648,12 @@ app.use(
   })
 );
 
-app.get("/health", (_req, res) => {
+app.get("/health", async (_req, res) => {
+  try {
+    await githubPresets.ensureManifest();
+  } catch (e) {
+    console.warn("Health: GitHub preset manifest prefetch failed:", e.message);
+  }
   const manifest = loadPresetManifest();
   let sampleKit = 0;
   try {
@@ -666,6 +679,7 @@ app.get("/health", (_req, res) => {
     },
     websitePresets: {
       dir: WEBSITE_PRESETS_DIR,
+      ...githubPresets.getPresetSourceMeta(),
       manifestCount: manifest.length,
       sampleKitCount: sampleKit,
       ready: manifest.length > 0 && sampleKit > 0,
@@ -1203,6 +1217,9 @@ function hashPick(seed, modulo) {
 let _presetManifestCache = null;
 
 function loadPresetManifest() {
+  const fromGithub = githubPresets.getManifestSync();
+  if (fromGithub.length) return fromGithub;
+
   const manifestPath = path.join(WEBSITE_PRESETS_DIR, "presets", "manifest.json");
   if (!fs.existsSync(manifestPath)) {
     _presetManifestCache = { mtimeMs: -1, path: manifestPath, items: [] };
@@ -1223,6 +1240,27 @@ function loadPresetManifest() {
     return items;
   } catch (_) {
     return _presetManifestCache?.items || [];
+  }
+}
+
+async function readPresetHtmlFile(filename) {
+  const safeName = String(filename || "").trim();
+  if (!safeName) return "";
+
+  if (githubPresets.shouldUseGithub()) {
+    try {
+      return await githubPresets.loadPresetHtml(safeName);
+    } catch (e) {
+      console.warn("GitHub preset file fetch failed:", safeName, e.message);
+    }
+  }
+
+  const filePath = path.join(WEBSITE_PRESETS_DIR, "presets", safeName);
+  if (!fs.existsSync(filePath)) return "";
+  try {
+    return fs.readFileSync(filePath, "utf8");
+  } catch (_) {
+    return "";
   }
 }
 
@@ -1304,7 +1342,7 @@ function buildAtmosphereCatalog(ctx) {
 /**
  * Load full HTML snippets for the ids the planner collected.
  */
-function loadPresetsByIds(ids, roleById) {
+async function loadPresetsByIds(ids, roleById) {
   const manifest = loadPresetManifest();
   const byId = new Map(manifest.map((item) => [String(item.id), item]));
   const pack = [];
@@ -1322,14 +1360,8 @@ function loadPresetsByIds(ids, roleById) {
     if (pack.length >= PRESET_MAX_FILES) break;
     const item = byId.get(id);
     if (!item?.file) continue;
-    const filePath = path.join(WEBSITE_PRESETS_DIR, "presets", item.file);
-    if (!fs.existsSync(filePath)) continue;
-    let html = "";
-    try {
-      html = fs.readFileSync(filePath, "utf8");
-    } catch (_) {
-      continue;
-    }
+    const html = await readPresetHtmlFile(item.file);
+    if (!html) continue;
     const snippet = extractPresetSnippet(html);
     if (!snippet) continue;
     if (total + snippet.length > PRESET_MAX_TOTAL_CHARS) break;
@@ -1694,12 +1726,13 @@ async function generateWithOpenRouter(ctx, presetPack, plan) {
  * Categories match moonrise-studio/Website Presets/presets/manifest.json.
  * @deprecated Prefer planAtmosphereAndPicks + loadPresetsByIds.
  */
-function loadWebsitePresetPack(ctx) {
+async function loadWebsitePresetPack(ctx) {
   const manifest = loadPresetManifest();
   if (!manifest.length) {
     console.warn(
       "Website Presets manifest empty or missing at",
-      path.join(WEBSITE_PRESETS_DIR, "presets", "manifest.json")
+      githubPresets.getPresetSourceMeta().treeUrl ||
+        path.join(WEBSITE_PRESETS_DIR, "presets", "manifest.json")
     );
     return [];
   }
@@ -1744,14 +1777,8 @@ function loadWebsitePresetPack(ctx) {
   const pack = [];
   let total = 0;
   for (const item of picked) {
-    const filePath = path.join(WEBSITE_PRESETS_DIR, "presets", item.file);
-    if (!fs.existsSync(filePath)) continue;
-    let html = "";
-    try {
-      html = fs.readFileSync(filePath, "utf8");
-    } catch (_) {
-      continue;
-    }
+    const html = await readPresetHtmlFile(item.file);
+    if (!html) continue;
     const snippet = extractPresetSnippet(html);
     if (!snippet) continue;
     if (total + snippet.length > PRESET_MAX_TOTAL_CHARS) break;
@@ -1883,23 +1910,31 @@ app.post("/generate", requireUser, generateLimiter, async (req, res) => {
       plan = buildLocalPlan(ctx);
       ({ ids, roleById } = selectKitIdsLocally(ctx));
     }
-    let presetPack = loadPresetsByIds(ids, roleById);
+    try {
+      await githubPresets.ensureManifest();
+    } catch (e) {
+      console.warn("GitHub preset manifest load failed; using local fallback if available:", e.message);
+    }
+    let presetPack = await loadPresetsByIds(ids, roleById);
     if (!presetPack.length) {
-      console.warn("Local kit load returned 0 presets; falling back to category pack", {
+      console.warn("Kit load returned 0 presets; falling back to category pack", {
+        presetsSource: githubPresets.getPresetSourceMeta(),
         presetsDir: WEBSITE_PRESETS_DIR,
         manifestCount: loadPresetManifest().length,
         ids,
       });
-      presetPack = loadWebsitePresetPack(ctx);
+      presetPack = await loadWebsitePresetPack(ctx);
     }
     if (!presetPack.length) {
       console.error("Website Presets kit is empty - generation will freestyle without kit HTML", {
+        presetsSource: githubPresets.getPresetSourceMeta(),
         presetsDir: WEBSITE_PRESETS_DIR,
         manifestExists: fs.existsSync(path.join(WEBSITE_PRESETS_DIR, "presets", "manifest.json")),
       });
     } else {
+      const src = githubPresets.getPresetSourceMeta();
       console.log(
-        `Website Presets kit ready: ${presetPack.length} components from ${WEBSITE_PRESETS_DIR}`
+        `Website Presets kit ready: ${presetPack.length} components from ${src.treeUrl || WEBSITE_PRESETS_DIR}`
       );
     }
     if (jobInsert?.data?.id) {
@@ -1910,6 +1945,7 @@ app.post("/generate", requireUser, generateLimiter, async (req, res) => {
             ...ctx,
             brief: buildBusinessBrief(ctx),
             presetsDir: WEBSITE_PRESETS_DIR,
+            presetsSource: githubPresets.getPresetSourceMeta(),
             atmosphere: plan?.atmosphere || "",
             pickIds: ids,
             kit: presetPack.map((p) => ({ id: p.id, role: p.role, title: p.title })),
