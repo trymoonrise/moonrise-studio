@@ -26,7 +26,7 @@ window.SITE_CONFIG = {
    * Hosted on Vercel — works from any device / production Studio URL.
    * Local worker is opt-in: localStorage.ms_use_local_worker = "1"
    */
-  workerUrl: "https://trymoonrise.com",
+  workerUrl: "https://moonrise-studio.vercel.app",
   localWorkerUrl: "http://127.0.0.1:8787",
 
   /**
@@ -105,7 +105,7 @@ window.resolveWorkerUrl = function resolveWorkerUrl() {
   if (window.__MOONRISE_RESOLVED_WORKER_URL) {
     return window.__MOONRISE_RESOLVED_WORKER_URL;
   }
-  const cloud = String(window.SITE_CONFIG?.workerUrl || "https://trymoonrise.com").replace(
+  const cloud = String(window.SITE_CONFIG?.workerUrl || "https://moonrise-studio.vercel.app").replace(
     /\/$/,
     ""
   );
