@@ -1,4 +1,4 @@
-﻿const fs = require("fs");
+const fs = require("fs");
 const path = require("path");
 const ROOT = __dirname;
 
@@ -159,7 +159,7 @@ function motionCss(motion, accent) {
 function hero(t, img, lines) {
   const h1 = lines[0] + "<br />" + lines[1];
   if (t.layout === "split") {
-    return `<section class="hero hero-split"><div class="hero-copy reveal"><p class="eyebrow">${t.vibe}</p><h1>${h1}</h1><p class="lede">Experimental landing for Moonrise — sparse copy, strong type, purposeful motion.</p><div class="cta-row"><a class="btn" href="#work">See the work</a><a class="btn ghost" href="#contact">Book a call</a></div></div><div class="hero-media"><img src="${img}" alt="" /></div></section>`;
+    return `<section class="hero hero-split"><div class="hero-copy reveal"><p class="eyebrow">${t.vibe}</p><h1>${h1}</h1><p class="lede">Experimental landing for Moonrise - sparse copy, strong type, purposeful motion.</p><div class="cta-row"><a class="btn" href="#work">See the work</a><a class="btn ghost" href="#contact">Book a call</a></div></div><div class="hero-media"><img src="${img}" alt="" /></div></section>`;
   }
   if (t.layout === "asymm") {
     return `<section class="hero hero-asymm"><div class="hero-media"><img src="${img}" alt="" /></div><div class="hero-content reveal"><p class="eyebrow">${t.vibe}</p><h1>${h1}</h1><p class="lede">Full-site experiment linked from Test Templates and Website Presets.</p><div class="cta-row"><a class="btn" href="#work">Explore</a><a class="btn ghost" href="#about">About</a></div></div></section>`;
@@ -167,7 +167,7 @@ function hero(t, img, lines) {
   if (t.layout === "stack") {
     return `<section class="hero hero-stack"><div class="hero-content reveal"><p class="eyebrow">${t.vibe}</p><h1>${h1}</h1></div><div class="hero-media"><img src="${img}" alt="" /></div><div class="hero-foot reveal"><p class="lede">Motion: <strong>${t.motion}</strong> · Template ${String(t.n).padStart(2,"0")}</p><div class="cta-row"><a class="btn" href="#work">View projects</a><a class="btn ghost" href="#contact">Start</a></div></div></section>`;
   }
-  return `<section class="hero hero-center"><div class="hero-media"><img src="${img}" alt="" /></div><div class="hero-content reveal"><p class="eyebrow">${t.vibe}</p><h1>${h1}</h1><p class="lede">Polished experimental page — reference for builder generation.</p><div class="cta-row"><a class="btn" href="#work">See work</a><a class="btn ghost" href="#contact">Talk to us</a></div></div></section>`;
+  return `<section class="hero hero-center"><div class="hero-media"><img src="${img}" alt="" /></div><div class="hero-content reveal"><p class="eyebrow">${t.vibe}</p><h1>${h1}</h1><p class="lede">Polished experimental page - reference for builder generation.</p><div class="cta-row"><a class="btn" href="#work">See work</a><a class="btn ghost" href="#contact">Talk to us</a></div></div></section>`;
 }
 
 function page(t) {
@@ -191,7 +191,7 @@ function page(t) {
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>${t.name} · Experimental ${nn}</title>
-<meta name="description" content="Moonrise experimental landing — ${t.vibe}. Motion: ${t.motion}." />
+<meta name="description" content="Moonrise experimental landing - ${t.vibe}. Motion: ${t.motion}." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="${fonts}" rel="stylesheet" />
@@ -264,8 +264,8 @@ body.motion-off .hero-media img,body.motion-off .hero-media::before,body.motion-
 <main id="top">
 ${hero(t, img, lines)}
 <section class="block" id="about"><div class="about"><div><h2>Built as a reference site</h2><p class="sub">Template ${nn} · ${t.slug}. Cross-check with Website Presets when shaping Moonrise generations.</p><div class="grid-3" style="grid-template-columns:1fr;gap:.75rem"><div class="card"><h3>Strategy</h3><p>Positioning that survives a boardroom and a feed.</p></div><div class="card"><h3>Identity</h3><p>Systems coherent from favicon to billboard.</p></div><div class="card"><h3>Sites</h3><p>Fast pages with one job: the next step.</p></div></div></div><div class="about-media"><img src="${img2}" alt="" /></div></div></section>
-<section class="block" id="work"><h2>Selected frames</h2><p class="sub">Sparse gallery — three stills, one mood.</p><div class="grid-3"><div class="about-media" style="aspect-ratio:4/3"><img src="${img}" alt="" /></div><div class="about-media" style="aspect-ratio:4/3"><img src="${img2}" alt="" /></div><div class="about-media" style="aspect-ratio:4/3"><img src="${img3}" alt="" /></div></div></section>
-<section class="block" id="notes"><h2>What people notice</h2><div class="quotes"><blockquote class="quote"><p>“The motion doesn’t fight the type — it proves hierarchy.”</p><span>— Studio partner</span></blockquote><blockquote class="quote"><p>“Feels like a real site, not a component dump.”</p><span>— Builder QA</span></blockquote></div></section>
+<section class="block" id="work"><h2>Selected frames</h2><p class="sub">Sparse gallery - three stills, one mood.</p><div class="grid-3"><div class="about-media" style="aspect-ratio:4/3"><img src="${img}" alt="" /></div><div class="about-media" style="aspect-ratio:4/3"><img src="${img2}" alt="" /></div><div class="about-media" style="aspect-ratio:4/3"><img src="${img3}" alt="" /></div></div></section>
+<section class="block" id="notes"><h2>What people notice</h2><div class="quotes"><blockquote class="quote"><p>“The motion doesn’t fight the type - it proves hierarchy.”</p><span>- Studio partner</span></blockquote><blockquote class="quote"><p>“Feels like a real site, not a component dump.”</p><span>- Builder QA</span></blockquote></div></section>
 <section class="cta-band" id="contact"><h2>Ready when you are.</h2><p class="sub" style="margin-inline:auto">Open from Experimental Landings, Test Templates, or Website Presets.</p><div class="cta-row" style="justify-content:center"><a class="btn" href="../index.html">All experiments</a><a class="btn ghost" href="../../Website%20Presets/index.html">Website Presets</a></div></section>
 </main>
 <footer><span>${nn} ${t.name} · ${t.motion}</span><span><a href="../index.html">Experimental landings</a> · <a href="../../testtemplates/index.html">Test templates</a> · <a href="../../Website%20Presets/index.html">Presets</a></span></footer>
@@ -313,7 +313,7 @@ h1{font-family:"Syne",sans-serif;font-size:clamp(2rem,5vw,2.8rem);letter-spacing
 <body>
 <main>
 <h1>Experimental Landings</h1>
-<p class="lede">40 full-site experiments (28–67) — motion studies, sparse copy, cross-linked with Website Presets and Test Templates.</p>
+<p class="lede">40 full-site experiments (28–67) - motion studies, sparse copy, cross-linked with Website Presets and Test Templates.</p>
 <div class="cross">
   <a href="../Website%20Presets/index.html">Website Presets ↗</a>
   <a href="../testtemplates/index.html">Test Templates ↗</a>

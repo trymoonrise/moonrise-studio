@@ -1,7 +1,7 @@
-﻿(() => {
+(() => {
   const body = document.body;
   if (!body || body.querySelector('.dx-layer')) return;
-  const title = document.title.replace(/^\d+\s*[—-]\s*/, '');
+  const title = document.title.replace(/^\d+\s*[--]\s*/, '');
   const layer = document.createElement('div');
   layer.className = 'dx-layer';
   layer.setAttribute('aria-hidden', 'true');

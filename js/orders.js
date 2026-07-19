@@ -1,5 +1,5 @@
 /**
- * Public Locate My Order — published sites catalog (no auth).
+ * Public Locate My Order - published sites catalog (no auth).
  */
 (function () {
   let activeYear = "";
@@ -24,7 +24,7 @@
     return cloudWorkerUrl();
   }
 
-  /** Candidate API bases — public catalog prefers cloud so a stopped local worker does not break it. */
+  /** Candidate API bases - public catalog prefers cloud so a stopped local worker does not break it. */
   function workerCandidates() {
     const cloud = cloudWorkerUrl();
     const local = localWorkerUrl();
@@ -253,7 +253,7 @@
           "</span>";
         gridEl.innerHTML = "";
         const countEl = document.getElementById("orders-count");
-        if (countEl) countEl.textContent = "—";
+        if (countEl) countEl.textContent = "-";
       }
     }
 

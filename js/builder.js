@@ -1,5 +1,5 @@
 /**
- * Builder — business details → generate with Website Presets, then AI edit / publish.
+ * Builder - business details → generate with Website Presets, then AI edit / publish.
  */
 (function () {
   const DEFAULT_TEMPLATE_ID = "local-service";
@@ -271,11 +271,14 @@
   }
 
   function workerUrl() {
+    if (typeof window.resolveWorkerUrl === "function") {
+      const resolved = String(window.resolveWorkerUrl() || "").replace(/\/$/, "");
+      if (resolved) return resolved;
+    }
     const cached = String(window.__MOONRISE_RESOLVED_WORKER_URL || "")
       .trim()
       .replace(/\/$/, "");
     if (cached) return cached;
-    if (typeof window.resolveWorkerUrl === "function") return window.resolveWorkerUrl();
     return String(window.SITE_CONFIG?.workerUrl || "").replace(/\/$/, "");
   }
 
@@ -298,7 +301,7 @@
     const client = window.SiteSupabase?.getClient?.();
     if (!client) {
       throw new Error(
-        "Supabase is not configured. Reload the page — if this persists, check that js/config.js loaded."
+        "Supabase is not configured. Reload the page - if this persists, check that js/config.js loaded."
       );
     }
     return client;
@@ -334,7 +337,7 @@
       window.StudioToast?.clear?.();
       return;
     }
-    // Keep a persistent line above the ask bar — toast alone is easy to miss.
+    // Keep a persistent line above the ask bar - toast alone is easy to miss.
     if (status) {
       status.textContent = msg;
       status.classList.add("is-error");
@@ -478,7 +481,7 @@
     });
   }
 
-  /** Paint the finished site and drive the bar to 100% — single completion path. */
+  /** Paint the finished site and drive the bar to 100% - single completion path. */
   async function revealGeneratedSite(html, opts) {
     const next = ensureMobileFriendlyHtml(html || "");
     if (!String(next || "").trim()) {
@@ -564,7 +567,7 @@
   });
 
   function syncPromptActionUi() {
-    /* Ask AI bar removed — edits happen outside this UI. */
+    /* Ask AI bar removed - edits happen outside this UI. */
   }
 
   function setOnboardError(msg) {
@@ -617,7 +620,7 @@
       const desc = document.getElementById("template-viewer-desc");
       if (title) title.textContent = template.name;
       if (desc) desc.textContent = template.desc;
-      // Full real page — never card mode
+      // Full real page - never card mode
       frame.src = template.preview || "";
       frame.removeAttribute("scrolling");
     } else {
@@ -660,7 +663,7 @@
       style.textContent = ".toggles{display:none!important}";
       (doc.head || doc.documentElement).appendChild(style);
     } catch (_) {
-      /* cross-origin or not ready — ignore */
+      /* cross-origin or not ready - ignore */
     }
   }
 
@@ -866,7 +869,7 @@
     const reviews = String(params().get("reviews") || "").trim();
     const parts = [
       "Create a complete multi-section landing page website for " + name + ".",
-      "Use ONLY the real business facts below in the hero, contact blocks, footer, and CTAs — never invent a different company name or phone.",
+      "Use ONLY the real business facts below in the hero, contact blocks, footer, and CTAs - never invent a different company name or phone.",
     ];
     if (category) parts.push("Trade/category: " + category + ".");
     if (address) parts.push("Service address: " + address + ".");
@@ -886,7 +889,7 @@
   function intakeFromQuery() {
     const p = params();
     if (!hasFreshLeadIntake(p)) {
-      // Plain builder open — never reuse a leftover Finder pick.
+      // Plain builder open - never reuse a leftover Finder pick.
       // Keep state when opening an existing project by id.
       if (!p.get("project_id")) clearBuilderForNextVisit();
       return false;
@@ -1218,7 +1221,7 @@
     return !!(state.projectId || params().get("project_id"));
   }
 
-  /** Finder swipe / lead handoff — must not be wiped or sent to blank setup. */
+  /** Finder swipe / lead handoff - must not be wiped or sent to blank setup. */
   function hasFinderHandoff() {
     return !!(state.fromFinder || hasFreshLeadIntake());
   }
@@ -1238,7 +1241,7 @@
   }
 
   function syncSetupStepIndicators() {
-    /* single-step setup — no progress indicators */
+    /* single-step setup - no progress indicators */
   }
 
   function dismissOnboard() {
@@ -1305,7 +1308,7 @@
 
   function isMapsPathReady(fields) {
     const f = fields || readOnboardFields();
-    // Any link is enough — no Google-only requirement
+    // Any link is enough - no Google-only requirement
     return isLooseLink(f.maps);
   }
 
@@ -1314,7 +1317,7 @@
     if (state.mapsScraping) return false;
     const fields = readOnboardFields();
     if (isMapsPathReady(fields) || isManualComplete(fields)) return true;
-    // Business Finder handoff may omit phone — still let them continue with the rest.
+    // Business Finder handoff may omit phone - still let them continue with the rest.
     if (
       state.leadId &&
       fields.name &&
@@ -1389,7 +1392,7 @@
       shell.classList.toggle("is-err", tone === "err");
     }
     if (!el) return;
-    // Busy/success are shown on the input shell — no status line text.
+    // Busy/success are shown on the input shell - no status line text.
     if (tone === "ok" || tone === "busy" || !msg) {
       el.hidden = true;
       el.textContent = "";
@@ -1519,7 +1522,7 @@
         }
       }
     } catch (_) {
-      /* ignore — optional enrichment */
+      /* ignore - optional enrichment */
     }
     return null;
   }
@@ -1545,7 +1548,7 @@
     if (mapsEl && mapsEl.value.trim() !== maps) mapsEl.value = maps;
     setBusinessValue("mapsUrl", maps);
 
-    // Link alone unlocks Continue — scrape fills manual fields best-effort
+    // Link alone unlocks Continue - scrape fills manual fields best-effort
     state.mapsReady = true;
     updateOnboardContinue();
 
@@ -1701,7 +1704,7 @@
     return !!(state.mvpPlus || hasActiveSubscription());
   }
 
-  /** View Code / Download — MVP+ subscription or active paid plan. */
+  /** View Code / Download - MVP+ subscription or active paid plan. */
   function canAccessCodeTools() {
     return hasMvpPlus();
   }
@@ -1748,7 +1751,7 @@
     }
   }
 
-  /** Gate Code / Download — MVP+ or active paid plan. */
+  /** Gate Code / Download - MVP+ or active paid plan. */
   function denyPaidPlan(feature) {
     const label = feature === "download" ? "Download HTML" : "View Code";
     const btn =
@@ -1778,7 +1781,7 @@
 
   async function requirePaidPlanAsync(feature) {
     if (canAccessCodeTools()) return true;
-    // Credits often load after first paint — refresh once before denying.
+    // Credits often load after first paint - refresh once before denying.
     await syncCreditsFromWorker();
     if (canAccessCodeTools()) return true;
     return denyPaidPlan(feature);
@@ -1986,7 +1989,7 @@
     const hasHtml = !!(state.html && state.html.trim());
     const showCode = state.mode === "code";
     const projectLoading = document.body.classList.contains("ms-lb-project-loading");
-    // Overlay only while a real generate/load is active — never a fake "Generating…" state.
+    // Overlay only while a real generate/load is active - never a fake "Generating…" state.
     const showLoading = (genProgressActive || projectLoading) && !showCode;
     const showGenError =
       !!(genError && !genError.hidden) && !showLoading && !hasHtml && !showCode;
@@ -2011,12 +2014,12 @@
       }
     }
     if (empty) empty.hidden = showLoading || showGenError || hasHtml || showCode;
-    // Never use display:none on the preview iframe — Safari/Firefox can drop
+    // Never use display:none on the preview iframe - Safari/Firefox can drop
     // written documents, leaving a blank preview when opening a project.
     if (frame) {
       frame.hidden = false;
       frame.removeAttribute("hidden");
-      // Keep the frame visible whenever we have HTML — parking after generate
+      // Keep the frame visible whenever we have HTML - parking after generate
       // was leaving a blank gray preview with a 1×1 invisible iframe.
       const park = !hasHtml || showCode || ((genProgressActive || projectLoading) && !hasHtml);
       frame.classList.toggle("is-parked", park);
@@ -2236,7 +2239,7 @@
     if (!shell || !wrap) return;
 
     const vp = state.viewport;
-    // Desktop always fills the preview pane — resizing it collapses the shell
+    // Desktop always fills the preview pane - resizing it collapses the shell
     // into a blank gray panel with a thin vertical resizer line in the center.
     const desktopFill = vp === "desktop" || vp === "fullscreen" || state.mode === "code";
     const canResize =
@@ -2338,7 +2341,13 @@
     state.viewport = vp;
     syncFullscreenUi();
     setModeUi();
-    setPreviewFrameViewportClass(document.getElementById("preview-frame"), vp);
+    const frame = document.getElementById("preview-frame");
+    if (vp === "fullscreen" && frame) {
+      frame.classList.remove("is-parked");
+      frame.hidden = false;
+      frame.removeAttribute("hidden");
+    }
+    setPreviewFrameViewportClass(frame, vp);
 
     if (shouldEase) scheduleViewportSizeApply();
     else applyPreviewViewportSize();
@@ -2405,7 +2414,7 @@
     };
 
     const startDrag = (event, nextAxis, side) => {
-      // Desktop fills the pane — never enter resize mode (collapses the preview).
+      // Desktop fills the pane - never enter resize mode (collapses the preview).
       if (state.viewport === "desktop" || state.viewport === "fullscreen") return;
       if (!isResizableViewport(state.viewport) || state.mode === "code") return;
       if (event.button != null && event.button !== 0) return;
@@ -2633,7 +2642,7 @@
     const prev = frame.getAttribute("sandbox") || "";
     if (prev !== next) {
       frame.setAttribute("sandbox", next);
-      // Changing sandbox resets the iframe document — force a rewrite next.
+      // Changing sandbox resets the iframe document - force a rewrite next.
       editState.lastWrittenHtml = "";
     }
     editState.lastSandboxMode = mode;
@@ -2707,7 +2716,7 @@
     );
 
     const css = [
-      "/* Moonrise mobile-fit — one scroll root (html), body must not trap scroll */",
+      "/* Moonrise mobile-fit - one scroll root (html), body must not trap scroll */",
       "html{max-width:100%!important;overflow-x:hidden!important;overflow-y:scroll!important;height:auto!important;max-height:none!important;-webkit-overflow-scrolling:touch}",
       "body{max-width:100%!important;overflow-x:hidden!important;overflow-y:visible!important;height:auto!important;max-height:none!important;min-height:100%;position:relative!important}",
       "img,video,canvas,svg{max-width:100%;height:auto}",
@@ -2751,7 +2760,7 @@
   function writePreviewDocument(html) {
     const frame = getPreviewFrame();
     if (!frame || !html) return null;
-    // Keep the frame in the layout tree — never display:none / parked while painting.
+    // Keep the frame in the layout tree - never display:none / parked while painting.
     frame.hidden = false;
     frame.removeAttribute("hidden");
     frame.classList.remove("is-parked");
@@ -2777,7 +2786,7 @@
       } catch (_) {
         painted = false;
       }
-      // srcdoc/blob can be opaque briefly — treat a non-tiny frame as painted.
+      // srcdoc/blob can be opaque briefly - treat a non-tiny frame as painted.
       if (!painted && frame.clientWidth > 80 && frame.clientHeight > 80) {
         painted = !frame.classList.contains("is-parked");
       }
@@ -2828,7 +2837,7 @@
     }
   }
 
-  /** Re-paint preview after layout — fixes blank iframe when opening a project in a new tab. */
+  /** Re-paint preview after layout - fixes blank iframe when opening a project in a new tab. */
   function ensurePreviewPainted() {
     if (!(state.html && String(state.html).trim())) return;
     if (state.mode === "code") return;
@@ -2846,7 +2855,7 @@
     if (!contentMissing) markPreviewPainted(true);
   }
 
-  /** Schedule several paints — Finder swipe often finishes before the preview grid has height. */
+  /** Schedule several paints - Finder swipe often finishes before the preview grid has height. */
   function schedulePreviewRepaint() {
     if (!(state.html && String(state.html).trim()) || state.mode === "code") return;
     markPreviewPainted(false);
@@ -4551,7 +4560,7 @@
       settingsDeleteBtn.hidden = paid;
       settingsDeleteBtn.disabled = paid;
       settingsDeleteBtn.title = paid
-        ? "This website was paid for — it can’t be deleted."
+        ? "This website was paid for - it can’t be deleted."
         : "";
     }
     syncRedesignButtonUi();
@@ -4734,7 +4743,7 @@
         .eq("user_id", user.id);
       if (state.project) state.project.price_cents = state.priceCents;
     } catch (_) {
-      /* non-fatal — price still applied locally */
+      /* non-fatal - price still applied locally */
     }
   }
 
@@ -4743,13 +4752,26 @@
     window.MoonriseWatermarkEmbed?.unmount?.();
     if (host) host.innerHTML = "";
 
+    // Watermark preview is editor-only suppressed; live sites get embed.js on publish.
+    if (document.body?.dataset?.page === "editor") {
+      setPublishEnabled();
+      return;
+    }
+
     const unpaid = state.project?.watermark_enabled !== false;
     if (host && unpaid && state.projectId && window.MoonriseWatermarkEmbed?.mount) {
+      const CC = window.MoonriseCreatorContact;
+      const creatorContact =
+        CC?.readStoredCreatorContact?.(state.project) ||
+        CC?.creatorContactFromProfile?.(state.profile) ||
+        null;
       window.MoonriseWatermarkEmbed.mount({
         host,
         projectId: state.projectId,
         workerUrl: workerUrl(),
         urgencyEndsAt: state.project?.urgency_ends_at || "",
+        creatorContact,
+        hqContact: CC?.HQ_CONTACT || null,
       });
     }
     setPublishEnabled();
@@ -4757,13 +4779,23 @@
 
   function workerUnreachableMessage(base, cause) {
     const url = String(base || "").replace(/\/$/, "") || "the Moonrise worker";
-    const isLocal = /localhost|127\.0\.0\.1|\[::1\]|:8787/i.test(url);
     const detail = cause ? " (" + String(cause).replace(/^Error:\s*/i, "") + ")" : "";
+    try {
+      if (location.protocol === "file:") {
+        return (
+          "Generation needs the live Moonrise site. Open https://trymoonrise.com/editor.html instead of a file on your computer." +
+          detail
+        );
+      }
+    } catch (_) {
+      /* ignore */
+    }
+    const isLocal = /localhost|127\.0\.0\.1|\[::1\]|:8787/i.test(url);
     if (isLocal) {
       return (
         "Can't reach the local Moonrise worker at " +
         url +
-        ". Start it with: cd moonrise-studio/worker && npm start — or run localStorage.setItem('ms_use_local_worker','0') and refresh to use the cloud API." +
+        ". Start it with: cd moonrise-studio/worker && npm start - or run localStorage.setItem('ms_use_local_worker','0') and refresh to use the cloud API." +
         detail
       );
     }
@@ -4959,7 +4991,7 @@
       await sleepMs((Number(data.retryAfterSec) || 3) * 1000);
     }
     throw new Error(
-      "Generation is still running. Keep this tab open — it should finish shortly."
+      "Generation is still running. Keep this tab open - it should finish shortly."
     );
   }
 
@@ -4992,7 +5024,7 @@
       } catch (_) {
         throw new Error(
           data.error ||
-            "Too many generation attempts. Your site may still be building — wait a moment and refresh."
+            "Too many generation attempts. Your site may still be building - wait a moment and refresh."
         );
       }
     }
@@ -5030,7 +5062,7 @@
     // Finder swipe: open workspace + preparing progress immediately.
     if (fromFinderFlow && !isRedesign) beginFinderGenerateUi();
 
-    // Dock generate is blocked until the first site exists — unless this is setup Generate
+    // Dock generate is blocked until the first site exists - unless this is setup Generate
     // or a Business Finder auto-generate handoff.
     if (!fromOnboard && !fromFinderFlow && !isRedesign && !state.onboardDone) {
       ensureOnboardSurvey();
@@ -5101,7 +5133,7 @@
     intake.notes = readUserGenerationPrompt() || intake.notes || "";
     if (isRedesign) {
       const redesignNote =
-        "REDESIGN: Create a completely different website — new layout, palette, typography, section order, and visual style. Do not reuse the previous design.";
+        "REDESIGN: Create a completely different website - new layout, palette, typography, section order, and visual style. Do not reuse the previous design.";
       intake.notes = intake.notes
         ? String(intake.notes).trim() + "\n" + redesignNote
         : redesignNote;
@@ -5144,7 +5176,7 @@
         /* ignore */
       }
     }, GENERATE_TIMEOUT_MS);
-    // Real generate request armed — consume the stored pick and show building progress.
+    // Real generate request armed - consume the stored pick and show building progress.
     applyPickFromStorageOrQuery(params(), { retain: false });
     setPromptBusy(true, isRedesign ? "Redesigning your website…" : "Building your website…");
     updateOnboardContinue();
@@ -5157,8 +5189,9 @@
         base = await pingWorker(base, signal);
       } catch (e) {
         if (e?.name === "AbortError") throw e;
-        const tried = (window.workerUrlCandidates?.() || [base]).join(", ");
-        throw new Error(workerUnreachableMessage(tried || base, e?.message || e));
+        const primary =
+          typeof window.resolveWorkerUrl === "function" ? window.resolveWorkerUrl() : base;
+        throw new Error(workerUnreachableMessage(primary || base, e?.message || e));
       }
       renderGenerateProgress(Math.max(genProgressPct, 18), "Building your website…");
       const headers = await authHeaders();
@@ -5257,7 +5290,7 @@
         generateAbort = null;
         syncBuilderChannelGenerating();
       } else if (generatedHtmlKeep.html && String(generatedHtmlKeep.html).trim()) {
-        // HTML arrived but success path failed mid-reveal — still finish.
+        // HTML arrived but success path failed mid-reveal - still finish.
         try {
           await revealGeneratedSite(generatedHtmlKeep.html);
         } catch (_) {
@@ -5277,18 +5310,14 @@
   function syncRedesignButtonUi() {
     const btn = document.getElementById("btn-redesign-top");
     const label = btn?.querySelector(".ms-lb-redesign-label");
-    const cost = Number(state.generationCost) || 5;
     const canRedesign = !!(state.projectId && state.html && String(state.html).trim());
     if (btn) {
       btn.hidden = !canRedesign;
       btn.disabled = !!generateAbort;
-      btn.setAttribute(
-        "aria-label",
-        "Redesign website for " + cost + " credit" + (cost === 1 ? "" : "s")
-      );
+      btn.setAttribute("aria-label", "Redesign website");
     }
     if (label) {
-      label.textContent = "Redesign · " + cost + " credit" + (cost === 1 ? "" : "s");
+      label.textContent = "Redesign";
     }
   }
 
@@ -5331,10 +5360,8 @@
         resolve(false);
         return;
       }
-      const cost = Number(state.generationCost) || 5;
       if (costEl) {
-        costEl.textContent =
-          "Uses " + cost + " credit" + (cost === 1 ? "" : "s");
+        costEl.textContent = "Your current design will be replaced with a new one.";
       }
       redesignConfirmResolver = resolve;
       if (typeof dialog.showModal === "function") dialog.showModal();
@@ -5406,7 +5433,7 @@
       await persistHtmlQuiet(state.html).catch(() => {});
     }
     // Publishing is allowed while the watermark is on. The seller isn't the
-    // payer — the live site carries the "Complete your order" widget and the
+    // payer - the live site carries the "Complete your order" widget and the
     // business owner pays there to remove the watermark (which auto-redeploys
     // the clean site).
     await persistPrice();
@@ -5585,7 +5612,7 @@
       return;
     }
     if (isPaidProject(state.project)) {
-      setError("This website was paid for — it can’t be deleted.");
+      setError("This website was paid for - it can’t be deleted.");
       return;
     }
     if (!confirm("Delete this project permanently? This cannot be undone.")) return;
@@ -5611,7 +5638,7 @@
         .select("id");
       if (error) throw error;
       if (!data?.length) {
-        throw new Error("This website was paid for — it can’t be deleted.");
+        throw new Error("This website was paid for - it can’t be deleted.");
       }
       location.href = "dashboard.html";
     } catch (e) {
@@ -5659,13 +5686,71 @@
     );
   }
 
+  function qrBusinessDetails() {
+    const ctx = state.project?.business_context || {};
+    const category =
+      businessValue("category") ||
+      String(ctx.category || state.project?.category || "").trim();
+    const phone =
+      businessValue("phone") ||
+      String(ctx.phone || state.project?.phone || "").trim();
+    const address =
+      businessValue("address") ||
+      String(ctx.address || state.project?.address || "").trim();
+    const url = liveSiteUrl() || "";
+    let siteLabel = url;
+    try {
+      const parsed = new URL(url);
+      siteLabel = parsed.hostname.replace(/^www\./i, "");
+      const path = parsed.pathname.replace(/\/$/, "");
+      if (path && path !== "/") siteLabel += path;
+    } catch (_) {
+      /* keep raw url */
+    }
+    return { category, phone, address, siteLabel, url };
+  }
+
+  function syncQrBusinessCardDetails() {
+    const details = qrBusinessDetails();
+    const categoryEl = document.getElementById("lb-qr-category");
+    const metaEl = document.getElementById("lb-qr-meta");
+    if (categoryEl) {
+      categoryEl.textContent = details.category || "";
+      categoryEl.hidden = !details.category;
+    }
+    if (metaEl) {
+      metaEl.textContent = "";
+      const rows = [];
+      if (details.phone) rows.push({ label: "Phone", value: details.phone });
+      if (details.address) rows.push({ label: "Address", value: details.address });
+      if (details.siteLabel) rows.push({ label: "Website", value: details.siteLabel });
+      rows.forEach((row) => {
+        const li = document.createElement("li");
+        const label = document.createElement("span");
+        label.className = "ms-lb-qr-meta-label";
+        label.textContent = row.label;
+        const value = document.createElement("span");
+        value.className = "ms-lb-qr-meta-value";
+        value.textContent = row.value;
+        li.appendChild(label);
+        li.appendChild(value);
+        metaEl.appendChild(li);
+      });
+      metaEl.hidden = rows.length === 0;
+    }
+  }
+
+  function qrCardRestTransform() {
+    return "rotateX(3deg) rotateY(-5deg)";
+  }
+
   function closeQrBusinessCard() {
     const modal = document.getElementById("lb-qr-modal");
     if (!modal) return;
     modal.hidden = true;
     document.body.classList.remove("ms-lb-qr-open");
     const card = document.getElementById("lb-qr-card");
-    if (card) card.style.transform = "";
+    if (card) card.style.transform = qrCardRestTransform();
   }
 
   function bindQrCardTilt() {
@@ -5673,15 +5758,16 @@
     const card = document.getElementById("lb-qr-card");
     if (!scene || !card || card.dataset.tiltBound === "1") return;
     card.dataset.tiltBound = "1";
+    card.style.transform = qrCardRestTransform();
     scene.addEventListener("pointermove", (e) => {
       const rect = scene.getBoundingClientRect();
       const x = (e.clientX - rect.left) / rect.width - 0.5;
       const y = (e.clientY - rect.top) / rect.height - 0.5;
       card.style.transform =
-        "rotateY(" + (x * 18).toFixed(2) + "deg) rotateX(" + (-y * 14).toFixed(2) + "deg)";
+        "rotateY(" + (-5 + x * 24).toFixed(2) + "deg) rotateX(" + (3 + -y * 18).toFixed(2) + "deg)";
     });
     scene.addEventListener("pointerleave", () => {
-      card.style.transform = "";
+      card.style.transform = qrCardRestTransform();
     });
   }
 
@@ -5710,12 +5796,14 @@
     return QRCode;
   }
 
+  const QR_CANVAS_PX = 168;
+
   async function renderQrToCanvas(canvas, url) {
     if (!canvas) throw new Error("QR canvas missing");
     const lib = await ensureQrLibrary();
     await lib.toCanvas(canvas, url, {
-      width: 220,
-      margin: 1,
+      width: QR_CANVAS_PX,
+      margin: 2,
       color: { dark: "#0f172a", light: "#ffffff" },
       errorCorrectionLevel: "M",
     });
@@ -5729,8 +5817,8 @@
       return;
     }
     const canvas = document.createElement("canvas");
-    const w = 900;
-    const h = 1280;
+    const w = 1200;
+    const h = 680;
     canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext("2d");
@@ -5743,42 +5831,68 @@
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, w, h);
 
-    // Soft card panel
-    roundRect(ctx, 70, 90, w - 140, h - 180, 36);
+    // Landscape card panel
+    const cardX = 60;
+    const cardY = 60;
+    const cardW = w - 120;
+    const cardH = h - 120;
+    roundRect(ctx, cardX, cardY, cardW, cardH, 36);
     ctx.fillStyle = "#ffffff";
     ctx.fill();
     ctx.strokeStyle = "rgba(15, 23, 42, 0.08)";
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    ctx.fillStyle = "#3b82f6";
-    ctx.font = "600 28px DM Sans, system-ui, sans-serif";
-    ctx.fillText("moonrise", 120, 180);
+    const copyX = cardX + 56;
+    const copyMaxW = cardW * 0.52;
+    const details = qrBusinessDetails();
 
     ctx.fillStyle = "#0f172a";
-    ctx.font = "700 54px DM Sans, system-ui, sans-serif";
-    wrapText(ctx, name, 120, 270, w - 240, 62);
+    ctx.font = "700 48px DM Sans, system-ui, sans-serif";
+    let detailY = wrapText(ctx, name, copyX, cardY + 108, copyMaxW, 52);
+
+    if (details.category) {
+      ctx.fillStyle = "#64748b";
+      ctx.font = "600 24px DM Sans, system-ui, sans-serif";
+      detailY = wrapText(ctx, details.category, copyX, detailY + 14, copyMaxW, 30);
+    }
+
+    const detailLines = [];
+    if (details.phone) detailLines.push("Phone · " + details.phone);
+    if (details.address) detailLines.push(details.address);
+    if (details.siteLabel) detailLines.push("Website · " + details.siteLabel);
+
+    if (detailLines.length) {
+      ctx.fillStyle = "#475569";
+      ctx.font = "500 22px DM Sans, system-ui, sans-serif";
+      detailLines.forEach((line) => {
+        detailY = wrapText(ctx, line, copyX, detailY + 28, copyMaxW, 30);
+      });
+    }
+
+    ctx.strokeStyle = "rgba(148, 163, 184, 0.35)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(copyX, cardY + cardH - 88);
+    ctx.lineTo(copyX + copyMaxW * 0.72, cardY + cardH - 88);
+    ctx.stroke();
+
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "500 20px DM Sans, system-ui, sans-serif";
+    ctx.fillText("Scan with a phone camera", copyX, cardY + cardH - 56);
 
     const qrCanvas = document.createElement("canvas");
     await renderQrToCanvas(qrCanvas, url);
-    const qrSize = 420;
-    const qrX = (w - qrSize) / 2;
-    const qrY = 430;
-    roundRect(ctx, qrX - 24, qrY - 24, qrSize + 48, qrSize + 48, 28);
+    const qrSize = 300;
+    const qrPad = 22;
+    const qrBoxX = cardX + cardW - qrSize - qrPad - 56;
+    const qrBoxY = cardY + (cardH - qrSize - qrPad * 2) / 2;
+    roundRect(ctx, qrBoxX, qrBoxY, qrSize + qrPad * 2, qrSize + qrPad * 2, 24);
     ctx.fillStyle = "#ffffff";
     ctx.fill();
     ctx.strokeStyle = "rgba(15, 23, 42, 0.1)";
     ctx.stroke();
-    ctx.drawImage(qrCanvas, qrX, qrY, qrSize, qrSize);
-
-    ctx.fillStyle = "#334155";
-    ctx.font = "500 28px DM Sans, system-ui, sans-serif";
-    const link = url.replace(/^https?:\/\//, "");
-    wrapText(ctx, link, 120, 960, w - 240, 36);
-
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = "500 24px DM Sans, system-ui, sans-serif";
-    ctx.fillText("Scan to visit the live website", 120, 1100);
+    ctx.drawImage(qrCanvas, qrBoxX + qrPad, qrBoxY + qrPad, qrSize, qrSize);
 
     const a = document.createElement("a");
     a.href = canvas.toDataURL("image/png");
@@ -5816,6 +5930,7 @@
       }
     }
     if (line) ctx.fillText(line, x, cy);
+    return cy;
   }
 
   async function openQrBusinessCard() {
@@ -5829,13 +5944,14 @@
     const name = qrBusinessName();
     const modal = document.getElementById("lb-qr-modal");
     const nameEl = document.getElementById("lb-qr-name");
-    const linkEl = document.getElementById("lb-qr-link");
+    const codeLinkEl = document.getElementById("lb-qr-code-link");
     const canvas = document.getElementById("lb-qr-canvas");
-    if (!modal || !nameEl || !linkEl || !canvas) return;
+    if (!modal || !nameEl || !codeLinkEl || !canvas) return;
 
+    nameEl.href = url;
     nameEl.textContent = name;
-    linkEl.href = url;
-    linkEl.textContent = url.replace(/^https?:\/\//, "");
+    codeLinkEl.href = url;
+    syncQrBusinessCardDetails();
 
     try {
       await renderQrToCanvas(canvas, url);
@@ -6179,18 +6295,25 @@
     return { enabled, domain };
   }
 
-  function syncLbToolsPanelLayout(expandedWidget) {
+  function scrollSideControlsToWidget(widget) {
+    const panel = document.querySelector(".ms-lb-side-controls");
+    if (!panel || !widget) return;
+    window.requestAnimationFrame(() => {
+      const panelRect = panel.getBoundingClientRect();
+      const widgetRect = widget.getBoundingClientRect();
+      if (widgetRect.bottom > panelRect.bottom - 12) {
+        panel.scrollTop += widgetRect.bottom - panelRect.bottom + 28;
+      } else if (widgetRect.top < panelRect.top + 8) {
+        panel.scrollTop += widgetRect.top - panelRect.top - 12;
+      }
+    });
+  }
+
+  function syncLbToolsPanelLayout() {
     const body = document.querySelector(".ms-lb-body");
     if (!body) return;
     const anyExpanded = !!body.querySelector(".ms-lb-side-controls .ms-lb-widget.is-expanded");
     body.classList.toggle("is-tools-expanded", anyExpanded);
-    if (!expandedWidget?.classList?.contains("is-expanded")) return;
-    const controls = body.querySelector(".ms-lb-side-controls");
-    if (!controls) return;
-    window.clearTimeout(syncLbToolsPanelLayout._scrollTimer);
-    syncLbToolsPanelLayout._scrollTimer = window.setTimeout(() => {
-      expandedWidget.scrollIntoView({ block: "nearest", behavior: "smooth" });
-    }, 80);
   }
 
   function setLbWidgetExpanded(widget, body, checkbox, expanded, { animate = true, onChange } = {}) {
@@ -6204,7 +6327,10 @@
     }
     if (body) body.setAttribute("aria-hidden", expanded ? "false" : "true");
     if (onChange) onChange(!!expanded);
-    syncLbToolsPanelLayout(widget);
+    syncLbToolsPanelLayout();
+    if (expanded && widget) {
+      window.setTimeout(() => scrollSideControlsToWidget(widget), animate ? 420 : 0);
+    }
   }
 
   function syncCustomDomainWidgetUi() {
@@ -7160,7 +7286,7 @@
     }
 
     // Wait briefly for shell auth so project load / generate has a session.
-    // Finder handoff uses a shorter wait — generate must start ASAP.
+    // Finder handoff uses a shorter wait - generate must start ASAP.
     if (document.body.dataset.msAuthFired !== "1") {
       await new Promise((resolve) => {
         const done = () => {
@@ -7180,7 +7306,7 @@
     // Wipe blank editor visits on leave / bfcache restore. Never wipe while
     // opening a project_id or Finder swipe handoff (tab switches would blank the editor).
     window.addEventListener("pagehide", () => {
-      // Don't wipe in-flight generation — mobile browsers fire pagehide on tab switch.
+      // Don't wipe in-flight generation - mobile browsers fire pagehide on tab switch.
       if (generateAbort) return;
       if (state.mode === "edit" && state.projectId) {
         flushEditHtmlToState();
@@ -7210,7 +7336,7 @@
     const finderHandoff = hasFreshLeadIntake();
     // URL-first: always paint the editor workspace.
     if (projectId || finderHandoff) setBuilderPhase("workspace");
-    // Fresh blank visits only — never clear before Finder intake (wipes pick + flags).
+    // Fresh blank visits only - never clear before Finder intake (wipes pick + flags).
     if (!projectId && !finderHandoff) clearBuilderForNextVisit();
     const fromFinder = intakeFromQuery();
     hydrateIntakeFromBuilderHandoff();
@@ -7241,7 +7367,7 @@
 
     setBuilderPhase("workspace");
     if (params().get("paid") === "1" && projectId) {
-      setStatus("Payment received — removing watermark…");
+      setStatus("Payment received - removing watermark…");
       const sessionId = String(params().get("session_id") || "").trim();
       if (sessionId.startsWith("cs_") && workerUrl()) {
         try {
@@ -7254,8 +7380,8 @@
           if (!res.ok) throw new Error(data.error || "Unlock failed");
           window.StudioToast?.success?.(
             data.redeployed
-              ? "Payment confirmed — watermark removed and live site updated."
-              : "Payment confirmed — watermark removed."
+              ? "Payment confirmed - watermark removed and live site updated."
+              : "Payment confirmed - watermark removed."
           );
         } catch (e) {
           window.StudioToast?.error?.(e.message || "Could not unlock after payment");
@@ -7276,14 +7402,14 @@
         document.body.classList.add("ms-lb-project-loading");
         syncEmptyState();
         await loadProject(projectId);
-        // Existing projects always open in the editor — even with empty HTML.
+        // Existing projects always open in the editor - even with empty HTML.
         state.onboardDone = true;
         setBuilderPhase("workspace");
         setStatus("");
         updateEmptyCopy(fromFinder);
         updatePreview();
         schedulePreviewRepaint();
-        // Empty project (failed/aborted generate) — start generation instead of blank parked iframe.
+        // Empty project (failed/aborted generate) - start generation instead of blank parked iframe.
         if (!(state.html && String(state.html).trim())) {
           const biz =
             businessValue("businessName") ||

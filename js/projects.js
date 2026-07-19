@@ -1,5 +1,5 @@
 /**
- * All projects — search, filter, and open builds.
+ * All projects - search, filter, and open builds.
  */
 (function () {
   const SEARCH_RESULT_LIMIT = 200;
@@ -350,7 +350,7 @@
     const error = document.getElementById("projects-delete-error");
     if (!dialog || !project) return;
     if (!canDeleteProject(project)) {
-      window.StudioToast?.error?.("This website was paid for — it can’t be deleted.");
+      window.StudioToast?.error?.("This website was paid for - it can’t be deleted.");
       return;
     }
     deleteProjectId = project.id;
@@ -379,7 +379,7 @@
     if (project && !canDeleteProject(project)) {
       if (error) {
         error.hidden = false;
-        error.textContent = "This website was paid for — it can’t be deleted.";
+        error.textContent = "This website was paid for - it can’t be deleted.";
       }
       return;
     }
@@ -403,7 +403,7 @@
       if (dbError) throw dbError;
       if (!data?.length) {
         if (project && !canDeleteProject(project)) {
-          throw new Error("This website was paid for — it can’t be deleted.");
+          throw new Error("This website was paid for - it can’t be deleted.");
         }
         throw new Error("Could not delete project. Refresh and try again.");
       }

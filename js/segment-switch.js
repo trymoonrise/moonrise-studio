@@ -5,7 +5,7 @@
   const INDICATOR_CLASS = "seg-switch-indicator";
   const TRACK_CLASS = "seg-switch";
   const READY_CLASS = "is-ready";
-  const ANIM_MS = 420;
+  const ANIM_MS = 440;
 
   const PRESETS = [
     {
@@ -100,7 +100,7 @@
     const width = el.offsetWidth || Math.round(el.getBoundingClientRect().width);
     const height = el.offsetHeight || Math.round(el.getBoundingClientRect().height);
 
-    // Prefer layout offsets — getBoundingClientRect drifts with zoom / subpixels
+    // Prefer layout offsets - getBoundingClientRect drifts with zoom / subpixels
     // and was shifting the pill off the active segment.
     let left = 0;
     let top = 0;
@@ -253,7 +253,7 @@
     ctrl.sync = sync;
     bindResizeObserver(ctrl);
 
-    // Only snap on first enhance — later updates must keep the pill where it is
+    // Only snap on first enhance - later updates must keep the pill where it is
     // so sync(true) can slide to the new active item.
     if (isNew) {
       sync(false);

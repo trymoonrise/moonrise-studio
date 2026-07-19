@@ -55,7 +55,7 @@ function main() {
     const html = fs.readFileSync(path.join(PRESETS_DIR, file), 'utf8');
     const meta = parsePresetMeta(html);
     if (!meta) {
-      console.warn(`Skipping ${file} — no @preset meta block`);
+      console.warn(`Skipping ${file} - no @preset meta block`);
       continue;
     }
     entries.push({

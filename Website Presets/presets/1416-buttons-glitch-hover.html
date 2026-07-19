@@ -11,7 +11,7 @@
   -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>1416 — Glitch Hover Button</title>
+  <title>1416 - Glitch Hover Button</title>
   <style>
     @import url('../shared/preset-reset.css');
     body{display:grid;place-items:center;min-height:100vh;background:#000}.btn{position:relative;padding:16px 40px;border:2px solid #0f0;background:transparent;color:#0f0;font-family:monospace;font-weight:700;font-size:1rem;cursor:pointer;text-transform:uppercase;overflow:hidden}.btn::before,.btn::after{content:attr(data-t);position:absolute;inset:0;display:grid;place-items:center;opacity:0}.btn:hover::before{color:#f0f;opacity:1;animation:gb .3s;clip-path:inset(30% 0 40% 0)}.btn:hover::after{color:#0ff;opacity:1;animation:gb .3s reverse;clip-path:inset(60% 0 10% 0)}@keyframes gb{0%,100%{transform:translate(0)}50%{transform:translate(-3px,2px)}}

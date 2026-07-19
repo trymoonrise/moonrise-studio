@@ -1,5 +1,5 @@
 /**
- * Generation job helpers — idempotent /generate and in-flight dedupe.
+ * Generation job helpers - idempotent /generate and in-flight dedupe.
  */
 const ACTIVE_JOB_MS = Number(process.env.GENERATE_ACTIVE_JOB_MS || 15 * 60 * 1000);
 const POLL_MS = Number(process.env.GENERATE_POLL_MS || 2000);

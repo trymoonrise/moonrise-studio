@@ -2,7 +2,7 @@
 
 Hands-free Google Maps lead scraper. Same seed file + scrape idea as the Chrome LeadFinder extension, but driven by Playwright and posts **CSV batches of 1,000 new leads** to Discord.
 
-**Prefer local?** Use the desktop app (tray + CustomTkinter panel) — no Render needed:
+**Prefer local?** Use the desktop app (tray + CustomTkinter panel) - no Render needed:
 
 - Double-click [`desktop/Start LeadFinder.cmd`](desktop/Start%20LeadFinder.cmd)
 - Details: [`desktop/README.md`](desktop/README.md)
@@ -45,7 +45,7 @@ Studio config: `SITE_CONFIG.leadFinderUrl` (default `http://127.0.0.1:8790`). Wh
 ```powershell
 cd "LeadFinderCloud"
 copy .env.example .env
-# edit .env — set DISCORD_WEBHOOK_URL
+# edit .env - set DISCORD_WEBHOOK_URL
 
 npm install
 npx playwright install chromium   # if not using Docker image browsers
@@ -80,7 +80,7 @@ Render **Cron Jobs cannot attach persistent disks**. Without remote state, every
 
 | Variable | Default | Meaning |
 |----------|---------|---------|
-| `DISCORD_WEBHOOK_URL` | — | Required |
+| `DISCORD_WEBHOOK_URL` | - | Required |
 | `QUERIES_PER_RUN` | `3` | Maps searches per cycle |
 | `SCRAPE_EVERY_TIME` | `1` | Always scrape (never skip the schedule) |
 | `MAX_SCROLLS` | `220` | Max results-panel scrolls per search |
@@ -89,5 +89,5 @@ Render **Cron Jobs cannot attach persistent disks**. Without remote state, every
 
 **Strict rule:** leads go straight into Supabase `public.leads`. Every **1,000** successful uploads, Discord gets a text notice only (no CSV):
 
-> **LeadFinder** — batch **#12**  
+> **LeadFinder** - batch **#12**  
 > 1,000 leads have been uploaded into your database.

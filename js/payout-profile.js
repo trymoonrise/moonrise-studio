@@ -37,7 +37,7 @@
     return PHONE_COUNTRIES.find((c) => c.iso === iso) || PHONE_COUNTRIES[0];
   }
 
-  /** National digits only — country dial is shown beside the input, not inside it. */
+  /** National digits only - country dial is shown beside the input, not inside it. */
   function formatPhoneDisplay(nationalDigits, iso) {
     const country = phoneCountry(iso);
     let d = digitsOnly(nationalDigits);
@@ -135,6 +135,12 @@
     };
   }
 
+  function normalizePayoutMethodId(methodId) {
+    const id = String(methodId || "").trim().toLowerCase();
+    if (id === "bank") return "other";
+    return id;
+  }
+
   function normalizeProfile(raw) {
     let p = raw;
     if (typeof p === "string") {
@@ -154,6 +160,8 @@
       email,
       phone,
       phoneCountry: phoneCountryCode || undefined,
+      payoutMethod: normalizePayoutMethodId(p.payoutMethod || p.payout_method || ""),
+      payoutHandle: String(p.payoutHandle || p.payout_handle || "").trim(),
       securityCard: normalizeSecurityCard(p.securityCard || p.security_card),
       completedAt: p.completedAt || p.completed_at || "",
       onboardingStatus: String(p.onboardingStatus || p.onboarding_status || ""),
@@ -209,7 +217,12 @@
     if (String(payout.skippedAt || "").trim()) return false;
     if (!isVerifiedSecurityCard(payout.securityCard)) return false;
 
-    return !!(String(payout.email || "").trim() && String(payout.phone || "").trim());
+    return !!(
+      String(payout.email || "").trim() &&
+      String(payout.phone || "").trim() &&
+      String(payout.payoutMethod || "").trim() &&
+      String(payout.payoutHandle || "").trim()
+    );
   }
 
   /**

@@ -52,7 +52,7 @@ function resolveWorkerPublicUrl() {
 const WORKER_PUBLIC_URL = resolveWorkerPublicUrl();
 const WATERMARK_EMBED_PATH = path.join(__dirname, "..", "watermark", "embed.js");
 const CONTACT_FORM_SCRIPT_PATH = path.join(__dirname, "..", "watermark", "contact-form.js");
-/** Website generation and editing — override with WEBSITE_GENERATION_MODEL. */
+/** Website generation and editing - override with WEBSITE_GENERATION_MODEL. */
 const WEBSITE_GENERATION_MODEL = String(
   process.env.WEBSITE_GENERATION_MODEL || "minimax/minimax-m2.7"
 ).trim();
@@ -181,12 +181,25 @@ const {
   publicSecurityCardStatus,
 } = require("./security-card");
 const { notifyGoLiveSale } = require("./sale-telegram");
+const {
+  vapidConfigured,
+  upsertPushSubscription,
+  deletePushSubscription,
+  notifyCreatorClientPurchase,
+} = require("./creator-push");
+const { recordPendingCreatorPayout } = require("./creator-payouts");
 const { sendContactLeadEmail, sendPurchaseInvoiceEmail } = require("./contact-mail");
 const {
   detectContactEndpoint,
   readContactFormConfig,
   escapeHtmlAttr,
 } = require("./contact-endpoint");
+const {
+  buildCreatorContactSnapshot,
+  hqContactSnapshot,
+  encodeContactPayload,
+  readStoredCreatorContact,
+} = require("./creator-contact");
 const { clientIp, createRateLimiter, applySecurityHeaders } = security;
 const {
   resolveExistingGeneration,
@@ -407,6 +420,7 @@ async function unlockGoLiveAfterPayment(supabase, { projectId, session, userId }
 
   const invoiceEmailAlreadySent = !!priorCtx.purchaseInvoiceEmailSentAt;
   const saleTelegramAlreadySent = !!priorCtx.saleTelegramSentAt;
+  const creatorPushAlreadySent = !!priorCtx.creatorPushSentAt;
 
   const { error: unlockErr } = await supabase
     .from("projects")
@@ -436,6 +450,7 @@ async function unlockGoLiveAfterPayment(supabase, { projectId, session, userId }
             : session.payment_intent?.id || null,
         amount_cents: session.amount_total,
         currency: session.currency || "usd",
+        kind: "go_live",
         status: "paid",
       },
       { onConflict: "stripe_session_id" }
@@ -519,6 +534,30 @@ async function unlockGoLiveAfterPayment(supabase, { projectId, session, userId }
     }
   }
 
+  if (!creatorPushAlreadySent && session) {
+    try {
+      await notifyCreatorClientPurchase(supabase, {
+        project: fresh,
+        session,
+        ownerId,
+        siteUrl,
+      });
+    } catch (pushErr) {
+      console.error("Creator client-purchase push failed:", pushErr.message || pushErr);
+    }
+  }
+
+  try {
+    await recordPendingCreatorPayout(supabase, {
+      projectId,
+      ownerId,
+      session,
+      project: fresh,
+    });
+  } catch (payoutErr) {
+    console.warn("Pending creator payout record failed:", payoutErr?.message || payoutErr);
+  }
+
   return {
     projectId,
     watermarkEnabled: false,
@@ -546,13 +585,14 @@ const PUBLIC_PATHS = new Set([
   "/contact-form.js",
   "/contact-submit",
   "/public-orders",
+  "/public-creator-contact",
 ]);
 app.use((req, res, next) => {
   if (PUBLIC_PATHS.has(req.path)) {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Vary", "Origin");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Request-Id");
     if (req.method === "OPTIONS") return res.sendStatus(204);
   }
   next();
@@ -596,7 +636,7 @@ app.use(
       return callback(null, false);
     },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Request-Id"],
   })
 );
 
@@ -639,7 +679,7 @@ app.get("/health", (_req, res) => {
   });
 });
 
-/** Stripe webhook needs raw body — mount before json parser. */
+/** Stripe webhook needs raw body - mount before json parser. */
 app.post("/webhooks/stripe", express.raw({ type: "application/json" }), async (req, res) => {
   const stripe = stripeClient();
   if (!stripe) return res.status(500).send("Stripe not configured");
@@ -1025,7 +1065,7 @@ function ensureMobileFriendlyHtml(html) {
   );
 
   const css = `
-/* Moonrise mobile-fit — one scroll root (html), body must not trap scroll */
+/* Moonrise mobile-fit - one scroll root (html), body must not trap scroll */
 html{max-width:100%!important;overflow-x:hidden!important;overflow-y:scroll!important;height:auto!important;max-height:none!important;-webkit-overflow-scrolling:touch}
 body{max-width:100%!important;overflow-x:hidden!important;overflow-y:visible!important;height:auto!important;max-height:none!important;min-height:100%;position:relative!important}
 img,video,canvas,svg{max-width:100%;height:auto}
@@ -1220,7 +1260,7 @@ function extractPresetSnippet(html) {
 }
 
 /**
- * Compact catalog for stage 1 — only page-building roles, a few options each.
+ * Compact catalog for stage 1 - only page-building roles, a few options each.
  * No HTML bodies (keeps the vibe pass tiny + fast).
  */
 function buildAtmosphereCatalog(ctx) {
@@ -1460,7 +1500,7 @@ function buildLocalPlan(ctx) {
 
 /**
  * Pick one preset per page section from the trade-specific bone structure.
- * Instant (no network) — uses manifest + scanned real-site patterns.
+ * Instant (no network) - uses manifest + scanned real-site patterns.
  */
 function selectKitIdsLocally(ctx) {
   const manifest = loadPresetManifest();
@@ -1502,7 +1542,7 @@ function selectKitIdsLocally(ctx) {
 }
 
 /**
- * Stage 1 — atmosphere + collect component ids (no HTML dump).
+ * Stage 1 - atmosphere + collect component ids (no HTML dump).
  */
 async function planAtmosphereAndPicks(ctx) {
   const catalog = buildAtmosphereCatalog(ctx);
@@ -1554,7 +1594,7 @@ async function planAtmosphereAndPicks(ctx) {
 }
 
 /**
- * Stage 2 — assemble only the collected kit into one HTML site.
+ * Stage 2 - assemble only the collected kit into one HTML site.
  */
 function isTruncatedHtml(html) {
   const raw = String(html || "");
@@ -1853,7 +1893,7 @@ app.post("/generate", requireUser, generateLimiter, async (req, res) => {
       presetPack = loadWebsitePresetPack(ctx);
     }
     if (!presetPack.length) {
-      console.error("Website Presets kit is empty — generation will freestyle without kit HTML", {
+      console.error("Website Presets kit is empty - generation will freestyle without kit HTML", {
         presetsDir: WEBSITE_PRESETS_DIR,
         manifestExists: fs.existsSync(path.join(WEBSITE_PRESETS_DIR, "presets", "manifest.json")),
       });
@@ -2040,7 +2080,50 @@ app.post("/checkout", requireUser, checkoutLimiter, async (req, res) => {
 });
 
 /**
- * Credit billing — plans, top-ups, balance, billing portal.
+ * Web Push - creator My Clients purchase alerts.
+ */
+app.get("/push/vapid-public-key", (_req, res) => {
+  const publicKey = String(process.env.VAPID_PUBLIC_KEY || "").trim();
+  if (!publicKey || !vapidConfigured()) {
+    return res.status(503).json({ error: "Push notifications are not configured" });
+  }
+  res.json({ publicKey });
+});
+
+app.post("/push/subscribe", requireUser, async (req, res) => {
+  try {
+    const endpoint = String(req.body?.endpoint || "").trim();
+    const keys = req.body?.keys || {};
+    if (!endpoint || !keys?.p256dh || !keys?.auth) {
+      return res.status(400).json({ error: "endpoint and keys required" });
+    }
+    const row = await upsertPushSubscription(db(), {
+      userId: req.user.id,
+      endpoint,
+      keys,
+      userAgent: req.get("user-agent") || "",
+    });
+    res.json({ ok: true, id: row?.id || null });
+  } catch (e) {
+    console.error("push/subscribe", e);
+    res.status(500).json({ error: e.message || "Subscribe failed" });
+  }
+});
+
+app.post("/push/unsubscribe", requireUser, async (req, res) => {
+  try {
+    const endpoint = String(req.body?.endpoint || "").trim();
+    if (!endpoint) return res.status(400).json({ error: "endpoint required" });
+    await deletePushSubscription(db(), { userId: req.user.id, endpoint });
+    res.json({ ok: true });
+  } catch (e) {
+    console.error("push/unsubscribe", e);
+    res.status(500).json({ error: e.message || "Unsubscribe failed" });
+  }
+});
+
+/**
+ * Credit billing - plans, top-ups, balance, billing portal.
  */
 app.get("/credits/catalog", (_req, res) => {
   res.json(publicPlansCatalog());
@@ -2268,7 +2351,7 @@ app.post("/credits/billing-portal", requireUser, checkoutLimiter, async (req, re
 });
 
 /**
- * Creator security card — $1 verify + refund, card kept on file after validation.
+ * Creator security card - $1 verify + refund, card kept on file after validation.
  */
 app.get("/security-card/config", requireUser, (_req, res) => {
   res.json(publicSecurityCardConfig());
@@ -2482,7 +2565,7 @@ app.get("/donate/config", requireUser, async (req, res) => {
 
 app.get("/donate/leaderboard", async (req, res) => {
   try {
-    const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 25);
+    const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 100);
     const entries = await getDonationLeaderboard(db(), limit);
     res.json({ entries });
   } catch (e) {
@@ -2776,10 +2859,39 @@ app.post("/contact-submit", contactSubmitLimiter, async (req, res) => {
   }
 });
 
+/** Public creator contact card for a watermarked published site (business owner view). */
+app.get("/public-creator-contact", async (req, res) => {
+  try {
+    const projectId = String(req.query.projectId || req.query.project_id || "").trim();
+    if (!projectId) return res.status(400).json({ error: "projectId required" });
+
+    const supabase = db();
+    const { data: project, error } = await supabase
+      .from("projects")
+      .select("id,status,watermark_enabled,business_context")
+      .eq("id", projectId)
+      .maybeSingle();
+    if (error) throw error;
+    if (!project) return res.status(404).json({ error: "Project not found" });
+    if (!isWatermarkActive(project)) {
+      return res.status(404).json({ error: "Creator contact is not available for this site" });
+    }
+
+    let creator = readStoredCreatorContact(project);
+    if (!creator) {
+      return res.status(404).json({ error: "Creator contact is not available yet" });
+    }
+    res.json({ creator, hq: hqContactSnapshot() });
+  } catch (e) {
+    console.error("public-creator-contact", e);
+    respondApiError(res, e, "Could not load creator contact");
+  }
+});
+
 /**
  * Public catalog of published preview / live sites for Locate My Order.
  * Every successful /publish writes vercel_url + status=published, so sites appear here automatically.
- * Safe fields only — no HTML, no owner identity.
+ * Safe fields only - no HTML, no owner identity.
  */
 app.get("/public-orders", async (req, res) => {
   try {
@@ -2853,7 +2965,7 @@ app.get("/public-orders", async (req, res) => {
 
 /**
  * Public, unauthenticated checkout used by the watermark widget on a LIVE site.
- * The business owner just pays — no Studio login. Keyed by project_id, charges
+ * The business owner just pays - no Studio login. Keyed by project_id, charges
  * the seller-chosen price (projects.price_cents). Unlock + clean redeploy run
  * from the Stripe webhook and/or POST /fulfill-go-live on return (?paid=1).
  */
@@ -3110,12 +3222,17 @@ function injectWatermarkEmbed(html, project) {
     : "";
   const projectId = escapeHtmlAttr(String(project?.id || "").trim());
   const workerAttr = escapeHtmlAttr(workerBase);
+  const creatorContact = readStoredCreatorContact(project);
+  const creatorAttr = creatorContact
+    ? ` data-creator-contact="${escapeHtmlAttr(encodeContactPayload(creatorContact))}"`
+    : "";
+  const hqAttr = ` data-hq-contact="${escapeHtmlAttr(encodeContactPayload(hqContactSnapshot()))}"`;
   // Synchronous load (no defer/async) so embed.js can read data-* via currentScript.
   const tag =
     `\n<!-- moonrise:watermark -->\n` +
     `<script src="${workerAttr}/embed.js" ` +
     `data-project-id="${projectId}" ` +
-    `data-worker="${workerAttr}"${urgencyAttr}></script>\n`;
+    `data-worker="${workerAttr}"${urgencyAttr}${creatorAttr}${hqAttr}></script>\n`;
   if (/<\/body>/i.test(src)) {
     return src.replace(/<\/body>/i, `${tag}</body>`);
   }
@@ -3477,7 +3594,7 @@ async function ensureVercelProjectForMoonrise(headers, project, preferredSlug) {
   throw lastError || new Error("Could not create Vercel project");
 }
 
-/** Stable fingerprint of deployed HTML — must match builder.js publishContentHash. */
+/** Stable fingerprint of deployed HTML - must match builder.js publishContentHash. */
 function publishContentHash(html) {
   const str = String(html || "");
   let h = 5381;
@@ -3485,6 +3602,25 @@ function publishContentHash(html) {
     h = ((h << 5) + h) ^ str.charCodeAt(i);
   }
   return (h >>> 0).toString(36);
+}
+
+async function attachCreatorContactSnapshot(supabase, project) {
+  if (!project?.user_id) return project;
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("display_name, handle, payout_profile")
+    .eq("id", project.user_id)
+    .maybeSingle();
+  if (error) throw error;
+  const snapshot = buildCreatorContactSnapshot(profile || {});
+  const ctx = {
+    ...(project.business_context && typeof project.business_context === "object"
+      ? project.business_context
+      : {}),
+  };
+  if (snapshot) ctx.creatorContact = snapshot;
+  else delete ctx.creatorContact;
+  return { ...project, business_context: ctx };
 }
 
 /**
@@ -3689,7 +3825,8 @@ app.post("/publish", requireUser, publishLimiter, async (req, res) => {
 
     // Publishing is allowed while watermarked: the live site carries the
     // paywall widget so the business owner can pay to remove it.
-    const result = await deployProjectToVercel(supabase, publishProject);
+    const withContact = await attachCreatorContactSnapshot(supabase, publishProject);
+    const result = await deployProjectToVercel(supabase, withContact);
     res.json(result);
   } catch (e) {
     console.error(e);
@@ -3731,7 +3868,7 @@ app.post("/lead-finder/search", requireUser, leadFinderLimiter, async (req, res)
   if (!upstream) {
     return res.status(503).json({
       ok: false,
-      error: "Business Finder live search is not configured. Set LEADFINDER_SEARCH_URL on the worker.",
+      error: "Live Maps search is not available right now. Browse saved leads or import a CSV instead.",
     });
   }
 
@@ -3771,7 +3908,7 @@ app.post("/lead-finder/enrich-place", requireUser, leadFinderLimiter, async (req
   if (!upstream) {
     return res.status(503).json({
       ok: false,
-      error: "Place website verification is not configured. Set LEADFINDER_SEARCH_URL on the worker.",
+      error: "Website verification is not available right now. Try again later or enter the website manually.",
     });
   }
 
@@ -4079,7 +4216,7 @@ async function enrichWithOpenRouter(snippet, seed) {
     if (!res.ok) return seed;
     let text = data?.choices?.[0]?.message?.content || "";
     text = text.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
-    // Some models wrap JSON in prose — pull first object
+    // Some models wrap JSON in prose - pull first object
     const objMatch = text.match(/\{[\s\S]*\}/);
     if (objMatch) text = objMatch[0];
     const parsed = JSON.parse(text);
@@ -4164,7 +4301,7 @@ async function resolveGoogleMapsPlace(rawUrl) {
           .replace(/\s+/g, " ")
           .trim()
       : "";
-    // Google often returns a JS shell — still enrich from the place name via a search model
+    // Google often returns a JS shell - still enrich from the place name via a search model
     const usefulPlain =
       plain && !/^google maps$/i.test(plain.slice(0, 40)) && plain.length > 400 ? plain : "";
     details = await enrichWithOpenRouter(usefulPlain, details);

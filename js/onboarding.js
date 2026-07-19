@@ -2,9 +2,86 @@
  * Creator Studio onboarding wizard (required once; replayable from Settings).
  */
 (async function () {
-  const TOTAL_STEPS = 6;
+  const TOTAL_STEPS = 7;
   const DRAFT_KEY = "ms_studio_onboarding_draft_v1";
   const FORCE_REPLAY_KEY = "ms_force_studio_onboarding_replay";
+  const PAYOUT_METHOD_OPTIONS = [
+    {
+      id: "venmo",
+      name: "Venmo",
+      logo: "doc/Venmo.png",
+      label: "Venmo username",
+      placeholder: "@username",
+      hint: "Your Venmo @username or phone number.",
+    },
+    {
+      id: "paypal",
+      name: "PayPal",
+      logo: "doc/PayPal.png",
+      label: "PayPal email",
+      placeholder: "you@email.com",
+      hint: "PayPal email where you receive payouts.",
+    },
+    {
+      id: "zelle",
+      name: "Zelle",
+      logo: "doc/Zelle.png",
+      label: "Zelle email or phone",
+      placeholder: "you@email.com",
+      hint: "Email or mobile number linked to Zelle.",
+    },
+    {
+      id: "cashapp",
+      name: "Cash App",
+      logo: "doc/Cashapp.png",
+      label: "Cash App $cashtag",
+      placeholder: "$cashtag",
+      hint: "Your Cash App $cashtag or url to your cashapp.",
+    },
+    {
+      id: "apple_pay",
+      name: "Apple Pay",
+      logo: "doc/ApplePay.png",
+      label: "Apple Pay contact",
+      placeholder: "you@email.com",
+      hint: "Email or phone linked to Apple Pay.",
+    },
+    {
+      id: "google_pay",
+      name: "Google Pay",
+      logo: "doc/GooglePay.png",
+      label: "Google Pay email",
+      placeholder: "you@gmail.com",
+      hint: "Gmail or phone linked to Google Pay.",
+    },
+    {
+      id: "bitcoin",
+      name: "Bitcoin",
+      logo: "doc/Bitcoin.png",
+      label: "Bitcoin wallet address",
+      placeholder: "bc1… or 1…",
+      hint: "Your Bitcoin wallet address for payouts.",
+    },
+    {
+      id: "other",
+      name: "Other",
+      logo:
+        "data:image/svg+xml," +
+        encodeURIComponent(
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="#f1f5f9"/><circle cx="7" cy="12" r="1.5" fill="#64748b"/><circle cx="12" cy="12" r="1.5" fill="#64748b"/><circle cx="17" cy="12" r="1.5" fill="#64748b"/></svg>',
+        ),
+      label: "Payout details",
+      placeholder: "Describe how you get paid",
+      hint: "Tell us how you want to receive payouts (e.g. Wise, check, another app).",
+    },
+  ];
+  const PAYOUT_METHODS = Object.fromEntries(PAYOUT_METHOD_OPTIONS.map((item) => [item.id, item]));
+
+  function normalizePayoutMethodId(methodId) {
+    const id = String(methodId || "").trim().toLowerCase();
+    if (id === "bank") return "other";
+    return id;
+  }
   const pageParams = new URLSearchParams(location.search);
 
   function safeNext(raw) {
@@ -51,11 +128,214 @@
   let cachedPayout = P.normalizeProfile({});
   let phoneField = null;
   let autoVerifyTimer = null;
+  let authEmail = "";
+  let authUserId = "";
+
+  function sessionCardStorageKey() {
+    return authUserId ? "ms_onb_sec_card_" + authUserId : "";
+  }
+
+  function rememberSessionCard(card) {
+    const key = sessionCardStorageKey();
+    if (!key || !card?.paymentMethodId) return;
+    try {
+      sessionStorage.setItem(
+        key,
+        JSON.stringify({ paymentMethodId: String(card.paymentMethodId) })
+      );
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  function sessionTrustsCard(card) {
+    const key = sessionCardStorageKey();
+    if (!key || !card?.paymentMethodId) return false;
+    try {
+      const raw = sessionStorage.getItem(key);
+      if (!raw) return false;
+      const saved = JSON.parse(raw);
+      return saved?.paymentMethodId === card.paymentMethodId;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function clearSessionCard() {
+    const key = sessionCardStorageKey();
+    if (!key) return;
+    try {
+      sessionStorage.removeItem(key);
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  function getVerifyEmail() {
+    return String(authEmail || "").trim();
+  }
+
+  function readPayoutForm() {
+    return {
+      payoutMethod: normalizePayoutMethodId(document.getElementById("onb-payout-method")?.value || ""),
+      payoutHandle: String(document.getElementById("onb-payout-handle")?.value || "").trim(),
+    };
+  }
+
+  function readContactForm() {
+    return {
+      email: String(document.getElementById("onb-contact-email")?.value || "").trim(),
+      ...(phoneField?.read() || {}),
+    };
+  }
+
+  function syncPayoutHandleUi() {
+    const method = normalizePayoutMethodId(document.getElementById("onb-payout-method")?.value || "");
+    const meta = PAYOUT_METHODS[method];
+    const hasMethod = !!meta;
+    const field = document.getElementById("onb-payout-handle-field");
+    const label = document.getElementById("onb-payout-handle-label");
+    const input = document.getElementById("onb-payout-handle");
+    const hint = document.getElementById("onb-payout-handle-hint");
+
+    if (field) field.classList.toggle("is-locked", !hasMethod);
+    if (label) label.textContent = meta?.label || "Payout details";
+    if (input) {
+      input.disabled = !hasMethod;
+      input.required = hasMethod;
+      input.placeholder = hasMethod
+        ? meta?.placeholder || "Enter payout details"
+        : "Select a payout method first";
+    }
+    if (hint) {
+      hint.textContent = hasMethod
+        ? meta?.hint || "Where we send your creator share."
+        : "Choose how you get paid above, then enter your details here.";
+    }
+  }
+
+  function setPayoutPickerOpen(open) {
+    const root = document.getElementById("onb-payout-picker");
+    const menu = document.getElementById("onb-payout-picker-menu");
+    const trigger = document.getElementById("onb-payout-picker-trigger");
+    if (!root || !menu || !trigger) return;
+    root.classList.toggle("is-open", !!open);
+    menu.hidden = !open;
+    trigger.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+
+  function renderPayoutPickerValue(methodId) {
+    const normalizedId = normalizePayoutMethodId(methodId);
+    const method = PAYOUT_METHODS[normalizedId];
+    const input = document.getElementById("onb-payout-method");
+    const empty = document.getElementById("onb-payout-picker-empty");
+    const selected = document.getElementById("onb-payout-picker-selected");
+    const logo = document.getElementById("onb-payout-picker-logo");
+    const name = document.getElementById("onb-payout-picker-name");
+    if (input) input.value = method ? normalizedId : "";
+
+    if (method) {
+      if (empty) empty.hidden = true;
+      if (selected) selected.hidden = false;
+      if (logo) {
+        logo.src = method.logo;
+        logo.alt = method.name;
+      }
+      if (name) name.textContent = method.name;
+    } else {
+      if (empty) empty.hidden = false;
+      if (selected) selected.hidden = true;
+      if (logo) {
+        logo.removeAttribute("src");
+        logo.alt = "";
+      }
+      if (name) name.textContent = "";
+    }
+
+    document.querySelectorAll(".ms-payout-picker-option").forEach((btn) => {
+      const on = btn.getAttribute("data-payout-method") === normalizedId;
+      btn.classList.toggle("is-selected", on);
+      btn.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    syncPayoutHandleUi();
+  }
+
+  function bindPayoutPicker() {
+    const root = document.getElementById("onb-payout-picker");
+    const menu = document.getElementById("onb-payout-picker-menu");
+    const trigger = document.getElementById("onb-payout-picker-trigger");
+    if (!root || !menu || !trigger) return;
+
+    menu.innerHTML = PAYOUT_METHOD_OPTIONS.map((item) => {
+      return (
+        '<button type="button" class="ms-payout-picker-option" role="option" data-payout-method="' +
+        item.id +
+        '" aria-selected="false">' +
+        '<img class="ms-payout-picker-option-logo" src="' +
+        P.escapeAttr(item.logo) +
+        '" alt="" width="28" height="28">' +
+        '<span class="ms-payout-picker-option-copy">' +
+        '<span class="ms-payout-picker-option-name">' +
+        P.escapeHtml(item.name) +
+        "</span>" +
+        "</span>" +
+        '<svg class="ms-payout-picker-option-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>' +
+        "</button>"
+      );
+    }).join("");
+
+    trigger.addEventListener("click", (e) => {
+      e.preventDefault();
+      setPayoutPickerOpen(!root.classList.contains("is-open"));
+    });
+
+    menu.addEventListener("click", (e) => {
+      const opt = e.target.closest?.("[data-payout-method]");
+      if (!opt) return;
+      renderPayoutPickerValue(opt.getAttribute("data-payout-method") || "");
+      setPayoutPickerOpen(false);
+      document.getElementById("onb-payout-handle")?.focus();
+      if (validatePayoutStep() === null) setError("");
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!root.contains(e.target)) setPayoutPickerOpen(false);
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") setPayoutPickerOpen(false);
+    });
+  }
+
+  function isValidEmail(value) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
+  }
+
+  function validatePayoutStep() {
+    const payout = readPayoutForm();
+    if (!PAYOUT_METHODS[payout.payoutMethod]) {
+      return "Select how you want to get paid.";
+    }
+    if (payout.payoutHandle.length < 3) {
+      return "Enter your payout details.";
+    }
+    return null;
+  }
+
+  function validateContactStep() {
+    const contact = readContactForm();
+    if (!isValidEmail(contact.email)) {
+      return "Enter a valid email.";
+    }
+    if (!phoneField?.isValid()) {
+      return "Enter a valid phone number clients can call for small changes.";
+    }
+    return null;
+  }
 
   function canAutoVerifyCard() {
     if (verifying || cardVerified) return false;
-    const email = String(document.getElementById("onb-email")?.value || "").trim();
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return false;
+    if (!getVerifyEmail() || !isValidEmail(getVerifyEmail())) return false;
     if (!document.getElementById("onb-card-agree")?.checked) return false;
     return SC.isCardComplete?.() === true;
   }
@@ -65,12 +345,61 @@
     if (retryBtn) retryBtn.hidden = !visible;
   }
 
+  function updateStripePartnerLoading() {
+    const badge = document.getElementById("onb-stripe-partner");
+    if (!badge) return;
+    const loading = verifying || autoVerifyTimer != null;
+    badge.classList.toggle("is-verifying", loading);
+    badge.setAttribute("aria-busy", loading ? "true" : "false");
+  }
+
+  function clearVerifiedCardUi() {
+    verifiedCard = null;
+    cardVerified = false;
+    clearSessionCard();
+    setSecurityCardUiMode("entry");
+    setCardRetryVisible(false);
+    syncFinishButton();
+  }
+
+  function setSecurityCardUiMode(mode) {
+    const el = document.getElementById("onb-security-card-verified");
+    const wrap = document.getElementById("onb-security-card-verified-wrap");
+    const mount = document.getElementById("onb-security-card-mount");
+    const panel = document.getElementById("onb-security-card-panel");
+    const verified = mode === "verified";
+
+    if (wrap) {
+      wrap.hidden = !verified;
+      if (verified) wrap.removeAttribute("hidden");
+      else wrap.setAttribute("hidden", "");
+    }
+    if (mount) {
+      mount.hidden = verified;
+      if (verified) {
+        mount.setAttribute("hidden", "");
+        mount.innerHTML = "";
+        SC.unmountCard?.();
+      } else {
+        mount.removeAttribute("hidden");
+      }
+    }
+    if (!verified && el) el.textContent = "";
+    if (verified) setCardRetryVisible(false);
+    panel?.classList.toggle("is-verified", verified);
+  }
+
   function scheduleAutoVerifyCard() {
     clearTimeout(autoVerifyTimer);
+    autoVerifyTimer = null;
+    updateStripePartnerLoading();
     if (!canAutoVerifyCard()) return;
     autoVerifyTimer = window.setTimeout(() => {
+      autoVerifyTimer = null;
+      updateStripePartnerLoading();
       void verifySecurityCard({ auto: true });
     }, 450);
+    updateStripePartnerLoading();
   }
 
   function sb() {
@@ -108,6 +437,8 @@
           email: merged.email,
           phone: merged.phone,
           phoneCountry: merged.phoneCountry,
+          payoutMethod: merged.payoutMethod,
+          payoutHandle: merged.payoutHandle,
           updatedAt: new Date().toISOString(),
         })
       );
@@ -178,7 +509,7 @@
   }
 
   function pulseMainCard() {
-    /* Disabled — scaling the step container while children animate caused visible jank. */
+    /* Disabled - scaling the step container while children animate caused visible jank. */
   }
 
   function revealPanel(panel) {
@@ -333,7 +664,7 @@
         syncPanelVisibility(step);
 
         if (nextPanel) {
-          if (step === 6) {
+          if (step === 7) {
             document.querySelector(".ms-onboard")?.classList.add("is-celebrating");
           } else {
             document.querySelector(".ms-onboard")?.classList.remove("is-celebrating");
@@ -341,8 +672,11 @@
         }
 
         setError("");
-        if (step === 5 && !cardVerified) {
-          void mountSecurityCard();
+        if (step === 4) {
+          prepareSecurityCardStep();
+        }
+        if (step === 5) {
+          syncPayoutHandleUi();
         }
         window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
       } finally {
@@ -361,38 +695,49 @@
 
   function showVerifiedCard(card) {
     const el = document.getElementById("onb-security-card-verified");
-    const wrap = document.getElementById("onb-security-card-verified-wrap");
-    const mount = document.getElementById("onb-security-card-mount");
-    const panel = document.getElementById("onb-security-card-panel");
-    if (card) {
-      if (el) el.textContent = SC.formatCardLabel(card);
-      if (wrap) wrap.hidden = false;
-      if (mount) mount.hidden = true;
-      setCardRetryVisible(false);
-      panel?.classList.remove("is-load-error");
+    const label = card ? SC.formatCardLabel(card) : "";
+    const show =
+      !!card &&
+      P.isVerifiedSecurityCard?.(card) &&
+      !!String(card.last4 || "").trim() &&
+      !!label &&
+      sessionTrustsCard(card);
+    if (show) {
+      if (el) el.textContent = label;
+      setSecurityCardUiMode("verified");
+      document.getElementById("onb-security-card-panel")?.classList.remove("is-load-error");
     } else {
-      if (wrap) wrap.hidden = true;
-      if (el) el.textContent = "";
+      setSecurityCardUiMode("entry");
     }
   }
 
   function applyVerifiedCard(card) {
-    verifiedCard = card || null;
-    cardVerified = !!card;
-    if (card) {
-      cachedPayout = P.normalizeProfile({ ...cachedPayout, securityCard: card });
-      writeDraft({ securityCard: card });
+    if (!P.isVerifiedSecurityCard?.(card) || !String(card?.last4 || "").trim()) {
+      clearVerifiedCardUi();
+      return;
     }
+    rememberSessionCard(card);
+    verifiedCard = card;
+    cardVerified = true;
+    cachedPayout = P.normalizeProfile({ ...cachedPayout, securityCard: card });
     showVerifiedCard(card);
     syncFinishButton();
+  }
+
+  function prepareSecurityCardStep() {
+    if (cardVerified && verifiedCard && sessionTrustsCard(verifiedCard)) {
+      showVerifiedCard(verifiedCard);
+      return;
+    }
+    clearVerifiedCardUi();
+    void mountSecurityCard();
   }
 
   async function mountSecurityCard() {
     const host = document.getElementById("onb-security-card-mount");
     const panel = document.getElementById("onb-security-card-panel");
     if (!host || cardVerified) return;
-    host.hidden = false;
-    panel?.classList.remove("is-load-error");
+    setSecurityCardUiMode("entry");
     setCardRetryVisible(false);
     host.classList.add("is-loading");
     setError("");
@@ -400,28 +745,31 @@
       host.innerHTML = "";
       await SC.mountCard(host, {
         elementId: "onb-security-card-element",
-        onChange: () => {
+        onChange: (event) => {
+          if (!event?.complete) {
+            clearTimeout(autoVerifyTimer);
+            autoVerifyTimer = null;
+            updateStripePartnerLoading();
+          }
           scheduleAutoVerifyCard();
         },
       });
+      panel?.classList.remove("is-load-error");
     } catch (e) {
       panel?.classList.add("is-load-error");
       setCardRetryVisible(true);
-      setError(e.message || "Could not load card form");
+      setError(e.message || "Could not load security card form");
     } finally {
       host.classList.remove("is-loading");
     }
   }
 
   function collectStepDraft() {
-    if (step === 4 && phoneField) {
-      const phone = phoneField.read();
-      writeDraft(phone);
-    }
     if (step === 5) {
-      const email = String(document.getElementById("onb-email")?.value || "").trim();
-      const phone = phoneField ? phoneField.read() : {};
-      writeDraft({ email, ...phone, securityCard: verifiedCard || cachedPayout.securityCard });
+      writeDraft(readPayoutForm());
+    }
+    if (step === 6 && phoneField) {
+      writeDraft({ ...readPayoutForm(), ...readContactForm() });
     }
   }
 
@@ -433,24 +781,29 @@
       return null;
     }
     if (step === 4) {
-      if (!phoneField?.isValid()) {
-        return "Enter a valid phone number clients can call for small changes.";
+      if (!document.getElementById("onb-card-agree")?.checked) {
+        return "Please authorize Moonrise to store and charge this card to continue.";
+      }
+      if (!cardVerified) {
+        return "Complete your security card before continuing.";
       }
       return null;
     }
     if (step === 5) {
-      const email = String(document.getElementById("onb-email")?.value || "").trim();
-      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        return "Enter a valid email.";
-      }
-      if (!phoneField?.isValid()) {
-        return "Go back and enter a valid phone number.";
-      }
-      if (!document.getElementById("onb-card-agree")?.checked) {
-        return "Please authorize storing your card for payouts.";
-      }
+      const payoutErr = validatePayoutStep();
+      if (payoutErr) return payoutErr;
       if (!cardVerified) {
-        return "Connect your payout card before continuing.";
+        return "Go back and add your security card.";
+      }
+      return null;
+    }
+    if (step === 6) {
+      const contactErr = validateContactStep();
+      if (contactErr) return contactErr;
+      const payoutErr = validatePayoutStep();
+      if (payoutErr) return payoutErr;
+      if (!cardVerified) {
+        return "Go back and add your security card.";
       }
       return null;
     }
@@ -460,26 +813,27 @@
   async function verifySecurityCard(options) {
     const opts = options && typeof options === "object" ? options : {};
     if (verifying || cardVerified) return;
-    const email = String(document.getElementById("onb-email")?.value || "").trim();
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      if (!opts.auto) setError("Enter a valid email first.");
+    const email = getVerifyEmail();
+    if (!email || !isValidEmail(email)) {
+      if (!opts.auto) setError("Your account needs a valid email before adding a security card.");
       return;
     }
     if (!document.getElementById("onb-card-agree")?.checked) {
-      if (!opts.auto) setError("Please authorize storing your card for payouts.");
+      if (!opts.auto) setError("Please authorize Moonrise to store and charge this card to continue.");
       return;
     }
     if (SC.isCardComplete?.() !== true) {
-      if (!opts.auto) setError("Enter your full card details first.");
+      if (!opts.auto) setError("Enter your card details to continue.");
       return;
     }
 
     verifying = true;
+    updateStripePartnerLoading();
     const btn = document.getElementById("onb-finish-setup");
     const prevLabel = btn?.textContent || "Continue";
     if (btn) {
       btn.disabled = true;
-      btn.textContent = "Connecting…";
+      btn.textContent = "Verifying…";
     }
     setError("");
     setCardRetryVisible(false);
@@ -487,15 +841,15 @@
       const card = await SC.verifyCard({ email });
       applyVerifiedCard(card);
       if (!opts.auto) {
-        window.StudioToast?.success?.("Payout card connected.");
+        window.StudioToast?.success?.("Security card on file.");
       }
     } catch (e) {
-      setError(e.message || "Could not connect payout card");
+      setError(e.message || "Could not add security card");
       setCardRetryVisible(true);
-      const host = document.getElementById("onb-security-card-mount");
-      if (host && !cardVerified) host.hidden = false;
+      setSecurityCardUiMode("entry");
     } finally {
       verifying = false;
+      updateStripePartnerLoading();
       if (btn) {
         btn.textContent = prevLabel;
       }
@@ -507,16 +861,17 @@
     const user = await window.StudioAuth.getUser();
     if (!user) throw new Error("Not signed in");
     if (!cardVerified || !P.isVerifiedSecurityCard?.(verifiedCard)) {
-      throw new Error("Connect your payout card before continuing.");
+      throw new Error("Complete your security card before continuing.");
     }
 
-    const email = String(document.getElementById("onb-email")?.value || "").trim();
-    const phone = phoneField.read();
+    const payoutForm = readPayoutForm();
+    const contact = readContactForm();
     const payout = P.normalizeProfile({
       ...cachedPayout,
-      email,
-      phone: phone.phone,
-      phoneCountry: phone.phoneCountry,
+      ...payoutForm,
+      email: contact.email,
+      phone: contact.phone,
+      phoneCountry: contact.phoneCountry,
       securityCard: verifiedCard || cachedPayout.securityCard,
       completedAt: new Date().toISOString(),
       onboardingStatus: "complete",
@@ -554,21 +909,21 @@
     }
     collectStepDraft();
 
-    if (step === 5) {
+    if (step === 6) {
       if (saving) return;
       saving = true;
-      const btn = document.getElementById("onb-finish-setup");
+      const btn = document.querySelector('[data-onb-step="6"] [data-onb-next]');
       if (btn) btn.disabled = true;
       try {
         await persistComplete();
-        await showStep(6, { direction: "forward" });
+        await showStep(7, { direction: "forward" });
         const finder = document.getElementById("onb-go-finder");
         const dash = document.getElementById("onb-go-dash");
         if (finder) finder.href = "leads.html";
         if (dash) dash.href = nextUrl;
       } catch (e) {
         setError(e.message || "Could not save your profile.");
-        syncFinishButton();
+        if (btn) btn.disabled = false;
       } finally {
         saving = false;
       }
@@ -593,10 +948,21 @@
     const draft = readDraft();
     const fromDb = P.normalizeProfile(profile?.payout_profile || {});
     cachedPayout = draft ? mergePayout(draft, fromDb) : fromDb;
+    authEmail = String(user?.email || cachedPayout.email || "").trim();
 
-    const emailEl = document.getElementById("onb-email");
-    if (emailEl) {
-      emailEl.value = cachedPayout.email || user?.email || "";
+    const contactEmailEl = document.getElementById("onb-contact-email");
+    if (contactEmailEl) {
+      contactEmailEl.value = cachedPayout.email || authEmail || "";
+    }
+    const payoutMethodEl = document.getElementById("onb-payout-method");
+    if (payoutMethodEl) {
+      renderPayoutPickerValue(cachedPayout.payoutMethod || "");
+    } else {
+      syncPayoutHandleUi();
+    }
+    const payoutHandleEl = document.getElementById("onb-payout-handle");
+    if (payoutHandleEl) {
+      payoutHandleEl.value = cachedPayout.payoutHandle || "";
     }
     phoneField?.fillPhoneFromSaved(cachedPayout.phone || "", cachedPayout.phoneCountry);
   }
@@ -604,13 +970,19 @@
   function mergePayout(primary, fallback) {
     const a = P.normalizeProfile(primary);
     const b = P.normalizeProfile(fallback);
+    const savedCard =
+      P.isVerifiedSecurityCard?.(b.securityCard) && String(b.securityCard.last4 || "").trim()
+        ? b.securityCard
+        : null;
     return P.normalizeProfile({
       ...b,
       ...a,
       email: a.email || b.email,
       phone: a.phone || b.phone,
       phoneCountry: a.phoneCountry || b.phoneCountry,
-      securityCard: b.securityCard,
+      payoutMethod: a.payoutMethod || b.payoutMethod,
+      payoutHandle: a.payoutHandle || b.payoutHandle,
+      securityCard: savedCard,
       onboardingStatus: b.onboardingStatus,
       completedAt: b.completedAt,
       skippedAt: b.skippedAt,
@@ -618,18 +990,21 @@
   }
 
   async function hydrateVerifiedCard(profile) {
+    verifiedCard = null;
+    cardVerified = false;
+    setSecurityCardUiMode("entry");
+    setCardRetryVisible(false);
+    syncFinishButton();
+
     const dbCard = P.normalizeProfile(profile?.payout_profile || {}).securityCard;
-    if (P.isVerifiedSecurityCard?.(dbCard)) {
-      applyVerifiedCard(dbCard);
+    if (!P.isVerifiedSecurityCard?.(dbCard) || !String(dbCard.last4 || "").trim()) {
       return;
     }
-    try {
-      const status = await SC.fetchStatus();
-      if (status?.verified && status.securityCard && P.isVerifiedSecurityCard?.(status.securityCard)) {
-        applyVerifiedCard(status.securityCard);
-      }
-    } catch (_) {
-      /* ignore */
+    if (sessionTrustsCard(dbCard)) {
+      verifiedCard = dbCard;
+      cardVerified = true;
+      cachedPayout = P.normalizeProfile({ ...cachedPayout, securityCard: dbCard });
+      syncFinishButton();
     }
   }
 
@@ -646,12 +1021,12 @@
   }
 
   async function boot() {
+    const session = await window.StudioAuth.requireAuth();
+    if (!session) return;
+
     document.querySelector(".ms-onboard")?.classList.add("is-ready");
     syncPanelVisibility(1);
     document.querySelector('[data-onb-step="1"]')?.classList.add("is-visible");
-
-    const session = await window.StudioAuth.requireAuth();
-    if (!session) return;
 
     await window.StudioAuth.ensureProfile?.();
 
@@ -665,9 +1040,12 @@
       input: "onb-phone",
     });
     phoneField.bind();
+    bindPayoutPicker();
 
     const user = await window.StudioAuth.getUser();
     const profile = await window.StudioAuth.getProfile();
+    authUserId = String(user?.id || "").trim();
+    authEmail = String(user?.email || "").trim();
 
     if (!isReplay && window.StudioAuth.studioOnboarded?.(profile)) {
       location.replace(nextUrl);
@@ -698,21 +1076,25 @@
       if (document.getElementById("onb-card-agree")?.checked) {
         setError("");
         scheduleAutoVerifyCard();
+      } else {
+        clearTimeout(autoVerifyTimer);
+        autoVerifyTimer = null;
+        updateStripePartnerLoading();
       }
     });
 
-    document.getElementById("onb-email")?.addEventListener("input", () => {
-      scheduleAutoVerifyCard();
+    document.getElementById("onb-contact-email")?.addEventListener("input", () => {
+      if (validateContactStep() === null) setError("");
+    });
+
+    document.getElementById("onb-payout-handle")?.addEventListener("input", () => {
+      if (validatePayoutStep() === null) setError("");
     });
 
     document.getElementById("onb-retry-card")?.addEventListener("click", (e) => {
       e.preventDefault();
       setError("");
-      setCardRetryVisible(false);
-      if (SC.isCardComplete?.() && !cardVerified) {
-        void verifySecurityCard();
-        return;
-      }
+      clearVerifiedCardUi();
       void mountSecurityCard().then(() => {
         const panel = document.getElementById("onb-security-card-panel");
         if (panel?.classList.contains("is-load-error")) {
@@ -724,10 +1106,6 @@
     document.getElementById("onb-go-dash")?.addEventListener("click", (e) => {
       e.preventDefault();
       location.assign(nextUrl);
-    });
-
-    document.querySelector(".ms-onboard-brand")?.addEventListener("click", (e) => {
-      e.preventDefault();
     });
 
     bindFlipCards();

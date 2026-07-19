@@ -13,7 +13,7 @@ function wrap(meta, title, style, body, script = '') {
   -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${meta.id} — ${title}</title>
+  <title>${meta.id} - ${title}</title>
   <style>
     @import url('../shared/preset-reset.css');
     ${style}

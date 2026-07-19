@@ -1,5 +1,5 @@
 /**
- * Moonrise Studio shell — SiteDrop-style sidebar layout.
+ * Moonrise Studio shell - SiteDrop-style sidebar layout.
  */
 (function () {
   const MENU = [
@@ -9,6 +9,16 @@
     { id: "clients", href: "clients.html", label: "My Clients", icon: "users" },
     { id: "donate", href: "donate.html", label: "Donate", icon: "heart" },
     { id: "store", href: "store.html", label: "Store", icon: "bag" },
+  ];
+
+  const OWNER_MENU = [
+    {
+      id: "pending-payouts",
+      href: "pending-payouts.html",
+      label: "Pending payouts",
+      icon: "dollar",
+      ownerOnly: true,
+    },
   ];
 
   const ACCOUNT = [
@@ -77,7 +87,7 @@
       if (!raw) return false;
       const data = JSON.parse(raw);
       if (!data || !data.owner) return false;
-      // Stale after 30 days — re-check via auth
+      // Stale after 30 days - re-check via auth
       if (data.at && Date.now() - Number(data.at) > 30 * 24 * 60 * 60 * 1000) {
         return false;
       }
@@ -158,7 +168,21 @@
   window.StudioOwner = { isSiteOwner, gateOwnerPage, ownerHandles };
 
   function menuItems() {
-    return MENU.slice();
+    const items = MENU.slice();
+    if (shouldIncludeOwnerNav()) {
+      items.push(...OWNER_MENU);
+    }
+    return items;
+  }
+
+  function injectOwnerNav(page) {
+    if (!shouldIncludeOwnerNav()) return;
+    if (document.querySelector('[data-nav="pending-payouts"]')) return;
+    const nav = document.querySelector(".ms-sidebar-scroll .ms-nav-group nav.ms-nav");
+    if (!nav) return;
+    OWNER_MENU.forEach((item) => {
+      nav.insertAdjacentHTML("beforeend", navLink(item, page || document.body?.dataset?.page || ""));
+    });
   }
 
   function brandLogo() {
@@ -255,7 +279,7 @@
     );
   }
 
-  /** Live-only flag — never restore from storage (stale markers looked like "still generating"). */
+  /** Live-only flag - never restore from storage (stale markers looked like "still generating"). */
   let channelGeneratingId = null;
   let channelGeneratingCancellable = false;
 
@@ -424,7 +448,7 @@
     Promise.allSettled(jobs).then(reload, reload);
   }
 
-  /** Fixed top-right hard refresh — all Studio pages / phones / tablets / desktop. */
+  /** Fixed top-right hard refresh - all Studio pages / phones / tablets / desktop. */
   function ensureHardRefreshButton() {
     stripHardRefreshParam();
     if (!document.body) return;
@@ -1041,7 +1065,7 @@
     imgEl.decoding = "async";
     imgEl.setAttribute("fetchpriority", "high");
 
-    // Already showing this exact image (cached) — no spinner flash
+    // Already showing this exact image (cached) - no spinner flash
     if (imgEl.getAttribute("src") === resolved && imgEl.complete && imgEl.naturalWidth > 0) {
       markLoaded();
       return;
@@ -1141,7 +1165,7 @@
       case "unavailable":
         return "Moonrise services aren't available right now. Try again in a moment.";
       case "no_credits":
-        return "Generation is free — try again in a moment.";
+        return "Generation is free - try again in a moment.";
       default:
         return "Can't generate right now. Check your connection and try again.";
     }
@@ -1176,7 +1200,7 @@
         });
     if (valueEl) valueEl.textContent = formatted;
     if (tag) {
-      tag.title = "Your 80% share from paid client sites — @moonrise keeps 20%. Open Dashboard.";
+      tag.title = "Your 80% share from paid client sites - @moonrise keeps 20%. Open Dashboard.";
     }
     rememberIncomeCache(income);
   }
@@ -1225,11 +1249,14 @@
           avatarUrl = String(data?.avatar_url || "").trim();
 
           const clean = String(handle).replace(/^@/, "").trim() || "moonrise";
-          const mvpPlus = !!data?.mvp_plus || ownerHandles().includes(normalizeHandle(clean));
+          const isOwner = ownerHandles().includes(normalizeHandle(clean));
+          writeOwnerNavCache(isOwner, clean);
+          const mvpPlus = !!data?.mvp_plus || isOwner;
           nameEl.textContent = clean;
           setSidebarAvatar(avatarUrl, clean);
           clearLegacyProfileCosmetics();
           rememberProfileCache(clean, avatarUrl, { mvpPlus });
+          injectOwnerNav(document.body?.dataset?.page || "");
           return { handle: clean, avatarUrl };
         } else {
           void hydrateIncome();
@@ -1240,9 +1267,12 @@
       }
 
       const clean = String(handle).replace(/^@/, "").trim() || "moonrise";
+      const isOwner = ownerHandles().includes(normalizeHandle(clean));
+      writeOwnerNavCache(isOwner, clean);
       nameEl.textContent = clean;
       setSidebarAvatar(avatarUrl, clean);
       rememberProfileCache(clean, avatarUrl);
+      injectOwnerNav(document.body?.dataset?.page || "");
       return { handle: clean, avatarUrl };
     } catch (e) {
       nameEl.textContent = "Account";
@@ -1266,6 +1296,24 @@
   }
 
   async function boot() {
+    if (window.StudioAuth?.requireAuth) {
+      try {
+        const session = await window.StudioAuth.requireAuth();
+        if (!session) return;
+        if (session && window.StudioAuth.ensureStudioOnboarding) {
+          const redirected = await window.StudioAuth.ensureStudioOnboarding();
+          if (redirected === "redirect") {
+            document.body.dataset.msAuthFired = "1";
+            document.dispatchEvent(new Event("ms:auth-ready"));
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn(e);
+        return;
+      }
+    }
+
     buildShell();
     ensureHardRefreshButton();
     bindNavCancel();
@@ -1279,28 +1327,14 @@
     document.body.classList.add("ms-ready");
     document.dispatchEvent(new Event("ms:shell-ready"));
     window.requestAnimationFrame(function () {
-      window.StudioMotion?.playPageMotion?.();
+      window.requestAnimationFrame(function () {
+        window.StudioMotion?.playPageMotion?.();
+      });
     });
     clearLegacyProfileCosmetics();
 
     void hydrateUser().catch(() => ({ handle: "", avatarUrl: "" }));
     void hydrateIncome();
-
-    if (window.StudioAuth?.requireAuth) {
-      try {
-        const session = await window.StudioAuth.requireAuth();
-        if (session && window.StudioAuth.ensureStudioOnboarding) {
-          const redirected = await window.StudioAuth.ensureStudioOnboarding();
-          if (redirected === "redirect") {
-            document.body.dataset.msAuthFired = "1";
-            document.dispatchEvent(new Event("ms:auth-ready"));
-            return;
-          }
-        }
-      } catch (e) {
-        console.warn(e);
-      }
-    }
 
     document.body.dataset.msAuthFired = "1";
     document.dispatchEvent(new Event("ms:auth-ready"));

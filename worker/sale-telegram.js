@@ -13,13 +13,13 @@ function escapeHtml(value) {
 
 function formatMoney(cents) {
   const n = Number(cents);
-  if (!Number.isFinite(n)) return "—";
+  if (!Number.isFinite(n)) return "-";
   return "$" + (n / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function formatWhen(iso) {
   const raw = String(iso || "").trim();
-  if (!raw) return "—";
+  if (!raw) return "-";
   try {
     return new Date(raw).toLocaleString("en-US", {
       timeZone: process.env.SALE_NOTIFY_TIMEZONE || "America/Los_Angeles",
@@ -101,7 +101,7 @@ function buildSaleMessage(payload) {
     leadMapsUrl ? '<a href="' + escapeHtml(leadMapsUrl) + '">Google Maps</a>' : "",
     "",
     "<b>Creator</b>",
-    creatorHandle ? "@" + escapeHtml(String(creatorHandle).replace(/^@/, "")) : "—",
+    creatorHandle ? "@" + escapeHtml(String(creatorHandle).replace(/^@/, "")) : "-",
     creatorDisplayName ? "Name: " + escapeHtml(creatorDisplayName) : "",
     creatorEmail ? "Payout email: " + escapeHtml(creatorEmail) : "",
     creatorStudioEmail && creatorStudioEmail !== creatorEmail
@@ -123,7 +123,7 @@ function buildSaleMessage(payload) {
     "When: " + escapeHtml(formatWhen(paidAt)),
     siteUrl ? '<a href="' + escapeHtml(siteUrl) + '">Live site</a>' : "",
     "",
-    "Project: <code>" + escapeHtml(projectId || "—") + "</code>",
+    "Project: <code>" + escapeHtml(projectId || "-") + "</code>",
     leadId ? "Lead: <code>" + escapeHtml(leadId) + "</code>" : "",
     sessionId ? "Stripe: <code>" + escapeHtml(sessionId) + "</code>" : "",
   ];

@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="js/auth-gate-head.js?v=20260719-auth-gate"></script>
   <title>Settings · Moonrise Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css?v=20260718-security-card">
+  <link rel="stylesheet" href="css/studio.css?v=20260719-client-push">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body data-page="settings">
@@ -130,6 +131,27 @@
           </div>
         </section>
 
+        <section class="ms-card ms-settings-card" id="settings-notifications">
+          <h2 class="ms-settings-card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            Notifications
+          </h2>
+          <p class="ms-settings-hint ms-muted">Alerts for My Clients when a business pays to go live.</p>
+
+          <div class="ms-settings-pref-row">
+            <div class="ms-settings-pref-copy">
+              <strong>Client purchases</strong>
+              <span class="ms-muted">Notify me when someone purchases their website</span>
+            </div>
+            <label class="ms-switch" title="Client purchase notifications">
+              <input type="checkbox" id="set-client-purchase-notif" autocomplete="off">
+              <span class="ms-switch-track" aria-hidden="true"></span>
+            </label>
+          </div>
+          <p class="ms-settings-hint ms-muted ms-settings-notif-hint" id="set-notif-hint">Turn on to get a device notification for each new paid client.</p>
+          <p class="ms-error" id="set-notif-error" hidden></p>
+        </section>
+
         <section class="ms-card ms-settings-card ms-settings-card--danger" id="settings-session">
           <h2 class="ms-settings-card-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -150,12 +172,13 @@
   <script src="js/supabase-client.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/segment-switch.js"></script>
-  <script src="js/ui-motion.js"></script>
+  <script src="js/ui-motion.js?v=20260719-onb-motion"></script>
   <script src="js/toast.js"></script>
   <script src="js/income.js?v=20260718-income"></script>
   <script src="js/app.js?v=20260718-mobile-nav"></script>
   <script src="js/install-hint.js?v=20260718-settings-install"></script>
-  <script src="js/settings.js?v=20260718-no-security-card"></script>
+  <script src="js/push-notifications.js?v=20260719-client-push"></script>
+  <script src="js/settings.js?v=20260719-client-push"></script>
   <script src="js/settings-install.js?v=20260718-settings-install"></script>
 </body>
 </html>

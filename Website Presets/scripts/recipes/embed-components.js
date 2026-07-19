@@ -12,7 +12,7 @@ const RECIPES = {
   // ── Maps ──────────────────────────────────────────────────────────────
   'static-map': () => ({
     style: `body{display:grid;place-items:center;min-height:100vh;margin:0;padding:2rem;background:#f4f5f8;${base}}${reduced}${embedCss}.panel{width:min(100%,520px);border-radius:18px;overflow:hidden;border:1px solid #e5e7eb;box-shadow:0 20px 50px rgba(15,23,42,.1);background:#fff}.head{padding:1rem 1.15rem .25rem}.head h2{font-size:1.05rem;font-weight:800;letter-spacing:-.02em;color:#111827}.head p{font-size:.82rem;color:#6b7280;margin-top:.2rem}.map-stage{position:relative;height:280px;background:#e5e7eb}`,
-    body: `<div class="panel"><header class="head"><h2>Visit us</h2><p>Live map embed — no static image placeholder.</p></header><div class="map-stage">${mapIframe(DEMO.maps, 15, 'Office location')}</div></div>`,
+    body: `<div class="panel"><header class="head"><h2>Visit us</h2><p>Live map embed - no static image placeholder.</p></header><div class="map-stage">${mapIframe(DEMO.maps, 15, 'Office location')}</div></div>`,
   }),
 
   'marker-card': () => ({
@@ -119,13 +119,13 @@ const RECIPES = {
   // ── Calendar embed ──────────────────────────────────────────────────────
   'agenda-view': () => ({
     style: `body{display:grid;place-items:center;min-height:100vh;margin:0;padding:2rem;background:#f4f5f8;${base}}${reduced}${embedCss}.panel{width:min(100%,720px);border-radius:20px;overflow:hidden;background:#fff;border:1px solid #e5e7eb;box-shadow:0 20px 50px rgba(15,23,42,.1)}.head{padding:1.1rem 1.15rem .85rem;border-bottom:1px solid #f0f2f5}.head h2{font-size:1.05rem;font-weight:800}.head p{font-size:.82rem;color:#6b7280;margin-top:.2rem}.cal{position:relative;height:420px}`,
-    body: `<div class="panel"><header class="head"><h2>Team agenda</h2><p>Live Google Calendar embed — no custom grid stub.</p></header><div class="cal">${iframe(DEMO.calendar, { className: 'map-embed', title: 'Google Calendar' })}</div></div>`,
+    body: `<div class="panel"><header class="head"><h2>Team agenda</h2><p>Live Google Calendar embed - no custom grid stub.</p></header><div class="cal">${iframe(DEMO.calendar, { className: 'map-embed', title: 'Google Calendar' })}</div></div>`,
   }),
 
   // ── Hero embed player ───────────────────────────────────────────────────
   'embedded-player': () => ({
     style: `body{min-height:100vh;background:#111;color:#fff;display:grid;place-items:center;padding:3rem 2rem;text-align:center;${base}}${reduced}${embedCss}h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800;margin-bottom:.75rem}.sub{color:#888;margin-bottom:2.5rem}.player{width:min(720px,100%);border-radius:16px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.6);border:1px solid #333}`,
-    body: `<h1>Watch the keynote</h1><p class="sub">Lead with an embedded player — YouTube, no local file required.</p><div class="player">${youtubeBlock(DEMO.youtube, { controls: true, mute: false }, 'embed--16x9', 'Keynote video')}</div>`,
+    body: `<h1>Watch the keynote</h1><p class="sub">Lead with an embedded player - YouTube, no local file required.</p><div class="player">${youtubeBlock(DEMO.youtube, { controls: true, mute: false }, 'embed--16x9', 'Keynote video')}</div>`,
   }),
 };
 

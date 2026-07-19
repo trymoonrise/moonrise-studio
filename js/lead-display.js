@@ -112,7 +112,7 @@
   const STREET_WORD_RE =
     /\b(st|street|rd|road|ave|avenue|blvd|boulevard|dr|drive|ln|lane|way|suite|ste|hwy|highway|pkwy|parkway|ct|court|pl|place)\b/i;
 
-  /** Google Maps title lines like "5.0(70)PlumberOpen 24 hours" — not a schedule. */
+  /** Google Maps title lines like "5.0(70)PlumberOpen 24 hours" - not a schedule. */
   function looksLikeMapsTitleMash(value) {
     const v = raw(value);
     if (!v) return false;

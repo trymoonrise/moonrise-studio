@@ -53,8 +53,8 @@ body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f3efe
 .panel p{margin:0;padding:0 0 1.1rem 2.5rem;color:#6a6458;line-height:1.65;font-size:.92rem}
 .item.open .panel{grid-template-rows:1fr}`,
     body: `<div class="acc">
-  <div class="item open"><button class="trigger"><span class="num">01</span><span>Only one idea open at a time</span></button><div class="panel"><div><p>Focus stays tight — opening a section gently closes the others.</p></div></div></div>
-  <div class="item"><button class="trigger"><span class="num">02</span><span>Quiet typographic state</span></button><div class="panel"><div><p>No chrome cards — just type, rules, and measured motion.</p></div></div></div>
+  <div class="item open"><button class="trigger"><span class="num">01</span><span>Only one idea open at a time</span></button><div class="panel"><div><p>Focus stays tight - opening a section gently closes the others.</p></div></div></div>
+  <div class="item"><button class="trigger"><span class="num">02</span><span>Quiet typographic state</span></button><div class="panel"><div><p>No chrome cards - just type, rules, and measured motion.</p></div></div></div>
   <div class="item"><button class="trigger"><span class="num">03</span><span>Built for dense FAQ copy</span></button><div class="panel"><div><p>Editorial spacing keeps long answers readable without visual noise.</p></div></div></div>
 </div>`,
     script: `document.querySelectorAll('.trigger').forEach(b=>b.onclick=()=>{const item=b.parentElement;document.querySelectorAll('.item').forEach(el=>el.classList.toggle('open',el===item?!el.classList.contains('open'):false))});`,
@@ -78,9 +78,9 @@ body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0c0d1
 .panel p{margin:0;padding:0 1.1rem 1.1rem 4.2rem;color:#8a8a96;font-size:.88rem;line-height:1.6}
 .item.open .panel{grid-template-rows:1fr}`,
     body: `<div class="acc">
-  <div class="item open"><button class="trigger"><span class="glyph">Aa</span><span>Typography system</span><span class="chev">›</span></button><div class="panel"><div><p>Glyphs lead each section — identity before explanation.</p></div></div></div>
+  <div class="item open"><button class="trigger"><span class="glyph">Aa</span><span>Typography system</span><span class="chev">›</span></button><div class="panel"><div><p>Glyphs lead each section - identity before explanation.</p></div></div></div>
   <div class="item"><button class="trigger"><span class="glyph">◇</span><span>Motion language</span><span class="chev">›</span></button><div class="panel"><div><p>Subtle 3D tilt signals the active panel without loud chrome.</p></div></div></div>
-  <div class="item"><button class="trigger"><span class="glyph">◈</span><span>Interaction rules</span><span class="chev">›</span></button><div class="panel"><div><p>Independent opens — explore multiple ideas side by side.</p></div></div></div>
+  <div class="item"><button class="trigger"><span class="glyph">◈</span><span>Interaction rules</span><span class="chev">›</span></button><div class="panel"><div><p>Independent opens - explore multiple ideas side by side.</p></div></div></div>
 </div>`,
     script: `document.querySelectorAll('.trigger').forEach(b=>b.onclick=()=>b.parentElement.classList.toggle('open'));`,
   },
@@ -101,7 +101,7 @@ body{margin:0;min-height:100vh;display:grid;place-items:center;background:#1a152
 .panel p{margin:0;padding:0 1.25rem 1.1rem;color:#6a6458;font-size:.9rem;line-height:1.6}
 .item.open .panel{grid-template-rows:1fr}`,
     body: `<div class="stack">
-  <div class="item open"><button class="trigger"><span>Brief</span><span>+</span></button><div class="panel"><div><p>Paper sheets offset like a desk stack — click to flatten and read.</p></div></div></div>
+  <div class="item open"><button class="trigger"><span>Brief</span><span>+</span></button><div class="panel"><div><p>Paper sheets offset like a desk stack - click to flatten and read.</p></div></div></div>
   <div class="item"><button class="trigger"><span>Research</span><span>+</span></button><div class="panel"><div><p>Notes from interviews and competitive audits live here.</p></div></div></div>
   <div class="item"><button class="trigger"><span>Decision</span><span>+</span></button><div class="panel"><div><p>Final call and rationale, pinned to the top of the pile.</p></div></div></div>
 </div>`,
@@ -130,7 +130,7 @@ body{margin:0;min-height:100vh;display:grid;place-items:center;background:#07101
 .item.open .panel{grid-template-rows:1fr}`,
     body: `<div class="acc">
   <div class="item open"><button class="trigger"><span>Fluid expand</span><div class="plus"></div></button><div class="panel"><div><p>The plus liquefies into a minus as the panel opens.</p></div></div></div>
-  <div class="item"><button class="trigger"><span>Cool cyan tone</span><div class="plus"></div></button><div class="panel"><div><p>Night-ocean palette — distinct from the classic white FAQ.</p></div></div></div>
+  <div class="item"><button class="trigger"><span>Cool cyan tone</span><div class="plus"></div></button><div class="panel"><div><p>Night-ocean palette - distinct from the classic white FAQ.</p></div></div></div>
   <div class="item"><button class="trigger"><span>Independent panels</span><div class="plus"></div></button><div class="panel"><div><p>Open several at once when comparing details.</p></div></div></div>
 </div>`,
     script: `document.querySelectorAll('.trigger').forEach(b=>b.onclick=()=>b.parentElement.classList.toggle('open'));`,
@@ -233,21 +233,21 @@ body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0a0b0
   },
 ];
 
-// Card batch — each a distinct concept matching title intent
+// Card batch - each a distinct concept matching title intent
 const cards = [
   {
     file: '1368-cards-basic-card-01.html',
     title: 'Inset Rule Card',
     tags: ['cards', 'minimal', 'rule'],
     style: `${FONTS}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f6f4ef;font-family:Outfit,sans-serif}.card{width:min(340px,90vw);padding:1.75rem;background:#fff;border:1px solid #e5e1d8;position:relative}.card::before{content:"";position:absolute;left:1.75rem;right:1.75rem;top:0;height:3px;background:#111}.kicker{font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;color:#8a8478;margin:0 0 .75rem}.card h3{font-family:Syne,sans-serif;margin:0 0 .5rem;font-size:1.25rem;letter-spacing:-.02em}.card p{margin:0;color:#6a6458;line-height:1.55;font-size:.92rem}`,
-    body: `<article class="card"><p class="kicker">Note</p><h3>Inset rule card</h3><p>A quiet surface with a hard top rule — no hover circus.</p></article>`,
+    body: `<article class="card"><p class="kicker">Note</p><h3>Inset rule card</h3><p>A quiet surface with a hard top rule - no hover circus.</p></article>`,
   },
   {
     file: '1369-cards-image-card-02.html',
     title: 'Bleed Photo Card',
     tags: ['cards', 'image', 'bleed'],
     style: `${FONTS}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0e1014;font-family:Outfit,sans-serif}.card{width:min(320px,90vw);overflow:hidden;border-radius:4px;background:#16181e;color:#fff}.media{height:200px;background:linear-gradient(145deg,#2a3344 0%,#1a2030 40%,#3d2a28 100%);position:relative}.media::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 70% 30%,rgba(255,200,120,.25),transparent 50%)}.body{padding:1.15rem 1.25rem 1.35rem}.body h3{font-family:Syne,sans-serif;margin:0 0 .35rem;font-size:1.1rem}.body p{margin:0;color:#8a90a0;font-size:.88rem;line-height:1.5}`,
-    body: `<article class="card"><div class="media" role="img" aria-label="Abstract photo"></div><div class="body"><h3>Coastal study</h3><p>Full-bleed media with type anchored below — gallery ready.</p></div></article>`,
+    body: `<article class="card"><div class="media" role="img" aria-label="Abstract photo"></div><div class="body"><h3>Coastal study</h3><p>Full-bleed media with type anchored below - gallery ready.</p></div></article>`,
   },
   {
     file: '1370-cards-hover-lift-03.html',
@@ -261,14 +261,14 @@ const cards = [
     title: 'Double Frame Card',
     tags: ['cards', 'bordered', 'frame'],
     style: `${FONTS}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#111;font-family:Outfit,sans-serif;color:#eee}.outer{padding:10px;border:1px solid #444;}.inner{padding:1.5rem;border:1px solid #888;}.inner h3{font-family:Syne,sans-serif;margin:0 0 .4rem;font-size:1.15rem}.inner p{margin:0;color:#999;font-size:.9rem;line-height:1.55}`,
-    body: `<div class="outer"><article class="inner"><h3>Double frame</h3><p>Nested borders — museum label energy, no radius softener.</p></article></div>`,
+    body: `<div class="outer"><article class="inner"><h3>Double frame</h3><p>Nested borders - museum label energy, no radius softener.</p></article></div>`,
   },
   {
     file: '1372-cards-glass-card-ui-05.html',
     title: 'Frost Panel Card',
     tags: ['cards', 'glass', 'frost'],
     style: `${FONTS}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:Outfit,sans-serif;background:#1a1528;overflow:hidden}.orb{position:fixed;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,#5eead4,#3b82f6);filter:blur(40px);opacity:.55;animation:drift 8s ease-in-out infinite alternate}.card{position:relative;z-index:1;width:min(320px,90vw);padding:1.5rem;border-radius:24px;background:rgba(255,255,255,.1);backdrop-filter:blur(20px) saturate(1.4);border:1px solid rgba(255,255,255,.28);color:#fff;box-shadow:0 20px 50px rgba(0,0,0,.3)}.card h3{font-family:Syne,sans-serif;margin:0 0 .4rem}.card p{margin:0;color:rgba(255,255,255,.7);font-size:.9rem;line-height:1.5}@keyframes drift{to{transform:translate(30px,-20px) scale(1.1)}}`,
-    body: `<div class="orb" aria-hidden="true"></div><article class="card"><h3>Frost panel</h3><p>True glass over a drifting orb — not a flat tinted box.</p></article>`,
+    body: `<div class="orb" aria-hidden="true"></div><article class="card"><h3>Frost panel</h3><p>True glass over a drifting orb - not a flat tinted box.</p></article>`,
   },
   {
     file: '1373-cards-dark-card-06.html',
@@ -332,7 +332,7 @@ const cards = [
     title: 'Breathing Border Card',
     tags: ['cards', 'animated', 'border'],
     style: `${FONTS}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0b0c12;font-family:Outfit,sans-serif;color:#fff}.shell{padding:2px;border-radius:20px;background:conic-gradient(from var(--a,0deg),#7ee0c3,#6c8cff,#f472b6,#7ee0c3);animation:spin 4s linear infinite}.card{padding:1.5rem;border-radius:18px;background:#0b0c12}.card h3{font-family:Syne,sans-serif;margin:0 0 .4rem}.card p{margin:0;color:#8a90a0;font-size:.9rem;line-height:1.5}@property --a{syntax:'<angle>';inherits:false;initial-value:0deg}@keyframes spin{to{--a:360deg}}@media(prefers-reduced-motion:reduce){.shell{animation:none}}`,
-    body: `<div class="shell"><article class="card"><h3>Breathing border</h3><p>Conic gradient orbit — the card stays still, the edge moves.</p></article></div>`,
+    body: `<div class="shell"><article class="card"><h3>Breathing border</h3><p>Conic gradient orbit - the card stays still, the edge moves.</p></article></div>`,
   },
 ];
 
@@ -350,7 +350,7 @@ const clones = [
     title: 'Pin Click Tip',
     tags: ['tooltips', 'click', 'pin'],
     style: `${FONTS}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f4f2ec;font-family:Outfit,sans-serif}.wrap{position:relative}.btn{padding:.7rem 1.2rem;border:1px solid #111;background:#111;color:#fff;font:600 .9rem Outfit,sans-serif;cursor:pointer;border-radius:4px}.tip{position:absolute;left:calc(100% + 12px);top:50%;translate:0 -50%;padding:.5rem .8rem;background:#fff;border:1px solid #111;font-size:.8rem;max-width:180px;opacity:0;pointer-events:none;transition:opacity .25s;box-shadow:4px 4px 0 #111}.tip.on{opacity:1}`,
-    body: `<div class="wrap"><button class="btn" id="b">Click</button><div class="tip" id="t">Pinned — click again to dismiss.</div></div>`,
+    body: `<div class="wrap"><button class="btn" id="b">Click</button><div class="tip" id="t">Pinned - click again to dismiss.</div></div>`,
     script: `const t=document.getElementById('t');document.getElementById('b').onclick=()=>t.classList.toggle('on');`,
   },
   {
@@ -424,7 +424,7 @@ document.getElementById('s').onclick=e=>{const r=e.currentTarget.getBoundingClie
     title: 'Marching Ants Border',
     tags: ['borders', 'dashed', 'ants'],
     style: `${FONTS}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0e1014;font-family:Outfit,sans-serif;color:#fff}.box{width:min(280px,80vw);padding:2rem;text-align:center;border:2px dashed #3a4050;border-radius:16px;animation:ants 20s linear infinite;font-family:Syne,sans-serif}.box p{margin:.5rem 0 0;font-family:Outfit,sans-serif;color:#7a8090;font-size:.85rem}@keyframes ants{to{border-color:#7ee0c3;background-position:40px 0}}`,
-    body: `<div class="box"><strong>Selection</strong><p>Marching dashed edge — active region cue.</p></div>`,
+    body: `<div class="box"><strong>Selection</strong><p>Marching dashed edge - active region cue.</p></div>`,
   },
   {
     file: '1303-backgrounds-noise-bg-03.html',

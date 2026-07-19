@@ -760,7 +760,7 @@ html[data-theme="dark"] .lf-action-btn:hover:not(.is-disabled):not(.lf-action-bu
   }
 }
 
-/* PIN lock — hide app until PIN (also before lock.js runs) */
+/* PIN lock - hide app until PIN (also before lock.js runs) */
 body:not([data-public="1"]):not(.site-unlocked) {
   background: #ffffff !important;
   color-scheme: light;
@@ -1333,7 +1333,7 @@ body {
   background: transparent;
 }
 
-/* Hide the main (window) scrollbar — replaced by the #scroll-progress bar.
+/* Hide the main (window) scrollbar - replaced by the #scroll-progress bar.
    Inner scroll areas (sidebar, lists, dialogs) keep their thin scrollbars. */
 html {
   scrollbar-width: none;
@@ -2278,7 +2278,7 @@ body[data-tpl-embed="1"] #site-agreement {
   opacity: 0.55;
 }
 
-/* Light sidebar — cream/default (colored swatches use theme tokens at EOF) */
+/* Light sidebar - cream/default (colored swatches use theme tokens at EOF) */
 html[data-theme="light"]:not([data-ui-color]) .sidebar-panel {
   background: #ffffff;
   border-right-color: #dbe3ee;
@@ -3223,7 +3223,7 @@ label[data-icon] {
   flex-shrink: 0;
 }
 
-/* Fixed menu portal — do not flip parent overflow on open (that caused scroll glitches). */
+/* Fixed menu portal - do not flip parent overflow on open (that caused scroll glitches). */
 .dash-pending-menu-wrap.is-open {
   z-index: 12;
 }
@@ -5071,7 +5071,7 @@ html[data-theme="dark"] .script-block .script-path-btn--link:hover {
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
-/* Call Scripts — page list layout */
+/* Call Scripts - page list layout */
 body[data-page="scripts"] #scripts-editor {
   display: flex;
   flex-direction: column;
@@ -5098,7 +5098,7 @@ body[data-page="scripts"] .acc-q {
   letter-spacing: -0.01em;
 }
 
-/* Call Scripts — accordion */
+/* Call Scripts - accordion */
 body[data-page="scripts"] .acc {
   border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
   border-radius: 12px;
@@ -5220,7 +5220,7 @@ body[data-page="scripts"] .acc:not(.open) .acc-a-inner > * {
   }
 }
 
-/* Call Scripts — interior content */
+/* Call Scripts - interior content */
 body[data-page="scripts"] .acc.open .acc-a-inner {
   padding: 10px 12px 14px;
   background: linear-gradient(
@@ -7518,7 +7518,7 @@ body[data-page="about"] #page-body.about-page {
   box-sizing: border-box;
 }
 
-/* Legacy certifications UI — removed */
+/* Legacy certifications UI - removed */
 body[data-page="about"] .owner-bio-certs-toggle,
 body[data-page="about"] .owner-bio-pager,
 body[data-page="about"] .owner-bio-creds,
@@ -11881,7 +11881,7 @@ html[data-theme="dark"] .lf-search-clear:hover {
 
 .lf-filter-categories .leads-chips {
   gap: 5px;
-  /* All LeadFinder niches — scroll rather than clipping to ~2 rows */
+  /* All LeadFinder niches - scroll rather than clipping to ~2 rows */
   max-height: 10.5rem;
   overflow-x: hidden;
   overflow-y: auto;
@@ -17324,7 +17324,7 @@ body[data-page="setup"] #page-body {
   margin-bottom: 0;
 }
 
-/* FAQ — smooth accordion expand/collapse */
+/* FAQ - smooth accordion expand/collapse */
 body[data-page="faq"] .faq-list .acc {
   border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
   border-radius: 12px;
@@ -20820,7 +20820,7 @@ html[data-theme="light"]:not([data-ui-color]) {
 }
 
 html[data-ui-color="white"] {
-  /* Color tokens only — do not override radius, spacing, or typography here. */
+  /* Color tokens only - do not override radius, spacing, or typography here. */
   --bg: #f7f9fc;
   --bg-top: #ffffff;
   --bg-bottom: #eef3f8;
@@ -21294,7 +21294,7 @@ html[data-theme="light"]:not([data-ui-color]) .sidebar-panel {
   box-shadow: 10px 0 28px color-mix(in srgb, var(--accent) 7%, transparent) !important;
 }
 
-/* Sidebar nav tints for cream/default only — ui-color swatches use EOF sidebar block. */
+/* Sidebar nav tints for cream/default only - ui-color swatches use EOF sidebar block. */
 html[data-theme="light"]:not([data-ui-color]) .sidebar-panel .nav-group > .nav-list,
 html[data-theme="light"]:not([data-ui-color]) .sidebar-panel .nav-group-home > .nav-list {
   background: color-mix(in srgb, var(--surface) 88%, #ffffff 12%) !important;
@@ -26390,7 +26390,7 @@ body[data-page="my-clients"] #page-body.dashboard-redesign.owner-clients-page,
   background: transparent;
 }
 
-/* Compact find bar — override page inbox-search pill chrome */
+/* Compact find bar - override page inbox-search pill chrome */
 .owner-client-form-dialog-panel .owner-clients-autofill-bar,
 .dashboard-redesign.owner-clients-page .owner-client-form-dialog-panel .owner-clients-autofill-bar {
   display: flex;
@@ -27139,7 +27139,7 @@ body[data-page="my-clients"] #page-body.dashboard-redesign.owner-clients-page,
   }
 }
 
-/* Role guides (owner-only) — workflows only, shared card/toggle styles */
+/* Role guides (owner-only) - workflows only, shared card/toggle styles */
 body[data-page="role-guides"] #page-body.dashboard-redesign.owner-role-guides-page,
 .main > #page-body.dashboard-redesign.owner-role-guides-page {
   width: 100%;
@@ -28613,7 +28613,7 @@ html[data-theme="dark"] .owner-console-view-banner:hover {
   display: none;
 }
 
-/* Key/value grid — refined tiles */
+/* Key/value grid - refined tiles */
 .dashboard-redesign.owner-console-page .owner-console-ni-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
@@ -28677,7 +28677,7 @@ html[data-theme="dark"] .owner-console-view-banner:hover {
   color: var(--muted);
 }
 
-/* Reason block — accent callout */
+/* Reason block - accent callout */
 .dashboard-redesign.owner-console-page .owner-console-ni-reason-box {
   display: flex;
   flex-direction: column;
@@ -28722,7 +28722,7 @@ html[data-theme="dark"] .owner-console-view-banner:hover {
   font-style: italic;
 }
 
-/* Action buttons — labeled pills */
+/* Action buttons - labeled pills */
 .dashboard-redesign.owner-console-page .owner-console-ni-actions {
   display: flex;
   flex-wrap: wrap;
@@ -31274,7 +31274,7 @@ body[data-page="home"] #page-body.dashboard-redesign .dash-tracker-stack {
   margin-inline: auto !important;
 }
 
-/* Fallback: #page-body still under body (before shell mount) — fill column, center kids */
+/* Fallback: #page-body still under body (before shell mount) - fill column, center kids */
 body[data-page="home"] > #page-body.dashboard-redesign {
   margin-left: var(--sidebar) !important;
   margin-right: 0 !important;
@@ -31313,7 +31313,7 @@ body[data-page="sales-console"] .main > #page-body.dashboard-redesign.owner-cons
   width: 100%;
 }
 
-/* Sidebar — matches active theme (light swatches = light panel; dark/black = dark panel) */
+/* Sidebar - matches active theme (light swatches = light panel; dark/black = dark panel) */
 html[data-theme="light"] .sidebar-panel {
   background: var(--surface) !important;
   border-right-color: var(--border) !important;
@@ -31621,7 +31621,7 @@ html[data-ui-color="black"] .sidebar .menu-btn:hover {
   color: #ffffff !important;
 }
 
-/* Theme swatch contrast — main content uses palette tokens */
+/* Theme swatch contrast - main content uses palette tokens */
 html[data-ui-color] body,
 html[data-ui-color] .main,
 html[data-ui-color] #page-body {
@@ -32438,7 +32438,7 @@ html[data-ui-color="black"] #page-body p a[href]:not(.btn):not(.link-card):hover
   }
 }
 
-/* —— Sliding multi-way segment switches —— */
+/* -- Sliding multi-way segment switches -- */
 .seg-switch {
   position: relative;
   isolation: isolate;

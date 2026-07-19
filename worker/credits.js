@@ -1,5 +1,5 @@
 /**
- * Credit billing helpers — plans, top-ups, balance, deduct/refund via Supabase RPC.
+ * Credit billing helpers - plans, top-ups, balance, deduct/refund via Supabase RPC.
  */
 
 const GENERATION_CREDIT_COST = 5;
@@ -61,7 +61,7 @@ const DONATE_DEFAULT_DOLLARS = Math.min(
 const DONATE_BENEFITS = [
   "View code and download HTML in Builder",
   "Everything free in the Store",
-  "Support Moonrise — keep generation free for everyone",
+  "Support Moonrise - keep generation free for everyone",
 ];
 
 function topupCatalog() {
@@ -229,7 +229,7 @@ function donateSubscriptionLineItem(quote) {
         product_data: {
           name: "Moonrise MVP+ Support",
           description:
-            "Monthly support — MVP+ perks: Builder code access and free Store items while subscribed.",
+            "Monthly support - MVP+ perks: Builder code access and free Store items while subscribed.",
         },
         unit_amount: cents,
         recurring: { interval: "month" },

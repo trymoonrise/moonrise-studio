@@ -253,7 +253,7 @@
   function savePrefs() {
     const prefs = {
       websiteFilter: getWebsiteFilter(),
-      // Always persist Available — Quick Save is a temporary browse mode, not a startup default.
+      // Always persist Available - Quick Save is a temporary browse mode, not a startup default.
       listView: DEFAULT_PREFS.listView,
       priorityCategories: Array.from(priorityCategories),
       ...getAdvancedFilters(),
@@ -1635,7 +1635,7 @@
 
   function matchesWorkflowView(lead) {
     if (listView === "saved") {
-      // Quick Save is a personal bookmark list — keep pending/on-hold items visible.
+      // Quick Save is a personal bookmark list - keep pending/on-hold items visible.
       if (isLockedByOther(lead)) return false;
       return isSaved(lead) && getLeadWorkflow(lead) !== "not-interested";
     }
@@ -1932,7 +1932,7 @@
     opts = opts || {};
     const empty = !!opts.empty;
     const tag = opts.href && !empty ? "a" : "div";
-    // Only Open/Closed (hours) may show a hover tip — full weekly schedule.
+    // Only Open/Closed (hours) may show a hover tip - full weekly schedule.
     const tip = opts.scheduleTip && String(opts.scheduleTip).trim();
     const tipId = escapeHtml(String(opts.tipId || label).replace(/\s+/g, "-"));
     const attrs = [
@@ -2081,7 +2081,7 @@
     updateStats();
     manageTeamStatusPoll();
 
-    // Filters can hide the whole first page — keep pulling until matches appear or DB ends.
+    // Filters can hide the whole first page - keep pulling until matches appear or DB ends.
     if (visible.length === 0 && hasMoreRemoteLeads() && !remoteLoading) {
       void (async () => {
         const added = await fetchRemoteBatchesForScroll();
@@ -2094,7 +2094,7 @@
   function updateViewUi() {
     const group = $("lf-list-view");
     if (!group) return;
-    // Keep labels stable — rewriting "Available (n)" reflows SegmentSwitch mid-slide.
+    // Keep labels stable - rewriting "Available (n)" reflows SegmentSwitch mid-slide.
     group.querySelectorAll(".lf-toggle-btn[data-list-view]").forEach((btn) => {
       const value = btn.dataset.listView;
       const match = WORKFLOW_VIEWS.find((w) => w.value === value);
@@ -3408,7 +3408,7 @@
     await consumeForceTeamRefresh();
     await syncReady;
 
-    // Cache already on screen — skip a second full reshuffle/re-render.
+    // Cache already on screen - skip a second full reshuffle/re-render.
     if (data?.fromCache && showCachedFirst) {
       refreshTeamProfilePhotos().catch(() => {});
       if ((location.hash || "").replace(/^#/, "").trim() === "pending") {
@@ -3587,7 +3587,7 @@
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState !== "visible") return;
       if (document.body.dataset.page !== "leads") return;
-      // Cheap HEAD count only — do not wipe cache / re-download the whole table.
+      // Cheap HEAD count only - do not wipe cache / re-download the whole table.
       global.LeadsLoader?.checkForUpdates?.().catch(() => null);
     });
 

@@ -53,7 +53,7 @@ function isValidSite(url) {
   return true;
 }
 
-/** Section detectors — keyword/heuristic on lowercased HTML text + attrs. */
+/** Section detectors - keyword/heuristic on lowercased HTML text + attrs. */
 const SECTION_DETECTORS = {
   navigation: /\b(nav|navbar|site-header|main-menu|menu-toggle)\b|<nav[\s>]/i,
   hero: /\b(hero|banner|jumbotron|masthead|page-header)\b|class="[^"]*hero/i,

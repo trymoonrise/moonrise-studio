@@ -7,8 +7,11 @@
   <meta name="description" content="Find your Moonrise website. Browse published sites, open a preview, and complete checkout if a watermark is still present.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css?v=20260718-creator-help">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/studio.css?v=20260719-bloom-nav">
+  <meta name="color-scheme" content="light">
+  <script src="js/config.js?v=20260719-seo"></script>
+  <script src="js/site-branding.js?v=20260719-seo"></script>
 </head>
 <body data-page="orders" class="ms-orders-page">
   <div class="ms-orders-field" aria-hidden="true">
@@ -17,26 +20,36 @@
 
   <header class="ms-orders-nav">
     <a class="ms-home-brand" href="index.html">
-      <img src="doc/MoonriseLogo.png" alt="" width="36" height="36">
-      <strong>Moonrise Studio</strong>
+      <img src="doc/MoonriseLogo.png" alt="" width="40" height="40">
+      <strong>trymoonrise.com</strong>
     </a>
-    <nav class="ms-orders-nav-links" aria-label="Page">
-      <a class="ms-orders-nav-link" href="index.html">Home</a>
-      <a class="ms-orders-nav-link" href="mailto:trymoonrise@gmail.com">Support</a>
-    </nav>
+    <button type="button" class="ms-home-orb" id="ms-home-orb" aria-label="Open menu" aria-expanded="false" aria-controls="ms-home-bloom">
+      <i></i><i></i><i></i>
+    </button>
   </header>
+
+  <div class="ms-home-bloom" id="ms-home-bloom" aria-hidden="true">
+    <nav class="ms-home-bloom-nav" aria-label="Primary">
+      <a href="login.html" style="--nav-i:0">Start earning</a>
+      <a href="index.html#method" style="--nav-i:1">Learn More</a>
+      <a href="download.html" style="--nav-i:2">Download app</a>
+      <a href="orders.html" style="--nav-i:3" aria-current="page">Locate my order</a>
+      <a href="login.html" style="--nav-i:4">Sign in</a>
+    </nav>
+  </div>
 
   <main class="ms-orders-main">
     <header class="ms-orders-head">
       <h1>Locate My Order</h1>
       <p>
-        Find your published Moonrise website by business name. Open the preview,
-        then complete checkout if the watermark is still on.
+        Find your published Moonrise website by business name. Open the live site,
+        then complete checkout on the watermark if it is still present. After payment,
+        the watermark is removed automatically.
       </p>
       <dl class="ms-orders-stats" aria-label="Catalog summary">
         <div>
           <dt>Published sites</dt>
-          <dd id="orders-count">—</dd>
+          <dd id="orders-count">-</dd>
         </div>
       </dl>
     </header>
@@ -74,8 +87,7 @@
     </footer>
   </main>
 
-  <script src="js/config.js?v=20260718-api-cloud"></script>
-  <script src="js/site-branding.js"></script>
+  <script src="js/home-bloom-nav.js?v=20260719-bloom-nav"></script>
   <script src="js/orders.js"></script>
 </body>
 </html>

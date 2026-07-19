@@ -2,7 +2,7 @@
   "name": "moonrise-studio-worker",
   "version": "1.0.0",
   "private": true,
-  "description": "Moonrise Studio API worker — OpenRouter, Stripe, Vercel",
+  "description": "Moonrise Studio API worker - OpenRouter, Stripe, Vercel",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -16,6 +16,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "stripe": "^17.7.0"
+    "stripe": "^17.7.0",
+    "web-push": "^3.6.7"
   }
 }

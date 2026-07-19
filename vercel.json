@@ -31,6 +31,7 @@
     { "source": "/checkout", "destination": "/api" },
     { "source": "/public-checkout", "destination": "/api" },
     { "source": "/fulfill-go-live", "destination": "/api" },
+    { "source": "/public-creator-contact", "destination": "/api" },
     { "source": "/public-orders", "destination": "/api" },
     { "source": "/publish", "destination": "/api" },
     { "source": "/unpublish", "destination": "/api" },
@@ -59,6 +60,7 @@
     { "source": "/auth/signin", "destination": "/api" },
     { "source": "/auth/signup", "destination": "/api" },
     { "source": "/auth/forgot", "destination": "/api" },
+    { "source": "/auth/resend-confirm", "destination": "/api" },
     { "source": "/auth/verify-password", "destination": "/api" },
     { "source": "/security-card/:path*", "destination": "/api" }
   ],

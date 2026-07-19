@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="js/auth-gate-head.js?v=20260719-auth-gate"></script>
   <title>Editor · Moonrise Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css?v=20260718-mobile-chrome">
+  <link rel="stylesheet" href="css/studio.css?v=20260719-lb-side-scroll">
   <link rel="stylesheet" href="css/mvp-gate.css?v=20260717-mvp-fix">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -19,6 +20,14 @@
       padding: 0 !important;
       overflow: hidden;
       box-sizing: border-box;
+    }
+
+    /* Live sites carry the paywall watermark — editor preview never shows it. */
+    #watermark-host,
+    #mr-wm-chip-root,
+    #mr-wm-overlay-root,
+    .mr-wm {
+      display: none !important;
     }
   </style>
 </head>
@@ -167,15 +176,18 @@
                       autocomplete="off"
                       spellcheck="false"
                       placeholder="500"
-                      aria-label="Website price — what the business owner pays on the watermark"
+                      aria-label="Website price - what the business owner pays on the watermark"
                       value="500"
                     >
                   </span>
                 </label>
               </div>
               <div class="ms-creator-policy-notice ms-creator-policy-notice--compact" role="note">
-                <p>Creators must <strong>never charge business owners directly</strong>. After you publish the website, the deployed site will display a watermark prompting the business owner to pay the <strong>Website Price</strong> you set to unlock full access. Creators are paid through this process only.</p>
-                <p>Accepting payments outside of Moonrise Studio (including cash, Venmo, PayPal, invoices, or any other payment method) is prohibited. Violations may result in withheld payouts, permanent suspension, and other enforcement consequences. <a href="terms.html" target="_blank" rel="noopener">Terms</a></p>
+                <p><strong>You must never charge business owners outside of this platform.</strong> Once you publish a website, a blue watermark will appear on the live site prompting the business owner to pay the <strong>Website Price</strong> you set. After payment, the watermark is automatically removed and you get paid, so you never have to worry about handling payments yourself.</p>
+                <details class="ms-creator-policy-more">
+                  <summary>See more&hellip;</summary>
+                  <p>Accepting payments outside of trymoonrise.com (including cash, Venmo, PayPal, invoices, or any other payment method) is strictly prohibited. Violations may result in withheld payouts, permanent suspension, and other enforcement consequences. <a href="terms.html" target="_blank" rel="noopener">Terms</a></p>
+                </details>
                 <label class="ms-lb-policy-agree">
                   <input type="checkbox" id="lb-payment-policy-agree" aria-describedby="lb-payment-policy-agree-label">
                   <span id="lb-payment-policy-agree-label">I have read and agree to this payment policy.</span>
@@ -190,7 +202,7 @@
               </button>
               <button type="button" class="ms-lb-redesign-btn" id="btn-redesign-top" hidden>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
-                <span class="ms-lb-redesign-label">Redesign · 5 credits</span>
+                <span class="ms-lb-redesign-label">Redesign</span>
               </button>
               <button type="button" class="ms-lb-unpublish-btn" id="btn-unpublish-top" hidden>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg>
@@ -301,7 +313,6 @@
                   tabindex="0"
                 ></div>
                 <iframe class="ms-preview-frame is-desktop is-parked" id="preview-frame" title="Site preview" sandbox="allow-same-origin allow-scripts allow-forms"></iframe>
-                <div id="watermark-host"></div>
                 <div
                   class="ms-preview-vp-resizer is-bottom"
                   id="preview-vp-resizer-bottom"
@@ -506,7 +517,7 @@
         <h2 class="ms-clients-dialog-title" id="lb-redesign-title">Redesign this site?</h2>
       </header>
       <p class="ms-clients-dialog-lead">This replaces the current design with a completely new one.</p>
-      <p class="ms-lb-redesign-cost" id="lb-redesign-cost" aria-live="polite">Uses 5 credits</p>
+      <p class="ms-lb-redesign-cost" id="lb-redesign-cost" aria-live="polite">Your current design will be replaced with a new one.</p>
       <div class="ms-clients-dialog-actions">
         <button type="button" class="ms-clients-dialog-back" id="lb-redesign-cancel">Cancel</button>
         <button type="button" class="ms-btn ms-clients-dialog-next" id="lb-redesign-submit">Redesign</button>
@@ -516,51 +527,46 @@
 
   <div class="ms-lb-qr" id="lb-qr-modal" hidden>
     <button type="button" class="ms-lb-qr-backdrop" id="lb-qr-close-backdrop" aria-label="Close"></button>
-    <div class="ms-lb-qr-stage" role="dialog" aria-modal="true" aria-labelledby="lb-qr-title">
-      <header class="ms-lb-qr-head">
-        <div>
-          <h2 id="lb-qr-title">QR business card</h2>
-          <p class="ms-muted">Scan to open the live site · print-ready download</p>
-        </div>
-        <button type="button" class="ms-lb-qr-close" id="lb-qr-close" aria-label="Close">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
-        </button>
-      </header>
-
+    <div class="ms-lb-qr-stage" role="dialog" aria-modal="true" aria-labelledby="lb-qr-name">
       <div class="ms-lb-qr-scene" id="lb-qr-scene">
         <div class="ms-lb-qr-card" id="lb-qr-card">
+          <button type="button" class="ms-lb-qr-close" id="lb-qr-close" aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
           <div class="ms-lb-qr-card-sheen" aria-hidden="true"></div>
-          <div class="ms-lb-qr-card-top">
-            <span class="ms-lb-qr-brand">moonrise</span>
-            <span class="ms-lb-qr-chip">Live site</span>
+          <div class="ms-lb-qr-card-inner">
+            <div class="ms-lb-qr-card-copy">
+              <a class="ms-lb-qr-name" id="lb-qr-name" href="#" target="_blank" rel="noopener noreferrer">Business</a>
+              <p class="ms-lb-qr-category" id="lb-qr-category" hidden></p>
+              <ul class="ms-lb-qr-meta" id="lb-qr-meta" hidden></ul>
+              <p class="ms-lb-qr-hint">Scan with a phone camera</p>
+            </div>
+            <div class="ms-lb-qr-code-col">
+              <a class="ms-lb-qr-code-wrap" id="lb-qr-code-link" href="#" target="_blank" rel="noopener noreferrer" aria-label="Open live site">
+                <canvas id="lb-qr-canvas" width="168" height="168" aria-hidden="true"></canvas>
+              </a>
+            </div>
           </div>
-          <h3 class="ms-lb-qr-name" id="lb-qr-name">Business</h3>
-          <div class="ms-lb-qr-code-wrap">
-            <canvas id="lb-qr-canvas" width="220" height="220" aria-label="QR code"></canvas>
-          </div>
-          <a class="ms-lb-qr-link" id="lb-qr-link" href="#" target="_blank" rel="noopener"></a>
-          <p class="ms-lb-qr-hint">Scan with a phone camera</p>
         </div>
-      </div>
-
-      <div class="ms-lb-qr-actions">
-        <button type="button" class="ms-btn ms-btn-ghost" id="lb-qr-copy">Copy link</button>
-        <button type="button" class="ms-btn" id="lb-qr-download">Download card</button>
+        <div class="ms-lb-qr-actions">
+          <button type="button" class="ms-btn ms-btn-ghost" id="lb-qr-copy">Copy link</button>
+          <button type="button" class="ms-btn" id="lb-qr-download">Download card</button>
+        </div>
       </div>
     </div>
   </div>
 
   <script src="js/vendor/qrcode.min.js?v=1.5.1" data-ms-qrcode="1"></script>
-  <script src="js/config.js?v=20260718-api-cloud"></script>
+  <script src="js/config.js?v=20260719-gen-cors"></script>
   <script src="js/site-branding.js"></script>
   <script src="js/supabase-client.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/segment-switch.js"></script>
-  <script src="js/ui-motion.js"></script>
+  <script src="js/ui-motion.js?v=20260719-onb-motion"></script>
   <script src="js/toast.js"></script>
   <script src="js/income.js?v=20260718-income"></script>
   <script src="js/app.js?v=20260718-builder-split"></script>
-  <script src="watermark/embed.js"></script>
-  <script src="js/builder.js?v=20260718-no-instructions"></script>
+  <script src="js/creator-contact.js?v=20260719-watermark-contact"></script>
+  <script src="js/builder.js?v=20260719-editor-wm-only"></script>
 </body>
 </html>

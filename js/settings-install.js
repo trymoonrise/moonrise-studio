@@ -1,5 +1,5 @@
 /**
- * Settings — Download / install app section.
+ * Settings - Download / install app section.
  */
 (function () {
   if (document.body?.dataset?.page !== "settings") return;

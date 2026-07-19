@@ -277,7 +277,7 @@ async function main() {
           cleanState.failed += 1;
           emitChat({
             event: "status",
-            text: `Clean miss · ${name} — ${item.error || "unknown"}`,
+            text: `Clean miss · ${name} - ${item.error || "unknown"}`,
           });
           continue;
         }

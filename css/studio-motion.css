@@ -1,130 +1,123 @@
-/* Studio-wide premium motion — onboarding-style rise reveals (no blur on interactive UI) */
-
-:root {
-  --ms-motion-ease-soft: cubic-bezier(0.16, 1, 0.3, 1);
-  --ms-motion-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ms-motion-dur-fast: 0.34s;
-  --ms-motion-dur-med: 0.48s;
-  --ms-motion-dur-slow: 0.62s;
-  --ms-motion-base-delay: 0.05s;
-  --ms-motion-stagger: 0.055s;
-  --ms-motion-rise: 12px;
-}
-
-/* Subtle ambient wash on app pages (matches onboarding/home drift) */
-body[data-page]:not([data-page="editor"]):not([data-page="builder"]):not([data-page="home"]):not([data-page="orders"]):not(.ms-onboard-page):not(.ms-legal-site):not(.ms-contact-public)::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse 120% 70% at 50% -20%, rgba(37, 99, 235, 0.07), transparent 58%),
-    radial-gradient(ellipse 50% 40% at 0% 100%, rgba(99, 102, 241, 0.05), transparent 55%);
-  animation: ms-st-bg-drift 20s ease-in-out infinite alternate;
-}
-
-body[data-page]:not([data-page="editor"]):not([data-page="builder"]):not([data-page="home"]):not([data-page="orders"]):not(.ms-onboard-page):not(.ms-legal-site):not(.ms-contact-public) #page-body,
-body[data-page="login"] .ms-auth-card,
-body[data-page="orders"] .ms-orders-main,
-body.ms-legal-site .ms-legal-wrap,
-body.ms-contact-public .ms-contact-main {
-  position: relative;
-  z-index: 1;
-}
-
-@keyframes ms-st-bg-drift {
-  0% { transform: scale(1) translate3d(0, 0, 0); }
-  100% { transform: scale(1.02) translate3d(0, -0.6%, 0); }
-}
-
-@keyframes ms-st-rise {
-  from {
-    opacity: 0;
-    transform: translate3d(0, var(--ms-motion-rise), 0);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@keyframes ms-st-sidebar-in {
-  from {
-    opacity: 0;
-    transform: translate3d(-8px, 0, 0);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-/* Pre-hide marked items until the ready class triggers the entrance */
-.ms-motion-item {
-  opacity: 0;
-  transform: translate3d(0, var(--ms-motion-rise), 0);
-}
-
-@media (min-width: 901px) {
-  .ms-sidebar.ms-motion-sidebar {
-    opacity: 0;
-    transform: translate3d(-8px, 0, 0);
-  }
-}
-
-/* Page reveal items — class applied once at load by ui-motion.js */
-body.ms-page-motion-ready .ms-motion-item {
-  animation: ms-st-rise var(--ms-motion-dur-med) var(--ms-motion-ease-soft) both;
-  animation-delay: calc(var(--ms-motion-base-delay) + var(--ms-motion-stagger) * var(--ms-motion-i, 0));
-  backface-visibility: hidden;
-}
-
-@media (min-width: 901px) {
-  body.ms-page-motion-ready .ms-sidebar.ms-motion-sidebar {
-    animation: ms-st-sidebar-in var(--ms-motion-dur-slow) var(--ms-motion-ease-soft) both;
-    animation-delay: 0.02s;
-    backface-visibility: hidden;
-  }
-}
-
-/* Mobile drawer uses transform for off-canvas — never the desktop sidebar entrance */
-@media (max-width: 900px) {
-  body.ms-page-motion-ready .ms-sidebar.ms-motion-sidebar {
-    animation: none !important;
-  }
-
-  .ms-sidebar.ms-motion-sidebar {
-    opacity: 1 !important;
-    transform: translate3d(-105%, 0, 0) !important;
-  }
-
-  body.ms-nav-open .ms-sidebar {
-    transform: translate3d(0, 0, 0) !important;
-  }
-}
-
-/* Skip motion for explicitly opted-out nodes */
-.ms-motion-skip {
-  animation: none !important;
-  opacity: 1 !important;
-  transform: none !important;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  body[data-page]:not([data-page="editor"]):not([data-page="builder"]):not([data-page="home"]):not([data-page="orders"]):not(.ms-onboard-page):not(.ms-legal-site):not(.ms-contact-public)::before {
-    animation: none;
-  }
-
-  .ms-motion-item,
-  .ms-sidebar.ms-motion-sidebar {
-    opacity: 1 !important;
-    transform: none !important;
-  }
-
-  body.ms-page-motion-ready .ms-motion-item,
-  body.ms-page-motion-ready .ms-sidebar.ms-motion-sidebar {
-    animation: none !important;
-  }
-}
-
+/* Studio-wide premium motion - onboarding-style rise reveals (no blur on interactive UI) */
+
+:root {
+  --ms-motion-ease-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  --ms-motion-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ms-motion-dur-fast: 0.34s;
+  --ms-motion-dur-med: 0.48s;
+  --ms-motion-dur-slow: 0.62s;
+  --ms-motion-dur-panel: 0.44s;
+  --ms-motion-base-delay: 0.06s;
+  --ms-motion-stagger: 0.052s;
+  --ms-motion-rise: 14px;
+}
+
+/* Subtle ambient wash on app pages (matches onboarding/home drift) */
+body[data-page]:not([data-page="editor"]):not([data-page="builder"]):not([data-page="home"]):not([data-page="orders"]):not([data-page="leads"]):not(.ms-onboard-page):not(.ms-legal-site):not(.ms-contact-public)::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 120% 70% at 50% -20%, rgba(37, 99, 235, 0.07), transparent 58%),
+    radial-gradient(ellipse 50% 40% at 0% 100%, rgba(99, 102, 241, 0.05), transparent 55%);
+  animation: ms-st-bg-drift 20s ease-in-out infinite alternate;
+}
+
+body[data-page]:not([data-page="editor"]):not([data-page="builder"]):not([data-page="home"]):not([data-page="orders"]):not(.ms-onboard-page):not(.ms-legal-site):not(.ms-contact-public) #page-body,
+body[data-page="login"] .ms-auth-card,
+body[data-page="orders"] .ms-orders-main,
+body.ms-legal-site .ms-legal-wrap,
+body.ms-contact-public .ms-contact-main {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes ms-st-bg-drift {
+  0% {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+  100% {
+    transform: scale(1.02) translate3d(0, -0.6%, 0);
+  }
+}
+
+/* Pre-hide marked items until the ready class triggers the entrance */
+.ms-motion-item {
+  opacity: 0;
+  transform: translate3d(0, var(--ms-motion-rise), 0) scale(0.992);
+  will-change: opacity, transform;
+  transition:
+    opacity 0s linear var(--ms-motion-dur-med),
+    transform 0s linear var(--ms-motion-dur-med);
+}
+
+@media (min-width: 901px) {
+  .ms-sidebar.ms-motion-sidebar {
+    opacity: 0;
+    transform: translate3d(-10px, 0, 0);
+    will-change: opacity, transform;
+    transition:
+      opacity 0s linear var(--ms-motion-dur-slow),
+      transform 0s linear var(--ms-motion-dur-slow);
+  }
+}
+
+/* Page reveal items - class applied once at load by ui-motion.js */
+body.ms-page-motion-ready .ms-motion-item {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+  transition:
+    opacity var(--ms-motion-dur-med) var(--ms-motion-ease-soft),
+    transform var(--ms-motion-dur-med) var(--ms-motion-ease-soft);
+  transition-delay: calc(var(--ms-motion-base-delay) + var(--ms-motion-stagger) * var(--ms-motion-i, 0));
+}
+
+@media (min-width: 901px) {
+  body.ms-page-motion-ready .ms-sidebar.ms-motion-sidebar {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    transition:
+      opacity var(--ms-motion-dur-slow) var(--ms-motion-ease-soft),
+      transform var(--ms-motion-dur-slow) var(--ms-motion-ease-soft);
+    transition-delay: 0.02s;
+  }
+}
+
+/* Mobile drawer uses transform for off-canvas - never the desktop sidebar entrance */
+@media (max-width: 900px) {
+  body.ms-page-motion-ready .ms-sidebar.ms-motion-sidebar {
+    transition: transform 0.32s var(--ms-motion-ease-soft) !important;
+  }
+
+  .ms-sidebar.ms-motion-sidebar {
+    opacity: 1 !important;
+    transform: translate3d(-105%, 0, 0) !important;
+    transition: transform 0.32s var(--ms-motion-ease-soft) !important;
+  }
+
+  body.ms-nav-open .ms-sidebar {
+    transform: translate3d(0, 0, 0) !important;
+  }
+}
+
+/* Skip motion for explicitly opted-out nodes */
+.ms-motion-skip {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-page]:not([data-page="editor"]):not([data-page="builder"]):not([data-page="home"]):not([data-page="orders"]):not([data-page="leads"]):not(.ms-onboard-page):not(.ms-legal-site):not(.ms-contact-public)::before {
+    animation: none;
+  }
+
+  .ms-motion-item,
+  .ms-sidebar.ms-motion-sidebar {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}

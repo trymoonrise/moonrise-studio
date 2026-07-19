@@ -23,12 +23,13 @@
     const { url, key } = cfg();
     client = global.supabase.createClient(url, key, {
       auth: {
-            storageKey: "moonrise-studio-auth",
+        storageKey: "moonrise-studio-auth",
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
         storage: global.localStorage,
-        flowType: "pkce",
+        // Implicit so email confirmation links return #access_token (server-side signup has no PKCE verifier).
+        flowType: "implicit",
       },
     });
     return client;

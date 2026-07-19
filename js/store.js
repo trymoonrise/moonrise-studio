@@ -1,5 +1,5 @@
 /**
- * Store — digital product actions (MVP+ includes Moonrise Store items).
+ * Store - digital product actions (MVP+ includes Moonrise Store items).
  */
 (function () {
   function isExternalProduct(article) {
@@ -49,7 +49,7 @@
       btn.addEventListener("click", () => {
         if (btn.disabled) return;
         const name = btn.getAttribute("data-product") || "this product";
-        window.StudioToast?.info?.("Coming soon — " + name);
+        window.StudioToast?.info?.("Coming soon - " + name);
       });
     });
   }

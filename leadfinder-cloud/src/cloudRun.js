@@ -117,7 +117,7 @@ async function scrapeOneQuery(page, query, cfg) {
   } catch (error) {
     emitChat({
       event: "status",
-      text: `Failed: ${query.text} — ${error.message}`,
+      text: `Failed: ${query.text} - ${error.message}`,
     });
     console.error(`scrape failed for "${query.text}":`, error.message);
     return { query, rows: [], error };

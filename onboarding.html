@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="js/auth-gate-head.js?v=20260719-auth-gate"></script>
   <title>Welcome · Moonrise Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,8 +24,8 @@
       filter: none;
     }
   </style>
-  <link rel="stylesheet" href="css/studio.css?v=20260718-sec-card-verified">
-  <link rel="stylesheet" href="css/onboarding-premium.css?v=20260718-celebrate-video">
+  <link rel="stylesheet" href="css/studio.css?v=20260719-sec-card-ui">
+  <link rel="stylesheet" href="css/onboarding-premium.css?v=20260719-payout-locked">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body data-page="onboarding" class="ms-onboard-page">
@@ -33,13 +34,16 @@
     <div class="ms-onboard-card">
       <header class="ms-onboard-card-head">
         <div class="ms-onboard-card-head-row">
-          <a class="ms-onboard-brand" href="#" aria-label="Moonrise Studio">
+          <a class="ms-onboard-brand" href="index.html" aria-label="Moonrise Studio home">
             <img src="doc/MoonriseLogo.png" alt="" width="28" height="28">
             <span>Moonrise</span>
           </a>
-          <span class="ms-onboard-step-pill" id="onb-progress-label">1 / 6</span>
+          <div class="ms-onboard-card-head-actions">
+            <a class="ms-onboard-home" href="index.html">← Home</a>
+            <span class="ms-onboard-step-pill" id="onb-progress-label">1 / 7</span>
+          </div>
         </div>
-        <div class="ms-onboard-progress-track" role="progressbar" aria-valuemin="1" aria-valuemax="6" aria-valuenow="1" id="onb-progress-bar">
+        <div class="ms-onboard-progress-track" role="progressbar" aria-valuemin="1" aria-valuemax="7" aria-valuenow="1" id="onb-progress-bar">
           <div class="ms-onboard-progress-fill" id="onb-progress-fill"></div>
         </div>
       </header>
@@ -89,7 +93,7 @@
                       <strong class="ms-onboard-flip-card-title">Swipe to build Website</strong>
                     </span>
                     <span class="ms-onboard-flip-card-face ms-onboard-flip-card-back">
-                      <p>Generate the site and set the unlock price on the watermark.</p>
+                      <p>Generate the site and set the Website Price in the editor.</p>
                     </span>
                   </span>
                 </button>
@@ -102,7 +106,7 @@
                       <strong class="ms-onboard-flip-card-title">Publish it</strong>
                     </span>
                     <span class="ms-onboard-flip-card-face ms-onboard-flip-card-back">
-                      <p>Live link is a preview until they pay to remove the watermark.</p>
+                      <p>Publish the live site with a watermark until the owner pays.</p>
                     </span>
                   </span>
                 </button>
@@ -115,7 +119,7 @@
                       <strong class="ms-onboard-flip-card-title">Send client the link</strong>
                     </span>
                     <span class="ms-onboard-flip-card-face ms-onboard-flip-card-back">
-                      <p>Share the preview link. They pay only through Moonrise.</p>
+                      <p>Share the live site link. They pay only through Moonrise.</p>
                     </span>
                   </span>
                 </button>
@@ -128,7 +132,7 @@
                       <strong class="ms-onboard-flip-card-title">They pay</strong>
                     </span>
                     <span class="ms-onboard-flip-card-face ms-onboard-flip-card-back">
-                      <p>They tap the watermark, pay once, and it comes off.</p>
+                      <p>They tap the watermark, pay once, and it is removed automatically.</p>
                     </span>
                   </span>
                 </button>
@@ -162,9 +166,9 @@
             </header>
             <p class="ms-onboard-lead">Read these before you start selling.</p>
             <div class="ms-creator-policy-notice ms-onboard-policy" role="note">
-              <strong>Creators do not charge business owners.</strong>
-              <p>Owners pay through the watermark on their live site. You receive your 80% creator share from Moonrise after each sale.</p>
-              <p>No cash, Venmo, Zelle, PayPal, or off-platform payments. Violations may lead to <strong>account termination and withheld payouts</strong>.</p>
+              <strong>Creators never charge business owners directly.</strong>
+              <p>Business owners pay through the watermark on their live website. After payment, the watermark is removed automatically and you receive 80% of the sale. Add payout details in Settings to get paid.</p>
+              <p>Off-platform payments (cash, Venmo, PayPal, invoices, etc.) are not allowed and may result in account termination and forfeited payouts.</p>
             </div>
             <div class="ms-onboard-legal-links">
               <a class="ms-onboard-legal-card" href="privacy.html" target="_blank" rel="noopener">
@@ -173,7 +177,6 @@
                 </span>
                 <span class="ms-onboard-legal-copy">
                   <strong>Privacy Policy</strong>
-                  <span>How we handle your data</span>
                 </span>
                 <span class="ms-onboard-legal-arrow" aria-hidden="true">→</span>
               </a>
@@ -183,7 +186,6 @@
                 </span>
                 <span class="ms-onboard-legal-copy">
                   <strong>Terms of Service</strong>
-                  <span>Rules for selling on Moonrise</span>
                 </span>
                 <span class="ms-onboard-legal-arrow" aria-hidden="true">→</span>
               </a>
@@ -199,16 +201,122 @@
           </footer>
         </section>
 
-        <!-- 4 Phone -->
+        <!-- 4 Security card -->
         <section class="ms-onboard-panel" data-onb-step="4" hidden>
           <div class="ms-onboard-panel-scroll">
+            <header class="ms-onboard-panel-head ms-onboard-panel-head--stripe">
+              <h1>Security card</h1>
+              <a
+                class="ms-onboard-stripe-partner"
+                id="onb-stripe-partner"
+                href="https://stripe.com"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span class="ms-onboard-stripe-partner-label">
+                  <span>Partnered with</span>
+                  <img src="doc/Stripe.png" alt="Stripe" width="56" height="24" loading="lazy" decoding="async">
+                </span>
+                <span class="ms-onboard-stripe-partner-busy" aria-hidden="true">
+                  <span class="ms-onboard-stripe-spinner"></span>
+                  <span>Verifying…</span>
+                </span>
+              </a>
+            </header>
+            <p class="ms-onboard-lead">Add a card we keep on file to prevent fraud, scam, chargebacks, or violations of the Terms of Service. Verification is handled by Stripe, our payments partner. We run a temporary $1 charge to confirm the card is valid, then refund it immediately.</p>
+            <div class="ms-onboard-form-block">
+              <div class="ms-sec-card-panel" id="onb-security-card-panel">
+                <div id="onb-security-card-mount"></div>
+                <div class="ms-sec-card-verified-row" id="onb-security-card-verified-wrap" hidden>
+                  <span class="ms-sec-card-verified-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                  </span>
+                  <div class="ms-sec-card-verified-copy">
+                    <span class="ms-sec-card-verified-kicker">Card on file</span>
+                    <span class="ms-sec-card-verified-text" id="onb-security-card-verified"></span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  class="ms-sec-card-retry ms-sec-card-retry--reload"
+                  id="onb-retry-card"
+                  hidden
+                  aria-label="Try again"
+                  title="Try again"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
+                  <span>Try again</span>
+                </button>
+              </div>
+            </div>
+            <label class="ms-onboard-check">
+              <input type="checkbox" id="onb-card-agree">
+              <span>I authorize Moonrise to store this card and charge it for fraud, chargebacks, or violations of the Terms of Service.</span>
+            </label>
+          </div>
+          <footer class="ms-onboard-actions">
+            <button type="button" class="ms-btn ms-btn-secondary" data-onb-back>Back</button>
+            <button type="button" class="ms-btn ms-onboard-next" data-onb-next id="onb-finish-setup" disabled>Continue</button>
+          </footer>
+        </section>
+
+        <!-- 5 Payout method -->
+        <section class="ms-onboard-panel" data-onb-step="5" hidden>
+          <div class="ms-onboard-panel-scroll">
             <header class="ms-onboard-panel-head">
-              <h1>Your number</h1>
+              <h1>Payout method</h1>
+            </header>
+            <p class="ms-onboard-lead">Tell us where to deliver your payout when business owners purchase their website.</p>
+            <div class="ms-onboard-form-block">
+              <div class="ms-field">
+                <label class="ms-label" id="onb-payout-method-label">How you get paid</label>
+                <div class="ms-payout-picker" id="onb-payout-picker">
+                  <input type="hidden" id="onb-payout-method" value="">
+                  <button
+                    type="button"
+                    class="ms-payout-picker-trigger"
+                    id="onb-payout-picker-trigger"
+                    aria-haspopup="listbox"
+                    aria-expanded="false"
+                    aria-labelledby="onb-payout-method-label"
+                  >
+                    <span class="ms-payout-picker-empty" id="onb-payout-picker-empty">Select a payout method</span>
+                    <span class="ms-payout-picker-selected" id="onb-payout-picker-selected" hidden>
+                      <img class="ms-payout-picker-logo" id="onb-payout-picker-logo" alt="" width="24" height="24">
+                      <span class="ms-payout-picker-name" id="onb-payout-picker-name"></span>
+                    </span>
+                    <svg class="ms-payout-picker-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                  </button>
+                  <div class="ms-payout-picker-menu" id="onb-payout-picker-menu" role="listbox" hidden></div>
+                </div>
+              </div>
+              <div class="ms-field is-locked" id="onb-payout-handle-field">
+                <label class="ms-label" for="onb-payout-handle" id="onb-payout-handle-label">Payout details</label>
+                <input class="ms-input" id="onb-payout-handle" type="text" autocomplete="off" placeholder="Select a payout method first" disabled>
+                <p class="ms-settings-hint ms-muted" id="onb-payout-handle-hint">Choose how you get paid above, then enter your details here.</p>
+              </div>
+            </div>
+          </div>
+          <footer class="ms-onboard-actions">
+            <button type="button" class="ms-btn ms-btn-secondary" data-onb-back>Back</button>
+            <button type="button" class="ms-btn ms-onboard-next" data-onb-next>Continue</button>
+          </footer>
+        </section>
+
+        <!-- 6 Contact information -->
+        <section class="ms-onboard-panel" data-onb-step="6" hidden>
+          <div class="ms-onboard-panel-scroll">
+            <header class="ms-onboard-panel-head">
+              <h1>Contact information</h1>
             </header>
             <p class="ms-onboard-lead">
-              Clients may call this number for small site changes. Feel free to use a virtual number to keep your personal line private.
+              How clients and Moonrise can reach you. Clients may call for small site changes - feel free to use a virtual number to keep your personal line private.
             </p>
             <div class="ms-onboard-form-block">
+              <div class="ms-field">
+                <label class="ms-label" for="onb-contact-email">Email</label>
+                <input class="ms-input" id="onb-contact-email" type="email" required autocomplete="email" placeholder="you@studio.com">
+              </div>
               <div class="ms-field">
                 <label class="ms-label" for="onb-phone">Phone number</label>
                 <div class="ms-phone" id="onb-phone-root">
@@ -237,64 +345,17 @@
           </footer>
         </section>
 
-        <!-- 5 Payout card -->
-        <section class="ms-onboard-panel" data-onb-step="5" hidden>
+        <!-- 7 Ready -->
+        <section class="ms-onboard-panel ms-onboard-panel--celebrate" data-onb-step="7" hidden>
           <div class="ms-onboard-panel-scroll">
-            <header class="ms-onboard-panel-head">
-              <h1>How you get paid</h1>
-            </header>
-            <p class="ms-onboard-lead">Connect a card so we can verify and keep on file. Each card can only be used on one Moonrise account — use a different card if yours is already linked elsewhere.</p>
-            <div class="ms-onboard-form-block">
-              <div class="ms-field">
-                <label class="ms-label" for="onb-email">Payout email</label>
-                <input class="ms-input" id="onb-email" type="email" required autocomplete="email" placeholder="you@studio.com">
+            <header class="ms-onboard-panel-head ms-onboard-panel-head--celebrate">
+              <h1>You're ready!</h1>
+              <div class="ms-onb-celebrate-mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="9"/>
+                  <path d="M8 12.5l2.5 2.5L16 9"/>
+                </svg>
               </div>
-              <div class="ms-sec-card-panel" id="onb-security-card-panel">
-                <div id="onb-security-card-mount"></div>
-                <div class="ms-sec-card-verified-row" id="onb-security-card-verified-wrap" hidden>
-                  <span class="ms-sec-card-verified-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                  </span>
-                  <div class="ms-sec-card-verified-copy">
-                    <span class="ms-sec-card-verified-kicker">Security card connected</span>
-                    <span class="ms-sec-card-verified-text" id="onb-security-card-verified"></span>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  class="ms-sec-card-retry ms-sec-card-retry--reload"
-                  id="onb-retry-card"
-                  hidden
-                  aria-label="Try again"
-                  title="Try again"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
-                  <span>Try again</span>
-                </button>
-              </div>
-            </div>
-            <label class="ms-onboard-check">
-              <input type="checkbox" id="onb-card-agree">
-              <span>I authorize Moonrise to store this card and charge it for fraud, chargebacks, or violations of the Terms of Service.</span>
-            </label>
-          </div>
-          <footer class="ms-onboard-actions">
-            <button type="button" class="ms-btn ms-btn-secondary" data-onb-back>Back</button>
-            <button type="button" class="ms-btn ms-onboard-next" data-onb-next id="onb-finish-setup" disabled>Continue</button>
-          </footer>
-        </section>
-
-        <!-- 6 Ready -->
-        <section class="ms-onboard-panel ms-onboard-panel--celebrate" data-onb-step="6" hidden>
-          <div class="ms-onboard-panel-scroll">
-            <div class="ms-onb-celebrate-mark" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="9"/>
-                <path d="M8 12.5l2.5 2.5L16 9"/>
-              </svg>
-            </div>
-            <header class="ms-onboard-panel-head">
-              <h1>You're ready</h1>
             </header>
             <p class="ms-onboard-lead">
               Open Business Finder and build your first free site.
@@ -323,10 +384,10 @@
   <script src="js/supabase-client.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/segment-switch.js"></script>
-  <script src="js/ui-motion.js"></script>
+  <script src="js/ui-motion.js?v=20260719-onb-motion"></script>
   <script src="js/toast.js"></script>
-  <script src="js/payout-profile.js?v=20260718-auto-payout"></script>
-  <script src="js/security-card.js?v=20260718-auto-card"></script>
-  <script src="js/onboarding.js?v=20260718-auto-card"></script>
+  <script src="js/payout-profile.js?v=20260719-payout-other"></script>
+  <script src="js/security-card.js?v=20260719-no-card-hint"></script>
+  <script src="js/onboarding.js?v=20260719-payout-locked"></script>
 </body>
 </html>

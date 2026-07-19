@@ -51,7 +51,7 @@ const RECIPES = {
     @keyframes slide{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:none}}
     .btn{padding:10px 22px;border:1px solid #fff;background:transparent;color:#fff;font:inherit;font-size:.82rem;font-weight:600;cursor:pointer;white-space:nowrap;opacity:0;animation:slide .7s .5s cubic-bezier(.22,1,.36,1) forwards;transition:background .25s,color .25s}
     .btn:hover{background:#fff;color:#111}`,
-    body: `<div class="banner"><span class="line" aria-hidden="true"></span><p class="text">Start building today — free to try</p><button class="btn" type="button">Sign up</button></div>`,
+    body: `<div class="banner"><span class="line" aria-hidden="true"></span><p class="text">Start building today - free to try</p><button class="btn" type="button">Sign up</button></div>`,
   }),
 
   'card-cta': () => ({
@@ -122,7 +122,7 @@ const RECIPES = {
     p{color:rgba(255,255,255,.65);margin:0 0 1.15rem;font-size:.88rem}
     .btn{align-self:flex-start;padding:10px 20px;border:1px solid #fff;background:transparent;color:#fff;font:inherit;font-size:.82rem;font-weight:600;cursor:pointer;transition:background .25s,color .25s}
     .btn:hover{background:#fff;color:#111}`,
-    body: `<div class="cta"><div class="bars" aria-hidden="true">${'<div class="bar"></div>'.repeat(5)}</div><div class="overlay"><h2>See the work</h2><p>Motion as medium — not decoration.</p><button class="btn" type="button">View gallery</button></div></div>`,
+    body: `<div class="cta"><div class="bars" aria-hidden="true">${'<div class="bar"></div>'.repeat(5)}</div><div class="overlay"><h2>See the work</h2><p>Motion as medium - not decoration.</p><button class="btn" type="button">View gallery</button></div></div>`,
   }),
 
   'stats-cta': () => ({
@@ -146,7 +146,7 @@ const RECIPES = {
     @keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
     a{color:#111;text-decoration:none;border-bottom:2px solid #111;padding-bottom:1px;transition:background .25s,box-shadow .25s;box-shadow:inset 0 0 0 #111}
     a:hover{background:#111;color:#fff;box-shadow:inset 0 -2.2em 0 #111;border-color:transparent}`,
-    body: `<p class="line"><span>Ready to build?</span><span><a href="#">Get started</a></span><span>— it takes a minute.</span></p>`,
+    body: `<p class="line"><span>Ready to build?</span><span><a href="#">Get started</a></span><span>- it takes a minute.</span></p>`,
   }),
 
   'sticky-cta': () => ({
@@ -159,7 +159,7 @@ const RECIPES = {
     .dock span{font-size:.84rem;font-weight:500;white-space:nowrap}
     .btn{padding:9px 18px;border:none;background:#fff;color:#111;font:inherit;font-size:.8rem;font-weight:700;cursor:pointer;transition:transform .2s}
     .btn:hover{transform:scale(1.04)}`,
-    body: `<div class="content"><h1>Keep scrolling</h1><p>The call stays with you — a sticky dock that never shouts.</p><p>Minimal chrome. One action. Always in reach.</p><p>Scroll the page to feel the layout breathe while the CTA holds the bottom edge.</p></div><div class="dock" role="region" aria-label="Call to action"><span>Ship your next layout</span><button class="btn" type="button">Continue</button></div>`,
+    body: `<div class="content"><h1>Keep scrolling</h1><p>The call stays with you - a sticky dock that never shouts.</p><p>Minimal chrome. One action. Always in reach.</p><p>Scroll the page to feel the layout breathe while the CTA holds the bottom edge.</p></div><div class="dock" role="region" aria-label="Call to action"><span>Ship your next layout</span><button class="btn" type="button">Continue</button></div>`,
   }),
 
   'video-cta': () => ({

@@ -1,7 +1,11 @@
 /**
- * Secured auth routes — lockouts + rate limits in front of Supabase Auth.
+ * Secured auth routes - lockouts + rate limits in front of Supabase Auth.
  */
 const { createClient } = require("@supabase/supabase-js");
+
+const SUPPORT_EMAIL =
+  String(process.env.MOONRISE_SUPPORT_EMAIL || "trymoonrise@gmail.com").trim() ||
+  "trymoonrise@gmail.com";
 
 function createAuthClient() {
   const url = String(process.env.SUPABASE_URL || "").trim();
@@ -17,6 +21,51 @@ function createAuthClient() {
   return createClient(url, anon, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
+}
+
+function mapSignupAuthError(error) {
+  const msg = String(error?.message || "").trim();
+  const code = String(error?.code || "").trim();
+  if (!msg || msg === "{}" || msg === "[object Object]") {
+    return {
+      status: 503,
+      error:
+        "Moonrise can't send confirmation emails yet because trymoonrise.com isn't verified in Resend. Open resend.com/domains, click Verify on trymoonrise.com, then try again. Until then, sign up with trymoonrise@gmail.com.",
+      code: "email_send_failed",
+    };
+  }
+  if (/email rate limit exceeded/i.test(msg) || code === "over_email_send_rate_limit") {
+    return {
+      status: 429,
+      error:
+        `Too many verification emails were sent. Wait about an hour and try again, or contact ${SUPPORT_EMAIL}.`,
+      code: "email_rate_limited",
+    };
+  }
+  if (
+    /could not send email|error sending confirmation|testing emails to your own email|domain is not verified|verify a domain/i.test(
+      msg
+    )
+  ) {
+    return {
+      status: 503,
+      error:
+        "trymoonrise.com DNS looks set up, but Resend hasn't verified the domain yet. Go to resend.com/domains → trymoonrise.com → Verify, wait a few minutes, then try signup again.",
+      code: "email_send_failed",
+    };
+  }
+  if (/already registered|already exists|user already registered/i.test(msg)) {
+    return {
+      status: 400,
+      error: "An account with this email already exists. Sign in instead.",
+      code: "signup_exists",
+    };
+  }
+  return {
+    status: 400,
+    error: msg || "Sign up failed",
+    code: "signup_failed",
+  };
 }
 
 function mountAuthRoutes(app, { db, security }) {
@@ -111,6 +160,14 @@ function mountAuthRoutes(app, { db, security }) {
 
       const { data, error } = await authClient().auth.signInWithPassword({ email, password });
       if (error || !data?.session) {
+        const authMessage = String(error?.message || "");
+        if (/email not confirmed/i.test(authMessage)) {
+          return res.status(403).json({
+            error:
+              "Verify your email first. Check your inbox for the Moonrise confirmation link, then sign in.",
+            code: "email_not_confirmed",
+          });
+        }
         const fail = await recordAuthFailure(db(), { email, ip });
         const status = fail.locked ? 429 : 401;
         return res.status(status).json({
@@ -162,16 +219,28 @@ function mountAuthRoutes(app, { db, security }) {
         });
       }
 
+      const publicAppUrl = String(process.env.PUBLIC_APP_URL || "https://trymoonrise.com").replace(/\/$/, "");
       const { data, error } = await authClient().auth.signUp({
         email,
         password,
         options: {
           data: handle ? { handle } : undefined,
+          emailRedirectTo: `${publicAppUrl}/login.html?confirmed=1`,
         },
       });
       if (error) {
-        // Do not count "user already registered" as a password failure lockout.
-        return res.status(400).json({ error: error.message, code: "signup_failed" });
+        const mapped = mapSignupAuthError(error);
+        return res.status(mapped.status).json({ error: mapped.error, code: mapped.code });
+      }
+
+      if (data?.user && !data?.session) {
+        const identities = data.user.identities;
+        if (!identities || identities.length === 0) {
+          return res.status(400).json({
+            error: "An account with this email already exists. Sign in instead.",
+            code: "signup_exists",
+          });
+        }
       }
 
       if (data?.session) {
@@ -201,14 +270,15 @@ function mountAuthRoutes(app, { db, security }) {
     if (!authConfigured(res)) return;
     try {
       const email = normalizeEmail(req.body?.email);
-      const redirectTo = String(req.body?.redirectTo || "").trim();
+      const publicAppUrl = String(process.env.PUBLIC_APP_URL || "https://trymoonrise.com").replace(/\/$/, "");
+      const redirectTo =
+        String(req.body?.redirectTo || "").trim() || `${publicAppUrl}/login.html?mode=recover`;
       if (!email) {
         return res.status(400).json({ error: "Enter your email", code: "invalid_input" });
       }
       // Always return success-shaped response to avoid email enumeration,
       // but still enforce IP rate limits above.
-      const opts = redirectTo ? { redirectTo } : undefined;
-      const { error } = await authClient().auth.resetPasswordForEmail(email, opts);
+      const { error } = await authClient().auth.resetPasswordForEmail(email, { redirectTo });
       if (error) console.warn("resetPasswordForEmail", error.message);
       res.json({ ok: true, message: "If that email exists, a reset link is on the way." });
     } catch (e) {
@@ -217,9 +287,42 @@ function mountAuthRoutes(app, { db, security }) {
     }
   });
 
+  const resendLimiter = createRateLimiter({
+    windowMs: 60 * 60 * 1000,
+    max: 5,
+    name: "resend-confirm",
+    keyFn: (req) => "resend-ip:" + clientIp(req),
+  });
+
+  app.post("/auth/resend-confirm", authIpLimiter, resendLimiter, async (req, res) => {
+    if (!authConfigured(res)) return;
+    try {
+      const email = normalizeEmail(req.body?.email);
+      if (!email) {
+        return res.status(400).json({ error: "Enter your email", code: "invalid_input" });
+      }
+      const publicAppUrl = String(process.env.PUBLIC_APP_URL || "https://trymoonrise.com").replace(/\/$/, "");
+      const { error } = await authClient().auth.resend({
+        type: "signup",
+        email,
+        options: {
+          emailRedirectTo: `${publicAppUrl}/login.html?confirmed=1`,
+        },
+      });
+      if (error) {
+        const mapped = mapSignupAuthError(error);
+        return res.status(mapped.status).json({ error: mapped.error, code: mapped.code });
+      }
+      res.json({ ok: true, message: "Confirmation email sent. Check your inbox." });
+    } catch (e) {
+      console.error(e);
+      res.status(500).json({ error: e.message || "Resend failed" });
+    }
+  });
+
   /**
    * Verify current password under lockout rules (Settings → change password).
-   * Body: { email?, password } — email defaults from Bearer user.
+   * Body: { email?, password } - email defaults from Bearer user.
    */
   app.post("/auth/verify-password", authIpLimiter, async (req, res) => {
     if (!authConfigured(res)) return;

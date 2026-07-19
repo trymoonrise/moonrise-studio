@@ -5,7 +5,7 @@ const base = 'font-family:"DM Sans",system-ui,sans-serif';
 const display = 'font-family:"Syne",system-ui,sans-serif';
 const reduced = '@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.tile,.cell,.brick,.module,.card,.panel{opacity:1!important;transform:none!important;clip-path:none!important;filter:none!important}}';
 
-/** Extreme modern staggered grids — experimental animation presets */
+/** Extreme modern staggered grids - experimental animation presets */
 const RECIPES = {
   // ── Core / upgrades ──────────────────────────────────────────
   'staggered-grid': () => ({

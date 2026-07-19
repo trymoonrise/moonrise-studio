@@ -1,5 +1,5 @@
 /**
- * Top-of-screen error banner — ease in / ease out.
+ * Top-of-screen error banner - ease in / ease out.
  * StudioToast.error(msg) · StudioToast.clear()
  * Also adopts inline .ms-error / dialog error text so all errors share one surface.
  */
@@ -57,11 +57,11 @@
     clearTimers();
     const toast = document.getElementById("ms-toast");
     if (!toast) return;
-    toast.classList.remove("is-in");
+    toast.classList.remove("is-in", "ms-toast--error", "ms-toast--success", "ms-toast--info");
     toast.classList.add("is-out");
     const finish = function () {
       toast.hidden = true;
-      toast.classList.remove("is-out", "is-in");
+      toast.classList.remove("is-out", "is-in", "ms-toast--error", "ms-toast--success", "ms-toast--info");
       const msg = document.getElementById("ms-toast-msg");
       if (msg) msg.textContent = "";
       lastMsg = "";
@@ -73,7 +73,7 @@
     exitTimer = global.setTimeout(finish, EXIT_MS);
   }
 
-  function error(msg) {
+  function show(kind, msg) {
     const text = String(msg || "").trim();
     if (!text) {
       clear();
@@ -90,6 +90,8 @@
     if (!toast || !msgEl) return;
 
     clearTimers();
+    toast.classList.remove("ms-toast--error", "ms-toast--success", "ms-toast--info");
+    toast.classList.add("ms-toast--" + (kind || "error"));
     msgEl.textContent = text;
     toast.hidden = false;
     toast.classList.remove("is-out");
@@ -97,6 +99,18 @@
     toast.classList.add("is-in");
 
     hideTimer = global.setTimeout(clear, text.length > LONG_MSG_CHARS ? SHOW_MS_LONG : SHOW_MS);
+  }
+
+  function error(msg) {
+    show("error", msg);
+  }
+
+  function success(msg) {
+    show("success", msg);
+  }
+
+  function info(msg) {
+    show("info", msg);
   }
 
   function adoptInlineError(el) {
@@ -178,6 +192,8 @@
 
   global.StudioToast = {
     error: error,
+    success: success,
+    info: info,
     clear: clear,
     showError: error,
   };

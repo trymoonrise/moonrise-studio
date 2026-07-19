@@ -15,7 +15,7 @@ create table if not exists public.profiles (
   branding_defaults jsonb not null default '{}'::jsonb,
   payout_profile jsonb not null default '{}'::jsonb,
   security_card_fingerprint text,
-  notification_prefs jsonb not null default '{"email": true}'::jsonb,
+  notification_prefs jsonb not null default '{"email": true, "clientPurchases": false}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -360,7 +360,7 @@ values
   ('demo-3', true, 'Bluebird Cafe', 'Cafe', '(555) 441-9090', '9 River Rd, New Braunfels, TX', 'https://example.com')
 on conflict (id) do nothing;
 
--- Auth lockouts (worker / service_role only — no public policies)
+-- Auth lockouts (worker / service_role only - no public policies)
 create table if not exists public.auth_lockouts (
   id uuid primary key default gen_random_uuid(),
   subject_type text not null check (subject_type in ('email', 'ip')),

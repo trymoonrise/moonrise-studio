@@ -1,9 +1,11 @@
 /**
- * Donate — one-time Stripe checkout + supporter wall.
+ * Donate - one-time Stripe checkout + supporter wall.
  */
 (function () {
   const MESSAGE_KEY = "ms_donate_message_draft_v1";
   const AMOUNT_KEY = "ms_donate_amount_draft_v1";
+  const CUSTOM_MODE_KEY = "ms_donate_custom_amount_v1";
+  const PRESET_AMOUNTS = [1, 10, 25, 50, 100];
   let donateConfig = {
     oneTimeDefaultDollars: 25,
     donateMinDollars: 1,
@@ -14,14 +16,6 @@
   function workerUrl() {
     if (typeof window.resolveWorkerUrl === "function") return window.resolveWorkerUrl();
     return String(window.SITE_CONFIG?.workerUrl || "").replace(/\/$/, "");
-  }
-
-  function escapeHtml(value) {
-    return String(value || "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
   }
 
   async function authHeaders() {
@@ -105,12 +99,52 @@
     btn.textContent = quote ? `Donate ${quote.priceLabel}` : "Continue to checkout";
   }
 
+  function readCustomAmountMode() {
+    try {
+      return localStorage.getItem(CUSTOM_MODE_KEY) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function saveCustomAmountMode(open) {
+    try {
+      if (open) localStorage.setItem(CUSTOM_MODE_KEY, "1");
+      else localStorage.removeItem(CUSTOM_MODE_KEY);
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  function isPresetAmount(value) {
+    const amount = Number(value);
+    return Number.isFinite(amount) && PRESET_AMOUNTS.includes(amount);
+  }
+
+  function setCustomAmountOpen(open, options = {}) {
+    const panel = document.getElementById("donate-onetime-custom");
+    const customBtn = document.querySelector("[data-donate-preset='custom']");
+    const input = document.getElementById("donate-onetime-amount");
+    const shouldOpen = !!open;
+    panel?.toggleAttribute("hidden", !shouldOpen);
+    customBtn?.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
+    saveCustomAmountMode(shouldOpen);
+    if (shouldOpen && options.focus !== false) {
+      window.requestAnimationFrame(() => {
+        input?.focus();
+        input?.select?.();
+      });
+    }
+    syncOneTimeAmountUi();
+  }
+
   function syncOneTimeAmountUi() {
     const input = document.getElementById("donate-onetime-amount");
     const wrap = document.getElementById("donate-onetime-amount-wrap");
     const hint = document.getElementById("donate-onetime-amount-hint");
     const err = document.getElementById("donate-onetime-amount-error");
     const presets = document.getElementById("donate-onetime-presets");
+    const customOpen = !document.getElementById("donate-onetime-custom")?.hidden;
     const min = donateConfig.donateMinDollars;
     const max = donateConfig.donateMaxDollars;
 
@@ -123,11 +157,11 @@
       }
     }
     if (hint) {
-      hint.textContent = `${formatDollars(min)} – ${formatDollars(max)}`;
+      hint.textContent = `${formatDollars(min)} - ${formatDollars(max)}`;
     }
 
     const quote = readOneTimeAmount();
-    const invalid = input?.value && !quote;
+    const invalid = customOpen && input?.value && !quote;
     wrap?.classList.toggle("is-invalid", !!invalid);
     if (err) {
       err.hidden = !invalid;
@@ -139,8 +173,16 @@
     if (presets && input) {
       const current = Number(input.value);
       presets.querySelectorAll("[data-donate-preset]").forEach((btn) => {
-        const preset = Number(btn.getAttribute("data-donate-preset"));
-        btn.classList.toggle("is-active", Number.isFinite(current) && preset === current);
+        const raw = btn.getAttribute("data-donate-preset") || "";
+        if (raw === "custom") {
+          btn.classList.toggle("is-active", customOpen);
+          return;
+        }
+        const preset = Number(raw);
+        btn.classList.toggle(
+          "is-active",
+          !customOpen && Number.isFinite(current) && preset === current
+        );
       });
     }
 
@@ -200,83 +242,34 @@
     return String(field?.value || "").trim().slice(0, max);
   }
 
-  function rankClass(rank) {
-    if (rank === 1) return " is-gold";
-    if (rank === 2) return " is-silver";
-    if (rank === 3) return " is-bronze";
-    return "";
-  }
-
   function renderLeaderboard(entries) {
     const list = document.getElementById("donate-leaderboard-list");
-    if (!list) return;
-
-    if (!Array.isArray(entries) || !entries.length) {
-      list.innerHTML =
-        '<li class="ms-donate-lb-empty">No supporters yet — donate and leave a note to claim #1.</li>';
-      return;
-    }
-
-    list.innerHTML = entries
-      .map((entry) => {
-        const rank = Number(entry.rank) || 0;
-        const name = escapeHtml(entry.name || "Supporter");
-        const total = escapeHtml(entry.totalLabel || "");
-        const message = String(entry.message || "").trim();
-        const avatar = entry.avatarUrl
-          ? `<img class="ms-donate-lb-avatar" src="${escapeHtml(entry.avatarUrl)}" alt="" width="32" height="32" loading="lazy" decoding="async">`
-          : `<span class="ms-donate-lb-avatar is-fallback" aria-hidden="true">${escapeHtml(entry.initials || "?")}</span>`;
-        const quote = message
-          ? `<blockquote class="ms-donate-lb-quote">“${escapeHtml(message)}”</blockquote>`
-          : "";
-
-        return (
-          `<li class="ms-donate-lb-item${rankClass(rank)}">` +
-          `<div class="ms-donate-lb-rank" aria-label="Rank ${rank}">#${rank}</div>` +
-          `<div class="ms-donate-lb-body">` +
-          `<div class="ms-donate-lb-person">` +
-          avatar +
-          `<div class="ms-donate-lb-meta">` +
-          `<strong class="ms-donate-lb-name">${name}</strong>` +
-          `<span class="ms-donate-lb-amount">${total}</span>` +
-          `</div></div>` +
-          quote +
-          `</div></li>`
-        );
-      })
-      .join("");
+    const LB = window.MoonriseDonateLeaderboard;
+    if (!LB || !list) return;
+    LB.clearLoading(list);
+    LB.renderList(list, entries, { showPlaceholder: true });
   }
 
   async function loadLeaderboard() {
-    const base = workerUrl();
     const list = document.getElementById("donate-leaderboard-list");
-    if (!base) {
-      if (list) {
-        list.innerHTML =
-          '<li class="ms-donate-lb-empty">Leaderboard unavailable — worker not configured.</li>';
-      }
+    const LB = window.MoonriseDonateLeaderboard;
+    if (!LB || !list) return;
+
+    if (!workerUrl()) {
+      list.innerHTML =
+        '<li class="ms-donate-lb-empty">Leaderboard unavailable - worker not configured.</li>';
       return;
     }
 
-    if (list) {
-      list.innerHTML = '<li class="ms-donate-lb-empty">Loading leaderboard…</li>';
-    }
+    LB.renderLoading(list, 5);
 
     try {
-      const res = await fetch(base + "/donate/leaderboard?limit=10");
-      const data = await res.json().catch(() => ({}));
-
-      if (res.ok && Array.isArray(data.entries)) {
-        renderLeaderboard(data.entries);
-        return;
-      }
-
-      throw new Error(data.error || "Could not load leaderboard");
+      const entries = await LB.fetchEntries(10);
+      renderLeaderboard(entries);
     } catch (e) {
-      if (list) {
-        list.innerHTML =
-          '<li class="ms-donate-lb-empty">Leaderboard unavailable right now. Try again in a moment.</li>';
-      }
+      LB.clearLoading(list);
+      list.innerHTML =
+        '<li class="ms-donate-lb-empty">Leaderboard unavailable right now. Try again in a moment.</li>';
       console.warn("Donate leaderboard:", e?.message || e);
     }
   }
@@ -295,7 +288,17 @@
       donorMessageMax: Number(data.donorMessageMax) || 120,
     };
 
-    syncOneTimeAmountUi();
+    const input = document.getElementById("donate-onetime-amount");
+    const draft = readOneTimeAmountDraft();
+    if (input && draft != null) {
+      input.value = String(draft);
+    }
+    const useCustom =
+      readCustomAmountMode() || (draft != null && !isPresetAmount(draft));
+    setCustomAmountOpen(useCustom, { focus: false });
+    if (!useCustom) {
+      syncOneTimeAmountUi();
+    }
     syncMessageUi();
     if (Array.isArray(data.leaderboardEntries)) {
       renderLeaderboard(data.leaderboardEntries);
@@ -405,7 +408,13 @@
       if (!btn) return;
       const input = document.getElementById("donate-onetime-amount");
       if (!input) return;
-      input.value = btn.getAttribute("data-donate-preset") || "";
+      const preset = btn.getAttribute("data-donate-preset") || "";
+      if (preset === "custom") {
+        setCustomAmountOpen(true);
+        return;
+      }
+      setCustomAmountOpen(false, { focus: false });
+      input.value = preset;
       saveOneTimeAmountDraft(input.value);
       syncOneTimeAmountUi();
     });

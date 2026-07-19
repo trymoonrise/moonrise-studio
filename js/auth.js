@@ -3,7 +3,18 @@
  * Sign-in / sign-up / reset go through the worker so lockouts + rate limits apply.
  */
 (function (global) {
-  const PUBLIC_PAGES = new Set(["index", "login", "apply", "orders", "home", "contact", "privacy", "terms"]);
+  const PUBLIC_PAGES = new Set([
+    "index",
+    "login",
+    "apply",
+    "orders",
+    "home",
+    "contact",
+    "privacy",
+    "terms",
+    "download",
+  ]);
+  const SUPPORT_EMAIL = "trymoonrise@gmail.com";
   const AUTH_TIMEOUT_MS = 45000;
   const AUTH_RETRY_DELAY_MS = 800;
 
@@ -20,20 +31,11 @@
   }
 
   function workerUrl() {
-    const cloud = String(global.SITE_CONFIG?.workerUrl || "").replace(/\/$/, "");
-    try {
-      if (typeof location !== "undefined" && cloud) {
-        const cloudOrigin = new URL(cloud).origin;
-        if (location.origin === cloudOrigin) return location.origin;
-      }
-    } catch (_) {
-      /* keep cloud fallback */
-    }
     if (typeof global.resolveWorkerUrl === "function") {
       const resolved = String(global.resolveWorkerUrl() || "").replace(/\/$/, "");
       if (resolved) return resolved;
     }
-    return cloud;
+    return String(global.SITE_CONFIG?.workerUrl || "").replace(/\/$/, "");
   }
 
   function assertAuthReachable() {
@@ -65,14 +67,71 @@
     ]);
   }
 
+  function isUselessAuthErrorText(text) {
+    const value = String(text || "").trim();
+    return !value || value === "{}" || value === "[object Object]";
+  }
+
+  function pickAuthErrorMessage(payload, fallback) {
+    const raw =
+      payload && payload.error !== undefined
+        ? payload.error
+        : payload && payload.message !== undefined
+          ? payload.message
+          : undefined;
+    if (typeof raw === "string") {
+      const text = raw.trim();
+      if (text && !isUselessAuthErrorText(text)) return text;
+    }
+    if (raw && typeof raw === "object") {
+      if (typeof raw.message === "string" && raw.message.trim()) return raw.message.trim();
+    }
+    const code = String(payload?.code || "").trim();
+    if (code === "signup_exists") {
+      return "An account with this email already exists. Sign in instead.";
+    }
+    if (code === "email_rate_limited" || code === "over_email_send_rate_limit") {
+      return "Too many verification emails were sent. Wait about an hour and try again.";
+    }
+    if (code === "email_send_failed") {
+      return (
+        fallback ||
+        "Moonrise can't send confirmation emails yet. Verify trymoonrise.com in Resend (resend.com/domains), or sign up with trymoonrise@gmail.com for now."
+      );
+    }
+    if (code === "signup_failed") {
+      return fallback || "Sign up failed. Please try again in a few minutes.";
+    }
+    return fallback || "Authentication failed";
+  }
+
   function authError(payload, fallback) {
-    const err = new Error(
-      (payload && (payload.error || payload.message)) || fallback || "Authentication failed"
-    );
+    const err = new Error(pickAuthErrorMessage(payload, fallback));
     err.code = payload?.code || "";
     err.retryAfterMs = Number(payload?.retryAfterMs) || 0;
     err.remainingTries = payload?.remainingTries;
     return err;
+  }
+
+  function formatAuthError(err, fallback) {
+    if (!err) return fallback || "Authentication failed";
+    if (typeof err === "string") {
+      const text = err.trim();
+      return text && text !== "[object Object]" && text !== "{}" ? text : fallback || "Authentication failed";
+    }
+    const fromMessage = pickAuthErrorMessage(
+      {
+        error: err.message,
+        message: err.message,
+        code: err.code,
+      },
+      fallback
+    );
+    if (fromMessage && fromMessage !== "Authentication failed") return fromMessage;
+    if (typeof err.code === "string" && err.code === "email_rate_limited") {
+      return "Too many verification emails were sent. Wait about an hour and try again.";
+    }
+    return fallback || "Authentication failed";
   }
 
   function friendlyAuthMessage(err, fallback) {
@@ -165,6 +224,92 @@
     }
   }
 
+  function readAuthCallbackParams() {
+    if (typeof location === "undefined") {
+      return { hash: new URLSearchParams(), query: new URLSearchParams() };
+    }
+    const hash = new URLSearchParams(String(location.hash || "").replace(/^#/, ""));
+    const query = new URLSearchParams(String(location.search || ""));
+    return { hash, query };
+  }
+
+  /** Finish email confirm / magic-link / recovery callbacks and persist session. */
+  async function completeAuthCallbackFromUrl() {
+    const sb = getClient();
+    if (!sb || typeof location === "undefined") return null;
+
+    const { hash, query } = readAuthCallbackParams();
+    const accessToken = hash.get("access_token") || query.get("access_token");
+    const refreshToken = hash.get("refresh_token") || query.get("refresh_token");
+    if (accessToken && refreshToken) {
+      const data = await applySessionTokens({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      });
+      return data?.session || (await getSession());
+    }
+
+    const code = query.get("code");
+    if (code) {
+      try {
+        const { data, error } = await withTimeout(
+          sb.auth.exchangeCodeForSession(code),
+          AUTH_TIMEOUT_MS,
+          "Confirm email"
+        );
+        if (!error && data?.session) return data.session;
+      } catch (e) {
+        console.warn(e);
+      }
+    }
+
+    const tokenHash = query.get("token_hash");
+    const otpType = String(query.get("type") || hash.get("type") || "signup").toLowerCase();
+    if (tokenHash) {
+      const verifyType =
+        otpType === "recovery"
+          ? "recovery"
+          : otpType === "email_change"
+            ? "email_change"
+            : otpType === "invite"
+              ? "invite"
+              : "signup";
+      try {
+        const { data, error } = await withTimeout(
+          sb.auth.verifyOtp({ token_hash: tokenHash, type: verifyType }),
+          AUTH_TIMEOUT_MS,
+          "Verify email"
+        );
+        if (!error && data?.session) return data.session;
+      } catch (e) {
+        console.warn(e);
+      }
+    }
+
+    return (await getSession()) || null;
+  }
+
+  function clearAuthCallbackFromUrl() {
+    if (typeof location === "undefined") return;
+    try {
+      const params = new URLSearchParams(location.search);
+      params.delete("code");
+      params.delete("token_hash");
+      params.delete("type");
+      params.delete("confirmed");
+      params.delete("check_email");
+      const next = params.get("next") || "dashboard.html";
+      params.delete("next");
+      const qs = new URLSearchParams();
+      if (next !== "dashboard.html") qs.set("next", next);
+      if (params.get("mode") === "signup") qs.set("mode", "signup");
+      const suffix = qs.toString() ? "?" + qs.toString() : "";
+      history.replaceState(null, "", location.pathname + suffix);
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
   async function getUser() {
     const session = await getSession();
     return session?.user || null;
@@ -212,6 +357,11 @@
 
   async function signOut() {
     const sb = getClient();
+    try {
+      localStorage.removeItem("ms_studio_onboarding_draft_v1");
+    } catch (_) {
+      /* ignore */
+    }
     if (!sb) return;
     try {
       await withTimeout(sb.auth.signOut(), 4000, "Sign out");
@@ -251,7 +401,7 @@
             display_name:
               (handleOverride || metaHandle || base).replace(/^@/, "").trim() || base,
             branding_defaults: {},
-            notification_prefs: { email: true },
+            notification_prefs: { email: true, clientPurchases: false },
           },
           { onConflict: "id" }
         ),
@@ -339,7 +489,12 @@
     if (String(payout.skippedAt || "").trim()) return false;
     if (!verifiedSecurityCard(payout)) return false;
 
-    return !!(String(payout.email || "").trim() && String(payout.phone || "").trim());
+    return !!(
+      String(payout.email || "").trim() &&
+      String(payout.phone || "").trim() &&
+      String(payout.payoutMethod || payout.payout_method || "").trim() &&
+      String(payout.payoutHandle || payout.payout_handle || "").trim()
+    );
   }
 
   async function studioOnboardingRedirect(nextUrl) {
@@ -399,6 +554,12 @@
     return workerAuth("/auth/forgot", { email: address, redirectTo });
   }
 
+  async function resendConfirmationEmail(email) {
+    const address = String(email || "").trim();
+    if (!address) throw new Error("Enter your email");
+    return workerAuth("/auth/resend-confirm", { email: address });
+  }
+
   async function setPassword(newPassword) {
     const sb = getClient();
     if (!sb) throw new Error("Supabase is not configured");
@@ -441,17 +602,34 @@
     return data;
   }
 
+  function releaseAuthGate() {
+    try {
+      if (typeof global.__msReleaseAuthGate === "function") {
+        global.__msReleaseAuthGate();
+        return;
+      }
+      document.documentElement.classList.remove("ms-auth-gating");
+      document.documentElement.classList.add("ms-auth-ready");
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
   async function requireAuth() {
     const page = document.body?.dataset?.page || "";
-    if (PUBLIC_PAGES.has(page)) return null;
+    if (PUBLIC_PAGES.has(page)) {
+      releaseAuthGate();
+      return null;
+    }
     const session = await getSession();
     if (!session) {
       const next = encodeURIComponent(
-        (location.pathname.split("/").pop() || "dashboard.html") + location.search
+        (location.pathname.split("/").pop() || "dashboard.html") + location.search + location.hash
       );
       location.replace("login.html?next=" + next);
       return null;
     }
+    releaseAuthGate();
     return session;
   }
 
@@ -461,6 +639,7 @@
     getUser,
     getProfile,
     friendlyNetworkMessage: friendlyAuthMessage,
+    formatAuthError,
     warmAuthService,
     workerUrl,
     payoutProfileComplete,
@@ -473,7 +652,10 @@
     signUp,
     signIn,
     signOut,
+    completeAuthCallbackFromUrl,
+    clearAuthCallbackFromUrl,
     requestPasswordReset,
+    resendConfirmationEmail,
     setPassword,
     changePassword,
     ensureProfile,

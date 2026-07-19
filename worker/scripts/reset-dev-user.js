@@ -43,7 +43,7 @@ Options:
   --email <email>     Match auth.users email
   --handle <handle>   Match profiles.handle (case-insensitive)
   --user-id <uuid>    Explicit user id
-  --confirm           Required — performs the reset
+  --confirm           Required - performs the reset
   --help              Show this help
 `);
 }
@@ -214,7 +214,7 @@ async function main() {
         },
         nextSteps: [
           "Sign out in the app (or clear moonrise-studio-auth from localStorage).",
-          "Sign back in with the same email — you should land in onboarding.",
+          "Sign back in with the same email - you should land in onboarding.",
           "Use a Stripe test card if re-testing security card (or the same card if fingerprint was cleared).",
           "Re-claim developer credits from Pricing after reset if needed.",
         ],

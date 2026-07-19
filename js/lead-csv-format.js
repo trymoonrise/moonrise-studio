@@ -162,7 +162,7 @@
   }
 
   /**
-   * Official business website only — not booking, menu, order, or Google Ads click URLs.
+   * Official business website only - not booking, menu, order, or Google Ads click URLs.
    */
   function resolveWebsiteUrl(row) {
     const primary = raw(
@@ -170,7 +170,7 @@
     );
     const normalized = normalizeWebsiteUrl(primary);
     if (normalized) return normalized;
-    // Label-only fallback never invents a URL — only reject ad noise.
+    // Label-only fallback never invents a URL - only reject ad noise.
     return "";
   }
 
@@ -181,6 +181,15 @@
     return normalizeWebsiteUrl(
       raw(lead.website || lead.websiteUrl || lead.website_url || lead["lcr4fd href"])
     );
+  }
+
+  function resolveSupabaseHasWebsiteFlag(lead) {
+    if (!lead || typeof lead !== "object") return null;
+    const rawFlag = lead.has_website ?? lead.hasWebsite;
+    if (rawFlag === true || rawFlag === false) return rawFlag;
+    if (rawFlag === "true" || rawFlag === "t" || rawFlag === 1 || rawFlag === "1") return true;
+    if (rawFlag === "false" || rawFlag === "f" || rawFlag === 0 || rawFlag === "0") return false;
+    return null;
   }
 
   /**
@@ -201,6 +210,21 @@
       return { status: "has", hasWebsite: true, website, confirmed: true };
     }
 
+    const dbFlag = resolveSupabaseHasWebsiteFlag(lead);
+    if (dbFlag === false) {
+      return { status: "missing", hasWebsite: false, website: "", confirmed: true };
+    }
+    if (dbFlag === true) {
+      const rawUrl = raw(
+        lead?.website_url || lead?.websiteUrl || lead?.website || cell(lead, "website")
+      );
+      const fallback = normalizeWebsiteUrl(rawUrl);
+      if (fallback) {
+        return { status: "has", hasWebsite: true, website: fallback, confirmed: true };
+      }
+      return { status: "missing", hasWebsite: false, website: "", confirmed: true };
+    }
+
     const status = normalizeWebsiteStatus(lead);
     if (status === "missing") {
       return { status: "missing", hasWebsite: false, website: "", confirmed: true };
@@ -208,7 +232,10 @@
     if (status === "has") {
       return { status: "unknown", hasWebsite: false, website: "", confirmed: false };
     }
-    if (lead?.websiteEnriched === true) {
+    if (status === "unknown") {
+      return { status: "unknown", hasWebsite: false, website: "", confirmed: false };
+    }
+    if (lead?.websiteEnriched === true && lead?.websiteConfirmed === true) {
       return { status: "missing", hasWebsite: false, website: "", confirmed: true };
     }
 
@@ -234,6 +261,7 @@
   }
 
   function resolveLeadNeedsWebsiteCheck(lead) {
+    if (resolveSupabaseHasWebsiteFlag(lead) !== null) return false;
     const classified = classifyLeadWebsite(lead);
     if (classified.status === "has" || classified.status === "missing") return false;
     const maps = raw(lead?.mapsUrl || lead?.maps_url);
@@ -458,8 +486,10 @@
       website_url: websiteUrl,
       websiteStatus: row.websiteStatus || row.website_status,
       websiteEnriched: row.websiteEnriched,
+      has_website: row.has_website,
     });
     const hasWebsite = websiteClass.hasWebsite;
+    const dbHasWebsite = resolveSupabaseHasWebsiteFlag(row);
     const address = resolveAddress(row);
     const hours = resolveHours(row);
     const categoryGroup = resolveCategoryGroup(row);
@@ -478,6 +508,7 @@
       website: websiteClass.website,
       hours: hours || raw(row.full_hours),
       hasWebsite,
+      has_website: dbHasWebsite === null ? hasWebsite : dbHasWebsite,
       websiteStatus: websiteClass.status,
       websiteConfirmed: websiteClass.confirmed,
       rating,
@@ -536,6 +567,7 @@
     resolveLeadHasWebsite,
     resolveLeadMissingWebsite,
     resolveLeadNeedsWebsiteCheck,
+    resolveSupabaseHasWebsiteFlag,
     classifyLeadWebsite,
     reconcileLeadWebsiteFields,
   };

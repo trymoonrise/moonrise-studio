@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="js/auth-gate-head.js?v=20260719-auth-gate"></script>
+  <title>Leaderboard · Moonrise Studio</title>
+  <meta name="description" content="Moonrise supporter leaderboard — ranked by lifetime gifts to keep the platform running.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/studio.css?v=20260719-leaderboard">
+  <link rel="stylesheet" href="css/donate.css?v=20260719-lb-redesign">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body data-page="leaderboard">
+  <div id="shell"></div>
+  <div id="page-body" class="ms-content-page ms-leaderboard-page">
+    <div class="ms-lb-hero" aria-hidden="true">
+      <div class="ms-lb-hero-wash ms-lb-hero-wash-a"></div>
+      <div class="ms-lb-hero-wash ms-lb-hero-wash-b"></div>
+    </div>
+
+    <header class="ms-lb-head">
+      <p class="ms-lb-eyebrow"><a href="donate.html">← Back to Donate</a></p>
+      <h1>Supporter leaderboard</h1>
+      <p class="ms-lb-lead">Creators and fans who keep Moonrise running — ranked by total lifetime gifts.</p>
+      <div class="ms-lb-stats" id="leaderboard-stats" aria-live="polite">
+        <div class="ms-lb-stat">
+          <span class="ms-lb-stat-value" id="leaderboard-stat-count">—</span>
+          <span class="ms-lb-stat-label">Supporters</span>
+        </div>
+        <div class="ms-lb-stat">
+          <span class="ms-lb-stat-value" id="leaderboard-stat-total">—</span>
+          <span class="ms-lb-stat-label">Raised on wall</span>
+        </div>
+      </div>
+      <a class="ms-btn ms-lb-cta" href="donate.html">Support Moonrise</a>
+    </header>
+
+    <section class="ms-lb-stage" aria-labelledby="leaderboard-podium-heading">
+      <h2 class="ms-lb-section-title" id="leaderboard-podium-heading">Top supporters</h2>
+      <div class="ms-lb-podium" id="leaderboard-podium" hidden></div>
+      <p class="ms-lb-empty ms-lb-empty--podium" id="leaderboard-podium-empty" hidden>
+        No supporters yet. Be the first on the wall.
+      </p>
+    </section>
+
+    <section class="ms-lb-wall" aria-labelledby="leaderboard-full-heading">
+      <div class="ms-lb-wall-head">
+        <h2 class="ms-lb-section-title" id="leaderboard-full-heading">Supporter wall</h2>
+        <p class="ms-lb-wall-sub">Ranked by lifetime support · notes from checkout</p>
+      </div>
+      <ol class="ms-lb-rank-list" id="leaderboard-full-list" aria-live="polite"></ol>
+      <p class="ms-error" id="leaderboard-error" hidden></p>
+    </section>
+  </div>
+
+  <script src="js/config.js?v=20260718-api-cloud"></script>
+  <script src="js/site-branding.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/segment-switch.js"></script>
+  <script src="js/ui-motion.js?v=20260719-onb-motion"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/income.js?v=20260722-donate-pro"></script>
+  <script src="js/app.js?v=20260718-mobile-nav"></script>
+  <script src="js/donate-leaderboard-ui.js?v=20260719-lb-redesign"></script>
+  <script src="js/leaderboard.js?v=20260719-lb-redesign"></script>
+</body>
+</html>

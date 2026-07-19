@@ -1,5 +1,5 @@
 /**
- * Business page bone structures — derived from scanning 261 real lead websites
+ * Business page bone structures - derived from scanning 261 real lead websites
  * (LeadFinderCloud/data/all-leads.csv, Jul 2026).
  *
  * Generation uses these as the fixed page arc; Website Presets supply the visuals.
@@ -64,7 +64,7 @@ const SECTION_PRESET_CATEGORIES = {
 
 /**
  * Typical page arc per trade (from real-site frequency analysis).
- * Order is fixed — assembler adapts presets into this skeleton.
+ * Order is fixed - assembler adapts presets into this skeleton.
  */
 const BUSINESS_STRUCTURES = {
   barber_salon: [

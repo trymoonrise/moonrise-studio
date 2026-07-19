@@ -11,7 +11,7 @@
   -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>1235 — Focus Lightbox Gallery</title>
+  <title>1235 - Focus Lightbox Gallery</title>
   <style>
     @import url('../shared/preset-reset.css');
     @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@400;500&display=swap');
@@ -37,7 +37,7 @@
   <div class="thumbs" id="thumbs"></div>
   <div class="lightbox" id="lb"><button class="close" id="close">×</button><img id="lb-img" src="" alt=""><p class="caption" id="cap"></p></div>
   <script>
-    const imgs=['Frame 01 — Architecture study','Frame 02 — Light experiment','Frame 03 — Urban texture','Frame 04 — Detail capture'];
+    const imgs=['Frame 01 - Architecture study','Frame 02 - Light experiment','Frame 03 - Urban texture','Frame 04 - Detail capture'];
     const src='../stock/media/16-9 Aspect Ratio(image).png';
     const thumbs=document.getElementById('thumbs'),lb=document.getElementById('lb'),lbImg=document.getElementById('lb-img'),cap=document.getElementById('cap');
     imgs.forEach((t,i)=>{const d=document.createElement('div');d.className='thumb'+(i===0?' active':'');d.innerHTML=`<img src="${src}" alt="">`;d.onclick=()=>{document.querySelectorAll('.thumb').forEach(x=>x.classList.remove('active'));d.classList.add('active');lbImg.src=src;cap.textContent=t;lb.classList.add('open')};thumbs.appendChild(d)});

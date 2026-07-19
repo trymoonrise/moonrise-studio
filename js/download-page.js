@@ -1,5 +1,5 @@
 /**
- * Download page — install / add to home screen instructions.
+ * Download page - install / add to home screen instructions.
  */
 (function () {
   if (document.body?.dataset?.page !== "download") return;

@@ -11,14 +11,14 @@
   -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>1512 — Mouse Repel Particle Hero</title>
+  <title>1512 - Mouse Repel Particle Hero</title>
   <style>
     @import url('../shared/preset-reset.css');
     body{margin:0;min-height:100vh;background:#050508;color:#fff;overflow:hidden;position:relative}canvas{position:absolute;inset:0}main{position:relative;z-index:1;min-height:100vh;display:grid;place-items:center;text-align:center;padding:2rem}h1{font-size:clamp(2.5rem,7vw,4.5rem);font-weight:900;max-width:14ch;line-height:1.05;margin-bottom:1rem}p{color:#888;max-width:40ch;margin:0 auto 2rem;font-size:1.05rem}.cta{padding:14px 32px;border:none;border-radius:99px;background:#6c8cff;color:#fff;font-weight:600;font-size:.95rem}
   </style>
 </head>
 <body>
-<canvas id="c"></canvas><main><h1>Push the field</h1><p>Move your cursor — particles scatter away from your presence.</p><button class="cta">Explore</button></main>
+<canvas id="c"></canvas><main><h1>Push the field</h1><p>Move your cursor - particles scatter away from your presence.</p><button class="cta">Explore</button></main>
 <script>const c=document.getElementById('c'),x=c.getContext('2d');let pts=[],mx=-999,my=-999;function r(){c.width=innerWidth;c.height=innerHeight;pts=Array.from({length:90},()=>({x:Math.random()*c.width,y:Math.random()*c.height,vx:0,vy:0,r:Math.random()*2+1}));}r();addEventListener('resize',r);addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});function d(){x.clearRect(0,0,c.width,c.height);pts.forEach(p=>{const dx=p.x-mx,dy=p.y-my,d=Math.hypot(dx,dy);if(d<140&&d>0){const f=(140-d)/140;p.vx+=dx/d*f*3;p.vy+=dy/d*f*3;}p.vx*=.92;p.vy*=.92;p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=c.width;if(p.x>c.width)p.x=0;if(p.y<0)p.y=c.height;if(p.y>c.height)p.y=0;x.fillStyle='rgba(108,140,255,.7)';x.beginPath();x.arc(p.x,p.y,p.r,0,Math.PI*2);x.fill();});requestAnimationFrame(d);}d();</script>
 </body>
 </html>

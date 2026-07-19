@@ -3,7 +3,7 @@ import { scrapeGoogleMapsPlaceInBrowser, scrapeMapsPlace } from "./scrapePlace.j
 /**
  * Browser-side Google Maps list scraper for page.evaluate().
  * Mirrors LeadFinder/background.js scrapeGoogleMapsResults (without Chrome extension APIs).
- * Playwright only accepts one serializable argument — pass { queryText, options }.
+ * Playwright only accepts one serializable argument - pass { queryText, options }.
  */
 export function scrapeGoogleMapsListInBrowser(payload) {
   const queryText =
@@ -286,7 +286,7 @@ export function scrapeGoogleMapsListInBrowser(payload) {
         .toLowerCase();
     }
 
-    // Prefer official Website / authority only (list cards often omit it — enrichment fills in).
+    // Prefer official Website / authority only (list cards often omit it - enrichment fills in).
     const direct = firstAttribute(
       card,
       [
@@ -427,7 +427,7 @@ export function scrapeGoogleMapsListInBrowser(payload) {
         }
       }
 
-      // Burst scrolls — Maps loads laggy chunks; double-hit cuts waiting.
+      // Burst scrolls - Maps loads laggy chunks; double-hit cuts waiting.
       scrollResultsPanel(panel);
       scrollResultsPanel(panel);
       const waitMs = added > 0 ? settleFastMs : settleSlowMs;
@@ -542,7 +542,7 @@ export async function scrapeMapsSearch(page, queryText, cfg, geo) {
     timeout: cfg.maxMapsWaitMs,
   });
 
-  // Consent / cookie walls (EU and variants) — no wait after click
+  // Consent / cookie walls (EU and variants) - no wait after click
   for (const label of ["Accept all", "I agree", "Accept"]) {
     const button = page.getByRole("button", { name: label }).first();
     if (await button.isVisible().catch(() => false)) {

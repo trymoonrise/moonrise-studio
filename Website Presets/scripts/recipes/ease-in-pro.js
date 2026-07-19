@@ -103,7 +103,7 @@ module.exports = [
 
   { slug: 'ease-in-quote-mark', title: 'Quote Mark Ease', category: 'ease-in', tags: ['ease-in', 'quote', 'typography', 'professional'],
     style: `body{display:grid;place-items:center;min-height:100vh;background:#f5f5f5;padding:3rem 2rem;font-family:Georgia,serif}.quote{max-width:520px;text-align:center}.mark{font-size:5rem;line-height:1;color:#6c8cff;opacity:0;transform:scale(.5);animation:pop .7s ${EASE} forwards}blockquote{font-size:1.5rem;line-height:1.55;color:#333;margin:1rem 0;opacity:0;animation:fade .8s ${EASE} .25s forwards}cite{font-size:.9rem;color:#888;font-style:normal;opacity:0;animation:fade .6s ${EASE} .45s forwards}@keyframes pop{to{opacity:.3;transform:none}}@keyframes fade{to{opacity:1}}`,
-    body: `<div class="quote"><div class="mark">"</div><blockquote>Simplicity is the ultimate sophistication in motion design.</blockquote><cite>— Leonardo da Vinci</cite></div>` },
+    body: `<div class="quote"><div class="mark">"</div><blockquote>Simplicity is the ultimate sophistication in motion design.</blockquote><cite>- Leonardo da Vinci</cite></div>` },
 
   { slug: 'ease-in-divider-expand', title: 'Divider Expand Ease', category: 'ease-in', tags: ['ease-in', 'divider', 'expand', 'professional'],
     style: `body{display:grid;place-items:center;min-height:100vh;background:#fff;padding:2rem;font-family:system-ui,sans-serif;text-align:center}.divider{width:0;height:1px;background:#ddd;margin:0 auto 1.5rem;animation:expand .8s ${EASE} .2s forwards}h2{font-size:1.5rem;font-weight:700;color:#111;opacity:0;animation:fade .6s ${EASE} .5s forwards}@keyframes expand{to{width:120px}}@keyframes fade{to{opacity:1}}`,

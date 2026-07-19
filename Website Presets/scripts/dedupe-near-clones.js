@@ -36,7 +36,7 @@ function write(m, style, body, script = '') {
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700&family=Outfit:wght@400;500;600&display=swap');`;
 
 const recipes = [
-  // ——— Docks (differentiate from 0134–0137) ———
+  // --- Docks (differentiate from 0134–0137) ---
   {
     file: '0597-docks-mac-dock-01.html',
     title: 'Spotlight Shelf Dock',
@@ -152,7 +152,7 @@ body{margin:0;min-height:100vh;background:#0e1016;font-family:Outfit,sans-serif;
 [...document.querySelectorAll('.btn')].forEach((b,i)=>b.onclick=()=>{document.querySelectorAll('.btn').forEach(x=>x.classList.remove('on'));b.classList.add('on');document.getElementById('main').textContent=labels[i]});`,
   },
 
-  // ——— Timelines ———
+  // --- Timelines ---
   {
     file: '1496-timeline-pro-horizontal.html',
     title: 'Zigzag Era Timeline',
@@ -249,5 +249,5 @@ go(0);`,
 module.exports = { recipes, metaFromFile, write, FONTS };
 
 if (require.main === module) {
-  console.log('Partial recipe file — run dedupe-near-clones-run.js');
+  console.log('Partial recipe file - run dedupe-near-clones-run.js');
 }

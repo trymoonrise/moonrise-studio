@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <!--
@@ -9,7 +9,7 @@
     category: accordions
     tags: accordions, plus
   -->
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>0153 — Animated Plus Accordion</title>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>0153 - Animated Plus Accordion</title>
   <style>
     @import url('../shared/preset-reset.css');@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap');*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:2rem;background:#f8f7f3;font-family:Inter,sans-serif}.acc{width:min(480px,100%);display:grid;gap:.65rem}.item{border-radius:18px;background:#fff;border:1px solid #ebe7df;overflow:hidden}.trigger{width:100%;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 1.1rem;border:0;background:none;cursor:pointer;font:600 .95rem Inter,sans-serif;text-align:left}.plus{position:relative;width:22px;height:22px;flex:none}.plus::before,.plus::after{content:'';position:absolute;left:50%;top:50%;width:14px;height:1.5px;background:#111;border-radius:99px;transform:translate(-50%,-50%);transition:transform .32s ease,opacity .32s ease}.plus::after{transform:translate(-50%,-50%) rotate(90deg)}.panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows .34s cubic-bezier(.22,1,.36,1)}.panel>div{overflow:hidden}.panel p{margin:0;padding:0 1.1rem 1rem;color:#6d675d;line-height:1.65;font-size:.88rem}.item.open .plus::before{transform:translate(-50%,-50%) rotate(180deg)}.item.open .plus::after{transform:translate(-50%,-50%) rotate(180deg);opacity:0}.item.open .panel{grid-template-rows:1fr}@media(prefers-reduced-motion:reduce){.plus::before,.plus::after,.panel{transition:none}}
   </style>

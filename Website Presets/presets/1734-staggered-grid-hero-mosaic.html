@@ -11,7 +11,7 @@
   -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>1764 — Hero Mosaic Grid</title>
+  <title>1764 - Hero Mosaic Grid</title>
   <style>
     @import url('../shared/preset-reset.css');
     *{box-sizing:border-box}body{margin:0;min-height:100vh;background:#0d0f14;color:#fff;font-family:Inter,system-ui,sans-serif;padding:2rem;display:grid;place-items:center}.hero{width:min(1140px,100%);display:grid;grid-template-columns:.9fr 1.1fr;gap:2rem;align-items:center}.copy h1{margin:0;font-size:clamp(3rem,8vw,6.4rem);line-height:.82;letter-spacing:-.085em}.copy p{margin:1rem 0 0;max-width:30ch;color:rgba(255,255,255,.55);line-height:1.65}.grid{display:grid;grid-template-columns:repeat(8,1fr);grid-auto-rows:70px;gap:.65rem;perspective:900px}.tile{grid-column:span var(--c);grid-row:span var(--r);border-radius:18px;background:linear-gradient(145deg,var(--a),var(--b));opacity:0;transform:translateY(32px) rotateX(16deg);animation:rise .75s cubic-bezier(.16,1,.3,1) forwards;animation-delay:calc(var(--i)*60ms);position:relative;overflow:hidden}.tile:after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 20%,rgba(255,255,255,.38),transparent 38%)}.tile:hover{transform:translateY(-7px);transition:transform .25s ease}@keyframes rise{to{opacity:1;transform:none}}@media(max-width:860px){.hero{grid-template-columns:1fr}.grid{grid-auto-rows:64px}}@media(max-width:520px){.grid{grid-template-columns:repeat(2,1fr)}.tile{grid-column:span 1!important;grid-row:span 1!important}}@media(prefers-reduced-motion:reduce){.tile{opacity:1;transform:none;animation:none}}

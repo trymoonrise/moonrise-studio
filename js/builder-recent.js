@@ -1,5 +1,5 @@
 /**
- * Builder — recent projects rail.
+ * Builder - recent projects rail.
  */
 (function () {
   const LIMIT = 40;

@@ -3,24 +3,87 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>trymoonrise.com — Build websites. Get paid.</title>
+  <title>trymoonrise.com - Build websites. Get paid.</title>
   <meta name="description" content="Moonrise is an AI-powered platform that lets you create professional websites in minutes for local business owners, creators, and more! It's designed to make website creation fast, simple, effortless, and get paid.">
+  <link rel="canonical" href="https://trymoonrise.com/">
   <meta property="og:type" content="website">
-  <meta property="og:site_name" content="trymoonrise.com">
-  <meta property="og:title" content="trymoonrise.com — Build websites. Get paid.">
+  <meta property="og:site_name" content="Moonrise Studio">
+  <meta property="og:title" content="trymoonrise.com - Build websites. Get paid.">
   <meta property="og:description" content="Moonrise is an AI-powered platform that lets you create professional websites in minutes for local business owners, creators, and more! It's designed to make website creation fast, simple, effortless, and get paid.">
-  <meta property="og:image" content="https://github.com/trymoonrise/moonrise-studio/blob/main/doc/embed.png?raw=true">
+  <meta property="og:url" content="https://trymoonrise.com/">
+  <meta property="og:image" content="https://trymoonrise.com/doc/embed.png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="trymoonrise.com — Build websites. Get paid.">
+  <meta name="twitter:title" content="trymoonrise.com - Build websites. Get paid.">
   <meta name="twitter:description" content="Moonrise is an AI-powered platform that lets you create professional websites in minutes for local business owners, creators, and more! It's designed to make website creation fast, simple, effortless, and get paid.">
-  <meta name="twitter:image" content="https://github.com/trymoonrise/moonrise-studio/blob/main/doc/embed.png?raw=true">
+  <meta name="twitter:image" content="https://trymoonrise.com/doc/embed.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css?v=20260718-home-mobile-lower">
+  <link rel="stylesheet" href="css/studio.css?v=20260719-bloom-nav">
   <meta name="color-scheme" content="light">
-  <script src="js/config.js?v=20260718-api-cloud"></script>
-  <script src="js/site-branding.js"></script>
+  <script src="js/config.js?v=20260719-seo"></script>
+  <script src="js/site-branding.js?v=20260719-seo"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://trymoonrise.com/#organization",
+        "name": "Moonrise Studio",
+        "url": "https://trymoonrise.com/",
+        "logo": "https://trymoonrise.com/doc/MoonriseLogo.png",
+        "email": "trymoonrise@gmail.com",
+        "description": "Moonrise is an AI-powered platform that helps creators build professional websites for local businesses and get paid when clients go live."
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://trymoonrise.com/#website",
+        "url": "https://trymoonrise.com/",
+        "name": "Moonrise Studio",
+        "publisher": { "@id": "https://trymoonrise.com/#organization" },
+        "inLanguage": "en-US"
+      },
+      {
+        "@type": "SoftwareApplication",
+        "name": "Moonrise Studio",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "url": "https://trymoonrise.com/",
+        "description": "AI-powered website builder for creators who sell sites to local businesses."
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is Moonrise Studio?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Moonrise Studio is an AI-powered platform that helps creators build professional websites for local businesses and earn when clients unlock the live site."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does Moonrise work?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Find businesses that need a site, build their preview for free in Moonrise, publish the watermarked live site, and get paid when the owner completes watermark checkout. The watermark is removed automatically after payment."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How much does it cost to go live?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Creators build and preview for free. Business owners pay through the watermark checkout on the published site. Moonrise keeps 20% and the creator keeps 80%."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 </head>
 <body data-page="home" class="ms-home-booting">
   <div class="ms-home-greet" id="ms-home-greet" aria-hidden="false">
@@ -45,10 +108,11 @@
 
     <div class="ms-home-bloom" id="ms-home-bloom" aria-hidden="true">
       <nav class="ms-home-bloom-nav" aria-label="Primary">
-        <a href="login.html">Start earning</a>
-        <a href="#method">Learn More</a>
-        <a href="download.html">Download app</a>
-        <a href="login.html">Sign in</a>
+        <a href="login.html" style="--nav-i:0">Start earning</a>
+        <a href="#method" style="--nav-i:1">Learn More</a>
+        <a href="download.html" style="--nav-i:2">Download app</a>
+        <a href="orders.html" style="--nav-i:3">Locate my order</a>
+        <a href="login.html" style="--nav-i:4">Sign in</a>
       </nav>
     </div>
 
@@ -56,7 +120,7 @@
       <div class="ms-home-hero-stage">
         <div class="ms-home-hero-copy">
           <h1 class="ms-home-title">Build websites.&nbsp;<span class="ms-home-title-accent">Get paid.</span></h1>
-          <p class="ms-home-sub">Build beautiful websites for local businesses. Start free, then get paid when they remove the watermark.</p>
+          <p class="ms-home-sub">Start free, build beautiful websites for local business owners in 1 swipe.</p>
           <div class="ms-home-ctas">
             <a class="ms-home-cta-primary" href="login.html">Start earning</a>
             <a class="ms-home-cta-secondary" href="#method">Learn More</a>
@@ -76,7 +140,7 @@
               <div class="ms-home-tile-face ms-home-tile-face--back">
                 <span>Sell</span>
                 <strong>Build &amp; close</strong>
-                <p>Ship polished sites for free. Owners pay on the watermark — you keep 80%.</p>
+                <p>Ship polished sites for free. Owners pay on the watermark - you keep 80%.</p>
               </div>
             </div>
           </div>
@@ -154,7 +218,7 @@
               <div class="ms-home-tile-face ms-home-tile-face--back">
                 <span>Paid</span>
                 <strong>Collect &amp; publish</strong>
-                <p>Publish the watermarked preview. The owner pays on the live site — not to you.</p>
+                <p>Publish the watermarked preview. The owner pays on the live site - not to you.</p>
               </div>
             </div>
           </div>
@@ -185,7 +249,7 @@
               <div class="ms-home-tile-face ms-home-tile-face--back">
                 <span>Earn</span>
                 <strong>Turn sites into income</strong>
-                <p>Find. Build. Close — free to start, paid when they unlock.</p>
+                <p>Find. Build. Close - free to start, paid when they unlock.</p>
               </div>
             </div>
           </div>
@@ -219,7 +283,7 @@
         </p>
         <h2>Find. Build. <span>Close.</span></h2>
         <p class="ms-home-section-lead">
-          Find a business, build their site for free, send the link — get paid when they unlock it. @moonrise keeps 20% of each sale.
+          Find a business, build their site for free, send the link - get paid when they unlock it. @moonrise keeps 20% of each sale.
         </p>
       </div>
 
@@ -285,13 +349,45 @@
       <a class="ms-home-method-cta" href="login.html">Start earning</a>
     </section>
 
+    <section class="ms-home-section ms-home-faq" id="faq" aria-labelledby="faq-title">
+      <h2 id="faq-title">Questions about Moonrise</h2>
+      <p class="ms-home-section-lead">Quick answers for creators, clients, and search engines.</p>
+      <div class="ms-home-faq-list">
+        <details class="ms-home-faq-item" open>
+          <summary>What is Moonrise Studio?</summary>
+          <p>Moonrise Studio is an AI-powered platform that helps creators build professional websites for local businesses and earn when clients unlock the live site.</p>
+        </details>
+        <details class="ms-home-faq-item">
+          <summary>How does Moonrise work?</summary>
+          <p>Find businesses that need a site, build their preview for free in Moonrise, send the link, and get paid when the owner unlocks the watermark on the live website.</p>
+        </details>
+        <details class="ms-home-faq-item">
+          <summary>How much does it cost to go live?</summary>
+          <p>Creators build and preview for free. When a business owner goes live, they pay through the watermark checkout on the published site. Moonrise keeps 20% and the creator keeps 80%. The watermark is removed automatically after payment.</p>
+        </details>
+        <details class="ms-home-faq-item">
+          <summary>Can business owners pay without signing up?</summary>
+          <p>Yes. Owners pay on the live watermarked site through secure Stripe checkout. They do not need a Moonrise creator account.</p>
+        </details>
+        <details class="ms-home-faq-item">
+          <summary>Who is Moonrise for?</summary>
+          <p>Moonrise is for creators, freelancers, and side hustlers who want to sell websites to local shops, cafes, salons, and other small businesses without coding.</p>
+        </details>
+      </div>
+    </section>
+
     <footer class="ms-home-footer">
       <div class="ms-home-footer-copy">
         <a class="ms-home-brand" href="index.html">
           <img src="doc/MoonriseLogo.png" alt="" width="32" height="32">
           <strong>trymoonrise.com</strong>
         </a>
-        <p>Build websites and get paid when owners unlock on the watermark. Sign up free — you keep 80%.</p>
+        <p>Build websites and get paid when owners unlock on the watermark. Sign up free - you keep 80%.</p>
+        <nav class="ms-home-footer-legal" aria-label="Legal and support">
+          <a href="contact.html">Contact</a>
+          <a href="privacy.html">Privacy</a>
+          <a href="terms.html">Terms</a>
+        </nav>
       </div>
       <div class="ms-home-footer-actions">
         <a class="ms-home-footer-signup" href="login.html?mode=signup">Sign up</a>
@@ -300,7 +396,8 @@
     </footer>
   </div>
 
-  <script src="js/ui-motion.js"></script>
+  <script src="js/home-bloom-nav.js?v=20260719-bloom-nav"></script>
+  <script src="js/ui-motion.js?v=20260719-onb-motion"></script>
   <script src="js/toast.js"></script>
   <script>
     (function () {
@@ -332,9 +429,15 @@
       const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
       let revealed = false;
+      let revealFailsafeTimer = 0;
+
       function revealHome() {
         if (revealed) return;
         revealed = true;
+        if (revealFailsafeTimer) {
+          clearTimeout(revealFailsafeTimer);
+          revealFailsafeTimer = 0;
+        }
         if (greet) {
           greet.classList.add("is-done");
           greet.setAttribute("aria-hidden", "true");
@@ -351,6 +454,8 @@
         body.classList.add("is-home-ready");
       }
 
+      revealFailsafeTimer = setTimeout(revealHome, 2800);
+
       if (!greet || !word || reduce) {
         revealHome();
       } else {
@@ -359,7 +464,12 @@
           word.style.transform = "scale(1)";
           word.style.opacity = "0.001";
           try {
-            if (document.fonts?.ready) await document.fonts.ready;
+            if (document.fonts?.ready) {
+              await Promise.race([
+                document.fonts.ready,
+                new Promise((resolve) => setTimeout(resolve, 1200)),
+              ]);
+            }
           } catch (_) {}
 
           const rect = word.getBoundingClientRect();
@@ -384,27 +494,6 @@
           }, 2400);
         })();
       }
-
-      const orb = document.getElementById("ms-home-orb");
-      const bloom = document.getElementById("ms-home-bloom");
-      if (!orb || !bloom) return;
-
-      function setOpen(on) {
-        bloom.classList.toggle("is-open", on);
-        orb.classList.toggle("is-open", on);
-        orb.setAttribute("aria-expanded", String(on));
-        orb.setAttribute("aria-label", on ? "Close menu" : "Open menu");
-        bloom.setAttribute("aria-hidden", String(!on));
-        document.body.classList.toggle("ms-home-menu-open", on);
-      }
-
-      orb.addEventListener("click", () => setOpen(!bloom.classList.contains("is-open")));
-      bloom.querySelectorAll("a").forEach((link) => {
-        link.addEventListener("click", () => setOpen(false));
-      });
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && bloom.classList.contains("is-open")) setOpen(false);
-      });
 
       function bindPointerTilt(selector, options) {
         if (reduce || window.matchMedia("(pointer: coarse)").matches) return;

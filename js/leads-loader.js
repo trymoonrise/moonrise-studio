@@ -1,10 +1,10 @@
 /**
  * Load leads from Supabase `leads` table (raw Google CSV columns).
  * Leads without a callable phone number are excluded from Business Finder.
- * Cold loads only pull the first page; more rows arrive as the user scrolls.
+ * Cold loads pull the first page, then prefetch the rest in the background on Business Finder.
  */
 (function (global) {
-  const CACHE_KEY = "lpc_leads_cache_v16";
+  const CACHE_KEY = "lpc_leads_cache_v18";
   /** Serve cached leads without a full table download for this long. */
   const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
   /** After this age, do a cheap HEAD count check (not a full refetch) when opening Business Finder. */
@@ -16,8 +16,8 @@
   const COUNT_POLL_MS = 10 * 60 * 1000;
   const REALTIME_RETRY_MS = 60 * 1000;
   const SUPABASE_WAIT_MS = 8000;
-  /** Rows fetched per scroll page (raw table rows before phone filter). Keep small for Safari/mobile. */
-  const UI_PAGE_SIZE = 60;
+  /** Rows fetched per Supabase page while browsing Business Finder. */
+  const UI_PAGE_SIZE = 250;
   /** Legacy parallel full-table page size (force-refresh / tools only). */
   const PAGE_SIZE = 500;
   /** Parallel page downloads after the first page (keep low to avoid saturating mobile Safari). */
@@ -29,7 +29,7 @@
    * Omit profile image URLs (avatars use initials) and unused Maps UI label columns.
    */
   const LEAD_SELECT =
-    "id,search_query,collected_at,full_hours,business_status,price_range,has_website,maps_url,business_name,rating,review_count,category,address,city_state_zip,hours,detail_extra_1,detail_extra_2,phone,website_url,website_label,directions_label,review_quote,category_group,image_url";
+    "id,search_query,collected_at,full_hours,business_status,price_range,has_website,maps_url,business_name,rating,review_count,category,address,city_state_zip,hours,detail_extra_1,detail_extra_2,phone,website_url,website_label,directions_label,review_quote,category_group,image_url,latitude,longitude";
 
   const LEAD_COUNT_SELECT = "id,phone";
 
@@ -244,7 +244,7 @@
     try {
       localStorage.setItem(CACHE_KEY, packed);
     } catch (e) {
-      /* quota — sessionStorage copy is enough for same-tab navigation */
+      /* quota - sessionStorage copy is enough for same-tab navigation */
     }
   }
 
@@ -746,6 +746,35 @@
     return loadMorePromise;
   }
 
+  let prefetchAllPromise = null;
+
+  /** Download remaining Supabase pages after the first cold load. */
+  async function prefetchAllPages(options) {
+    if (prefetchAllPromise) return prefetchAllPromise;
+    const opts = options && typeof options === "object" ? options : {};
+    const onBatch = typeof opts.onBatch === "function" ? opts.onBatch : null;
+    const signal = opts.signal;
+
+    prefetchAllPromise = (async () => {
+      if (!isDatabaseRequired()) return readCache();
+      let rounds = 0;
+      const maxRounds = Math.max(1, Math.ceil(12000 / UI_PAGE_SIZE));
+      while (rounds < maxRounds && hasMoreCached()) {
+        if (signal?.aborted) break;
+        const result = await loadMore();
+        rounds += 1;
+        onBatch?.(result);
+        if (!result?.hasMore) break;
+        await wait(40);
+      }
+      return readCache();
+    })().finally(() => {
+      prefetchAllPromise = null;
+    });
+
+    return prefetchAllPromise;
+  }
+
   function hasMoreCached() {
     const cached = readCache();
     return cached?.meta?.hasMore === true;
@@ -897,7 +926,7 @@
           niche = words.slice(0, -2).join(" ");
         }
       } else if (words.length === 2 && words[1].length >= 5) {
-        // "barbershop sacramento" — not "beauty salon" / "tree service"
+        // "barbershop sacramento" - not "beauty salon" / "tree service"
         const secondIsNicheWord =
           /^(shop|shops|salon|salons|service|services|center|centre|clinic|repair|care|store|studio|company|group|gym|cafe|bar|spa|llc|inc|ltd)$/i.test(
             words[1]
@@ -949,6 +978,97 @@
     };
   }
 
+  // Only real public.leads columns - ghost Maps scrape keys break PostgREST filters.
+  const REMOTE_SEARCH_FIELDS = [
+    "business_name",
+    "category",
+    "category_group",
+    "address",
+    "city_state_zip",
+    "search_query",
+    "phone",
+    "hours",
+    "description",
+  ];
+
+  function applyRemoteLeadFilters(sb, queryText, options, selectExpr, selectOptions) {
+    const parsed = parseSearchQuery(queryText);
+    const rawQuery = parsed.raw || String(queryText || "").trim();
+    const websiteFilter = String(options.websiteFilter || "all").toLowerCase();
+
+    function orAcrossFields(tokens) {
+      const parts = [];
+      tokens.forEach((token) => {
+        const cleaned = String(token || "").trim();
+        if (cleaned.length < 2) return;
+        const pattern = `%${escapeIlikePattern(cleaned)}%`;
+        REMOTE_SEARCH_FIELDS.forEach((field) => {
+          parts.push(`${quoteFilterColumn(field)}.ilike.${pattern}`);
+        });
+      });
+      return parts.join(",");
+    }
+
+    let query = selectOptions
+      ? sb.from("leads").select(selectExpr, selectOptions)
+      : sb.from("leads").select(selectExpr);
+
+    if (rawQuery.length >= 2) {
+      const nicheTokens = (
+        parsed.nicheTokens.length
+          ? parsed.nicheTokens
+          : parsed.tokens.length
+            ? parsed.tokens
+            : [parsed.text || rawQuery.toLowerCase()]
+      ).slice(0, 4);
+
+      const locationTokens = [];
+      if (parsed.location) {
+        locationTokens.push(parsed.location.trim());
+        parsed.locationTokens.slice(0, 2).forEach((t) => {
+          if (!locationTokens.includes(t)) locationTokens.push(t);
+        });
+      }
+
+      const nicheOr = orAcrossFields(nicheTokens);
+      if (nicheOr) query = query.or(nicheOr);
+
+      const locationOr = orAcrossFields(locationTokens);
+      if (locationOr) query = query.or(locationOr);
+    }
+
+    if (websiteFilter === "with") {
+      query = query.eq("has_website", true);
+    } else if (websiteFilter === "without") {
+      query = query.eq("has_website", false);
+    }
+
+    return { query, parsed, rawQuery, websiteFilter };
+  }
+
+  /**
+   * Exact row count for the current Business Finder filters (website, type, location).
+   */
+  async function countRemoteLeads(queryText, options = {}) {
+    if (!isDatabaseRequired()) return null;
+    const sb = await waitForSupabaseClient();
+    if (!sb) return null;
+
+    const session = await waitForAuthSession();
+    if (!session) return null;
+
+    const { query } = applyRemoteLeadFilters(sb, queryText, options, "id", {
+      count: "exact",
+      head: true,
+    });
+    const { count, error } = await query;
+    if (error) {
+      console.warn("countRemoteLeads", error);
+      return null;
+    }
+    return Number(count) || 0;
+  }
+
   /**
    * Full-table search for Business Finder. Includes leads without phones so niche
    * lookups (e.g. "barber") are not empty when phones were never scraped.
@@ -973,63 +1093,7 @@
     }
 
     const limit = Math.min(Math.max(Number(options.limit) || 250, 20), 400);
-    // Only real public.leads columns — ghost Maps scrape keys break PostgREST filters.
-    const fields = [
-      "business_name",
-      "category",
-      "category_group",
-      "address",
-      "city_state_zip",
-      "search_query",
-      "phone",
-      "hours",
-      "description",
-    ];
-
-    function orAcrossFields(tokens) {
-      const parts = [];
-      tokens.forEach((token) => {
-        const cleaned = String(token || "").trim();
-        if (cleaned.length < 2) return;
-        const pattern = `%${escapeIlikePattern(cleaned)}%`;
-        fields.forEach((field) => {
-          parts.push(`${quoteFilterColumn(field)}.ilike.${pattern}`);
-        });
-      });
-      return parts.join(",");
-    }
-
-    const nicheTokens = (
-      parsed.nicheTokens.length
-        ? parsed.nicheTokens
-        : parsed.tokens.length
-          ? parsed.tokens
-          : [parsed.text || rawQuery.toLowerCase()]
-    ).slice(0, 4);
-
-    const locationTokens = [];
-    if (parsed.location) {
-      locationTokens.push(parsed.location.trim());
-      parsed.locationTokens.slice(0, 2).forEach((t) => {
-        if (!locationTokens.includes(t)) locationTokens.push(t);
-      });
-    }
-
-    let query = sb.from("leads").select(LEAD_SELECT);
-
-    // (any niche token) AND (any location token) when both present
-    const nicheOr = orAcrossFields(nicheTokens);
-    if (nicheOr) query = query.or(nicheOr);
-
-    const locationOr = orAcrossFields(locationTokens);
-    if (locationOr) query = query.or(locationOr);
-
-    const websiteFilter = String(options.websiteFilter || "all").toLowerCase();
-    if (websiteFilter === "with") {
-      query = query.eq("has_website", true);
-    } else if (websiteFilter === "without") {
-      query = query.eq("has_website", false);
-    }
+    const { query, websiteFilter } = applyRemoteLeadFilters(sb, queryText, options, LEAD_SELECT);
 
     const { data, error } = await query.order("id", { ascending: true }).limit(limit);
     if (error) {
@@ -1092,7 +1156,7 @@
     return global.SiteSupabase?.getClient?.() || null;
   }
 
-  /** Leads RLS is authenticated-only — wait for JWT before querying. */
+  /** Leads RLS is authenticated-only - wait for JWT before querying. */
   async function waitForAuthSession() {
     const started = Date.now();
     while (Date.now() - started < SUPABASE_WAIT_MS) {
@@ -1162,7 +1226,7 @@
         return count;
       }
     }
-    // Prefer previously cached nav count — never download the full leads list just for a badge.
+    // Prefer previously cached nav count - never download the full leads list just for a badge.
     return null;
   }
 
@@ -1433,7 +1497,7 @@
     return scheduleBackgroundRefresh();
   }
 
-  /** Nav badge only — do not open realtime/pollers from every channel. */
+  /** Nav badge only - do not open realtime/pollers from every channel. */
   function ensureNavWatch() {
     if (!isDatabaseRequired()) return;
     const cached = readCache();
@@ -1445,9 +1509,11 @@
   global.LeadsLoader = {
     load,
     loadMore,
+    prefetchAllPages,
     hasMoreCached,
     getCachedDbRowCount,
     searchRemote,
+    countRemoteLeads,
     parseSearchQuery,
     loadFromJson,
     loadFromSupabase,

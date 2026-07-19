@@ -5,7 +5,7 @@ const base = 'font-family:"DM Sans",system-ui,-apple-system,sans-serif';
 const display = 'font-family:"Syne",system-ui,sans-serif';
 const reduced = '@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}';
 
-/** 10 extreme experimental animation presets — unique motion languages */
+/** 10 extreme experimental animation presets - unique motion languages */
 const PRESETS = [
   {
     slug: 'animation-letter-cascade',

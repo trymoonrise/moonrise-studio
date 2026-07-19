@@ -94,7 +94,7 @@
 
   global.RepProfilePhoto = global.RepProfilePhoto || null;
 
-  // Pending island on website — keep empty no-op hooks if dashboard-pending is absent
+  // Pending island on website - keep empty no-op hooks if dashboard-pending is absent
   global.DashboardPending = global.DashboardPending || {
     refresh() {},
     init() {},

@@ -1,7 +1,7 @@
-/* Slide-to-generate — thumb stays left; position driven by --ms-lf-slide-x */
+/* Slide-to-generate overrides - keep thumb anchored left; position via --ms-lf-slide-x */
 .ms-lf-slide {
   --ms-lf-slide-x: 0px;
-  --ms-lf-slide-fill: 52px;
+  --ms-lf-slide-fill: calc(var(--ms-lf-slide-pad) + 44px);
   --ms-lf-slide-pad: 4px;
   --ms-lf-slide-radius: 12px;
 }
@@ -27,6 +27,13 @@
   width: var(--ms-lf-slide-fill);
   border-radius: var(--ms-lf-slide-radius) 0 0 var(--ms-lf-slide-radius) !important;
   pointer-events: none;
+  opacity: 0;
+}
+
+.ms-lf-slide.is-dragging .ms-lf-slide-fill,
+.ms-lf-slide.is-completing .ms-lf-slide-fill,
+.ms-lf-slide.is-returning .ms-lf-slide-fill {
+  opacity: 1;
 }
 
 .ms-lf-slide-label {
@@ -50,5 +57,10 @@
   margin-inline: 0 !important;
   flex: none !important;
   border-radius: 12px !important;
+  transform: translate3d(var(--ms-lf-slide-x), -50%, 0) !important;
+}
+
+.ms-lf-slide-thumb:hover,
+.ms-lf-slide-thumb:focus {
   transform: translate3d(var(--ms-lf-slide-x), -50%, 0) !important;
 }

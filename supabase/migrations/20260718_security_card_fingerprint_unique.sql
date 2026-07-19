@@ -7,7 +7,7 @@ create unique index if not exists profiles_security_card_fingerprint_unique
   where security_card_fingerprint is not null and security_card_fingerprint <> '';
 
 comment on column public.profiles.security_card_fingerprint is
-  'Stripe card.fingerprint from creator security card — at most one profile per fingerprint.';
+  'Stripe card.fingerprint from creator security card - at most one profile per fingerprint.';
 
 -- Backfill from existing payout_profile JSON when present.
 update public.profiles

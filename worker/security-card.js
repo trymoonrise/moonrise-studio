@@ -1,5 +1,5 @@
 /**
- * Creator security card — $1 verify + refund, saved for off-session Terms enforcement.
+ * Creator security card - $1 verify + refund to confirm the card is valid.
  */
 
 const SECURITY_VERIFY_CENTS = Math.max(
@@ -15,8 +15,8 @@ const MAX_ENFORCEMENT_CENTS = Math.max(
 const CARD_DUPLICATE_CODE = "card_already_registered";
 
 function supportContactLabel() {
-  const email = String(process.env.MOONRISE_SUPPORT_EMAIL || "support@trymoonrise.com").trim();
-  return email || "support@trymoonrise.com";
+  const email = String(process.env.MOONRISE_SUPPORT_EMAIL || "trymoonrise@gmail.com").trim();
+  return email || "trymoonrise@gmail.com";
 }
 
 function cardAlreadyRegisteredMessage() {
@@ -232,7 +232,7 @@ async function completeSecurityCardVerification(stripe, supabase, userId, paymen
     const msg = String(refundErr?.message || "");
     if (!/already been refunded|refund/i.test(msg)) {
       console.error("Security card refund failed:", refundErr.message);
-      throw Object.assign(new Error("Card verified but refund failed — contact support"), {
+      throw Object.assign(new Error("Card verified but refund failed - contact support"), {
         status: 502,
       });
     }
@@ -325,7 +325,7 @@ async function chargeSecurityCard(stripe, supabase, userId, opts) {
     const code = err?.code || err?.raw?.code || "";
     if (code === "authentication_required") {
       throw Object.assign(
-        new Error("Card requires authentication — cannot charge off-session"),
+        new Error("Card requires authentication - cannot charge off-session"),
         { status: 409, code }
       );
     }

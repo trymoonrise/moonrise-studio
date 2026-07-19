@@ -28,7 +28,7 @@ const RECIPES = [
     p{max-width:38ch;color:rgba(255,255,255,.78);line-height:1.55;margin-bottom:1.5rem}
     .btn{padding:.7rem 1.25rem;border:none;border-radius:999px;background:#fff;color:#111827;font-weight:700;font-size:.86rem;cursor:pointer}
     ${reduced}`,
-    body: `<video class="bg" src="${V.ocean}" autoplay muted loop playsinline aria-hidden="true"></video><div class="shade" aria-hidden="true"></div><div class="wrap"><span class="eyebrow">Documentary</span><h1>Depth below the surface</h1><p>Downloaded footage, locally hosted — full-bleed video with a calm editorial overlay.</p><button class="btn" type="button">Watch film</button></div>`,
+    body: `<video class="bg" src="${V.ocean}" autoplay muted loop playsinline aria-hidden="true"></video><div class="shade" aria-hidden="true"></div><div class="wrap"><span class="eyebrow">Documentary</span><h1>Depth below the surface</h1><p>Downloaded footage, locally hosted - full-bleed video with a calm editorial overlay.</p><button class="btn" type="button">Watch film</button></div>`,
   },
   {
     slug: 'heroes-video-cinematic-sintel',
@@ -97,7 +97,7 @@ const RECIPES = [
     .phone video{display:block;width:min(42vw,230px);aspect-ratio:9/16;object-fit:cover;border-radius:26px;background:#000}
     @media(max-width:760px){.hero{grid-template-columns:1fr;text-align:center}.phone{margin:0 auto}}
     ${reduced}`,
-    body: `<section class="hero"><div><h1>Stories built for vertical</h1><p>Portrait footage downloaded and hosted locally — perfect for social-first launches.</p><button class="btn" type="button" style="padding:.65rem 1.1rem;border:none;border-radius:999px;background:#fff;color:#111;font-weight:700;cursor:pointer">Download app</button></div><div class="phone"><video src="${V.vert}" autoplay muted loop playsinline aria-label="Vertical story"></video></div></section>`,
+    body: `<section class="hero"><div><h1>Stories built for vertical</h1><p>Portrait footage downloaded and hosted locally - perfect for social-first launches.</p><button class="btn" type="button" style="padding:.65rem 1.1rem;border:none;border-radius:999px;background:#fff;color:#111;font-weight:700;cursor:pointer">Download app</button></div><div class="phone"><video src="${V.vert}" autoplay muted loop playsinline aria-label="Vertical story"></video></div></section>`,
   },
   {
     slug: 'heroes-video-duotone-drive',

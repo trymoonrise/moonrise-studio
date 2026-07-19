@@ -10,7 +10,7 @@ accesstokens.env
 **/secrets/
 **/*credentials*
 
-# Heavy media — keep stock images for Website Presets; skip videos (many >50MB)
+# Heavy media - keep stock images for Website Presets; skip videos (many >50MB)
 Website Presets/stock/**/*.mp4
 Website Presets/stock/**/*.webm
 Website Presets/stock/**/*.mov

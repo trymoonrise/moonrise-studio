@@ -64,7 +64,7 @@ function ensureArchiveVideos() {
     }
     console.log(`Downloading ${item.file}…`);
     if (!download(item.url, dest) || !fs.existsSync(dest)) {
-      console.warn(`Skip ${item.file} — download failed`);
+      console.warn(`Skip ${item.file} - download failed`);
       continue;
     }
     console.log(`Wrote ${item.file} (${fs.statSync(dest).size} bytes)`);
@@ -133,7 +133,7 @@ function ensureClips() {
         run(`ffmpeg -y -i "${clip.fallback}" ${clip.fbArgs} -c copy "${dest}"`);
         continue;
       }
-      console.warn(`Skip ${clip.out} — missing ${clip.in}`);
+      console.warn(`Skip ${clip.out} - missing ${clip.in}`);
       continue;
     }
     console.log(`Clipping ${clip.out}…`);

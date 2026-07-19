@@ -15,7 +15,7 @@ create index if not exists auth_lockouts_locked_until_idx
   where locked_until is not null;
 
 comment on table public.auth_lockouts is
-  'Failed sign-in tracking. Worker (service role) only — never expose to anon/authenticated.';
+  'Failed sign-in tracking. Worker (service role) only - never expose to anon/authenticated.';
 
 alter table public.auth_lockouts enable row level security;
 

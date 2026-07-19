@@ -1,5 +1,5 @@
 /**
- * Donation leaderboard — aggregate paid MVP+ support by supporter.
+ * Donation leaderboard - aggregate paid MVP+ support by supporter.
  */
 
 const DONOR_MESSAGE_MAX = 120;
@@ -109,7 +109,7 @@ async function reconcilePendingDonationPayments(supabase, stripe, userId) {
 }
 
 async function getDonationLeaderboard(supabase, limit = 10) {
-  const cap = Math.min(Math.max(Number(limit) || 10, 1), 25);
+    const cap = Math.min(Math.max(Number(limit) || 10, 1), 100);
 
   const { data: payments, error } = await supabase
     .from("payments")

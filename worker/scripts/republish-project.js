@@ -24,7 +24,7 @@ process.env.VERCEL = "1"; // prevent listen when requiring server
 
 const { createClient } = require("@supabase/supabase-js");
 
-// Pull deploy helper by evaluating a thin wrapper — server doesn't export it,
+// Pull deploy helper by evaluating a thin wrapper - server doesn't export it,
 // so we re-implement the publish path via an internal require patch.
 const Module = require("module");
 const originalExport = Module.prototype.require;
@@ -89,7 +89,7 @@ async function main() {
       (full, sel, before, _imp, after) => sel + "{" + before + "overflow: visible" + after + "}"
     );
     const css = `
-/* Moonrise mobile-fit — one scroll root (html), body must not trap scroll */
+/* Moonrise mobile-fit - one scroll root (html), body must not trap scroll */
 html{max-width:100%!important;overflow-x:hidden!important;overflow-y:scroll!important;height:auto!important;max-height:none!important;-webkit-overflow-scrolling:touch}
 body{max-width:100%!important;overflow-x:hidden!important;overflow-y:visible!important;height:auto!important;max-height:none!important;min-height:100%;position:relative!important}
 img,video,canvas,svg{max-width:100%;height:auto}
@@ -144,7 +144,7 @@ body > div, main, .page, .wrapper, .site, .layout, .site-wrap, .app, #app, #root
   // Strip the mobile-fit style from DB storage? Server stores clean html and injects on publish.
   // Looking at flow: project.html is clean (no watermark); ensureMobileFriendlyHtml runs on publish.
   // So we should update DB html to remove the bad rule without necessarily adding mobile-fit permanently.
-  // Updating with ensureMobileFriendlyHtml is fine — republish refreshes the block anyway.
+  // Updating with ensureMobileFriendlyHtml is fine - republish refreshes the block anyway.
   const { error: updErr } = await supabase
     .from("projects")
     .update({ html: cleanedDbHtml, updated_at: new Date().toISOString() })

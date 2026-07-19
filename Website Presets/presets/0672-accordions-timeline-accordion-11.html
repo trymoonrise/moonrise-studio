@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en"><head>
   <!--
     @preset
@@ -8,6 +8,6 @@
     category: accordions
     tags: accordions, timeline
   -->
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>0672 — Timeline Accordion 11</title>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>0672 - Timeline Accordion 11</title>
   <style>@import url('../shared/preset-reset.css');@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap');*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f7f5f0;padding:2rem;font-family:Inter,sans-serif}.timeline{width:min(540px,100%);padding-left:1.2rem;border-left:1px solid #d9d4c8}.item{position:relative;padding:0 0 0 1rem}.item+.item{margin-top:.5rem}.item::before{content:'';position:absolute;left:-1.55rem;top:1rem;width:10px;height:10px;border-radius:50%;background:#111;transform:scale(.8);transition:transform .28s ease}.trigger{width:100%;padding:1rem 0;border:0;background:none;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font:600 .94rem Inter,sans-serif;text-align:left}.when{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:#8a8377}.panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows .34s cubic-bezier(.22,1,.36,1)}.panel>div{overflow:hidden}.panel p{margin:0;padding:0 0 1rem;color:#686155;line-height:1.68;font-size:.88rem}.item.open::before{transform:scale(1.25)}.item.open .panel{grid-template-rows:1fr}@media(prefers-reduced-motion:reduce){.item::before,.panel{transition:none}}</style>
 </head><body><div class="timeline"><div class="item open"><button class="trigger"><span>Discovery phase</span><span class="when">Week 1</span></button><div class="panel"><div><p>A timeline accordion turns each entry into a compact milestone with optional deeper context.</p></div></div></div><div class="item"><button class="trigger"><span>System design</span><span class="when">Week 2</span></button><div class="panel"><div><p>The dot grows on open so the selected moment feels anchored on the line.</p></div></div></div><div class="item"><button class="trigger"><span>Launch prep</span><span class="when">Week 3</span></button><div class="panel"><div><p>This is useful for roadmaps, case studies, release logs, and onboarding journeys.</p></div></div></div></div><script>document.querySelectorAll('.item .trigger').forEach((button)=>button.addEventListener('click',()=>button.parentElement.classList.toggle('open')));</script></body></html>

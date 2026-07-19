@@ -1,5 +1,5 @@
 /**
- * Creator payout card — Stripe Elements $1 confirm + refund.
+ * Creator payment method - Stripe Elements $1 confirm + refund.
  */
 (function (global) {
   let stripe = null;
@@ -30,7 +30,7 @@
     const lower = raw.toLowerCase();
     const defaultMsg =
       fallback ||
-      "Can't load payout card setup right now. Check your connection and try again.";
+      "Can't load payment method setup right now. Check your connection and try again.";
 
     if (
       !raw ||
@@ -45,22 +45,22 @@
       return defaultMsg;
     }
     if (lower.includes("timed out") || lower.includes("timeout")) {
-      return "Connecting your payout card timed out. Please try again.";
+      return "Payment method setup timed out. Please try again.";
     }
     return raw || defaultMsg;
   }
 
   function apiErrorMessage(res, payload, fallback) {
     if (res?.status === 404) {
-      return "Payout card setup is not available yet — the latest update may still be deploying. Refresh and try again.";
+      return "Payment method setup is not available yet - the latest update may still be deploying. Refresh and try again.";
     }
     if (res?.status === 401 || res?.status === 403) {
       return "Your session expired. Sign in again, then return to this step.";
     }
     if (res?.status >= 500) {
-      return payload?.error || "Payout card setup is temporarily unavailable. Try again in a moment.";
+      return payload?.error || "Payment method setup is temporarily unavailable. Try again in a moment.";
     }
-    return payload?.error || fallback || "Could not load payout card setup.";
+    return payload?.error || fallback || "Could not load payment method setup.";
   }
 
   async function authHeaders() {
@@ -90,7 +90,7 @@
     throw new Error(
       friendlyFetchError(
         lastErr,
-        "Can't load payout card setup right now. Check your connection and try again."
+        "Can't load payment method setup right now. Check your connection and try again."
       )
     );
   }
@@ -108,7 +108,7 @@
       String(global.SITE_CONFIG?.stripePublishableKey || "").trim();
     if (!key) {
       throw new Error(
-        "Stripe is not configured for payout cards. Add STRIPE_PUBLISHABLE_KEY on the worker."
+        "Stripe is not configured for payment method setup. Add STRIPE_PUBLISHABLE_KEY on the worker."
       );
     }
     if (!global.Stripe) {
@@ -159,7 +159,7 @@
     const configRes = await workerFetch("/security-card/config", { headers: await authHeaders() }, { retries: 1 });
     const config = await configRes.json().catch(() => ({}));
     if (!configRes.ok) {
-      throw new Error(apiErrorMessage(configRes, config, "Could not load payout card settings"));
+      throw new Error(apiErrorMessage(configRes, config, "Could not load payment method settings"));
     }
 
     await loadStripe(config.publishableKey);
@@ -170,15 +170,6 @@
     mountPoint.id = opts?.elementId || "ms-sec-card-element";
     mountPoint.className = "ms-sec-card-element";
     wrap.appendChild(mountPoint);
-
-    const hint = document.createElement("p");
-    hint.className = "ms-settings-hint ms-muted ms-sec-card-hint";
-    const support = String(config.supportEmail || "support@trymoonrise.com").trim();
-    hint.textContent =
-      "Each card can only be linked to one Moonrise account. If you have trouble, contact " +
-      support +
-      ".";
-    wrap.appendChild(hint);
 
     hostEl.appendChild(wrap);
 
@@ -217,7 +208,7 @@
 
   async function verifyCard(opts) {
     if (!workerUrl()) throw new Error("Worker URL is not configured.");
-    if (!stripe || !cardElement) throw new Error("Add your card details first.");
+    if (!stripe || !cardElement) throw new Error("Add your payment method details first.");
 
     const email = String(opts?.email || "").trim();
     const startRes = await workerFetch(
@@ -231,7 +222,7 @@
     );
     const startData = await startRes.json().catch(() => ({}));
     if (!startRes.ok) {
-      throw new Error(apiErrorMessage(startRes, startData, "Could not connect payout card"));
+      throw new Error(apiErrorMessage(startRes, startData, "Could not save payment method"));
     }
     if (!startData.clientSecret) throw new Error("Missing Stripe client secret");
 
@@ -243,7 +234,7 @@
     });
 
     if (result.error) {
-      throw new Error(result.error.message || "Could not connect payout card");
+      throw new Error(result.error.message || "Could not save payment method");
     }
 
     const paymentIntentId = result.paymentIntent?.id || startData.paymentIntentId;
@@ -258,7 +249,7 @@
     );
     const completeData = await completeRes.json().catch(() => ({}));
     if (!completeRes.ok) {
-      throw new Error(apiErrorMessage(completeRes, completeData, "Could not save payout card"));
+      throw new Error(apiErrorMessage(completeRes, completeData, "Could not save payment method"));
     }
 
     unmountCard();

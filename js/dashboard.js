@@ -1,5 +1,5 @@
 /**
- * Dashboard — overview metrics + recent projects.
+ * Dashboard - overview metrics + recent projects.
  */
 (async function () {
   const DEFAULT_GOAL = 1000;
@@ -221,7 +221,7 @@
       ring.setAttribute(
         "aria-label",
         Math.round(pct) +
-          " percent — " +
+          " percent - " +
           formatCommission(commission) +
           " earned of " +
           formatGoal(goal) +
@@ -834,7 +834,7 @@
     if (!dialog || !project) return;
     if (!canDeleteProject(project)) {
       window.StudioToast?.error?.(
-        "This website was paid for — it can’t be deleted."
+        "This website was paid for - it can’t be deleted."
       );
       return;
     }
@@ -870,7 +870,7 @@
     if (project && !canDeleteProject(project)) {
       if (error) {
         error.hidden = false;
-        error.textContent = "This website was paid for — it can’t be deleted.";
+        error.textContent = "This website was paid for - it can’t be deleted.";
       }
       return;
     }
@@ -899,7 +899,7 @@
       if (dbError) throw dbError;
       if (!data?.length) {
         if (project && !canDeleteProject(project)) {
-          throw new Error("This website was paid for — it can’t be deleted.");
+          throw new Error("This website was paid for - it can’t be deleted.");
         }
         throw new Error("Could not delete project. Refresh and try again.");
       }

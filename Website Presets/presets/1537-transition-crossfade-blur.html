@@ -11,7 +11,7 @@
   -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>1537 — Crossfade Blur Transition</title>
+  <title>1537 - Crossfade Blur Transition</title>
   <style>
     @import url('../shared/preset-reset.css');
     body{margin:0;min-height:100vh;overflow:hidden;position:relative}.slide{position:absolute;inset:0;display:grid;place-items:center;font-size:2.5rem;font-weight:800;color:#fff;opacity:0;filter:blur(12px);transition:opacity .7s cubic-bezier(.22,.61,.36,1),filter .7s cubic-bezier(.22,.61,.36,1)}.slide.on{opacity:1;filter:blur(0);z-index:1}.slide:nth-child(1){background:linear-gradient(135deg,#1a1a2e,#6c8cff)}.slide:nth-child(2){background:linear-gradient(135deg,#2e1a2e,#ff6cb0)}.slide:nth-child(3){background:linear-gradient(135deg,#1a2e2a,#6cffb8);color:#111}.ctrl{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);z-index:5}.ctrl button{padding:10px 24px;border:none;border-radius:99px;background:rgba(255,255,255,.15);color:#fff;backdrop-filter:blur(8px);cursor:pointer;font-weight:600}

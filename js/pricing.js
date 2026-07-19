@@ -1,5 +1,5 @@
 /**
- * Pricing — credit plans and custom top-ups via Stripe Checkout.
+ * Pricing - credit plans and custom top-ups via Stripe Checkout.
  */
 (function () {
   const DEFAULT_TOPUP = {

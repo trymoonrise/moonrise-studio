@@ -1,5 +1,5 @@
 /**
- * Settings — profile, password, session.
+ * Settings - profile, password, notifications, session.
  */
 (async function () {
   const BUCKET = "studio-avatars";
@@ -13,9 +13,13 @@
   const initialsEl = document.getElementById("set-avatar-initials");
   const removeBtn = document.getElementById("set-avatar-remove");
   const wrapEl = document.getElementById("set-avatar-wrap");
+  const notifToggle = document.getElementById("set-client-purchase-notif");
+  const notifHint = document.getElementById("set-notif-hint");
+  const notifError = document.getElementById("set-notif-error");
 
   let avatarUrl = "";
   let started = false;
+  let notifBusy = false;
 
   function defaultAvatar() {
     return (
@@ -201,6 +205,38 @@
       avatarUrl = "";
     }
     refreshPreview();
+    syncNotificationToggle(profile);
+  }
+
+  function setNotifError(msg) {
+    if (notifError) {
+      notifError.hidden = !msg;
+      notifError.textContent = msg || "";
+    }
+    if (msg) window.StudioToast?.error?.(msg);
+  }
+
+  function setNotifHint(msg) {
+    if (notifHint) notifHint.textContent = msg || "";
+  }
+
+  function syncNotificationToggle(profile) {
+    if (!notifToggle) return;
+    const enabled = !!window.MoonrisePush?.readPref?.(profile?.notification_prefs);
+    notifToggle.checked = enabled;
+
+    if (!window.MoonrisePush?.supported?.()) {
+      notifToggle.disabled = true;
+      setNotifHint("Push alerts need a modern browser (and on iPhone, Add to Home Screen).");
+      return;
+    }
+
+    notifToggle.disabled = false;
+    if (enabled) {
+      setNotifHint("On — you will get a notification when a client purchases their website.");
+    } else {
+      setNotifHint("Turn on to get a device notification for each new paid client.");
+    }
   }
 
   fileInput?.addEventListener("change", async () => {
@@ -333,6 +369,34 @@
       setPwError(e.message || "Could not update password");
     } finally {
       if (btn) btn.disabled = false;
+    }
+  });
+
+  notifToggle?.addEventListener("change", async () => {
+    if (notifBusy) return;
+    const wantOn = !!notifToggle.checked;
+    notifBusy = true;
+    notifToggle.disabled = true;
+    setNotifError("");
+    try {
+      if (!window.MoonrisePush?.setClientPurchaseAlerts) {
+        throw new Error("Notification helper is not loaded.");
+      }
+      await window.MoonrisePush.setClientPurchaseAlerts(wantOn);
+      notifToggle.checked = wantOn;
+      if (wantOn) {
+        setNotifHint("On — you will get a notification when a client purchases their website.");
+        window.StudioToast?.success?.("Client purchase alerts enabled.");
+      } else {
+        setNotifHint("Turn on to get a device notification for each new paid client.");
+        window.StudioToast?.success?.("Client purchase alerts turned off.");
+      }
+    } catch (e) {
+      notifToggle.checked = !wantOn;
+      setNotifError(e.message || "Could not update notifications");
+    } finally {
+      notifBusy = false;
+      if (window.MoonrisePush?.supported?.()) notifToggle.disabled = false;
     }
   });
 

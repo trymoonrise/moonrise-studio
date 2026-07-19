@@ -31,7 +31,7 @@
         var(--mr-bg);
     }
 
-    /* Demo page chrome — not part of the floating watermark */
+    /* Demo page chrome - not part of the floating watermark */
     .demo {
       max-width: 720px;
       margin: 0 auto;
@@ -49,7 +49,7 @@
       max-width: 42ch;
     }
 
-    /* —— Moonrise floating widget (bottom center) —— */
+    /* -- Moonrise floating widget (bottom center) -- */
     .mr-wm {
       --mr-brand: #3b82f6;
       position: fixed;
@@ -153,7 +153,7 @@
     }
 
 
-    /* —— Paywall modal (simple) —— */
+    /* -- Paywall modal (simple) -- */
     .mr-wm-overlay {
       position: fixed;
       inset: 0;
@@ -540,7 +540,7 @@
     <p>This page demos the Moonrise floating watermark. Click the widget to open FAQ + checkout.</p>
   </main>
 
-  <!-- Moonrise watermark — self-contained floating component -->
+  <!-- Moonrise watermark - self-contained floating component -->
   <div class="mr-wm" id="mr-wm" data-moonrise-watermark>
     <button type="button" class="mr-wm-chip" id="mr-wm-open" aria-haspopup="dialog" aria-controls="mr-wm-overlay">
       <img
@@ -564,12 +564,11 @@
         <img src="https://moonrise-studio.vercel.app/doc/MoonriseLogo.png" alt="" width="40" height="40" />
         <div>
           <h2 id="mr-wm-title">Unlock your website</h2>
-          <p id="mr-wm-subtitle">Preview only — complete checkout to go live.</p>
+          <p id="mr-wm-subtitle">Watermark removed automatically after payment. This is a preview of your new website. Go live today and start sharing your link with customers.</p>
         </div>
         <button type="button" class="mr-wm-close" id="mr-wm-close" aria-label="Close">×</button>
       </header>
       <div class="mr-wm-body">
-        <p class="mr-wm-lead">This is your new website preview. Go live to remove the watermark and share your link with customers.</p>
         <div class="mr-wm-offer">
           <p class="mr-wm-timer" id="mr-wm-timer" aria-live="polite"></p>
           <button type="button" class="mr-wm-pay" id="mr-wm-pay">Unlock site</button>
@@ -581,7 +580,7 @@
           <details>
             <summary>What is this?</summary>
             <div class="mr-wm-faq-panel"><div class="mr-wm-faq-panel-inner">
-              <p>This is a Moonrise website preview. The watermark stays until you complete checkout — then it comes off and the site stays live.</p>
+              <p>This is a Moonrise website preview. The watermark stays until you complete checkout - then it comes off and the site stays live.</p>
             </div></div>
           </details>
           <details>
@@ -788,7 +787,7 @@
         }
       });
 
-      // Keep avatar consistent if CDN fails — leave broken icon visible over white bg
+      // Keep avatar consistent if CDN fails - leave broken icon visible over white bg
       document.querySelectorAll(".mr-wm-avatar, .mr-wm-head img").forEach((img) => {
         if (!img.getAttribute("src")) img.src = AVATAR;
       });

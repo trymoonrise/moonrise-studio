@@ -1,5 +1,5 @@
 /**
- * Lead Finder — business type + location search.
+ * Lead Finder - business type + location search.
  */
 (function () {
   const typeInput = document.getElementById("lf-type");
@@ -14,9 +14,10 @@
   const SAVED_KEY = "ms_lf_quick_save_v1";
   const CLAIMED_KEY = "ms_lf_claimed_v1";
   const AREA_PREF_KEY = "ms_lf_in_my_area_v1";
+  const DEV_NOTICE_KEY = "ms_lf_dev_notice_dismissed_v1";
   const NEARBY_RADIUS_MILES = 5;
   const AREA_LOCATION_LABEL = "Using your location";
-  const DISPLAY_PAGE = 80;
+  const DISPLAY_PAGE = 100;
   const LOADING_CARD_COUNT = 6;
   const MIN_SEARCH_RESULTS = 50;
   let listView = "default";
@@ -34,7 +35,10 @@
   let userCoords = null;
   let areaRequestToken = 0;
   let websiteVerifyJob = 0;
+  let prefetchJob = 0;
+  let prefetchAbort = null;
   let websiteRefreshTimer = null;
+  let listCountJob = 0;
 
   function readAreaPref() {
     try {
@@ -128,10 +132,7 @@
   function scrapeErrorMessage(err) {
     const msg = String(err?.message || err || "").trim();
     if (/failed to fetch|networkerror|network error|load failed/i.test(msg)) {
-      return "Live search server unreachable — check your connection and try again.";
-    }
-    if (/not deployed on render|upstream failed \(404\)/i.test(msg)) {
-      return "Live search is not set up yet. Deploy leadfinder-search on Render (see LEADFINDER-SETUP.md in the Moonrise folder).";
+      return "Live search server unreachable - check your connection and try again.";
     }
     return msg || "Live search unavailable";
   }
@@ -314,8 +315,73 @@
     setListCount(0);
     if (!resultsEl) return;
     resultsEl.hidden = false;
-    resultsEl.innerHTML =
-      '<div class="ms-dash-empty">Enter a business type and location, then tap <strong>Find businesses</strong> for live Maps results.</div>';
+    resultsEl.innerHTML = isDbConnected()
+      ? '<div class="ms-dash-empty">Loading leads from the database…</div>'
+      : '<div class="ms-dash-empty">Leave both fields blank to browse all businesses, or enter a type and location to narrow results.</div>';
+  }
+
+  async function searchSupabaseLeads(type, location, websiteFilter) {
+    const loader = window.LeadsLoader;
+    if (!loader?.searchRemote || !isDbConnected()) {
+      return { ok: false, skipped: true, reason: "not_configured" };
+    }
+    const query = buildQuery(type, location);
+    if (!query || query.length < 2) {
+      return { ok: false, skipped: true, reason: "empty_query" };
+    }
+    try {
+      const result = await loader.searchRemote(query, { websiteFilter, limit: 250 });
+      if (result.error === "sign_in_required") {
+        return { ok: false, skipped: true, reason: "sign_in_required" };
+      }
+      if (!result.ok) {
+        return {
+          ok: false,
+          error: result.error || "Could not search the leads database.",
+        };
+      }
+      const leads = Array.isArray(result.leads) ? result.leads : [];
+      return {
+        ok: true,
+        leads,
+        query: result.query || query,
+        total: Number(result.total) || leads.length,
+      };
+    } catch (e) {
+      return { ok: false, error: scrapeErrorMessage(e) };
+    }
+  }
+
+  async function loadMoreFromSupabase() {
+    const loader = window.LeadsLoader;
+    if (!loader?.loadMore || !isDbConnected()) return false;
+    setFindBusy(true);
+    try {
+      const data = await loader.loadMore();
+      const appended = Array.isArray(data?.appended) ? data.appended : [];
+      if (appended.length) {
+        mergeScrapedIntoAllLeads(appended);
+        if (!typeInput?.value?.trim() && !locationInput?.value?.trim() && !inMyArea) {
+          renderLeads(allLeads, "All leads");
+        } else {
+          refreshVisibleLeads();
+        }
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.warn("Business Finder loadMore failed", e);
+      return false;
+    } finally {
+      setFindBusy(false);
+    }
+  }
+
+  function shouldTryLiveScrape() {
+    return (
+      window.isLocalDevHost?.() === true &&
+      Boolean(String(window.SITE_CONFIG?.leadFinderUrl || "").trim())
+    );
   }
 
   function restoreNormalList() {
@@ -781,7 +847,7 @@
 
   function setStatus(msg) {
     if (!statusEl) return;
-    // Keep the status line for rare empty-state notes only — never show scrape chatter.
+    // Keep the status line for rare empty-state notes only - never show scrape chatter.
     if (!msg || /scraping|searching|loading leads/i.test(msg)) {
       statusEl.hidden = true;
       statusEl.textContent = "";
@@ -808,8 +874,109 @@
   function setListCount(n) {
     if (!listCountEl) return;
     const count = Math.max(0, Number(n) || 0);
-    listCountEl.textContent = count + " lead" + (count === 1 ? "" : "s");
+    listCountEl.textContent = count.toLocaleString() + " lead" + (count === 1 ? "" : "s");
     listCountEl.hidden = false;
+  }
+
+  async function refreshListCount(fallbackCount) {
+    const job = ++listCountJob;
+    const visible = Math.max(0, Number(fallbackCount) || 0);
+
+    if (listView === "saved" || inMyArea || !isDbConnected()) {
+      setListCount(visible);
+      return;
+    }
+
+    const websiteFilter = getWebsiteFilter();
+    const query = buildQuery(typeInput?.value || "", locationInput?.value || "");
+    const loader = window.LeadsLoader;
+
+    if (!query && websiteFilter === "all") {
+      const dbTotal = getDbLeadTotal();
+      setListCount(dbTotal > 0 ? dbTotal : visible);
+      return;
+    }
+
+    if (!loader?.countRemoteLeads) {
+      setListCount(visible);
+      return;
+    }
+
+    try {
+      const total = await loader.countRemoteLeads(query, { websiteFilter });
+      if (job !== listCountJob) return;
+      setListCount(Number.isFinite(total) && total >= 0 ? total : visible);
+    } catch (_) {
+      if (job !== listCountJob) return;
+      setListCount(visible);
+    }
+  }
+
+  function getDbLeadTotal() {
+    const fromLoader = Number(window.LeadsLoader?.getCachedDbRowCount?.());
+    if (Number.isFinite(fromLoader) && fromLoader > 0) return fromLoader;
+    const fromCache = Number(window.LeadsLoader?.peekCache?.()?.meta?.dbRowCount);
+    if (Number.isFinite(fromCache) && fromCache > 0) return fromCache;
+    return 0;
+  }
+
+  function shouldPrefetchAllLeads() {
+    return (
+      isDbConnected() &&
+      !typeInput?.value?.trim() &&
+      !locationInput?.value?.trim() &&
+      !inMyArea &&
+      document.body?.dataset?.page === "leads"
+    );
+  }
+
+  function stopPrefetchSupabaseLeads() {
+    prefetchJob += 1;
+    if (prefetchAbort) {
+      prefetchAbort.abort();
+      prefetchAbort = null;
+    }
+  }
+
+  async function prefetchRemainingSupabaseLeads() {
+    if (!shouldPrefetchAllLeads()) return;
+    if (!window.LeadsLoader?.hasMoreCached?.()) return;
+    if (!window.LeadsLoader?.prefetchAllPages) return;
+
+    stopPrefetchSupabaseLeads();
+    const job = prefetchJob;
+    const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+    prefetchAbort = controller;
+
+    setStatus("Loading all leads from the database…");
+    try {
+      await window.LeadsLoader.prefetchAllPages({
+        signal: controller?.signal,
+        onBatch: (result) => {
+          if (job !== prefetchJob || !shouldPrefetchAllLeads()) return;
+          const appended = Array.isArray(result?.appended) ? result.appended.length : 0;
+          if (appended) {
+            setStatus(
+              "Loading leads… " +
+                Number(result?.meta?.loadedRows || result?.leads?.length || 0).toLocaleString() +
+                " of " +
+                getDbLeadTotal().toLocaleString()
+            );
+          }
+        },
+      });
+      if (job === prefetchJob && shouldPrefetchAllLeads()) {
+        setStatus("");
+        refreshVisibleLeads();
+      }
+    } catch (e) {
+      if (job === prefetchJob && e?.name !== "AbortError") {
+        console.warn("prefetchRemainingSupabaseLeads", e);
+        setStatus("");
+      }
+    } finally {
+      if (prefetchAbort === controller) prefetchAbort = null;
+    }
   }
 
   function leadFinderBaseUrl() {
@@ -1110,7 +1277,7 @@
     if (leadMissingWebsite(lead)) {
       return '<span class="ms-lf-pro-no-site">No website</span>';
     }
-    if (leadNeedsWebsiteCheck(lead) && lead.websiteCheckPending) {
+    if (leadNeedsWebsiteCheck(lead)) {
       return '<span class="ms-lf-pro-site-check">Checking…</span>';
     }
     return '<span class="ms-lf-pro-no-site">No website</span>';
@@ -1135,6 +1302,7 @@
   }
 
   function enqueueWebsiteVerification(leads) {
+    if (isDbConnected()) return;
     const maxBatch = Number(window.LeadWebsiteEnrich?.MAX_PER_BATCH) || 48;
     const candidates = (leads || [])
       .filter((lead) => needsWebsiteCheck(lead))
@@ -1144,7 +1312,9 @@
     const jobId = ++websiteVerifyJob;
     const enrich = window.LeadWebsiteEnrich;
     if (!enrich?.enqueue) {
-      candidates.forEach((lead) => enrich?.markLeadWebsiteMissing?.(lead));
+      candidates.forEach((lead) => {
+        lead.websiteCheckPending = false;
+      });
       scheduleWebsiteRefresh();
       return;
     }
@@ -1168,7 +1338,7 @@
         try {
           await enrich.fallbackLeads?.(candidates, scheduleWebsiteRefresh);
         } catch (_) {
-          candidates.forEach((lead) => enrich.markLeadWebsiteMissing?.(lead));
+          candidates.forEach((lead) => enrich.markLeadWebsiteUnknown?.(lead));
           scheduleWebsiteRefresh();
         }
         return;
@@ -1183,6 +1353,7 @@
   }
 
   function needsWebsiteCheck(lead) {
+    if (isDbConnected()) return false;
     if (window.LeadWebsiteEnrich?.needsWebsiteCheck) {
       return window.LeadWebsiteEnrich.needsWebsiteCheck(lead);
     }
@@ -1213,56 +1384,13 @@
 
   function observeLeadReveals(root) {
     leadRevealObserver?.disconnect();
+    leadRevealObserver = null;
     if (!root) return;
 
-    const cards = Array.from(root.querySelectorAll(".ms-lf-reveal"));
-    if (!cards.length) return;
-
-    if (motionReduced()) {
-      cards.forEach((el) => el.classList.add("is-visible"));
-      return;
-    }
-
-    function revealCard(el) {
-      if (!el || el.classList.contains("is-visible")) return;
-      el.classList.add("is-visible");
+    root.querySelectorAll(".ms-lf-reveal").forEach((el) => {
+      el.classList.add("is-visible", "is-revealed");
       const id = el.getAttribute("data-lead-id");
       if (id) revealedLeadIds.add(id);
-    }
-
-    leadRevealObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          revealCard(entry.target);
-          leadRevealObserver?.unobserve(entry.target);
-        });
-      },
-      { root: null, rootMargin: "0px 0px -8% 0px", threshold: 0.08 }
-    );
-
-    // Wait a frame so layout settles after innerHTML / un-hiding.
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        cards.forEach((el) => {
-          const id = el.getAttribute("data-lead-id");
-          if (id && revealedLeadIds.has(id)) {
-            el.classList.add("is-visible");
-            return;
-          }
-          const rect = el.getBoundingClientRect();
-          const inView =
-            rect.bottom > 40 &&
-            rect.top < (window.innerHeight || document.documentElement.clientHeight) - 24;
-          if (inView) {
-            // Force a paint at opacity 0, then ease in.
-            void el.offsetWidth;
-            revealCard(el);
-            return;
-          }
-          leadRevealObserver?.observe(el);
-        });
-      });
     });
   }
 
@@ -1275,10 +1403,6 @@
   function revealResults() {
     if (!resultsEl) return;
     resultsEl.hidden = false;
-    // Only animate the first reveal — re-renders should not flash opacity.
-    if (resultsEl.classList.contains("is-visible")) return;
-    resultsEl.classList.add("ms-panel-anim");
-    void resultsEl.offsetWidth;
     resultsEl.classList.add("is-visible");
   }
 
@@ -1890,7 +2014,7 @@
         return (
       '<article class="ms-card ms-lead-card ms-lf-pro ms-lf-reveal' +
       (saved ? " is-saved" : "") +
-      (alreadyVisible ? " is-visible" : "") +
+      (alreadyVisible ? " is-visible is-revealed" : "") +
       '" data-lead-id="' +
       escapeHtml(id) +
       '" style="--lf-reveal-delay:' +
@@ -1965,12 +2089,12 @@
     }
 
     revealResults();
-    setListCount(visible.length);
+    void refreshListCount(visible.length);
 
     if (!visible.length) {
       const nearbyEmpty =
         inMyArea &&
-        "No businesses found within 5 miles. Try a specific category (e.g. Plumber, Barbershop) or turn off In my area.";
+        "No businesses found within 5 miles. Try a specific category (e.g. Plumber, Barbershop) or turn off Near me.";
       resultsEl.innerHTML =
         '<div class="ms-dash-empty">' +
         (listView === "saved"
@@ -1985,15 +2109,25 @@
       return;
     }
 
-    const shown = visible.slice(0, displayLimit);
-    const hasMore = visible.length > displayLimit;
+    const isQuickSave = listView === "saved";
+    const shown = isQuickSave ? visible : visible.slice(0, displayLimit);
+    const uiHasMore = !isQuickSave && visible.length > displayLimit;
+    const dbHasMore =
+      !isQuickSave && isDbConnected() && window.LeadsLoader?.hasMoreCached?.();
+    const hasMore = uiHasMore || dbHasMore;
+    let moreLabel = "";
+    if (dbHasMore) {
+      moreLabel = "Load more";
+    } else if (uiHasMore) {
+      moreLabel = "Show more";
+    }
 
     resultsEl.innerHTML =
       shown.map((lead, index) => renderLeadCard(lead, index)).join("") +
       (hasMore
-        ? '<div class="ms-lf-more-wrap"><button type="button" class="ms-btn ms-btn-secondary" id="lf-load-more">Show more (' +
-          (visible.length - displayLimit) +
-          " remaining)</button></div>"
+        ? '<div class="ms-lf-more-wrap"><button type="button" class="ms-btn ms-btn-secondary" id="lf-load-more">' +
+          escapeHtml(moreLabel || "Show more") +
+          "</button></div>"
         : "");
 
     observeLeadReveals(resultsEl);
@@ -2073,6 +2207,7 @@
       if (data?.fromCache && paintedFromCache) {
         loader.checkForUpdates?.().catch(() => null);
       }
+      void prefetchRemainingSupabaseLeads();
     } catch (e) {
       console.error(e);
       clearLoadingCards();
@@ -2110,8 +2245,25 @@
     let scrapedFresh = false;
 
     try {
-      const base = leadFinderBaseUrl();
-      if (base) {
+      if (isDbConnected()) {
+        const db = await searchSupabaseLeads(scrapeType, "", websiteFilter);
+        if (db.ok && db.leads?.length) {
+          leads = applyWebsiteFilter(
+            applyNearbyFilterAndSort(db.leads, userCoords, NEARBY_RADIUS_MILES, {
+              trustScrapeRadius: false,
+              includeUnknownDistance: false,
+            }),
+            websiteFilter
+          );
+          mergeScrapedIntoAllLeads(db.leads);
+        } else if (db.reason === "sign_in_required") {
+          remoteError = "Sign in to search Business Finder leads.";
+        } else if (!db.skipped && db.error) {
+          remoteError = db.error;
+        }
+      }
+
+      if (!leads.length && shouldTryLiveScrape()) {
         const scraped = await scrapeViaLeadFinder(scrapeType, "", "", {
           latitude: userCoords.lat,
           longitude: userCoords.lng,
@@ -2188,8 +2340,33 @@
     const websiteFilter = getWebsiteFilter();
 
     const query = buildQuery(searchType, location);
+    if (searchType || location.trim()) {
+      stopPrefetchSupabaseLeads();
+    }
     if (!searchType && !location.trim()) {
-      setError("Enter a business type, a location, or both.");
+      setError("");
+      setStatus("");
+      hideAllSuggests();
+      displayLimit = DISPLAY_PAGE;
+      resetLeadReveals();
+
+      if (!allLeads.length && isDbConnected()) {
+        setFindBusy(true);
+        if (!opts.fromAreaToggle) showLoadingCards();
+        try {
+          await preloadAllLeads();
+        } finally {
+          setFindBusy(false);
+        }
+        return;
+      }
+
+      if (!allLeads.length) {
+        showSearchPrompt();
+        return;
+      }
+
+      renderLeads(rankLeadList(allLeads), "All leads");
       return;
     }
     setError("");
@@ -2206,32 +2383,34 @@
     let scrapedFresh = false;
 
     try {
-      const canScrape = Boolean(leadFinderBaseUrl()) && (searchType || location.trim());
+      if (isDbConnected()) {
+        const db = await searchSupabaseLeads(searchType, location, websiteFilter);
+        if (db.ok && db.leads?.length) {
+          leads = applyWebsiteFilter(db.leads, websiteFilter);
+          mergeScrapedIntoAllLeads(db.leads);
+        } else if (db.reason === "sign_in_required") {
+          remoteError = "Sign in to search Business Finder leads.";
+        } else if (!db.skipped && db.error) {
+          remoteError = db.error;
+          console.warn("Business Finder Supabase search:", remoteError);
+        }
+      }
 
-      if (canScrape) {
+      if (!leads.length && shouldTryLiveScrape() && (searchType || location.trim())) {
         const scraped = await scrapeViaLeadFinder(searchType, location, "", null);
         if (scraped.ok && scraped.leads?.length) {
           scrapedFresh = true;
           leads = applyWebsiteFilter(scraped.leads, websiteFilter);
           mergeScrapedIntoAllLeads(scraped.leads);
-          if (scraped.leads.length < MIN_SEARCH_RESULTS) {
-            console.warn(
-              "LeadFinder returned",
-              scraped.leads.length,
-              "results (target",
-              MIN_SEARCH_RESULTS + ")"
-            );
-          }
         } else if (!scraped.skipped) {
           remoteError = scraped.error || "Live scrape returned no leads";
           console.warn("LeadFinder scrape:", remoteError);
         }
-      } else if (!leadFinderBaseUrl()) {
-        remoteError = "Live search is unavailable. Sign in and try again.";
       }
 
       if (!leads.length && allLeads.length) {
         leads = filterLocalLeads(searchType, location);
+        leads = applyWebsiteFilter(leads, websiteFilter);
       }
 
       setStatus("");
@@ -2418,6 +2597,17 @@
     }
     input.focus();
     input.dispatchEvent(new Event("input", { bubbles: true }));
+    if (
+      !inMyArea &&
+      !typeInput?.value?.trim() &&
+      !locationInput?.value?.trim() &&
+      allLeads.length
+    ) {
+      displayLimit = DISPLAY_PAGE;
+      resetLeadReveals();
+      renderLeads(allLeads, "All leads");
+      setStatus("");
+    }
   }
 
   function bindSuggestField(kind) {
@@ -2551,6 +2741,23 @@
   resultsEl?.addEventListener("click", (e) => {
     if (e.target.closest("#lf-load-more")) {
       e.preventDefault();
+      const visibleCount = Math.min(displayLimit + DISPLAY_PAGE, lastLeads.length);
+      if (displayLimit + DISPLAY_PAGE < lastLeads.length) {
+        displayLimit += DISPLAY_PAGE;
+        refreshVisibleLeads();
+        return;
+      }
+      if (isDbConnected() && window.LeadsLoader?.hasMoreCached?.()) {
+        void loadMoreFromSupabase().then((loaded) => {
+          if (!loaded) {
+            displayLimit += DISPLAY_PAGE;
+            refreshVisibleLeads();
+            return;
+          }
+          void prefetchRemainingSupabaseLeads();
+        });
+        return;
+      }
       displayLimit += DISPLAY_PAGE;
       refreshVisibleLeads();
       return;
@@ -2591,7 +2798,7 @@
     document.querySelectorAll("#lf-tags button").forEach((b) => {
       b.classList.toggle("is-active", b === btn);
     });
-    if (allLeads.length || leadFinderBaseUrl()) findLeads();
+    if (allLeads.length || isDbConnected() || shouldTryLiveScrape()) findLeads();
   });
 
   document.addEventListener("click", (e) => {
@@ -2601,6 +2808,34 @@
 
   let booted = false;
 
+  function initDevNotice() {
+    const notice = document.getElementById("lf-dev-notice");
+    if (!notice) return;
+    try {
+      if (localStorage.getItem(DEV_NOTICE_KEY) === "1") {
+        notice.classList.add("is-hidden");
+        return;
+      }
+    } catch (e) {
+      /* ignore */
+    }
+    const dismiss = () => {
+      notice.classList.add("is-hidden");
+      try {
+        localStorage.setItem(DEV_NOTICE_KEY, "1");
+      } catch (e) {
+        /* ignore */
+      }
+    };
+    notice.addEventListener("click", dismiss);
+    notice.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        dismiss();
+      }
+    });
+  }
+
   function bootLeadsSearch() {
     if (booted || document.body?.dataset?.page !== "leads") return;
     if (isDbConnected()) showLoadingCards();
@@ -2608,6 +2843,7 @@
       if (booted) return;
       booted = true;
       try {
+        initDevNotice();
         renderPopularTags();
         bindSuggestField("type");
         bindSuggestField("location");
@@ -2650,6 +2886,16 @@
   } else {
     bootLeadsSearch();
   }
+
+  window.addEventListener("leads-page-appended", (e) => {
+    if (document.body?.dataset?.page !== "leads") return;
+    const appended = e.detail?.appended;
+    if (!Array.isArray(appended) || !appended.length) return;
+    mergeScrapedIntoAllLeads(appended);
+    if (!typeInput?.value?.trim() && !locationInput?.value?.trim() && !inMyArea) {
+      renderLeads(allLeads, "All leads");
+    }
+  });
 
   window.addEventListener("leads-cache-refreshed", (e) => {
     if (document.body?.dataset?.page !== "leads") return;

@@ -1,10 +1,12 @@
 /**
- * Motion helpers — button press + smooth expand/collapse.
+ * Motion helpers - button press + smooth expand/collapse + page reveals.
  */
 (function (global) {
   const PRESS_CLASS = "is-pressed";
   const PRESS_MS = 420;
-  const EXPAND_MS = 380;
+  const EXPAND_MS = 440;
+  const PANEL_MS = 440;
+  const PANEL_EXIT_MS = 280;
   const SELECTOR = [
     ".ms-btn:not(.ms-btn-secondary):not(.ms-btn-danger):not([disabled])",
     "a.ms-btn:not(.ms-btn-secondary):not(.ms-btn-danger)",
@@ -94,6 +96,52 @@
     });
   }
 
+  function nextFrame() {
+    return new Promise(function (resolve) {
+      global.requestAnimationFrame(function () {
+        resolve();
+      });
+    });
+  }
+
+  function waitForTransition(el, fallbackMs) {
+    if (!el || prefersReducedMotion()) return waitMs(0);
+    return new Promise(function (resolve) {
+      let done = false;
+      const finish = function () {
+        if (done) return;
+        done = true;
+        el.removeEventListener("transitionend", onEnd);
+        global.clearTimeout(timer);
+        resolve();
+      };
+      const onEnd = function (event) {
+        if (event.target !== el) return;
+        if (event.propertyName === "opacity" || event.propertyName === "transform") {
+          finish();
+        }
+      };
+      const timer = global.setTimeout(finish, fallbackMs);
+      el.addEventListener("transitionend", onEnd);
+    });
+  }
+
+  function revealPanel(el) {
+    if (!el) return Promise.resolve();
+    if (prefersReducedMotion()) {
+      el.classList.add("is-visible");
+      return Promise.resolve();
+    }
+    el.classList.remove("is-visible");
+    void el.offsetWidth;
+    return nextFrame().then(function () {
+      return nextFrame().then(function () {
+        el.classList.add("is-visible");
+        return waitForTransition(el, PANEL_MS);
+      });
+    });
+  }
+
   function ensureExpandInner(el) {
     if (!el) return null;
     if (el.classList.contains("ms-expand-inner")) return el;
@@ -146,31 +194,28 @@
       return Promise.resolve();
     }
     el.hidden = false;
-    el.classList.add("ms-panel-anim");
-    el.classList.remove("is-visible");
-    void el.offsetWidth;
-    el.classList.add("is-active", "is-visible");
-    return waitMs(EXPAND_MS);
+    el.classList.add("ms-panel-anim", "is-active");
+    el.classList.remove("is-exiting");
+    return revealPanel(el);
   }
 
   function hidePanel(el) {
     if (!el) return Promise.resolve();
     if (prefersReducedMotion()) {
       el.hidden = true;
-      el.classList.remove("is-active", "is-visible");
+      el.classList.remove("is-active", "is-visible", "is-exiting", "ms-panel-anim");
       return Promise.resolve();
     }
-    el.classList.add("ms-panel-anim");
-    // Ensure we start from a visible state before fading out
+    el.classList.add("ms-panel-anim", "is-exiting");
     if (!el.classList.contains("is-visible") && !el.hidden) {
       el.classList.add("is-visible");
       void el.offsetWidth;
     }
     el.classList.remove("is-visible");
-    return waitMs(260).then(function () {
+    return waitForTransition(el, PANEL_EXIT_MS).then(function () {
       if (!el.classList.contains("is-visible")) {
         el.hidden = true;
-        el.classList.remove("is-active");
+        el.classList.remove("is-active", "is-exiting", "ms-panel-anim");
       }
     });
   }
@@ -256,14 +301,24 @@
     ".ms-legal-wrap > section",
   ];
 
+  let pageMotionStarted = false;
+
   function pageMotionShouldSkip() {
     const body = document.body;
     if (!body) return true;
     if (body.classList.contains("ms-onboard-page")) return true;
-    if (body.classList.contains("ms-page-motion-ready")) return true;
     const page = body.dataset.page || "";
     if (PAGE_MOTION_SKIP.has(page)) return true;
     return prefersReducedMotion();
+  }
+
+  function finishPageMotion() {
+    document.body.classList.add("ms-page-motion-ready");
+    document.querySelectorAll(".ms-motion-item").forEach(function (el) {
+      el.style.removeProperty("will-change");
+    });
+    const sidebar = document.getElementById("ms-sidebar");
+    if (sidebar) sidebar.style.removeProperty("will-change");
   }
 
   function isMotionCandidate(el) {
@@ -296,42 +351,53 @@
   }
 
   function playPageMotion() {
-    if (pageMotionShouldSkip()) return;
-    markPageMotionItems();
+    if (pageMotionShouldSkip()) {
+      finishPageMotion();
+      return;
+    }
+    if (pageMotionStarted) return;
+    pageMotionStarted = true;
 
+    const items = markPageMotionItems();
     const sidebar = document.getElementById("ms-sidebar");
     if (sidebar) sidebar.classList.add("ms-motion-sidebar");
 
-    global.requestAnimationFrame(function () {
-      global.requestAnimationFrame(function () {
-        document.body.classList.add("ms-page-motion-ready");
+    if (!items.length && !sidebar) {
+      finishPageMotion();
+      return;
+    }
+
+    void document.body.offsetWidth;
+    nextFrame()
+      .then(nextFrame)
+      .then(function () {
+        finishPageMotion();
       });
-    });
 
     global.setTimeout(function () {
       if (!document.body.classList.contains("ms-page-motion-ready")) {
-        document.body.classList.add("ms-page-motion-ready");
+        finishPageMotion();
       }
-    }, 1500);
+    }, 1200);
   }
 
   function schedulePageMotion() {
-    if (pageMotionShouldSkip()) return;
+    if (pageMotionShouldSkip()) {
+      finishPageMotion();
+      return;
+    }
 
     const page = document.body?.dataset?.page || "";
     const usesShell = document.getElementById("shell") && !PAGE_MOTION_NO_SHELL.has(page);
 
+    function tryPlay() {
+      if (usesShell && !document.getElementById("ms-sidebar")) return;
+      playPageMotion();
+    }
+
     if (usesShell) {
-      if (document.getElementById("ms-sidebar")) {
-        playPageMotion();
-        return;
-      }
-      document.addEventListener("ms:shell-ready", playPageMotion, { once: true });
-      global.setTimeout(function () {
-        if (!document.body.classList.contains("ms-page-motion-ready")) {
-          playPageMotion();
-        }
-      }, 900);
+      document.addEventListener("ms:shell-ready", tryPlay, { once: true });
+      global.setTimeout(tryPlay, 1200);
       return;
     }
 
@@ -363,6 +429,8 @@
     setOpen: setOpen,
     showPanel: showPanel,
     hidePanel: hidePanel,
+    revealPanel: revealPanel,
+    waitForTransition: waitForTransition,
     prefersReducedMotion: prefersReducedMotion,
     playPageMotion: playPageMotion,
   };

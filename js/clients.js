@@ -1,18 +1,17 @@
 /**
- * My clients — businesses that paid to remove the watermark.
- * Creators see their own paid clients. Site owner (moonrise) sees all,
- * with an Admin badge.
+ * My clients - businesses that paid to remove the watermark.
+ * Creators see their own paid clients. @moonrise sees all accumulated clients.
  */
 (function () {
   const QUERY_MS = 10000;
-  const CLIENTS_CACHE_KEY = "ms_clients_cache_v1";
+  const CLIENTS_CACHE_KEY = "ms_clients_cache_v2";
   const PROJECT_SELECT =
     "id, user_id, business_name, status, watermark_enabled, price_cents, vercel_url, business_context, updated_at, created_at";
 
   let clients = [];
   let searchQuery = "";
   let started = false;
-  let isAdmin = false;
+  let isOwnerView = false;
 
   const $ = (id) => document.getElementById(id);
   const esc = (s) =>
@@ -139,20 +138,18 @@
     };
   }
 
-  function syncAdminChrome() {
-    const tag = $("ms-clients-admin-tag");
+  function syncOwnerChrome() {
     const title = $("ms-clients-section-title");
     const creatorCol = $("ms-clients-creator-col");
     const search = $("ms-clients-search");
-    if (tag) tag.hidden = !isAdmin;
-    if (title) title.textContent = isAdmin ? "All clients" : "Paid clients";
-    if (creatorCol) creatorCol.hidden = !isAdmin;
+    if (title) title.textContent = isOwnerView ? "All clients" : "Paid clients";
+    if (creatorCol) creatorCol.hidden = !isOwnerView;
     if (search) {
-      search.placeholder = isAdmin
+      search.placeholder = isOwnerView
         ? "Search by business, creator, or site…"
         : "Search by business or site…";
     }
-    document.body.classList.toggle("ms-clients-admin", !!isAdmin);
+    document.body.classList.toggle("ms-clients-owner", !!isOwnerView);
   }
 
   function filteredRows() {
@@ -193,7 +190,7 @@
         : "No clients yet";
       empty.querySelector(".ms-clients-empty-desc").textContent = searching
         ? "Try another business name or site."
-        : isAdmin
+        : isOwnerView
           ? "Paid go-live checkouts across Moonrise will show up here."
           : "When a business pays to remove the watermark on a live site, they show up here.";
       empty.hidden = false;
@@ -224,7 +221,7 @@
             : esc(webDisp)
           : emptyCell();
         const paid = formatMoney(row.price_cents);
-        const creatorCell = isAdmin
+        const creatorCell = isOwnerView
           ? "<td>" +
             (row.creator_handle
               ? '<span class="ms-clients-creator">@' + esc(row.creator_handle) + "</span>"
@@ -281,26 +278,36 @@
     }
   }
 
-  function writeClientsCache() {
+  function writeClientsCache(userId) {
     try {
       sessionStorage.setItem(
         CLIENTS_CACHE_KEY,
-        JSON.stringify({ clients, isAdmin, at: Date.now() })
+        JSON.stringify({
+          clients,
+          userId: String(userId || ""),
+          ownerView: !!isOwnerView,
+          at: Date.now(),
+        })
       );
     } catch (_) {
       /* ignore */
     }
   }
 
-  function paintClientsFromCache() {
+  function paintClientsFromCache(currentUserId) {
     try {
       const raw = sessionStorage.getItem(CLIENTS_CACHE_KEY);
       if (!raw) return false;
       const data = JSON.parse(raw);
       if (!Array.isArray(data.clients)) return false;
+      const uid = String(currentUserId || "");
+      if (uid && data.userId && data.userId !== uid) {
+        sessionStorage.removeItem(CLIENTS_CACHE_KEY);
+        return false;
+      }
       clients = data.clients;
-      isAdmin = !!data.isAdmin;
-      syncAdminChrome();
+      isOwnerView = !!data.ownerView;
+      syncOwnerChrome();
       renderClients();
       return true;
     } catch (_) {
@@ -322,8 +329,8 @@
       const user = await window.StudioAuth?.getUser?.();
       if (!user?.id) throw new Error("Sign in to see your clients.");
 
-      isAdmin = !!(await window.StudioOwner?.isSiteOwner?.());
-      syncAdminChrome();
+      isOwnerView = !!(await window.StudioOwner?.isSiteOwner?.());
+      syncOwnerChrome();
 
       let payQuery = sb
         .from("payments")
@@ -331,7 +338,7 @@
         .eq("status", "paid")
         .not("project_id", "is", null)
         .order("created_at", { ascending: false });
-      if (!isAdmin) payQuery = payQuery.eq("user_id", user.id);
+      if (!isOwnerView) payQuery = payQuery.eq("user_id", user.id);
 
       const { data: payments, error: payError } = await withTimeout(
         payQuery,
@@ -352,7 +359,7 @@
         .select(PROJECT_SELECT)
         .or("watermark_enabled.eq.false,status.eq.paid")
         .order("updated_at", { ascending: false });
-      if (!isAdmin) projectQuery = projectQuery.eq("user_id", user.id);
+      if (!isOwnerView) projectQuery = projectQuery.eq("user_id", user.id);
 
       const { data: paidProjects, error: projectError } = await withTimeout(
         projectQuery,
@@ -366,11 +373,10 @@
         if (project?.id) projectsById.set(String(project.id), project);
       });
 
-      // Pull any payment-linked projects that might not match the paid-project filter yet.
       const missingIds = [...paymentByProject.keys()].filter((id) => !projectsById.has(id));
       if (missingIds.length) {
         let extraQuery = sb.from("projects").select(PROJECT_SELECT).in("id", missingIds);
-        if (!isAdmin) extraQuery = extraQuery.eq("user_id", user.id);
+        if (!isOwnerView) extraQuery = extraQuery.eq("user_id", user.id);
         const { data: extraProjects, error: extraError } = await withTimeout(
           extraQuery,
           QUERY_MS,
@@ -382,7 +388,7 @@
         });
       }
 
-      const creatorMap = isAdmin
+      const creatorMap = isOwnerView
         ? await loadCreatorHandles(
             sb,
             [...projectsById.values()].map((p) => p.user_id)
@@ -402,7 +408,7 @@
         .sort((a, b) => String(b.paid_at || "").localeCompare(String(a.paid_at || "")));
 
       renderClients();
-      writeClientsCache();
+      writeClientsCache(user.id);
     } catch (e) {
       clients = [];
       renderClients();
@@ -419,7 +425,7 @@
       const t = String(v ?? "");
       return /[",\n\r]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
     };
-    const cols = isAdmin
+    const cols = isOwnerView
       ? [
           ["business_name", "Business"],
           ["creator_handle", "Creator"],
@@ -454,7 +460,7 @@
     const blob = new Blob([content], { type: "text/csv;charset=utf-8" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = (isAdmin ? "all-clients-" : "my-clients-") + stamp + ".csv";
+    a.download = (isOwnerView ? "all-clients-" : "my-clients-") + stamp + ".csv";
     a.click();
     URL.revokeObjectURL(a.href);
   }
@@ -481,7 +487,9 @@
     if (started) return;
     started = true;
     bindUi();
-    paintClientsFromCache();
+    syncOwnerChrome();
+    const user = await window.StudioAuth?.getUser?.().catch(() => null);
+    paintClientsFromCache(user?.id);
     await loadClients();
   }
 

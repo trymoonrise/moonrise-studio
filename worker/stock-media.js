@@ -1,6 +1,6 @@
 /**
  * Curated stock media for website generation.
- * Uses known-good public CDN URLs (Unsplash + Pexels) — no live scrape mid-generate.
+ * Uses known-good public CDN URLs (Unsplash + Pexels) - no live scrape mid-generate.
  * Pick by business category so aesthetics match the trade.
  *
  * Library: stock-media-library.js (400+ assets across 30 trade packs)
@@ -164,7 +164,7 @@ function catalogStats() {
   };
 }
 
-/** Compact prompt block — absolute URLs only. */
+/** Compact prompt block - absolute URLs only. */
 function formatStockMediaForPrompt(media) {
   if (!media?.images) return "";
   const img = media.images;

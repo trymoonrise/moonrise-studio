@@ -11,7 +11,7 @@
   -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>1759 — Split Tone Grid</title>
+  <title>1759 - Split Tone Grid</title>
   <style>
     @import url('../shared/preset-reset.css');
     *{box-sizing:border-box}body{margin:0;min-height:100vh;padding:2rem;background:#f1eee8;color:#121212;font-family:Inter,system-ui,sans-serif;display:grid;place-items:center}.wrap{width:min(1080px,100%)}h1{margin:0 0 1.25rem;font-size:clamp(2.5rem,7vw,5.8rem);line-height:.85;letter-spacing:-.08em}.grid{display:grid;grid-template-columns:repeat(12,1fr);grid-auto-rows:96px;gap:.75rem}.split{grid-column:span var(--c);grid-row:span var(--r);border-radius:18px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;opacity:0;transform:translateY(26px);animation:up .7s ease forwards;animation-delay:calc(var(--i)*70ms);box-shadow:0 16px 45px rgba(0,0,0,.08)}.split div{padding:1rem;display:flex;align-items:end}.a{background:#111;color:#fff}.b{background:var(--b);color:#111}.split b{font-size:clamp(1rem,2.2vw,1.7rem);letter-spacing:-.05em}.split:hover .a{background:var(--b);color:#111}.split:hover .b{background:#111;color:#fff}.a,.b{transition:background .25s,color .25s}@keyframes up{to{opacity:1;transform:none}}@media(max-width:720px){.grid{grid-template-columns:1fr;grid-auto-rows:130px}.split{grid-column:auto!important;grid-row:span 1!important}}@media(prefers-reduced-motion:reduce){.split{opacity:1;transform:none;animation:none}}

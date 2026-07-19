@@ -3,7 +3,7 @@ import process from "node:process";
 export const DISCORD_BATCH_SIZE = 1000;
 
 /**
- * Text-only Discord ping — no CSV attachments.
+ * Text-only Discord ping - no CSV attachments.
  * Fired once per 1,000 successful Supabase uploads.
  */
 export async function sendDiscordUploadNotice({
@@ -58,7 +58,7 @@ export async function flushUploadNoticesToDiscord({
     sent.push(result);
     remaining -= batchSize;
     console.log(
-      `Discord: notified batch #${batchNumber} — ${batchSize} new leads uploaded to database`,
+      `Discord: notified batch #${batchNumber} - ${batchSize} new leads uploaded to database`,
     );
     batchNumber += 1;
     await new Promise((r) => setTimeout(r, 200));

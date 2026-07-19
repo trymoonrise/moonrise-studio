@@ -289,7 +289,7 @@
         footer = els.previewGrid.querySelector('.grid-footer');
       }
       footer.querySelector('.grid-footer__text').textContent =
-        `Showing ${renderedCount} of ${filteredPresets.length} — scroll for more`;
+        `Showing ${renderedCount} of ${filteredPresets.length} - scroll for more`;
       if (!sentinel) {
         els.previewGrid.insertAdjacentHTML('beforeend', '<div class="grid-sentinel" aria-hidden="true"></div>');
       }
@@ -381,7 +381,7 @@
     els.modalTitle.textContent = p.title;
     els.modalId.textContent = p.id;
     els.modalCat.textContent = formatCategoryLabel(p.category);
-    els.modalFooter.textContent = `${modalIndex + 1} / ${filteredPresets.length} — ${p.title}`;
+    els.modalFooter.textContent = `${modalIndex + 1} / ${filteredPresets.length} - ${p.title}`;
     els.modalOpen.href = PRESETS_BASE + p.file;
     els.modalFrame.dataset.file = p.file;
     loadPreviewFrame(els.modalFrame);

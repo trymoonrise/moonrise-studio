@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="js/auth-gate-head.js?v=20260719-auth-gate"></script>
   <title>Help · Moonrise Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css?v=20260718-help-guide-link">
+  <link rel="stylesheet" href="css/studio.css?v=20260719-help-guide-section">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body data-page="help">
@@ -46,20 +47,6 @@
         <button type="button" class="ms-help-vcard-save" id="help-save-contact">Save Contact</button>
 
         <ul class="ms-help-vcard-links">
-          <li>
-            <a class="ms-help-vcard-link" href="guide.html">
-              <span class="ms-help-vcard-icon ms-help-vcard-icon--guide" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                </svg>
-              </span>
-              <span class="ms-help-vcard-link-text">
-                <strong>Creator guide</strong>
-                <em>How to find leads &amp; get paid</em>
-              </span>
-            </a>
-          </li>
           <li>
             <a class="ms-help-vcard-link" href="tel:+14013000957">
               <span class="ms-help-vcard-icon ms-help-vcard-icon--phone" aria-hidden="true">
@@ -121,6 +108,24 @@
         </ul>
       </div>
     </section>
+
+    <section class="ms-help-guide-section" aria-label="Creator guide">
+      <a class="ms-help-guide-card" href="guide.html">
+        <span class="ms-help-vcard-icon ms-help-vcard-icon--guide" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          </svg>
+        </span>
+        <span class="ms-help-vcard-link-text">
+          <strong>Creator guide</strong>
+          <em>How to find leads &amp; get paid</em>
+        </span>
+        <svg class="ms-help-guide-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="m9 18 6-6-6-6"/>
+        </svg>
+      </a>
+    </section>
   </div>
 
   <script src="js/config.js?v=20260718-api-cloud"></script>
@@ -128,7 +133,7 @@
   <script src="js/supabase-client.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/segment-switch.js"></script>
-  <script src="js/ui-motion.js"></script>
+  <script src="js/ui-motion.js?v=20260719-onb-motion"></script>
   <script src="js/toast.js"></script>
   <script src="js/income.js?v=20260718-income"></script>
   <script src="js/app.js?v=20260718-mobile-nav"></script>

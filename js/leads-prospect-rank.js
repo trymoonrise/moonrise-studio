@@ -1,5 +1,5 @@
 /**
- * Lead prospect ranking — shuffle on each load, float high-fit niches to the top.
+ * Lead prospect ranking - shuffle on each load, float high-fit niches to the top.
  */
 (function (global) {
   const SMART_PROSPECT_CATEGORY_SCORES = {

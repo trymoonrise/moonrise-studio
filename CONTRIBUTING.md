@@ -30,7 +30,7 @@ Good feature requests usually answer:
 
 Moonrise Studio is an active product. Not every suggestion can be accepted, but thoughtful feedback is welcome.
 
-If you are proposing a change, keep the focus on the user experience and business outcome — not deep implementation details unless asked.
+If you are proposing a change, keep the focus on the user experience and business outcome - not deep implementation details unless asked.
 
 ## Conduct
 

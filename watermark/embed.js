@@ -1,5 +1,5 @@
 /**
- * Moonrise floating watermark — from watermark/moonrise-watermark.html
+ * Moonrise floating watermark - from watermark/moonrise-watermark.html
  *
  * Usage on live sites:
  *   <script src="…/embed.js"
@@ -16,6 +16,17 @@
   const SITE_URL = "https://trymoonrise.com";
   const STYLE_ID = "mr-wm-embed-style";
   const DEFAULT_URGENCY_MS = 96 * 3600000;
+  const DEFAULT_HQ = {
+    kind: "hq",
+    name: "Moonrise",
+    org: "Moonrise Studio",
+    subtitle: "Headquarters · trymoonrise.com",
+    email: "trymoonrise@gmail.com",
+    phone: "+14013000957",
+    phoneDisplay: "(401) 300-0957",
+    url: "https://trymoonrise.com",
+    discordUrl: "https://discord.gg/yFJajbBNj",
+  };
 
   let timerId = null;
   let keydownBound = false;
@@ -59,6 +70,35 @@
 .mr-wm-error{margin:0;color:#b91c1c;font-size:.85rem;font-weight:600;line-height:1.4}
 .mr-wm-contact-btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;min-height:2.85rem;padding:.65rem 1rem;border:1px solid var(--mr-line,#e8edf3);border-radius:12px;background:#fff;color:var(--mr-ink,#0f172a);font:inherit;font-family:var(--mr-font);font-size:.92rem;font-weight:650;letter-spacing:-.01em;text-decoration:none;text-align:center;transition:border-color .15s ease,background .15s ease,color .15s ease}
 .mr-wm-contact-btn:hover{border-color:#bfdbfe;background:#f8fbff;color:#1d4ed8}
+.mr-wm-contact-btn--primary{background:linear-gradient(180deg,rgba(255,255,255,.18) 0%,rgba(255,255,255,0) 42%),linear-gradient(135deg,#60a5fa 0%,#3b82f6 48%,#2563eb 100%);border-color:rgba(255,255,255,.18);color:#fff;box-shadow:0 8px 18px rgba(37,99,235,.24)}
+.mr-wm-contact-btn--primary:hover{filter:brightness(1.03);color:#fff;background:linear-gradient(180deg,rgba(255,255,255,.22) 0%,rgba(255,255,255,0) 42%),linear-gradient(135deg,#60a5fa 0%,#3b82f6 48%,#2563eb 100%)}
+.mr-wm-contact-btn--hq{align-self:start;width:auto;min-height:2rem;padding:.42rem .72rem;font-size:.78rem;font-weight:600;border-radius:10px;color:#64748b}
+.mr-wm-contact-btn--hq:hover{color:#1d4ed8;background:#f8fafc}
+.mr-wm-contacts{display:grid;gap:.55rem}
+.mr-wm-contacts-label{margin:0;font-size:.78rem;font-weight:650;letter-spacing:.04em;text-transform:uppercase;color:#94a3b8}
+.mr-wm-step[hidden]{display:none!important}
+.mr-wm-vcard{display:grid;gap:.85rem}
+.mr-wm-vcard-back{appearance:none;border:0;background:transparent;color:#64748b;font:inherit;font-size:.82rem;font-weight:600;cursor:pointer;padding:0;text-align:left}
+.mr-wm-vcard-back:hover{color:#2563eb}
+.mr-wm-vcard-card{border:1px solid var(--mr-line,#e8edf3);border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 10px 24px rgba(15,23,42,.06)}
+.mr-wm-vcard-hero{height:4.5rem;background:linear-gradient(135deg,#dbeafe 0%,#eff6ff 55%,#f8fafc 100%)}
+.mr-wm-vcard-body{padding:0 1rem 1rem;display:grid;gap:.85rem;margin-top:-2.1rem}
+.mr-wm-vcard-top{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding-top:.15rem}
+.mr-wm-vcard-brand{font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#64748b}
+.mr-wm-vcard-avatar{width:4.5rem;height:4.5rem;border-radius:16px;display:grid;place-items:center;background:#fff;border:3px solid #fff;box-shadow:0 8px 18px rgba(15,23,42,.12);overflow:hidden;font-size:1.15rem;font-weight:700;color:#2563eb}
+.mr-wm-vcard-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.mr-wm-vcard-name{margin:0;font-size:1.35rem;font-weight:700;letter-spacing:-.03em;color:var(--mr-ink,#0f172a)}
+.mr-wm-vcard-role{margin:.2rem 0 0;color:var(--mr-muted,#64748b);font-size:.88rem;line-height:1.4}
+.mr-wm-vcard-save{appearance:none;display:inline-flex;align-items:center;justify-content:center;min-height:2.75rem;border:0;border-radius:12px;background:#0f172a;color:#fff;font:inherit;font-size:.92rem;font-weight:650;cursor:pointer}
+.mr-wm-vcard-save:hover{filter:brightness(1.06)}
+.mr-wm-vcard-links{list-style:none;margin:0;padding:0;display:grid;gap:.55rem}
+.mr-wm-vcard-link{display:flex;align-items:center;gap:.75rem;padding:.75rem .85rem;border:1px solid var(--mr-line,#e8edf3);border-radius:12px;text-decoration:none;color:var(--mr-ink,#0f172a);background:#fff;transition:border-color .15s ease,background .15s ease}
+.mr-wm-vcard-link:hover{border-color:#bfdbfe;background:#f8fbff}
+.mr-wm-vcard-icon{width:2.65rem;height:2.65rem;border-radius:.85rem;overflow:hidden;flex-shrink:0;background:#f8fafc}
+.mr-wm-vcard-icon img{width:100%;height:100%;object-fit:cover;display:block}
+.mr-wm-vcard-link-text{display:grid;gap:.08rem;min-width:0}
+.mr-wm-vcard-link-text strong{font-size:.88rem;font-weight:700}
+.mr-wm-vcard-link-text em{font-style:normal;font-size:.78rem;color:var(--mr-muted,#64748b);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mr-wm-faq{display:grid;gap:0;margin:.15rem 0 0;border-top:1px solid var(--mr-line,#e8edf3)}
 .mr-wm-faq details{border:0;border-bottom:1px solid var(--mr-line,#e8edf3);background:transparent}
 .mr-wm-faq summary{list-style:none;cursor:pointer;padding:.85rem 0;font-size:.9rem;font-weight:600;color:var(--mr-ink,#0f172a);display:flex;align-items:center;justify-content:space-between;gap:.75rem}
@@ -92,6 +132,142 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
     return studioBaseUrl(workerUrl) + "/contact.html";
   }
 
+  function creatorContactPageUrl(workerUrl, projectId) {
+    const base = studioBaseUrl(workerUrl);
+    const id = String(projectId || "").trim();
+    return id ? base + "/creator-contact.html?project=" + encodeURIComponent(id) : base + "/contact.html";
+  }
+
+  function decodeContactPayload(raw) {
+    const token = String(raw || "").trim();
+    if (!token) return null;
+    try {
+      const padded = token.replace(/-/g, "+").replace(/_/g, "/");
+      const pad = padded.length % 4 ? "=".repeat(4 - (padded.length % 4)) : "";
+      const json = decodeURIComponent(
+        Array.prototype.map
+          .call(atob(padded + pad), (c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+          .join("")
+      );
+      const parsed = JSON.parse(json);
+      return parsed && typeof parsed === "object" ? parsed : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function readContactFromScript(script, attr) {
+    if (!script) return null;
+    return decodeContactPayload(script.getAttribute(attr));
+  }
+
+  function contactInitials(name) {
+    const parts = String(name || "")
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+    if (!parts.length) return "CR";
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+
+  function escapeHtml(value) {
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function buildVcardHtml(contact, assetsBase, options) {
+    const c = contact || {};
+    const isHq = c.kind === "hq";
+    const name = escapeHtml(c.name || (isHq ? "Moonrise" : "Creator"));
+    const subtitle = escapeHtml(c.subtitle || (isHq ? "Headquarters" : "Website creator"));
+    const email = String(c.email || "").trim();
+    const phone = String(c.phone || "").trim();
+    const phoneDisplay = escapeHtml(c.phoneDisplay || phone);
+    const avatarHtml = isHq
+      ? '<img src="' + escapeHtml(assetsBase + "/doc/MoonriseLogo.png") + '" alt="" width="72" height="72">'
+      : escapeHtml(contactInitials(c.name));
+    const brand = isHq ? "moonrise" : "creator";
+    const links = [];
+    if (phone) {
+      links.push(
+        '<li><a class="mr-wm-vcard-link" href="tel:' +
+          escapeHtml(phone.replace(/\s/g, "")) +
+          '"><span class="mr-wm-vcard-icon"><img src="' +
+          escapeHtml(assetsBase + "/doc/iMessages.jpg") +
+          '" alt="" width="46" height="46"></span><span class="mr-wm-vcard-link-text"><strong>Number</strong><em>' +
+          phoneDisplay +
+          "</em></span></a></li>"
+      );
+    }
+    if (email) {
+      links.push(
+        '<li><a class="mr-wm-vcard-link" href="mailto:' +
+          escapeHtml(email) +
+          '"><span class="mr-wm-vcard-icon"><img src="' +
+          escapeHtml(assetsBase + "/doc/Gmail.jpg") +
+          '" alt="" width="46" height="46"></span><span class="mr-wm-vcard-link-text"><strong>Email</strong><em>' +
+          escapeHtml(email) +
+          "</em></span></a></li>"
+      );
+    }
+    if (isHq && c.discordUrl) {
+      links.push(
+        '<li><a class="mr-wm-vcard-link" href="' +
+          escapeHtml(c.discordUrl) +
+          '" target="_blank" rel="noopener noreferrer"><span class="mr-wm-vcard-icon"><img src="' +
+          escapeHtml(assetsBase + "/doc/Discord.jpg") +
+          '" alt="" width="46" height="46"></span><span class="mr-wm-vcard-link-text"><strong>Discord</strong><em>Join the community</em></span></a></li>'
+      );
+    }
+    const openPage =
+      options && options.pageUrl
+        ? '<a class="mr-wm-contact-btn" href="' +
+          escapeHtml(options.pageUrl) +
+          '" target="_blank" rel="noopener noreferrer">Open full contact card</a>'
+        : "";
+    return (
+      '<div class="mr-wm-vcard">' +
+      '<button type="button" class="mr-wm-vcard-back" data-mr-vcard-back>← Back</button>' +
+      '<div class="mr-wm-vcard-card">' +
+      '<div class="mr-wm-vcard-hero" aria-hidden="true"></div>' +
+      '<div class="mr-wm-vcard-body">' +
+      '<div class="mr-wm-vcard-top"><span class="mr-wm-vcard-brand">' +
+      brand +
+      "</span></div>" +
+      '<div class="mr-wm-vcard-avatar">' +
+      avatarHtml +
+      "</div>" +
+      "<h3 class=\"mr-wm-vcard-name\">" +
+      name +
+      "</h3>" +
+      '<p class="mr-wm-vcard-role">' +
+      subtitle +
+      "</p>" +
+      '<button type="button" class="mr-wm-vcard-save" data-mr-vcard-save>Save Contact</button>' +
+      '<ul class="mr-wm-vcard-links">' +
+      links.join("") +
+      "</ul>" +
+      openPage +
+      "</div></div></div>"
+    );
+  }
+
+  function buildVcardFile(contact) {
+    const c = contact || {};
+    const lines = ["BEGIN:VCARD", "VERSION:3.0", "FN:" + String(c.name || "Contact")];
+    if (c.org) lines.push("ORG:" + c.org);
+    if (c.subtitle) lines.push("TITLE:" + c.subtitle);
+    if (c.phone) lines.push("TEL;TYPE=CELL,VOICE:" + c.phone);
+    if (c.email) lines.push("EMAIL;TYPE=INTERNET:" + c.email);
+    if (c.url) lines.push("URL:" + c.url);
+    lines.push("END:VCARD");
+    return lines.join("\r\n");
+  }
+
   function faqHtml() {
     const wrap = (q, a) =>
       "<details><summary>" +
@@ -102,7 +278,7 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
     return [
       wrap(
         "What is this?",
-        "This is a Moonrise website preview. The watermark stays until you complete checkout — then it comes off and the site stays live."
+        "This is a Moonrise website preview. The watermark stays until you complete checkout - then it comes off and the site stays live."
       ),
       wrap(
         "What do I get?",
@@ -114,27 +290,40 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
       ),
       wrap(
         "Need changes?",
-        'Message <a href="mailto:trymoonrise@gmail.com">Moonrise</a> for photos, hours, services, colors, redesigns, and more.'
+        "Contact your website creator first for photos, hours, services, and quick edits. Reach Moonrise headquarters for billing, hosting, and platform support."
       ),
     ].join("");
   }
 
-  function panelBodyHtml(contactHref) {
+  function panelBodyHtml(creatorContact, hqContact, workerUrl, projectId) {
+    const creatorName = String(creatorContact?.name || "your creator").trim();
+    const creatorBtn = creatorContact
+      ? '<button type="button" class="mr-wm-contact-btn mr-wm-contact-btn--primary" id="mr-wm-contact-creator">Contact ' +
+        escapeHtml(creatorName) +
+        "</button>"
+      : "";
+    const hqBtn =
+      '<button type="button" class="mr-wm-contact-btn mr-wm-contact-btn--hq" id="mr-wm-contact-hq">Contact Moonrise HQ</button>';
     return (
-      '<div class="mr-wm-body">' +
-      '<p class="mr-wm-lead">This is your new website preview. Go live to remove the watermark and share your link with customers.</p>' +
+      '<div class="mr-wm-body" id="mr-wm-body">' +
+      '<div class="mr-wm-step is-active" data-step="main">' +
       '<div class="mr-wm-offer">' +
       '<p class="mr-wm-timer" id="mr-wm-timer" aria-live="polite"></p>' +
       '<button type="button" class="mr-wm-pay" id="mr-wm-pay">Unlock site</button>' +
       '<p class="mr-wm-error" id="mr-wm-error" hidden></p>' +
       '<p class="mr-wm-note">Secure Stripe checkout · hosting included</p>' +
       "</div>" +
-      '<a class="mr-wm-contact-btn" id="mr-wm-contact" href="' +
-      contactHref.replace(/"/g, "&quot;") +
-      '" target="_blank" rel="noopener noreferrer">Contact Moonrise</a>' +
+      '<div class="mr-wm-contacts">' +
+      '<p class="mr-wm-contacts-label">Need a site change?</p>' +
+      creatorBtn +
+      hqBtn +
+      "</div>" +
       '<div class="mr-wm-faq" id="mr-wm-faq">' +
       faqHtml() +
-      "</div></div>"
+      "</div></div>" +
+      '<div class="mr-wm-step" data-step="creator" hidden id="mr-wm-step-creator"></div>' +
+      '<div class="mr-wm-step" data-step="hq" hidden id="mr-wm-step-hq"></div>' +
+      "</div>"
     );
   }
 
@@ -246,6 +435,57 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
     document.getElementById("mr-wm-root")?.remove();
   }
 
+  function bindContactSteps(root, creatorContact, hqContact, workerUrl, projectId) {
+    if (!root) return;
+    const assetsBase = studioBaseUrl(workerUrl);
+    const steps = {
+      main: root.querySelector('[data-step="main"]'),
+      creator: root.querySelector('[data-step="creator"]'),
+      hq: root.querySelector('[data-step="hq"]'),
+    };
+
+    function showStep(name) {
+      Object.entries(steps).forEach(([key, el]) => {
+        if (!el) return;
+        const active = key === name;
+        el.hidden = !active;
+        el.classList.toggle("is-active", active);
+      });
+    }
+
+    function bindVcard(stepEl, contact, pageUrl) {
+      if (!stepEl || !contact) return;
+      stepEl.innerHTML = buildVcardHtml(contact, assetsBase, { pageUrl });
+      stepEl.querySelector("[data-mr-vcard-back]")?.addEventListener("click", () => showStep("main"));
+      stepEl.querySelector("[data-mr-vcard-save]")?.addEventListener("click", () => {
+        const blob = new Blob([buildVcardFile(contact)], { type: "text/vcard;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = (String(contact.name || "contact").replace(/[^\w\-]+/g, "-") || "contact") + ".vcf";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      });
+    }
+
+    bindVcard(
+      steps.creator,
+      creatorContact,
+      creatorContactPageUrl(workerUrl, projectId)
+    );
+    bindVcard(steps.hq, hqContact, contactPageUrl(workerUrl));
+
+    root.querySelector("#mr-wm-contact-creator")?.addEventListener("click", () => {
+      if (!creatorContact) return;
+      showStep("creator");
+    });
+    root.querySelector("#mr-wm-contact-hq")?.addEventListener("click", () => {
+      showStep("hq");
+    });
+  }
+
   function mount(opts) {
     opts = opts || {};
     unmount();
@@ -258,6 +498,9 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
     const paymentLink = String(opts.paymentLink || "").trim();
     const host = opts.host || null;
     const urgencyEndsAt = resolveUrgencyEndsAt(opts.urgencyEndsAt);
+    const creatorContact = opts.creatorContact || null;
+    const hqContact = { ...DEFAULT_HQ, ...(opts.hqContact || {}) };
+    const chipHidden = opts.chipHidden === true;
 
     const chipRoot = document.createElement("div");
     chipRoot.id = "mr-wm-chip-root";
@@ -282,9 +525,9 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
       AVATAR +
       '" alt="" width="40" height="40" />' +
       '<div><h2 id="mr-wm-title">Unlock your website</h2>' +
-      '<p id="mr-wm-subtitle">Preview only — complete checkout to go live.</p></div>' +
+      '<p id="mr-wm-subtitle">Watermark removed automatically after payment. This is a preview of your new website. Go live today and start sharing your link with customers.</p></div>' +
       '<button type="button" class="mr-wm-close" id="mr-wm-close" aria-label="Close">×</button></header>' +
-      panelBodyHtml(contactPageUrl(workerUrl)) +
+      panelBodyHtml(creatorContact, hqContact, workerUrl, projectId) +
       "</div></div>";
 
     const chipParent = host || document.body;
@@ -299,6 +542,14 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
     const payBtn = document.getElementById("mr-wm-pay");
     const errEl = document.getElementById("mr-wm-error");
     const timerEl = document.getElementById("mr-wm-timer");
+
+    if (chipHidden) {
+      chip?.classList.add("is-hidden");
+    }
+
+    function revealChipIfAllowed() {
+      if (!chipHidden) chip?.classList.remove("is-hidden");
+    }
 
     function tickTimer() {
       if (timerEl) timerEl.textContent = formatRemaining(urgencyEndsAt);
@@ -321,13 +572,19 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
     }
 
     function closePanel() {
-      chip?.classList.remove("is-hidden");
+      revealChipIfAllowed();
       document.body.classList.remove("mr-wm-open");
       overlayRoot.removeAttribute("data-open");
       overlay.classList.remove("is-open");
       overlay.setAttribute("aria-hidden", "true");
       document.body.style.overflow = "";
       stopTimer();
+      const body = document.getElementById("mr-wm-body");
+      body?.querySelectorAll(".mr-wm-step").forEach((step) => {
+        const isMain = step.getAttribute("data-step") === "main";
+        step.hidden = !isMain;
+        step.classList.toggle("is-active", isMain);
+      });
     }
 
     function showError(msg) {
@@ -355,6 +612,13 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
     }
 
     bindExclusiveFaq(document.getElementById("mr-wm-faq"));
+    bindContactSteps(
+      document.getElementById("mr-wm-body"),
+      creatorContact,
+      hqContact,
+      workerUrl,
+      projectId
+    );
     tickTimer();
 
     payBtn?.addEventListener("click", async () => {
@@ -451,7 +715,7 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
   }
 
   function autoMountFromScript() {
-    // Capture at parse time — document.currentScript is null inside deferred
+    // Capture at parse time - document.currentScript is null inside deferred
     // callbacks / DOMContentLoaded, which is how live sites load this file.
     const script =
       bootScriptEl ||
@@ -461,6 +725,8 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
     const projectId = script.getAttribute("data-project-id") || "";
     if (!projectId) return;
     const workerUrl = script.getAttribute("data-worker") || "";
+    const creatorContact = readContactFromScript(script, "data-creator-contact");
+    const hqContact = readContactFromScript(script, "data-hq-contact") || DEFAULT_HQ;
     void fulfillPaidReturn(projectId, workerUrl).then((handled) => {
       if (handled) return;
       mount({
@@ -468,6 +734,8 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
         workerUrl,
         paymentLink: script.getAttribute("data-payment-link") || "",
         urgencyEndsAt: script.getAttribute("data-urgency-ends-at") || "",
+        creatorContact,
+        hqContact,
       });
     });
   }

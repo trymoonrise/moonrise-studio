@@ -12,7 +12,7 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/** Runs inside the browser via page.evaluate — keep self-contained. */
+/** Runs inside the browser via page.evaluate - keep self-contained. */
 export function scrapeGoogleMapsPlaceInBrowser(payload) {
   const mapsUrl = typeof payload === "string" ? payload : String(payload?.mapsUrl || "");
   const knownName = typeof payload === "string" ? "" : String(payload?.knownName || "");
@@ -133,17 +133,61 @@ export function scrapeGoogleMapsPlaceInBrowser(payload) {
     return false;
   }
 
+  /** Extract https URL from Maps label text like "pelvicsanity.com" or "Website: pelvicsanity.com". */
+  function websiteUrlFromLabelText(value) {
+    let text = cleanLabel(String(value || ""), ["Website", "Open website", "Visit website"]);
+    text = text.replace(/^https?:\/\//i, "").replace(/^www\./i, "").trim();
+    if (!text) return "";
+    if (!/^[a-z0-9][-a-z0-9]*(?:\.[a-z0-9][-a-z0-9]*)+\.[a-z]{2,}(?:[/?#].*)?$/i.test(text)) {
+      return "";
+    }
+    const normalized = absoluteUrl("https://" + text.split(/[/?#]/)[0]);
+    if (!normalized || isMapsOrGoogleHost(normalized)) return "";
+    return normalized;
+  }
+
+  function websiteFromAuthorityNode(node) {
+    if (!node) return "";
+
+    const directHref = unwrapGoogleRedirect(node.getAttribute("href") || "");
+    if (directHref && /^https?:/i.test(directHref) && !isMapsOrGoogleHost(directHref)) {
+      return directHref;
+    }
+
+    const childAnchor = node.querySelector?.('a[href]:not([href^="tel:"])');
+    if (childAnchor) {
+      const childHref = unwrapGoogleRedirect(childAnchor.getAttribute("href") || "");
+      if (childHref && /^https?:/i.test(childHref) && !isMapsOrGoogleHost(childHref)) {
+        return childHref;
+      }
+    }
+
+    const fromAria = websiteUrlFromLabelText(node.getAttribute("aria-label") || "");
+    if (fromAria) return fromAria;
+
+    const fromTooltip = websiteUrlFromLabelText(node.getAttribute("data-tooltip") || "");
+    if (fromTooltip) return fromTooltip;
+
+    const fromValue = websiteUrlFromLabelText(node.getAttribute("data-value") || "");
+    if (fromValue) return fromValue;
+
+    const fromIo = websiteUrlFromLabelText(textOf(node.querySelector(".Io6YTe") || node));
+    if (fromIo) return fromIo;
+
+    return "";
+  }
+
   /**
    * Strict official Website row only.
    * Ignores Appointments / Services / Booking / Menu / Order links that also show domains.
    */
   function firstOfficialWebsiteUrl() {
     const authorityNodes = document.querySelectorAll(
-      'a[data-item-id="authority"][href], a[data-item-id^="authority"][href]',
+      '[data-item-id="authority"], [data-item-id^="authority"]',
     );
     for (const node of authorityNodes) {
-      const href = unwrapGoogleRedirect(node.getAttribute("href") || "");
-      if (href && /^https?:/i.test(href) && !isMapsOrGoogleHost(href)) return href;
+      const href = websiteFromAuthorityNode(node);
+      if (href) return href;
     }
 
     const labeledSelectors = [
@@ -159,7 +203,7 @@ export function scrapeGoogleMapsPlaceInBrowser(payload) {
       for (const node of document.querySelectorAll(selector)) {
         const label = linkLabel(node);
         if (/add(\s+place'?s)?\s+website/i.test(label)) continue;
-        // lcr4fd can appear on non-website actions — require website cue unless authority already matched above
+        // lcr4fd can appear on non-website actions - require website cue unless authority already matched above
         if (selector === "a.lcr4fd[href]" && !/\bwebsite\b|authority/i.test(label)) continue;
         const href = unwrapGoogleRedirect(node.getAttribute("href") || "");
         if (href && /^https?:/i.test(href) && !isMapsOrGoogleHost(href)) return href;
@@ -346,7 +390,7 @@ export function scrapeGoogleMapsPlaceInBrowser(payload) {
     // Force lazy rows (Website / Add website) to mount on dense listings.
     await scrollPlaceDetails();
 
-    // Do NOT stop early just because phone/address exist — wait for website decision.
+    // Do NOT stop early just because phone/address exist - wait for website decision.
     let decision = websiteDecision();
     for (let i = 0; i < 45; i += 1) {
       if (decision.status === "has" || decision.status === "missing") break;
@@ -455,8 +499,7 @@ export async function scrapeMapsPlace(page, mapsUrl, cfg, knownName = "") {
   await page
     .waitForSelector(
       [
-        "a[data-item-id='authority']",
-        "a[data-item-id^='authority']",
+        "[data-item-id='authority']",
         "a[aria-label^='Website' i]",
         "a[data-tooltip='Open website']",
         "button[data-item-id^='phone']",

@@ -1,4 +1,4 @@
-/* Premium onboarding — compact single-card layout (loads after studio.css) */
+/* Premium onboarding - compact single-card layout (loads after studio.css) */
 
 :root {
   --onb-ease-soft: cubic-bezier(0.16, 1, 0.3, 1);
@@ -102,6 +102,40 @@ body.ms-onboard-page.is-transitioning .ms-onboard-bg {
   justify-content: space-between;
   gap: 0.75rem;
   margin-bottom: 0.65rem;
+}
+
+.ms-onboard-card-head-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-shrink: 0;
+}
+
+.ms-onboard-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: #fff;
+  color: #64748b;
+  text-decoration: none;
+  font-size: 0.74rem;
+  font-weight: 650;
+  white-space: nowrap;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease,
+    transform 0.2s var(--onb-ease-out);
+}
+
+.ms-onboard-home:hover {
+  color: #334155;
+  border-color: rgba(100, 116, 139, 0.35);
+  background: #f8fafc;
+  transform: translateY(-1px);
 }
 
 .ms-onboard-brand {
@@ -293,6 +327,30 @@ body.ms-onboard-page.is-transitioning .ms-onboard-bg {
   margin-bottom: 0.25rem;
 }
 
+.ms-onboard-panel-head--celebrate {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.5rem;
+}
+
+.ms-onboard-panel-head--stripe {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+
+.ms-onboard-panel-head--stripe h1 {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ms-onboard-panel-head--celebrate h1 {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
 .ms-onboard-panel h1 {
   margin: 0;
   font-size: clamp(1.35rem, 4vw, 1.55rem);
@@ -309,14 +367,13 @@ body.ms-onboard-page.is-transitioning .ms-onboard-bg {
   color: #64748b;
 }
 
-/* Content reveal — soft blur + rise (panel crossfade handles step shell) */
+/* Content reveal - soft blur + rise (panel crossfade handles step shell) */
 .ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-lead,
 .ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-creator-policy-notice,
 .ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-check,
 .ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-form-block,
 .ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-chip-label,
 .ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-chips,
-.ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onb-celebrate-mark,
 .ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onb-celebrate-video,
 .ms-onboard-panel.is-active.is-visible > .ms-onboard-actions {
   opacity: 0;
@@ -329,7 +386,8 @@ body.ms-onboard-page.is-transitioning .ms-onboard-bg {
 
 .ms-onboard-panel.is-active:not(.is-visible) .ms-onboard-panel-scroll > *,
 .ms-onboard-panel.is-active:not(.is-visible) > .ms-onboard-actions,
-.ms-onboard-panel.is-active:not(.is-visible) .ms-onboard-panel-head h1 {
+.ms-onboard-panel.is-active:not(.is-visible) .ms-onboard-panel-head h1,
+.ms-onboard-panel.is-active:not(.is-visible) .ms-onboard-panel-head .ms-onboard-stripe-partner {
   opacity: 1;
   transform: none;
   filter: none;
@@ -343,13 +401,18 @@ body.ms-onboard-page.is-transitioning .ms-onboard-bg {
   animation: none;
 }
 
-.ms-onboard-panel.is-active.is-visible .ms-onboard-panel-head h1 {
+.ms-onboard-panel.is-active.is-visible .ms-onboard-panel-head h1,
+.ms-onboard-panel.is-active.is-visible .ms-onboard-panel-head .ms-onboard-stripe-partner {
   opacity: 0;
   transform: translate3d(0, 10px, 0);
   filter: blur(var(--onb-blur-content));
   animation: ms-onb-soft-in var(--onb-dur-med) var(--onb-ease-soft) forwards;
   animation-delay: calc(var(--onb-content-base-delay) + 0.03s);
   backface-visibility: hidden;
+}
+
+.ms-onboard-panel.is-active.is-visible .ms-onboard-panel-head .ms-onboard-stripe-partner {
+  animation-delay: calc(var(--onb-content-base-delay) + 0.06s);
 }
 
 .ms-onboard-panel.is-active.is-visible .ms-onboard-panel-scroll > .ms-onboard-lead { --onb-stagger: 0.05s; }
@@ -385,13 +448,13 @@ body.ms-onboard-page.is-transitioning .ms-onboard-bg {
   animation-delay: calc(var(--onb-content-base-delay) + 0.13s);
 }
 
-/* Compact path grid — flip cards */
+/* Compact path grid - flip cards */
 .ms-onboard-panel--path .ms-onboard-path.ms-onboard-path--flip {
-  --onb-path-num: 1.35rem;
-  --onb-flip-h: 5.75rem;
+  --onb-path-num: 1.2rem;
+  --onb-flip-h: 3.65rem;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.55rem 0.65rem;
+  gap: 0.4rem 0.55rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -450,16 +513,19 @@ body.ms-onboard-page.is-transitioning .ms-onboard-bg {
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  gap: 0.35rem;
-  padding: 0.65rem 0.75rem;
+  gap: 0.2rem;
+  padding: 0.45rem 0.6rem;
   border: 1px solid #e8edf3;
-  border-radius: 12px;
+  border-radius: 10px;
   background: #f8fafc;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
 
 .ms-onboard-flip-card-front {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.45rem;
   transform: rotateY(0deg);
 }
 
@@ -472,7 +538,7 @@ body.ms-onboard-page.is-transitioning .ms-onboard-bg {
 .ms-onboard-panel--path .ms-onboard-path--flip .ms-onboard-path-num {
   width: var(--onb-path-num);
   height: var(--onb-path-num);
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   border-width: 1.5px;
   box-shadow: none;
   flex: none;
@@ -482,17 +548,17 @@ body.ms-onboard-page.is-transitioning .ms-onboard-bg {
   display: block;
   margin: 0;
   color: #0f172a;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: -0.02em;
-  line-height: 1.25;
+  line-height: 1.2;
 }
 
 .ms-onboard-flip-card-back p {
   margin: 0;
   color: #475569;
-  font-size: 0.76rem;
-  line-height: 1.4;
+  font-size: 0.72rem;
+  line-height: 1.35;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -793,20 +859,224 @@ body.ms-onboard-page.is-transitioning .ms-onboard-bg {
 }
 
 .ms-onb-celebrate-mark {
-  width: 2.75rem;
-  height: 2.75rem;
-  margin-bottom: 0.65rem;
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin: 0;
 }
 
-.ms-onb-celebrate-mark svg {
-  width: 1.35rem;
-  height: 1.35rem;
+.ms-onboard-panel--celebrate .ms-onb-celebrate-mark svg {
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 .ms-onboard-panel--celebrate .ms-onb-celebrate-video {
   width: 100%;
   max-width: none;
   margin: 0.85rem 0 0.15rem;
+}
+
+/* Payout method picker */
+.ms-payout-picker {
+  position: relative;
+}
+
+.ms-payout-picker-trigger {
+  appearance: none;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 3rem;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+  color: #0f172a;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.ms-payout-picker-trigger:hover {
+  border-color: #cbd5e1;
+  background: #fff;
+}
+
+.ms-payout-picker.is-open .ms-payout-picker-trigger,
+.ms-payout-picker-trigger:focus-visible {
+  outline: none;
+  border-color: color-mix(in srgb, var(--ms-accent, #2563eb) 55%, #e2e8f0);
+  background: #fff;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ms-accent, #2563eb) 14%, transparent);
+}
+
+.ms-payout-picker-empty {
+  flex: 1 1 auto;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.ms-payout-picker-empty[hidden],
+.ms-payout-picker-selected[hidden] {
+  display: none !important;
+}
+
+.ms-payout-picker-selected {
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.ms-payout-picker-selected:not([hidden]) {
+  display: inline-flex;
+}
+
+.ms-payout-picker-logo {
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.ms-payout-picker-logo:not([src]),
+.ms-payout-picker-logo[src=""] {
+  display: none;
+}
+
+.ms-payout-picker-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ms-payout-picker-chevron {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-left: auto;
+  color: #94a3b8;
+  transition: transform 0.18s ease;
+}
+
+.ms-payout-picker.is-open .ms-payout-picker-chevron {
+  transform: rotate(180deg);
+}
+
+.ms-payout-picker-menu {
+  position: absolute;
+  top: calc(100% + 0.45rem);
+  left: 0;
+  right: 0;
+  z-index: 45;
+  max-height: min(17rem, 42vh);
+  overflow: auto;
+  padding: 0.4rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow:
+    0 18px 40px rgba(15, 23, 42, 0.12),
+    0 0 0 1px rgba(15, 23, 42, 0.03);
+  animation: ms-payout-picker-in 0.16s ease;
+}
+
+@keyframes ms-payout-picker-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ms-payout-picker-option {
+  appearance: none;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.62rem 0.7rem;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: transparent;
+  color: #0f172a;
+  font: inherit;
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease, transform 0.12s ease;
+}
+
+.ms-payout-picker-option:hover,
+.ms-payout-picker-option:focus-visible {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  outline: none;
+}
+
+.ms-payout-picker-option.is-selected {
+  background: linear-gradient(145deg, #eff6ff 0%, #f8fafc 100%);
+  border-color: #bfdbfe;
+}
+
+.ms-payout-picker-option-logo {
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.06);
+}
+
+.ms-payout-picker-option-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ms-payout-picker-option-name {
+  display: block;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.ms-payout-picker-option-check {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  color: #2563eb;
+  opacity: 0;
+}
+
+.ms-payout-picker-option.is-selected .ms-payout-picker-option-check {
+  opacity: 1;
+}
+
+.ms-field.is-locked .ms-label,
+.ms-field.is-locked .ms-settings-hint {
+  color: #cbd5e1;
+}
+
+.ms-field.is-locked .ms-input {
+  background: #f8fafc;
+  border-color: #e8edf3;
+  color: #94a3b8;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.ms-field.is-locked .ms-input::placeholder {
+  color: #cbd5e1;
 }
 
 .ms-onboard-error {
@@ -829,6 +1099,96 @@ body.ms-onboard-page.is-transitioning .ms-onboard-bg {
 
 .ms-onboard-panel .ms-sec-card-panel {
   margin: 0;
+}
+
+.ms-onboard-stripe-partner {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0.45rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid #e8edf3;
+  background: #f8fafc;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #64748b;
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.ms-onboard-stripe-partner:hover {
+  border-color: #cbd5e1;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.ms-onboard-stripe-partner:focus-visible {
+  outline: 2px solid #635bff;
+  outline-offset: 2px;
+}
+
+.ms-onboard-stripe-partner img {
+  display: block;
+  width: auto;
+  height: 1.1rem;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.ms-onboard-stripe-partner-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.ms-onboard-stripe-partner-busy {
+  display: none;
+  align-items: center;
+  gap: 0.45rem;
+  color: #2563eb;
+}
+
+.ms-onboard-stripe-partner.is-verifying {
+  pointer-events: none;
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.ms-onboard-stripe-partner.is-verifying .ms-onboard-stripe-partner-label {
+  display: none;
+}
+
+.ms-onboard-stripe-partner.is-verifying .ms-onboard-stripe-partner-busy {
+  display: inline-flex;
+}
+
+.ms-onboard-stripe-spinner {
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 2px solid #93c5fd;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: ms-onboard-stripe-spin 0.7s linear infinite;
+}
+
+@keyframes ms-onboard-stripe-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ms-onboard-stripe-spinner {
+    animation: none;
+    border-top-color: #2563eb;
+    opacity: 0.85;
+  }
 }
 
 /* Hide legacy outer wrappers if present */
@@ -868,6 +1228,20 @@ body.ms-onboard-page.is-transitioning .ms-onboard-bg {
   .ms-onboard-panel-scroll {
     padding: 0.85rem 0.85rem 0.45rem;
   }
+
+  .ms-onboard-panel-head--stripe {
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .ms-onboard-stripe-partner {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.68rem;
+  }
+
+  .ms-onboard-stripe-partner img {
+    height: 0.95rem;
+  }
 }
 
 @media (max-height: 700px) {
@@ -890,7 +1264,7 @@ body.ms-onboard-page.is-transitioning .ms-onboard-bg {
   }
 
   .ms-onboard-panel--path .ms-onboard-path--flip {
-    --onb-flip-h: 5.35rem;
+    --onb-flip-h: 3.45rem;
   }
 
   .ms-onboard-actions {
@@ -943,6 +1317,7 @@ body.ms-onboard-page.is-transitioning .ms-onboard-bg {
   .ms-onboard-panel.is-active.is-visible .ms-onboard-path li,
   .ms-onboard-panel.is-active.is-visible .ms-onboard-legal-links .ms-onboard-legal-card,
   .ms-onboard-panel.is-active.is-visible .ms-onboard-panel-head h1,
+  .ms-onboard-panel.is-active.is-visible .ms-onboard-panel-head .ms-onboard-stripe-partner,
   .ms-onboard-progress-fill {
     animation: none !important;
     transition: none !important;

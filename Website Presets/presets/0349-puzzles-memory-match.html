@@ -11,7 +11,7 @@
   -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>0349 — Memory Match</title>
+  <title>0349 - Memory Match</title>
   <style>
     @import url('../shared/preset-reset.css');
 
@@ -312,13 +312,13 @@
           statusEl.textContent = `You won in ${moves} moves!`;
           statusEl.classList.add('is-win');
         } else {
-          statusEl.textContent = 'Nice match — keep going.';
+          statusEl.textContent = 'Nice match - keep going.';
         }
         return;
       }
 
       [first, card].forEach((el) => el.classList.add('is-wrong'));
-      statusEl.textContent = 'No match — flipping back.';
+      statusEl.textContent = 'No match - flipping back.';
 
       setTimeout(() => {
         [first, card].forEach((el) => {

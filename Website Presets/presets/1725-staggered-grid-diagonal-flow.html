@@ -11,7 +11,7 @@
   -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>1755 — Diagonal Flow Grid</title>
+  <title>1755 - Diagonal Flow Grid</title>
   <style>
     @import url('../shared/preset-reset.css');
     *{box-sizing:border-box}body{margin:0;min-height:100vh;background:#111;color:#fff;padding:2rem;font-family:Inter,system-ui,sans-serif;display:grid;place-items:center}.wrap{width:min(1040px,100%)}h1{margin:0 0 1.5rem;font-size:clamp(2.4rem,7vw,5.5rem);letter-spacing:-.08em;line-height:.86}.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:.75rem;transform:skewY(-4deg)}.tile{height:clamp(110px,16vw,190px);background:linear-gradient(135deg,var(--a),var(--b));border-radius:16px;grid-column:span var(--s);opacity:0;transform:translate(calc(var(--d)*-34px),calc(var(--d)*34px));animation:diag .75s cubic-bezier(.16,1,.3,1) forwards;animation-delay:calc(var(--i)*65ms);position:relative;overflow:hidden}.tile>*{transform:skewY(4deg)}.tile b{position:absolute;left:1rem;bottom:1rem;font-size:clamp(1rem,2.6vw,2rem);letter-spacing:-.06em}.tile:after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);transform:translateX(-120%);animation:sweep .8s ease-out forwards;animation-delay:calc(var(--i)*70ms + .25s)}@keyframes diag{to{opacity:1;transform:none}}@keyframes sweep{to{transform:translateX(120%)}}@media(max-width:720px){.grid{grid-template-columns:1fr;transform:none}.tile{grid-column:auto!important}.tile>*{transform:none}}@media(prefers-reduced-motion:reduce){.tile,.tile:after{animation:none;opacity:1;transform:none}}

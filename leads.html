@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="js/auth-gate-head.js?v=20260719-auth-gate"></script>
   <title>Business Finder · Moonrise Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css?v=20260718-lf-suggest-z">
-  <link rel="stylesheet" href="css/ms-lf-slide.css?v=20260718-lf-slide-rect">
+  <link rel="stylesheet" href="css/studio.css?v=20260719-lf-dev-notice">
+  <link rel="stylesheet" href="css/ms-lf-slide.css?v=20260719-lf-stable">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body data-page="leads">
@@ -69,7 +70,7 @@
           <label class="ms-lf-area-toggle" id="lf-area-wrap" title="Search within 5 miles of you">
             <input type="checkbox" id="lf-area-toggle">
             <span class="ms-lf-area-toggle-track" aria-hidden="true"></span>
-            <span class="ms-lf-area-toggle-label">In my area</span>
+            <span class="ms-lf-area-toggle-label">Near me</span>
           </label>
           <span class="ms-lf-list-count" id="lf-list-count" hidden></span>
         </div>
@@ -88,20 +89,24 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=20260718-api-cloud"></script>
+  <div class="ms-lf-dev-notice" id="lf-dev-notice" role="status" tabindex="0" aria-live="polite">
+    Business Finder is under development — bear with us!
+  </div>
+
+  <script src="js/config.js?v=20260719-supabase-leads"></script>
   <script src="js/site-branding.js"></script>
   <script src="js/supabase-client.js"></script>
   <script src="js/auth.js"></script>
-  <script src="js/lead-csv-format.js?v=20260718-website-strict"></script>
+  <script src="js/lead-csv-format.js?v=20260719-supabase-website"></script>
   <script src="js/lead-display.js?v=20260718-swipe-site"></script>
   <script src="js/lead-website-enrich.js?v=20260718-lf-stable"></script>
-  <script src="js/leads-loader.js?v=20260718-scrape-only"></script>
+  <script src="js/leads-loader.js?v=20260719-leads-count"></script>
   <script src="js/leads-prospect-rank.js"></script>
   <script src="js/segment-switch.js"></script>
-  <script src="js/ui-motion.js"></script>
+  <script src="js/ui-motion.js?v=20260719-onb-motion"></script>
   <script src="js/toast.js"></script>
   <script src="js/income.js?v=20260718-income"></script>
   <script src="js/app.js?v=20260718-mobile-nav"></script>
-  <script src="js/leads-search.js?v=20260718-live-search"></script>
+  <script src="js/leads-search.js?v=20260719-lf-no-save-more"></script>
 </body>
 </html>

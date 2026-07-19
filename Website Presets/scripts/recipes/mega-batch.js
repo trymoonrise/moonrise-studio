@@ -1210,7 +1210,7 @@ function _variant(cat, desc, n, p, accent, bg, surface, text, muted) {
     if (heroes[desc]) return heroes[desc]();
     return {
       style: `body{display:grid;place-items:center;min-height:100vh;background:${bg};color:${text};padding:2rem;text-align:center}h1{font-size:2.5rem;font-weight:800;margin-bottom:1rem}.tag{display:inline-block;padding:6px 14px;border-radius:99px;background:${surface};color:${accent};font-size:.75rem;margin-bottom:1rem;border:1px solid ${accent}}`,
-      body: `<span class="tag">Hero ${n}</span><h1>${titleCase(desc)}</h1><p style="color:${muted};max-width:40ch">Variant ${n} — ${desc.replace(/-/g,' ')}</p>`,
+      body: `<span class="tag">Hero ${n}</span><h1>${titleCase(desc)}</h1><p style="color:${muted};max-width:40ch">Variant ${n} - ${desc.replace(/-/g,' ')}</p>`,
     };
   }
 
@@ -1397,8 +1397,8 @@ function _variant(cat, desc, n, p, accent, bg, surface, text, muted) {
       script: `document.querySelectorAll('[data-h]').forEach(h=>h.onclick=()=>h.nextElementSibling.classList.toggle('open'));`,
     } : cat === 'tabs' ? {
       style: `body{display:grid;place-items:center;min-height:100vh;background:${bg}}.tabs{display:flex;gap:4px;background:${surface};padding:4px;border-radius:12px}.tab{padding:10px 20px;border:none;background:transparent;color:${muted};border-radius:8px;cursor:pointer;font-size:.9rem}.tab.on{background:${accent};color:${bg};font-weight:600}.panel{margin-top:1rem;color:${text}}`,
-      body: `<div><div class="tabs">${['A','B','C'].map((t,j)=>`<button class="tab${j===0?' on':''}">${t}</button>`).join('')}</div><div class="panel" id="p">Tab A — ${titleCase(desc)} ${n}</div></div>`,
-      script: `document.querySelectorAll('.tab').forEach((t,i)=>t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));t.classList.add('on');document.getElementById('p').textContent='Tab '+t.textContent+' — ${titleCase(desc)} ${n}';});`,
+      body: `<div><div class="tabs">${['A','B','C'].map((t,j)=>`<button class="tab${j===0?' on':''}">${t}</button>`).join('')}</div><div class="panel" id="p">Tab A - ${titleCase(desc)} ${n}</div></div>`,
+      script: `document.querySelectorAll('.tab').forEach((t,i)=>t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));t.classList.add('on');document.getElementById('p').textContent='Tab '+t.textContent+' - ${titleCase(desc)} ${n}';});`,
     } : {
       style: `body{display:grid;place-items:center;min-height:100vh;background:${bg}}.dd{position:relative}.btn{padding:10px 20px;border:1px solid ${muted};border-radius:8px;background:${surface};color:${text};cursor:pointer}.menu{position:absolute;top:calc(100% + 4px);left:0;min-width:160px;background:${surface};border:1px solid ${muted}44;border-radius:8px;display:none;overflow:hidden;z-index:5}.menu.open{display:block}.opt{padding:10px 16px;color:${text};cursor:pointer;font-size:.9rem}.opt:hover{background:${accent}22}`,
       body: `<div class="dd"><button class="btn" id="b">${titleCase(desc)} ${n} ▾</button><div class="menu" id="m">${['One','Two','Three'].map(o=>`<div class="opt">${o}</div>`).join('')}</div></div>`,
@@ -1509,7 +1509,7 @@ function _variant(cat, desc, n, p, accent, bg, surface, text, muted) {
     };
     return {
       style: `body{display:grid;place-items:center;min-height:100vh;background:${bg};padding:2rem;color:${text}}.cal{width:min(90vw,300px);border:1px solid ${muted}44;border-radius:12px;overflow:hidden;background:${surface}}.head{padding:12px;text-align:center;font-weight:600;background:${accent}22;color:${accent}}.grid{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:.8rem}.dow{padding:8px 4px;color:${muted};font-weight:600}.day{padding:8px 4px;cursor:pointer;border-radius:6px;margin:2px}.day:hover{background:${accent}22}.day.sel{background:${accent};color:${bg}}`,
-      body: `<div class="cal"><div class="head">July 2026 — ${titleCase(desc)} ${n}</div><div class="grid"><div class="dow">S</div><div class="dow">M</div><div class="dow">T</div><div class="dow">W</div><div class="dow">T</div><div class="dow">F</div><div class="dow">S</div>${Array.from({length:30},(_,j)=>`<div class="day${j===5?' sel':''}">${j+1}</div>`).join('')}</div></div>`,
+      body: `<div class="cal"><div class="head">July 2026 - ${titleCase(desc)} ${n}</div><div class="grid"><div class="dow">S</div><div class="dow">M</div><div class="dow">T</div><div class="dow">W</div><div class="dow">T</div><div class="dow">F</div><div class="dow">S</div>${Array.from({length:30},(_,j)=>`<div class="day${j===5?' sel':''}">${j+1}</div>`).join('')}</div></div>`,
       script: `document.querySelectorAll('.day').forEach(d=>d.onclick=()=>{document.querySelectorAll('.day').forEach(x=>x.classList.remove('sel'));d.classList.add('sel');});`,
     };
   }
@@ -1536,7 +1536,7 @@ function _variant(cat, desc, n, p, accent, bg, surface, text, muted) {
     const hasImg = desc.includes('avatar') || desc.includes('image') || desc.includes('video');
     return {
       style: `body{display:grid;place-items:center;min-height:100vh;background:${bg};padding:2rem;color:${text}}.card{max-width:400px;padding:1.5rem;background:${surface};border-radius:16px;border:1px solid ${muted}33;text-align:center}${hasImg?`.av{width:64px;height:64px;border-radius:50%;object-fit:cover;margin:0 auto 1rem;border:2px solid ${accent}`:''}.quote{font-style:italic;color:${muted};line-height:1.5}.name{margin-top:1rem;font-weight:600;color:${accent}}`,
-      body: `<div class="card">${hasImg?`<img class="av" src="${M.IMG45}" alt="">`:''}<p class="quote">"${titleCase(desc)} variant ${n} — great experience working together."</p><div class="name">Alex Morgan</div></div>`,
+      body: `<div class="card">${hasImg?`<img class="av" src="${M.IMG45}" alt="">`:''}<p class="quote">"${titleCase(desc)} variant ${n} - great experience working together."</p><div class="name">Alex Morgan</div></div>`,
     };
   }
 
@@ -1550,7 +1550,7 @@ function _variant(cat, desc, n, p, accent, bg, surface, text, muted) {
   if (cat === 'card-shuffles' || cat === 'puzzles') {
     return {
       style: `body{display:grid;place-items:center;min-height:100vh;background:${bg};padding:2rem}.stack{position:relative;width:200px;height:140px}.card{position:absolute;inset:0;border-radius:12px;background:${surface};border:2px solid ${accent};display:grid;place-items:center;color:${text};font-weight:700;cursor:pointer;transition:transform .3s}.card:nth-child(1){transform:translate(0,0) rotate(-2deg)}.card:nth-child(2){transform:translate(${6+n}px,${6+n}px) rotate(1deg)}.card:nth-child(3){transform:translate(${12+n*2}px,${12+n*2}px) rotate(3deg)}`,
-      body: `<div class="stack" id="s">${[1,2,3].map(c=>`<div class="card">${c}</div>`).join('')}</div><p style="color:${muted};margin-top:1.5rem;font-size:.85rem">${titleCase(desc)} ${n} — click to shuffle</p>`,
+      body: `<div class="stack" id="s">${[1,2,3].map(c=>`<div class="card">${c}</div>`).join('')}</div><p style="color:${muted};margin-top:1.5rem;font-size:.85rem">${titleCase(desc)} ${n} - click to shuffle</p>`,
       script: `document.getElementById('s').onclick=()=>{document.querySelectorAll('.card').forEach(c=>{const x=(Math.random()-.5)*40,y=(Math.random()-.5)*20,r=(Math.random()-.5)*20;c.style.transform='translate('+x+'px,'+y+'px) rotate('+r+'deg)';});};`,
     };
   }
@@ -1602,7 +1602,7 @@ function _variant(cat, desc, n, p, accent, bg, surface, text, muted) {
     const isFooter = cat === 'footers';
     if (isFooter) return {
       style: `body{margin:0;min-height:100vh;display:flex;align-items:flex-end;background:${bg}}footer{width:100%;padding:2rem;background:${surface};color:${text};display:flex;justify-content:space-between;align-items:center;border-top:1px solid ${muted}33;font-size:.85rem}footer a{color:${muted};text-decoration:none;margin-left:1rem}footer a:hover{color:${accent}}`,
-      body: `<footer><span>© 2026 Brand — ${titleCase(desc)} ${n}</span><div><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Contact</a></div></footer>`,
+      body: `<footer><span>© 2026 Brand - ${titleCase(desc)} ${n}</span><div><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Contact</a></div></footer>`,
     };
     if (isEmpty) return {
       style: `body{display:grid;place-items:center;min-height:100vh;background:${bg};padding:2rem;text-align:center;color:${text}}.ico{font-size:3rem;margin-bottom:1rem;opacity:.5}h2{font-size:1.5rem;margin-bottom:.5rem;color:${accent}}p{color:${muted};font-size:.9rem;max-width:32ch}.btn{margin-top:1.5rem;padding:10px 24px;background:${accent};color:${bg};border:none;border-radius:8px;cursor:pointer;font-weight:600}`,
@@ -1610,7 +1610,7 @@ function _variant(cat, desc, n, p, accent, bg, surface, text, muted) {
     };
     if (isError) return {
       style: `body{display:grid;place-items:center;min-height:100vh;background:${bg};padding:2rem;text-align:center;color:${text}}.code{font-size:6rem;font-weight:900;color:${accent};line-height:1}h1{margin:1rem 0 .5rem}p{color:${muted}}.btn{margin-top:1.5rem;padding:10px 24px;background:${accent};color:${bg};border:none;border-radius:8px;cursor:pointer}`,
-      body: `<div><div class="code">${40+n}</div><h1>${titleCase(desc)}</h1><p>Variant ${n} — something went wrong</p><button class="btn">Go home</button></div>`,
+      body: `<div><div class="code">${40+n}</div><h1>${titleCase(desc)}</h1><p>Variant ${n} - something went wrong</p><button class="btn">Go home</button></div>`,
     };
     if (isAvatar) return {
       style: `body{display:grid;place-items:center;min-height:100vh;background:${bg}}.group{display:flex;gap:0}.av{width:${48+n*2}px;height:${48+n*2}px;border-radius:50%;border:3px solid ${bg};margin-left:-12px;object-fit:cover;background:${accent}}.av:first-child{margin-left:0}`,
@@ -1633,10 +1633,10 @@ function _variant(cat, desc, n, p, accent, bg, surface, text, muted) {
     };
   }
 
-  // Default fallback — still visually distinct per variant index
+  // Default fallback - still visually distinct per variant index
   return {
     style: `body{display:grid;place-items:center;min-height:100vh;background:${bg};color:${text};padding:2rem;text-align:center}.box{padding:2rem;border-radius:${8+n*2}px;background:${surface};border:2px solid ${accent};max-width:400px;box-shadow:0 ${4+n*2}px ${16+n*4}px ${accent}22}h2{font-size:1.8rem;font-weight:800;color:${accent};margin-bottom:.5rem}p{color:${muted};font-size:.95rem}`,
-    body: `<div class="box"><h2>${titleCase(desc)} ${n}</h2><p>${titleCase(cat)} preset — variant ${n}</p></div>`,
+    body: `<div class="box"><h2>${titleCase(desc)} ${n}</h2><p>${titleCase(cat)} preset - variant ${n}</p></div>`,
   };
 
 }

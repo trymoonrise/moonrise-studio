@@ -43,8 +43,21 @@
     return true;
   }
 
+  function markLeadWebsiteUnknown(lead) {
+    if (!lead) return false;
+    const F = fmt();
+    lead.websiteStatus = "unknown";
+    lead.websiteEnriched = false;
+    lead.websiteConfirmed = false;
+    lead.websiteCheckPending = false;
+    if (F?.reconcileLeadWebsiteFields) F.reconcileLeadWebsiteFields(lead);
+    else lead.hasWebsite = false;
+    return true;
+  }
+
   function needsWebsiteCheck(lead) {
     const F = fmt();
+    if (F?.resolveSupabaseHasWebsiteFlag?.(lead) !== null) return false;
     if (F?.resolveLeadHasWebsite?.(lead)) return false;
     if (F?.resolveLeadMissingWebsite?.(lead)) return false;
     const maps = mapsKey(lead);
@@ -60,8 +73,11 @@
     return F?.resolveLeadNeedsWebsiteCheck ? F.resolveLeadNeedsWebsiteCheck(lead) : true;
   }
 
+  /**
+   * @returns {"has"|"missing"|"unknown"|""} definitive status when enrichment settled
+   */
   function applyEnrichment(lead, data) {
-    if (!lead || !data?.ok) return false;
+    if (!lead || !data?.ok) return "";
     const F = fmt();
     const url = String(data.websiteUrl || data.website || "").trim();
     const status = String(data.websiteStatus || data.website_status || "").trim().toLowerCase();
@@ -77,14 +93,16 @@
       lead.websiteCheckPending = false;
       if (F?.reconcileLeadWebsiteFields) F.reconcileLeadWebsiteFields(lead);
       else lead.hasWebsite = true;
-      return true;
+      return "has";
     }
 
-    if (status === "missing" || status === "unknown" || !url) {
-      return markLeadWebsiteMissing(lead);
+    if (status === "missing") {
+      markLeadWebsiteMissing(lead);
+      return "missing";
     }
 
-    return false;
+    markLeadWebsiteUnknown(lead);
+    return "unknown";
   }
 
   async function authHeaders() {
@@ -139,8 +157,7 @@
     if (!(await canRunEnrichment())) {
       while (queue.length) {
         const item = queue.shift();
-        markLeadWebsiteMissing(item.lead);
-        markChecked(item.mapsUrl);
+        markLeadWebsiteUnknown(item.lead);
         onUpdate?.(item.lead);
       }
       return;
@@ -152,13 +169,13 @@
       item.lead.websiteCheckPending = true;
       try {
         const data = await fetchPlaceWebsite(item.mapsUrl, item.name);
-        const changed = applyEnrichment(item.lead, data);
-        if (!changed) markLeadWebsiteMissing(item.lead);
-        markChecked(item.mapsUrl);
+        const outcome = applyEnrichment(item.lead, data);
+        if (outcome === "has" || outcome === "missing") {
+          markChecked(item.mapsUrl);
+        }
         onUpdate?.(item.lead, data);
       } catch (_) {
-        markLeadWebsiteMissing(item.lead);
-        markChecked(item.mapsUrl);
+        markLeadWebsiteUnknown(item.lead);
         onUpdate?.(item.lead);
       }
     }
@@ -187,10 +204,7 @@
   async function fallbackLeads(leads, onUpdate) {
     const list = (leads || []).filter(needsWebsiteCheck);
     if (!list.length) return 0;
-    list.forEach((lead) => {
-      markLeadWebsiteMissing(lead);
-      markChecked(mapsKey(lead));
-    });
+    list.forEach((lead) => markLeadWebsiteUnknown(lead));
     if (onUpdate) onUpdate();
     return list.length;
   }
@@ -199,6 +213,7 @@
     enqueue,
     fallbackLeads,
     markLeadWebsiteMissing,
+    markLeadWebsiteUnknown,
     needsWebsiteCheck,
     canRunEnrichment,
     baseUrl,

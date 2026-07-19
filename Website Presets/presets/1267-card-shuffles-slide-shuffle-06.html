@@ -11,14 +11,14 @@
   -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>1267 — Slide Shuffle 06</title>
+  <title>1267 - Slide Shuffle 06</title>
   <style>
     @import url('../shared/preset-reset.css');
     body{display:grid;place-items:center;min-height:100vh;background:#1a0a12;padding:2rem}.stack{position:relative;width:200px;height:140px}.card{position:absolute;inset:0;border-radius:12px;background:#241018;border:2px solid #ff8c42;display:grid;place-items:center;color:#ffe8f0;font-weight:700;cursor:pointer;transition:transform .3s}.card:nth-child(1){transform:translate(0,0) rotate(-2deg)}.card:nth-child(2){transform:translate(883px,883px) rotate(1deg)}.card:nth-child(3){transform:translate(1766px,1766px) rotate(3deg)}
   </style>
 </head>
 <body>
-<div class="stack" id="s"><div class="card">1</div><div class="card">2</div><div class="card">3</div></div><p style="color:#b08090;margin-top:1.5rem;font-size:.85rem">Slide Shuffle 877 — click to shuffle</p>
+<div class="stack" id="s"><div class="card">1</div><div class="card">2</div><div class="card">3</div></div><p style="color:#b08090;margin-top:1.5rem;font-size:.85rem">Slide Shuffle 877 - click to shuffle</p>
 <script>document.getElementById('s').onclick=()=>{document.querySelectorAll('.card').forEach(c=>{const x=(Math.random()-.5)*40,y=(Math.random()-.5)*20,r=(Math.random()-.5)*20;c.style.transform='translate('+x+'px,'+y+'px) rotate('+r+'deg)';});};</script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-/* MVP+ gate — Code + Download HTML */
+/* MVP+ gate - Code + Download HTML */
 .ms-lb-mode-btn.is-mvp-locked,
 .ms-lb-icon-btn.is-mvp-locked {
   position: relative;
@@ -110,7 +110,7 @@
   transform: none;
 }
 
-/* Store — MVP+ subscribed state */
+/* Store - MVP+ subscribed state */
 .ms-store-product.is-subscribed .ms-store-buy {
   background: #ecfdf5;
   color: #047857;

@@ -1,5 +1,5 @@
 /**
- * Worker security helpers — rate limits, password lockouts, HTTP hardening.
+ * Worker security helpers - rate limits, password lockouts, HTTP hardening.
  * Lockout state prefers public.auth_lockouts (service role), with in-memory fallback.
  */
 const crypto = require("crypto");

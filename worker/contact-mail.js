@@ -129,7 +129,7 @@ async function sendPurchaseInvoiceEmail({
     siteUrl ? `Your site: ${siteUrl}` : "",
     pdfBase64 ? "Your invoice PDF is attached." : "",
     "",
-    "— Moonrise",
+    "- Moonrise",
   ]
     .filter(Boolean)
     .join("\n");
