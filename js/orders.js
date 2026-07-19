@@ -6,7 +6,7 @@
   let availableYears = [];
 
   function cloudWorkerUrl() {
-    return String(window.SITE_CONFIG?.workerUrl || "https://moonrise-studio.vercel.app").replace(
+    return String(window.SITE_CONFIG?.workerUrl || "https://trymoonrise.com").replace(
       /\/$/,
       ""
     );
@@ -164,7 +164,7 @@
     const msg = lastError?.message || "Please try again shortly.";
     if (/failed to fetch|networkerror|load failed|network request failed/i.test(msg)) {
       throw new Error(
-        "Could not reach the Moonrise catalog API. Check your connection, or open Studio from https://moonrise-studio.vercel.app/orders.html"
+        "Could not reach the Moonrise catalog API. Check your connection, or open Studio from https://trymoonrise.com/orders.html"
       );
     }
     throw lastError || new Error("Could not load published sites");

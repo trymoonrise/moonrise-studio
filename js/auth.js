@@ -40,7 +40,7 @@
     if (isLocalFilePage()) {
       throw authError({
         error:
-          "Sign-in does not work when this page is opened as a file. Use https://moonrise-studio.vercel.app/login.html instead.",
+          "Sign-in does not work when this page is opened as a file. Use https://trymoonrise.com/login.html instead.",
         code: "file_protocol",
       });
     }
@@ -86,7 +86,7 @@
       lower.includes("network request failed")
     ) {
       if (isLocalFilePage()) {
-        return "Sign-in does not work when this page is opened as a file. Use https://moonrise-studio.vercel.app/login.html instead.";
+        return "Sign-in does not work when this page is opened as a file. Use https://trymoonrise.com/login.html instead.";
       }
       if (fallback) return fallback;
       return "Can't reach the sign-in service. Check your connection and try again.";

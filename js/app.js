@@ -165,7 +165,7 @@
     const c = window.SITE_CONFIG || {};
     return (
       c.brandLogoUrl ||
-      "https://moonrise-studio.vercel.app/doc/MoonriseLogo.png"
+      "doc/MoonriseLogo.png"
     );
   }
 
@@ -173,7 +173,7 @@
     const c = window.SITE_CONFIG || {};
     return (
       c.defaultAvatarUrl ||
-      "https://moonrise-studio.vercel.app/doc/pfp.png"
+      "doc/pfp.png"
     );
   }
 

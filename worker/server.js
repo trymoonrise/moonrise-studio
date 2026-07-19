@@ -45,7 +45,7 @@ function resolveWorkerPublicUrl() {
   if (vercelHost) return `https://${vercelHost.replace(/\/$/, "")}`;
   // Prefer the Studio cloud worker when publishing from local without env set.
   if (process.env.VERCEL_TOKEN || process.env.NODE_ENV === "production") {
-    return "https://moonrise-studio.vercel.app";
+    return "https://trymoonrise.com";
   }
   return `http://127.0.0.1:${PORT}`;
 }
@@ -2268,7 +2268,7 @@ app.post("/credits/billing-portal", requireUser, checkoutLimiter, async (req, re
 });
 
 /**
- * Creator security card — $1 verify + refund, save for fraud recovery.
+ * Creator security card — $1 verify + refund, card kept on file after validation.
  */
 app.get("/security-card/config", requireUser, (_req, res) => {
   res.json(publicSecurityCardConfig());
@@ -2285,7 +2285,7 @@ app.get("/security-card/status", requireUser, async (req, res) => {
     res.json(publicSecurityCardStatus(data));
   } catch (e) {
     console.error(e);
-    respondApiError(res, e, "Could not load payout card status");
+    respondApiError(res, e, "Could not load card verification status");
   }
 });
 
@@ -2298,7 +2298,7 @@ app.post("/security-card/start", requireUser, checkoutLimiter, async (req, res) 
     res.json(data);
   } catch (e) {
     console.error(e);
-    respondApiError(res, e, "Could not connect payout card");
+    respondApiError(res, e, "Could not verify card");
   }
 });
 
@@ -2307,24 +2307,16 @@ app.post("/security-card/complete", requireUser, checkoutLimiter, async (req, re
     const stripe = stripeClient();
     if (!stripe) return sendStripeMissing(res);
     const paymentIntentId = String(req.body?.paymentIntentId || req.body?.payment_intent_id || "").trim();
-    const payoutContext = {
-      cardholderName: String(req.body?.cardholderName || req.body?.nameOnCard || "").trim(),
-      payoutEmail: String(req.body?.payoutEmail || req.body?.email || "").trim(),
-      payoutPhone: String(req.body?.payoutPhone || req.body?.phone || "").trim(),
-      phoneCountry: String(req.body?.phoneCountry || req.body?.phone_country || "").trim(),
-    };
     const result = await completeSecurityCardVerification(
       stripe,
       db(),
       req.user.id,
-      paymentIntentId,
-      payoutContext
+      paymentIntentId
     );
     res.json({
       ok: true,
       verified: true,
       securityCard: result.securityCard,
-      commissionPayout: result.commissionPayout,
     });
   } catch (e) {
     console.error(e);
@@ -3754,16 +3746,9 @@ app.post("/lead-finder/search", requireUser, leadFinderLimiter, async (req, res)
     });
     const data = await upstreamRes.json().catch(() => ({}));
     if (!upstreamRes.ok) {
-      const upstreamMissing =
-        upstreamRes.status === 404 &&
-        /leadfinder-search\.onrender\.com/i.test(upstream);
-      const errorMessage = upstreamMissing
-        ? "LeadFinder search server is not deployed on Render yet. Deploy leadfinder-search from render.yaml, then set LEADFINDER_SEARCH_URL on Vercel."
-        : data?.error || `LeadFinder upstream failed (${upstreamRes.status})`;
-      return res.status(upstreamMissing ? 503 : upstreamRes.status).json({
+      return res.status(upstreamRes.status).json({
         ok: false,
-        error: errorMessage,
-        upstream,
+        error: data?.error || `LeadFinder upstream failed (${upstreamRes.status})`,
         ...data,
       });
     }

@@ -20,7 +20,7 @@
   function defaultAvatar() {
     return (
       (window.SITE_CONFIG && window.SITE_CONFIG.defaultAvatarUrl) ||
-      "https://moonrise-studio.vercel.app/doc/pfp.png"
+      "doc/pfp.png"
     );
   }
 

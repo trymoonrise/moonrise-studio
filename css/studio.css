@@ -3577,6 +3577,18 @@ input.ms-input:-webkit-autofill:focus {
   max-width: 100%;
   min-width: 0;
   box-sizing: border-box;
+  position: relative;
+  z-index: 1;
+  overflow: visible;
+}
+
+/* Keep type/location autocomplete above Popular tags (sibling below the form). */
+.ms-lf-search:has(.ms-lf-suggest-wrap[aria-expanded="true"]) {
+  z-index: 120;
+}
+
+.ms-lf-field:has(.ms-lf-suggest-wrap[aria-expanded="true"]) {
+  z-index: 121;
 }
 
 .ms-lf-filters-meta {
@@ -3683,6 +3695,11 @@ input.ms-input:-webkit-autofill:focus {
 
 .ms-lf-suggest-wrap {
   position: relative;
+  z-index: 1;
+}
+
+.ms-lf-suggest-wrap[aria-expanded="true"] {
+  z-index: 122;
 }
 
 .ms-lf-input {
@@ -3761,7 +3778,7 @@ input.ms-input:-webkit-autofill:focus {
   left: 0;
   right: 0;
   top: calc(100% + 6px);
-  z-index: 50;
+  z-index: 130;
   margin: 0;
   padding: 0.35rem;
   list-style: none;
@@ -3771,6 +3788,7 @@ input.ms-input:-webkit-autofill:focus {
   border-radius: 12px;
   background: #fff;
   box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+  isolation: isolate;
 }
 
 .ms-lf-suggest[hidden] {
@@ -4625,6 +4643,8 @@ input.ms-input:-webkit-autofill:focus {
   flex-wrap: nowrap;
   margin: 0.95rem 0 1.1rem;
   min-width: 0;
+  position: relative;
+  z-index: 0;
 }
 
 .ms-lf-popular > span {
