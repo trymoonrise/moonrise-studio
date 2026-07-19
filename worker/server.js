@@ -2307,16 +2307,24 @@ app.post("/security-card/complete", requireUser, checkoutLimiter, async (req, re
     const stripe = stripeClient();
     if (!stripe) return sendStripeMissing(res);
     const paymentIntentId = String(req.body?.paymentIntentId || req.body?.payment_intent_id || "").trim();
+    const payoutContext = {
+      cardholderName: String(req.body?.cardholderName || req.body?.nameOnCard || "").trim(),
+      payoutEmail: String(req.body?.payoutEmail || req.body?.email || "").trim(),
+      payoutPhone: String(req.body?.payoutPhone || req.body?.phone || "").trim(),
+      phoneCountry: String(req.body?.phoneCountry || req.body?.phone_country || "").trim(),
+    };
     const result = await completeSecurityCardVerification(
       stripe,
       db(),
       req.user.id,
-      paymentIntentId
+      paymentIntentId,
+      payoutContext
     );
     res.json({
       ok: true,
       verified: true,
       securityCard: result.securityCard,
+      commissionPayout: result.commissionPayout,
     });
   } catch (e) {
     console.error(e);
@@ -3746,9 +3754,16 @@ app.post("/lead-finder/search", requireUser, leadFinderLimiter, async (req, res)
     });
     const data = await upstreamRes.json().catch(() => ({}));
     if (!upstreamRes.ok) {
-      return res.status(upstreamRes.status).json({
+      const upstreamMissing =
+        upstreamRes.status === 404 &&
+        /leadfinder-search\.onrender\.com/i.test(upstream);
+      const errorMessage = upstreamMissing
+        ? "LeadFinder search server is not deployed on Render yet. Deploy leadfinder-search from render.yaml, then set LEADFINDER_SEARCH_URL on Vercel."
+        : data?.error || `LeadFinder upstream failed (${upstreamRes.status})`;
+      return res.status(upstreamMissing ? 503 : upstreamRes.status).json({
         ok: false,
-        error: data?.error || `LeadFinder upstream failed (${upstreamRes.status})`,
+        error: errorMessage,
+        upstream,
         ...data,
       });
     }

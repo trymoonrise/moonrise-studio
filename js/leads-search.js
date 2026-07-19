@@ -130,6 +130,9 @@
     if (/failed to fetch|networkerror|network error|load failed/i.test(msg)) {
       return "Live search server unreachable — check your connection and try again.";
     }
+    if (/not deployed on render|upstream failed \(404\)/i.test(msg)) {
+      return "Live search is not set up yet. Deploy leadfinder-search on Render (see LEADFINDER-SETUP.md in the Moonrise folder).";
+    }
     return msg || "Live search unavailable";
   }
 
