@@ -7,7 +7,7 @@ services:
     runtime: docker
     rootDir: leadfinder-cloud
     dockerfilePath: ./Dockerfile.search
-    plan: starter
+    plan: standard
     healthCheckPath: /health
     envVars:
       - key: HEADLESS
