@@ -22,6 +22,93 @@
  * so output reads as a single professional site - not a collage of demo blocks.
  */
 
+const HEADLINE_ANGLES = [
+  "Lead with a concrete customer outcome in the hero (speed, quality, peace of mind).",
+  "Lead with local trust: licensed, nearby, same-day, or family-owned when plausible.",
+  "Lead with a specific service promise, not a generic welcome line.",
+  "Lead with the problem you solve, then the business as the clear answer.",
+  "Lead with social proof framing (years serving the area, repeat customers) without inventing stats.",
+  "Lead with a bold trade-specific hook (emergency ready, by appointment, walk-ins welcome).",
+];
+
+const LAYOUT_EMPHASIS = [
+  "Hero: split layout with strong media on one side and copy on the other.",
+  "Hero: centered typography stack with a full-width media band beneath the headline.",
+  "Hero: full-bleed visual with a restrained overlay card for headline + CTAs.",
+  "Services: emphasize a 3-column card grid with equal visual weight.",
+  "Services: alternate text/image rows for a editorial rhythm.",
+  "Proof + CTA: use one high-contrast accent band mid-page before the contact form.",
+];
+
+const VISUAL_RHYTHM = [
+  "Alternate light and subtly tinted section backgrounds as the user scrolls.",
+  "Keep most sections on surface white with one deep footer and one accent CTA band.",
+  "Use generous vertical spacing and narrow reading measure for body copy.",
+  "Use tighter section headers with wider card grids below each block.",
+  "Favor rounded cards and soft shadows over hard dividers between sections.",
+  "Favor crisp lines, minimal shadows, and strong typographic hierarchy.",
+];
+
+const COPY_TONE_VARIANTS = [
+  "Plainspoken and direct, short sentences, no fluff.",
+  "Warm and reassuring, especially around trust and reliability.",
+  "Confident and professional, suited to a premium local business.",
+  "Friendly neighbor tone, approachable but still polished.",
+  "Action-oriented: verbs first, benefits second, clear next steps.",
+];
+
+const COMPONENT_TWISTS = [
+  "Give the primary CTA a pill shape; secondary CTA outline-only.",
+  "Use a sticky-style top nav feel (compact height, clear wordmark).",
+  "Add a slim credibility strip (3 short trust points) directly under the hero.",
+  "Use icon-led service cards when the kit supports it.",
+  "End the page with a split contact block: form + NAP side by side on desktop.",
+  "Keep motion subtle: one hover lift on cards, no flashy scroll gimmicks.",
+];
+
+function hashFromString(input) {
+  const s = String(input || "");
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i += 1) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+function pickFrom(list, seed) {
+  if (!Array.isArray(list) || !list.length) return "";
+  return list[hashFromString(seed) % list.length];
+}
+
+/** Per-generation creative brief so every site feels fresh but stays on-brand. */
+function buildVariationBrief(seed) {
+  const s = String(seed || `${Date.now()}-${Math.random()}`);
+  return {
+    seed: s,
+    headlineAngle: pickFrom(HEADLINE_ANGLES, `${s}:headline`),
+    layoutEmphasis: pickFrom(LAYOUT_EMPHASIS, `${s}:layout`),
+    visualRhythm: pickFrom(VISUAL_RHYTHM, `${s}:rhythm`),
+    copyTone: pickFrom(COPY_TONE_VARIANTS, `${s}:tone`),
+    componentTwist: pickFrom(COMPONENT_TWISTS, `${s}:twist`),
+  };
+}
+
+function formatVariationBrief(variation) {
+  if (!variation) return "";
+  return [
+    "## Creative variation (mandatory - unique every generation)",
+    `Variation seed: ${variation.seed}`,
+    `- Hero headline angle: ${variation.headlineAngle}`,
+    `- Layout emphasis: ${variation.layoutEmphasis}`,
+    `- Visual rhythm: ${variation.visualRhythm}`,
+    `- Copy tone nuance: ${variation.copyTone}`,
+    `- Component twist: ${variation.componentTwist}`,
+    "Same business facts every time, but never clone a prior layout or headline pattern.",
+    "Vary section emphasis, card treatment, and copy angles while keeping one cohesive design system.",
+  ].join("\n");
+}
+
 const {
   formatStructureForPrompt,
 } = require("./business-structures");
@@ -81,6 +168,13 @@ Return ONLY one complete HTML document (doctype + html). No markdown fences. No 
 1) Define ONE unified design system (:root tokens + shared utility classes) in a single <style> block.
 2) Adapt each kit item into its mapped bone-structure section using those shared primitives - same buttons, cards, containers, and type scale on every section.
 3) The finished site must read as ONE premium local-business product, not a collage of unrelated demo blocks.
+
+## Uniqueness (critical)
+- Every generation must feel freshly designed for THIS run - never a cookie-cutter repeat.
+- Follow the Creative variation block in the user message: headline angle, layout emphasis, rhythm, and component twist.
+- Vary hero composition, section spacing rhythm, card grid density, and CTA phrasing even when the business facts are unchanged.
+- Do NOT reuse generic headline formulas ("Welcome to…", "Your trusted…", "Quality service you can count on") across runs.
+- Stay well formulated: one palette, one type pairing, one button system - unique in composition, not chaotic.
 
 ## Unified component reuse (critical)
 1) Before any section markup, lock a shared token set in :root:
@@ -477,6 +571,7 @@ function buildGenerationUserPrompt(ctx, presetPack, plan, media, options = {}) {
     "## Atmosphere plan",
     formatPlanForAssembly(plan),
     "",
+    plan?.variation ? formatVariationBrief(plan.variation) : "",
     formatDesignSystemBlueprint(plan),
     "",
     `## Page bone structure (mandatory: all ${sectionCount} sections)`,
@@ -501,6 +596,7 @@ function buildGenerationUserPrompt(ctx, presetPack, plan, media, options = {}) {
       ? "Honor the creator generation instructions in Business facts - they override generic layout/style defaults when specific."
       : "",
     "Quality bar: professional, modern, premium local-business - generous whitespace, crisp hierarchy, consistent components.",
+    "Uniqueness bar: follow the Creative variation block - this page must not look like a generic duplicate of prior sites for the same trade.",
     "Responsive essentials: viewport meta, no horizontal scroll, fluid grids/images, clamp type, mobile nav that fits, columns stack on small screens, touch-friendly CTAs.",
     "Apply the palette consistently (Coolors-level harmony + contrast) via :root CSS variables across the whole page.",
     "If you need more images than unique pack slots, reuse pack URLs - never invent media links.",
@@ -756,6 +852,8 @@ module.exports = {
   buildPlanUserPrompt,
   buildGenerationUserPrompt,
   buildEditUserPrompt,
+  buildVariationBrief,
+  formatVariationBrief,
   formatPresetPack,
   formatPresetCatalog,
   formatDesignSystemBlueprint,

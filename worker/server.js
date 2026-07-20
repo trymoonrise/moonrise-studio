@@ -9,6 +9,7 @@
  */
 const path = require("path");
 const fs = require("fs");
+const crypto = require("crypto");
 
 /** Load worker/.env, filling blank values that would otherwise block Supabase. */
 function loadWorkerEnv() {
@@ -130,6 +131,7 @@ const {
   buildGenerationUserPrompt,
   buildEditUserPrompt,
   buildBusinessBrief,
+  buildVariationBrief,
   selectStockMedia,
   ensureStockMediaInHtml,
   ensurePaletteContrast,
@@ -141,6 +143,11 @@ const {
   getStructurePresetRoles,
 } = require("./business-structures");
 const githubPresets = require("./github-presets");
+
+// Warm GitHub preset manifest cache at startup (non-blocking).
+githubPresets.ensureManifest().catch((e) => {
+  console.warn("Startup preset manifest prefetch failed:", e.message);
+});
 
 const security = require("./security");
 const { mountAuthRoutes } = require("./auth-routes");
@@ -1213,6 +1220,17 @@ function hashPick(seed, modulo) {
   return modulo > 0 ? h % modulo : 0;
 }
 
+function presetPickSeed(ctx) {
+  const base = String(ctx?.businessName || ctx?.category || ctx?.leadId || "site");
+  const variation = String(ctx?.variationSeed || ctx?.requestId || "").trim();
+  return variation ? `${base}:${variation}` : base;
+}
+
+function newVariationSeed() {
+  if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 /** Cached Website Presets manifest (mtime-checked). */
 let _presetManifestCache = null;
 
@@ -1305,7 +1323,7 @@ function buildAtmosphereCatalog(ctx) {
   const manifest = loadPresetManifest();
   if (!manifest.length) return [];
 
-  const seed = String(ctx?.businessName || ctx?.category || ctx?.leadId || "site");
+  const seed = presetPickSeed(ctx);
   const byCategory = new Map();
   for (const item of manifest) {
     const cat = String(item?.category || "").trim().toLowerCase();
@@ -1521,12 +1539,14 @@ function buildLocalPlan(ctx) {
   const hay = `${ctx?.category || ""} ${ctx?.businessName || ""} ${ctx?.notes || ""}`.toLowerCase();
   const profile = ATMOSPHERE_PROFILES.find((p) => p.match.test(hay)) || DEFAULT_ATMOSPHERE;
   const structure = getBusinessStructure(ctx);
+  const variation = buildVariationBrief(ctx?.variationSeed);
   return {
     atmosphere: profile.atmosphere,
     voice: profile.voice,
     palette: { ...profile.palette },
     type: { ...profile.type },
     structure,
+    variation,
   };
 }
 
@@ -1540,7 +1560,7 @@ function selectKitIdsLocally(ctx) {
 
   const structure = getBusinessStructure(ctx);
   const sectionRoles = getStructurePresetRoles(structure, PRESET_MAX_FILES);
-  const seed = String(ctx?.businessName || ctx?.category || ctx?.leadId || "site");
+  const seed = presetPickSeed(ctx);
   const byCategory = new Map();
   for (const item of manifest) {
     const cat = String(item?.category || "").trim().toLowerCase();
@@ -1674,7 +1694,7 @@ async function generateWithOpenRouter(ctx, presetPack, plan) {
     const result = await openRouterChat({
       system: GENERATION_SYSTEM_PROMPT,
       user: userPrompt,
-      temperature: retryIncomplete ? 0.35 : 0.4,
+      temperature: retryIncomplete ? 0.38 : 0.58,
       maxTokens,
       prefer: "throughput",
       title: retryIncomplete ? "Moonrise Studio Assemble (retry)" : "Moonrise Studio Assemble",
@@ -1720,6 +1740,26 @@ async function generateWithOpenRouter(ctx, presetPack, plan) {
   return closeIncompleteHtml(html);
 }
 
+/** Map manifest category/tags to bone-structure section role for assembly. */
+function inferPresetRole(item) {
+  const cat = String(item?.category || "").trim().toLowerCase();
+  const tagStr = Array.isArray(item?.tags) ? item.tags.join(" ").toLowerCase() : "";
+  const hay = `${cat} ${tagStr} ${String(item?.title || "").toLowerCase()}`;
+  if (/^navigation$|^menus$|^docks$|^sidebars$/.test(cat) || /\bnav\b/.test(hay)) return "navigation";
+  if (/^hero|^heroes$|^videos$/.test(cat) || /\bhero\b/.test(hay)) return "hero";
+  if (/^testimonials$/.test(cat) || /\btestimonial\b/.test(hay)) return "testimonials";
+  if (/^forms$|^inputs$|^textareas$/.test(cat) || /\bform\b/.test(hay)) return "contact_form";
+  if (/^footers$/.test(cat) || /\bfooter\b/.test(hay)) return "footer";
+  if (/^cta$|^buttons$|^announcements$/.test(cat) || /\bcta\b/.test(hay)) return "cta_band";
+  if (/^galleries$|^images$|^carousels$/.test(cat) || /\bgallery\b/.test(hay)) return "gallery";
+  if (/^pricing$|^comparisons$/.test(cat) || /\bpricing\b/.test(hay)) return "pricing";
+  if (/^maps$/.test(cat) || /\bmap\b/.test(hay)) return "map";
+  if (/^bios$|^profiles$|^avatars$/.test(cat) || /\bteam\b/.test(hay)) return "team";
+  if (/^accordions$/.test(cat) || /\bfaq\b/.test(hay)) return "faq";
+  if (/^features$|^cards$|^sections$|^hooks$/.test(cat)) return "services";
+  return cat || "component";
+}
+
 /**
  * Pick a compact pack of Website Preset snippets for generation.
  * Deterministic per business so regenerations stay somewhat stable.
@@ -1737,7 +1777,7 @@ async function loadWebsitePresetPack(ctx) {
     return [];
   }
 
-  const seed = String(ctx?.businessName || ctx?.category || ctx?.leadId || "site");
+  const seed = presetPickSeed(ctx);
   const byCategory = new Map();
   for (const item of manifest) {
     const cat = String(item?.category || "").trim();
@@ -1787,6 +1827,7 @@ async function loadWebsitePresetPack(ctx) {
       id: item.id,
       title: item.title,
       category: item.category,
+      role: inferPresetRole(item),
       tags: item.tags || [],
       html: snippet,
     });
@@ -1867,6 +1908,8 @@ app.post("/generate", requireUser, generateLimiter, async (req, res) => {
       leadId: req.body.leadId || null,
       templateId: String(req.body.templateId || "local-service").replace(/[^a-z0-9-]/gi, "") || "local-service",
       fromFinder: req.body.fromFinder === true || req.body.fromFinder === "1",
+      requestId: requestId || null,
+      variationSeed: requestId || newVariationSeed(),
     };
 
     if (ctx.description && !/About the business:/i.test(String(ctx.notes || ""))) {
@@ -1897,6 +1940,13 @@ app.post("/generate", requireUser, generateLimiter, async (req, res) => {
       .single();
     activeJobId = jobInsert?.data?.id || null;
 
+    // Manifest must be loaded before kit selection (GitHub cache is empty on cold start).
+    try {
+      await githubPresets.ensureManifest();
+    } catch (e) {
+      console.warn("GitHub preset manifest load failed; using local fallback if available:", e.message);
+    }
+
     // Fast path (default): pick the component kit + palette locally (instant),
     // then a single assembly call. Set WEBSITE_PLAN_WITH_LLM=1 to restore the
     // slower two-call flow where MiniMax also chooses the components.
@@ -1906,14 +1956,10 @@ app.post("/generate", requireUser, generateLimiter, async (req, res) => {
     if (process.env.WEBSITE_PLAN_WITH_LLM === "1") {
       ({ plan, ids, roleById } = await planAtmosphereAndPicks(ctx));
       plan.structure = getBusinessStructure(ctx);
+      plan.variation = buildVariationBrief(ctx.variationSeed);
     } else {
       plan = buildLocalPlan(ctx);
       ({ ids, roleById } = selectKitIdsLocally(ctx));
-    }
-    try {
-      await githubPresets.ensureManifest();
-    } catch (e) {
-      console.warn("GitHub preset manifest load failed; using local fallback if available:", e.message);
     }
     let presetPack = await loadPresetsByIds(ids, roleById);
     if (!presetPack.length) {
@@ -3375,6 +3421,29 @@ const VERCEL_SLUG_STOP_WORDS = new Set([
   "business",
 ]);
 
+function createVercelScope(kind) {
+  const token = process.env.VERCEL_TOKEN;
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  };
+  let teamQuery = "";
+  if (kind === "studio") {
+    const teamId = String(process.env.VERCEL_TEAM_ID || "").trim();
+    if (teamId) {
+      headers["X-Vercel-Team-Id"] = teamId;
+      teamQuery = `?teamId=${encodeURIComponent(teamId)}`;
+    }
+  } else if (kind === "client") {
+    const clientTeamId = String(process.env.VERCEL_CLIENT_SITES_TEAM_ID || "").trim();
+    if (clientTeamId) {
+      headers["X-Vercel-Team-Id"] = clientTeamId;
+      teamQuery = `?teamId=${encodeURIComponent(clientTeamId)}`;
+    }
+  }
+  return { headers, teamQuery, kind };
+}
+
 function vercelApiHeaders(token) {
   const headers = {
     Authorization: `Bearer ${token}`,
@@ -3414,17 +3483,37 @@ function isPublicProductionVercelUrl(url, projectSlug) {
   if (!host || !host.endsWith(".vercel.app")) return false;
   if (looksLikePreviewVercelHost(host)) return false;
   const slug = String(projectSlug || "").toLowerCase();
-  if (slug && !host.startsWith(slug)) return false;
-  return true;
+  if (!slug) return false;
+  return stripTeamSuffixFromVercelHost(host, slug) === `${slug}.vercel.app`;
 }
 
 function productionUrlCandidates(projectSlug) {
   const slug = String(projectSlug || "").trim().toLowerCase();
   if (!slug) return [];
-  const hosts = [`${slug}.vercel.app`];
+  return [`https://${slug}.vercel.app`];
+}
+
+function stripTeamSuffixFromVercelHost(host, projectSlug) {
+  const slug = String(projectSlug || "").trim().toLowerCase();
+  const base = String(host || "").trim().toLowerCase();
+  if (!slug || !base) return base;
   const teamSlug = String(process.env.VERCEL_TEAM_SLUG || "").trim().toLowerCase();
-  if (teamSlug) hosts.push(`${slug}-${teamSlug}.vercel.app`);
-  return hosts.map((host) => `https://${host}`);
+  if (teamSlug && base === `${slug}-${teamSlug}.vercel.app`) {
+    return `${slug}.vercel.app`;
+  }
+  return base;
+}
+
+function normalizeClientSitePublicUrl(url, projectSlug) {
+  const normalized = normalizeVercelUrl(url);
+  if (!normalized) return normalized;
+  try {
+    const parsed = new URL(normalized);
+    parsed.hostname = stripTeamSuffixFromVercelHost(parsed.hostname, projectSlug);
+    return parsed.toString().replace(/\/$/, "");
+  } catch (_) {
+    return normalized;
+  }
 }
 
 function normalizeVercelUrl(url) {
@@ -3485,8 +3574,9 @@ function pickProductionUrl(deployData, projectSlug) {
   return preferred[0] || `https://${projectSlug}.vercel.app`;
 }
 
-async function disableVercelDeploymentProtection(headers, projectId) {
+async function disableVercelDeploymentProtection(scope, projectId) {
   if (!projectId) return false;
+  const { headers, teamQuery } = scope;
   // passwordProtection is update-only (not accepted on project create). Try
   // both fields, then fall back to SSO-only if the plan/schema rejects password.
   const attempts = [
@@ -3496,7 +3586,7 @@ async function disableVercelDeploymentProtection(headers, projectId) {
   for (const body of attempts) {
     try {
       const res = await fetch(
-        `https://api.vercel.com/v10/projects/${encodeURIComponent(projectId)}${vercelTeamQuery()}`,
+        `https://api.vercel.com/v10/projects/${encodeURIComponent(projectId)}${teamQuery}`,
         {
           method: "PATCH",
           headers,
@@ -3517,13 +3607,14 @@ async function disableVercelDeploymentProtection(headers, projectId) {
   return false;
 }
 
-async function assignVercelProductionAlias(headers, deploymentId, projectSlug) {
+async function assignVercelProductionAlias(scope, deploymentId, projectSlug) {
   if (!deploymentId || !projectSlug) return null;
+  const { headers, teamQuery } = scope;
   const aliases = productionUrlCandidates(projectSlug).map((url) => vercelHostname(url)).filter(Boolean);
   for (const alias of aliases) {
     try {
       const res = await fetch(
-        `https://api.vercel.com/v2/deployments/${encodeURIComponent(deploymentId)}/aliases${vercelTeamQuery()}`,
+        `https://api.vercel.com/v2/deployments/${encodeURIComponent(deploymentId)}/aliases${teamQuery}`,
         {
           method: "POST",
           headers,
@@ -3542,11 +3633,12 @@ async function assignVercelProductionAlias(headers, deploymentId, projectSlug) {
   return null;
 }
 
-async function listDeploymentAliases(headers, deploymentId) {
+async function listDeploymentAliases(scope, deploymentId) {
   if (!deploymentId) return [];
+  const { headers, teamQuery } = scope;
   try {
     const res = await fetch(
-      `https://api.vercel.com/v2/deployments/${encodeURIComponent(deploymentId)}/aliases${vercelTeamQuery()}`,
+      `https://api.vercel.com/v2/deployments/${encodeURIComponent(deploymentId)}/aliases${teamQuery}`,
       { headers }
     );
     if (!res.ok) return [];
@@ -3560,31 +3652,32 @@ async function listDeploymentAliases(headers, deploymentId) {
   }
 }
 
-async function resolvePublicProductionUrl(headers, deployData, projectSlug) {
+async function resolvePublicProductionUrl(scope, deployData, projectSlug) {
   const deploymentId = deployData?.id || deployData?.uid || null;
   let url = pickProductionUrl(deployData, projectSlug);
   if (deploymentId) {
-    const assigned = await assignVercelProductionAlias(headers, deploymentId, projectSlug);
+    const assigned = await assignVercelProductionAlias(scope, deploymentId, projectSlug);
     if (assigned) url = assigned;
-    const listed = await listDeploymentAliases(headers, deploymentId);
+    const listed = await listDeploymentAliases(scope, deploymentId);
     const publicAlias = listed.find((candidate) => isPublicProductionVercelUrl(candidate, projectSlug));
     if (publicAlias) url = publicAlias;
   }
+  url = normalizeClientSitePublicUrl(url, projectSlug);
   if (!isPublicProductionVercelUrl(url, projectSlug)) {
     url = productionUrlCandidates(projectSlug)[0] || url;
   }
-  return url;
+  return normalizeClientSitePublicUrl(url, projectSlug);
 }
 
-async function ensureVercelProject(headers, slug) {
-  const qs = vercelTeamQuery();
-  const getRes = await fetch(`https://api.vercel.com/v9/projects/${encodeURIComponent(slug)}${qs}`, {
+async function ensureVercelProject(scope, slug) {
+  const { headers, teamQuery } = scope;
+  const getRes = await fetch(`https://api.vercel.com/v9/projects/${encodeURIComponent(slug)}${teamQuery}`, {
     headers,
   });
   if (getRes.ok) {
     const data = await getRes.json().catch(() => ({}));
     const project = { id: data.id, name: data.name || slug };
-    await disableVercelDeploymentProtection(headers, project.id);
+    await disableVercelDeploymentProtection(scope, project.id);
     return project;
   }
   if (getRes.status !== 404) {
@@ -3592,7 +3685,7 @@ async function ensureVercelProject(headers, slug) {
     throw new Error(data?.error?.message || `Vercel project lookup failed (${getRes.status})`);
   }
 
-  const createRes = await fetch(`https://api.vercel.com/v11/projects${qs}`, {
+  const createRes = await fetch(`https://api.vercel.com/v11/projects${teamQuery}`, {
     method: "POST",
     headers,
     body: JSON.stringify({
@@ -3606,11 +3699,11 @@ async function ensureVercelProject(headers, slug) {
     throw new Error(createData?.error?.message || `Vercel project create failed (${createRes.status})`);
   }
   const project = { id: createData.id, name: createData.name || slug };
-  await disableVercelDeploymentProtection(headers, project.id);
+  await disableVercelDeploymentProtection(scope, project.id);
   return project;
 }
 
-async function ensureVercelProjectForMoonrise(headers, project, preferredSlug) {
+async function ensureVercelProjectForMoonrise(scope, project, preferredSlug) {
   const suffix = String(project.id || "").replace(/-/g, "").slice(0, 6);
   const candidates = [preferredSlug];
   if (suffix && !preferredSlug.endsWith(suffix)) {
@@ -3620,7 +3713,7 @@ async function ensureVercelProjectForMoonrise(headers, project, preferredSlug) {
   let lastError = null;
   for (const slug of candidates) {
     try {
-      const vercelProject = await ensureVercelProject(headers, slug);
+      const vercelProject = await ensureVercelProject(scope, slug);
       return { slug, vercelProject };
     } catch (e) {
       lastError = e;
@@ -3695,9 +3788,9 @@ async function deployProjectToVercel(supabase, project) {
     return { url: fakeUrl, fallback: true, watermarked: isWatermarkActive(project) };
   }
 
-  const headers = vercelApiHeaders(token);
+  const clientScope = createVercelScope("client");
   const preferredSlug = buildVercelProjectSlug(project);
-  const { slug, vercelProject } = await ensureVercelProjectForMoonrise(headers, project, preferredSlug);
+  const { slug, vercelProject } = await ensureVercelProjectForMoonrise(clientScope, project, preferredSlug);
 
     const files = [
       {
@@ -3709,7 +3802,7 @@ async function deployProjectToVercel(supabase, project) {
 
     const deployRes = await fetch("https://api.vercel.com/v13/deployments", {
       method: "POST",
-      headers,
+      headers: clientScope.headers,
       body: JSON.stringify({
       name: slug,
       project: vercelProject.name || slug,
@@ -3723,8 +3816,8 @@ async function deployProjectToVercel(supabase, project) {
       throw new Error(deployData?.error?.message || `Vercel deploy failed (${deployRes.status})`);
     }
 
-  await disableVercelDeploymentProtection(headers, vercelProject.id);
-  const url = await resolvePublicProductionUrl(headers, deployData, slug);
+  await disableVercelDeploymentProtection(clientScope, vercelProject.id);
+  const url = await resolvePublicProductionUrl(clientScope, deployData, slug);
   const publishedAt = new Date().toISOString();
   const ctx = {
     ...(project.business_context && typeof project.business_context === "object" ? project.business_context : {}),
@@ -3750,6 +3843,26 @@ async function deployProjectToVercel(supabase, project) {
   return { url, deployment: deployData, watermarked: isWatermarkActive(project), vercelSlug: slug };
 }
 
+async function deleteVercelClientProject(slug) {
+  if (!slug) return false;
+  const scopes = [createVercelScope("client"), createVercelScope("studio")];
+  let lastError = null;
+  for (const scope of scopes) {
+    const delRes = await fetch(
+      `https://api.vercel.com/v9/projects/${encodeURIComponent(slug)}${scope.teamQuery}`,
+      {
+        method: "DELETE",
+        headers: scope.headers,
+      }
+    );
+    if (delRes.ok || delRes.status === 404) return true;
+    const data = await delRes.json().catch(() => ({}));
+    lastError = new Error(data?.error?.message || `Vercel unpublish failed (${delRes.status})`);
+  }
+  if (lastError) throw lastError;
+  return true;
+}
+
 async function unpublishProjectFromVercel(supabase, project) {
   const token = process.env.VERCEL_TOKEN;
   const ctx =
@@ -3757,18 +3870,7 @@ async function unpublishProjectFromVercel(supabase, project) {
   const slug = slugifyVercelSegment(ctx.vercelSlug) || buildVercelProjectSlug(project);
 
   if (token && slug) {
-    const headers = vercelApiHeaders(token);
-    const delRes = await fetch(
-      `https://api.vercel.com/v9/projects/${encodeURIComponent(slug)}${vercelTeamQuery()}`,
-      {
-        method: "DELETE",
-        headers,
-      }
-    );
-    if (!delRes.ok && delRes.status !== 404) {
-      const data = await delRes.json().catch(() => ({}));
-      throw new Error(data?.error?.message || `Vercel unpublish failed (${delRes.status})`);
-    }
+    await deleteVercelClientProject(slug);
   }
 
   const nextStatus = project.watermark_enabled ? "draft" : "paid";

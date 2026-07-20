@@ -43,3 +43,7 @@ services:
         sync: false
       - key: WORKER_PUBLIC_URL
         sync: false
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: WEBSITE_PRESETS_SOURCE
+        value: github
