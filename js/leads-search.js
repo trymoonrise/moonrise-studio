@@ -1770,13 +1770,15 @@
     return true;
   }
 
-  const SLIDE_COMPLETE_RATIO = 0.96;
-  const SLIDE_MIN_DRAG_PX = 36;
+  const SLIDE_COMPLETE_TOLERANCE_PX = 1;
+  const SLIDE_MIN_DRAG_PX = 48;
+  const SLIDE_MIN_DRAG_RATIO = 0.55;
 
   function slideCompletes(current, max, dragPx) {
     if (max <= 0) return false;
-    if (dragPx < SLIDE_MIN_DRAG_PX) return false;
-    return current >= max - 3 || current >= max * SLIDE_COMPLETE_RATIO;
+    const minDrag = Math.max(SLIDE_MIN_DRAG_PX, max * SLIDE_MIN_DRAG_RATIO);
+    if (dragPx < minDrag) return false;
+    return current >= max - SLIDE_COMPLETE_TOLERANCE_PX;
   }
 
   function slidePad(track) {
@@ -1893,7 +1895,8 @@
     e.stopPropagation();
 
     const onThumb = e.target.closest(".ms-lf-slide-thumb");
-    const captureEl = onThumb ? thumb : track;
+    if (!onThumb) return false;
+    const captureEl = thumb;
     let startLeft = Number.parseFloat(slide.style.getPropertyValue("--ms-lf-slide-x")) || 0;
     startLeft = Math.max(0, Math.min(max, startLeft));
 
@@ -1977,11 +1980,10 @@
     resultsEl.addEventListener(
       "pointerdown",
       (e) => {
-        const slide = e.target.closest(".ms-lf-slide");
+        const thumb = e.target.closest(".ms-lf-slide-thumb");
+        if (!thumb) return;
+        const slide = thumb.closest(".ms-lf-slide");
         if (!slide) return;
-        const onTrack = e.target.closest(".ms-lf-slide-track");
-        const onThumb = e.target.closest(".ms-lf-slide-thumb");
-        if (!onTrack && !onThumb) return;
         beginSlideDrag(e, slide);
       },
       true

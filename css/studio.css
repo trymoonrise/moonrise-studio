@@ -4632,7 +4632,7 @@ input.ms-input:-webkit-autofill:focus {
   padding: var(--ms-lf-slide-pad);
   border-radius: var(--ms-lf-slide-radius);
   overflow: hidden;
-  cursor: grab;
+  cursor: default;
   touch-action: none;
   background: linear-gradient(135deg, #60a5fa, #2563eb);
   box-shadow:

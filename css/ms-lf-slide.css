@@ -15,7 +15,7 @@
   padding: var(--ms-lf-slide-pad);
   border-radius: var(--ms-lf-slide-radius) !important;
   overflow: hidden !important;
-  cursor: grab;
+  cursor: default;
   touch-action: none;
   isolation: isolate;
 }
