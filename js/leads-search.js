@@ -1770,15 +1770,15 @@
     return true;
   }
 
-  const SLIDE_COMPLETE_TOLERANCE_PX = 1;
-  const SLIDE_MIN_DRAG_PX = 48;
-  const SLIDE_MIN_DRAG_RATIO = 0.55;
+  const SLIDE_COMPLETE_TOLERANCE_PX = 2;
+  const SLIDE_MIN_DRAG_RATIO = 0.88;
+  const SLIDE_COMPLETE_RATIO = 0.94;
 
   function slideCompletes(current, max, dragPx) {
     if (max <= 0) return false;
-    const minDrag = Math.max(SLIDE_MIN_DRAG_PX, max * SLIDE_MIN_DRAG_RATIO);
+    const minDrag = max * SLIDE_MIN_DRAG_RATIO;
     if (dragPx < minDrag) return false;
-    return current >= max - SLIDE_COMPLETE_TOLERANCE_PX;
+    return current >= max * SLIDE_COMPLETE_RATIO - SLIDE_COMPLETE_TOLERANCE_PX;
   }
 
   function slidePad(track) {
@@ -1787,30 +1787,54 @@
     return Number.parseFloat(style.paddingLeft) || 4;
   }
 
+  function slideThumbWidth(thumb) {
+    return thumb?.getBoundingClientRect().width || thumb?.offsetWidth || 44;
+  }
+
+  function slideXFromPointer(track, clientX, max) {
+    const rect = track.getBoundingClientRect();
+    const pad = slidePad(track);
+    const thumbW = slideThumbWidth(track.querySelector(".ms-lf-slide-thumb"));
+    const raw = clientX - rect.left - pad - thumbW / 2;
+    return Math.max(0, Math.min(max, raw));
+  }
+
   function slideMax(slide, pass) {
     const track = slide.querySelector(".ms-lf-slide-track");
     const thumb = slide.querySelector(".ms-lf-slide-thumb");
     if (!track || !thumb) return 0;
     const pad = slidePad(track);
     void track.offsetWidth;
+    void slide.offsetWidth;
     const trackW =
       track.getBoundingClientRect().width ||
       track.clientWidth ||
       slide.getBoundingClientRect().width ||
+      slide.clientWidth ||
       0;
-    const thumbW = thumb.getBoundingClientRect().width || thumb.offsetWidth || 44;
+    const thumbW = slideThumbWidth(thumb);
     let max = Math.max(0, trackW - pad * 2 - thumbW);
-    if (max <= 0 && (pass || 0) < 2) {
+    if (max <= 0 && (pass || 0) < 3) {
       return slideMax(slide, (pass || 0) + 1);
     }
     return max;
+  }
+
+  function readSlideX(slide) {
+    const inline = slide.style.getPropertyValue("--ms-lf-slide-x");
+    if (inline) {
+      const parsed = Number.parseFloat(inline);
+      if (Number.isFinite(parsed)) return parsed;
+    }
+    const computed = window.getComputedStyle(slide).getPropertyValue("--ms-lf-slide-x");
+    const parsed = Number.parseFloat(computed);
+    return Number.isFinite(parsed) ? parsed : 0;
   }
 
   function clearSlideInlineStyles(slide) {
     if (!slide) return;
     slide.style.removeProperty("--ms-lf-slide-x");
     slide.style.removeProperty("--ms-lf-slide-fill");
-    slide.querySelector(".ms-lf-slide-thumb")?.style.removeProperty("transform");
   }
 
   function setSlideX(slide, x, max) {
@@ -1818,12 +1842,9 @@
     const thumb = slide.querySelector(".ms-lf-slide-thumb");
     const clamped = Math.max(0, Math.min(max, x));
     const pad = slidePad(track);
-    const thumbW = thumb?.offsetWidth || 44;
+    const thumbW = slideThumbWidth(thumb);
     slide.style.setProperty("--ms-lf-slide-x", clamped + "px");
     slide.style.setProperty("--ms-lf-slide-fill", pad + clamped + thumbW + "px");
-    if (thumb) {
-      thumb.style.setProperty("transform", "translate3d(" + clamped + "px, -50%, 0)", "important");
-    }
     return clamped;
   }
 
@@ -1882,11 +1903,12 @@
     if (slide.classList.contains("is-completing") || slide.classList.contains("is-returning")) {
       return false;
     }
+    if (slide.dataset.slideDragging === "1") return false;
 
     const track = slide.querySelector(".ms-lf-slide-track");
     const thumb = slide.querySelector(".ms-lf-slide-thumb");
     if (!track || !thumb) return false;
-    if (thumb.getAttribute("aria-disabled") === "true") return false;
+    if (thumb.disabled || thumb.getAttribute("aria-disabled") === "true") return false;
 
     const max = slideMax(slide);
     if (max <= 0) return false;
@@ -1895,10 +1917,9 @@
     e.stopPropagation();
 
     const onThumb = e.target.closest(".ms-lf-slide-thumb");
-    if (!onThumb) return false;
-    const captureEl = thumb;
-    let startLeft = Number.parseFloat(slide.style.getPropertyValue("--ms-lf-slide-x")) || 0;
+    let startLeft = onThumb ? readSlideX(slide) : slideXFromPointer(track, e.clientX, max);
     startLeft = Math.max(0, Math.min(max, startLeft));
+    setSlideX(slide, startLeft, max);
 
     const startX = e.clientX;
     let current = startLeft;
@@ -1908,9 +1929,13 @@
     let pendingX = startLeft;
     const pointerId = e.pointerId ?? 1;
     const usePointer = e.pointerId != null;
+    const captureEl = track;
 
+    slide.dataset.slideDragging = "1";
     slide.classList.remove("is-returning", "is-completing");
     slide.classList.add("is-dragging");
+    document.body.classList.add("ms-lf-slide-dragging");
+
     if (usePointer) {
       try {
         captureEl.setPointerCapture(pointerId);
@@ -1925,12 +1950,20 @@
       current = setSlideX(slide, pendingX, max);
     };
 
+    const clientXFromEvent = (ev) => {
+      if (ev.clientX != null) return ev.clientX;
+      const touch = ev.changedTouches?.[0] || ev.touches?.[0];
+      return touch ? touch.clientX : startX;
+    };
+
     const onMove = (ev) => {
       if (finished) return;
       if (usePointer && ev.pointerId != null && ev.pointerId !== pointerId) return;
       if (!usePointer && ev.type === "mousemove" && ev.buttons === 0) return;
-      const nextX = startLeft + (ev.clientX - startX);
-      if (Math.abs(ev.clientX - startX) >= 2) moved = true;
+      ev.preventDefault();
+      const cx = clientXFromEvent(ev);
+      const nextX = startLeft + (cx - startX);
+      if (Math.abs(cx - startX) >= 2) moved = true;
       pendingX = nextX;
       if (!raf) raf = window.requestAnimationFrame(flush);
     };
@@ -1939,6 +1972,8 @@
       if (finished) return;
       if (usePointer && ev?.pointerId != null && ev.pointerId !== pointerId) return;
       finished = true;
+      delete slide.dataset.slideDragging;
+      document.body.classList.remove("ms-lf-slide-dragging");
       if (raf) window.cancelAnimationFrame(raf);
       if (usePointer) {
         window.removeEventListener("pointermove", onMove, true);
@@ -1947,6 +1982,9 @@
       } else {
         window.removeEventListener("mousemove", onMove, true);
         window.removeEventListener("mouseup", cleanup, true);
+        window.removeEventListener("touchmove", onMove, true);
+        window.removeEventListener("touchend", cleanup, true);
+        window.removeEventListener("touchcancel", cleanup, true);
       }
       if (usePointer) {
         try {
@@ -1957,7 +1995,8 @@
       }
       slide.classList.remove("is-dragging");
       current = setSlideX(slide, pendingX, max);
-      const dragPx = Math.abs(ev?.clientX != null ? ev.clientX - startX : pendingX - startLeft);
+      const endX = ev ? clientXFromEvent(ev) : pendingX;
+      const dragPx = Math.abs(endX - startX);
       if (moved && slideCompletes(current, max, dragPx)) completeSlide(slide);
       else resetSlide(slide, true);
     };
@@ -1966,6 +2005,10 @@
       window.addEventListener("pointermove", onMove, true);
       window.addEventListener("pointerup", cleanup, true);
       window.addEventListener("pointercancel", cleanup, true);
+    } else if (e.type === "touchstart") {
+      window.addEventListener("touchmove", onMove, { capture: true, passive: false });
+      window.addEventListener("touchend", cleanup, true);
+      window.addEventListener("touchcancel", cleanup, true);
     } else {
       window.addEventListener("mousemove", onMove, true);
       window.addEventListener("mouseup", cleanup, true);
@@ -1977,14 +2020,28 @@
     if (!resultsEl || resultsEl.dataset.slideBound === "1") return;
     resultsEl.dataset.slideBound = "1";
 
+    function onSlideStart(e) {
+      const track = e.target.closest(".ms-lf-slide-track");
+      if (!track) return;
+      const slide = track.closest(".ms-lf-slide");
+      if (!slide) return;
+      beginSlideDrag(e, slide);
+    }
+
+    resultsEl.addEventListener("pointerdown", onSlideStart, true);
     resultsEl.addEventListener(
-      "pointerdown",
+      "touchstart",
       (e) => {
-        const thumb = e.target.closest(".ms-lf-slide-thumb");
-        if (!thumb) return;
-        const slide = thumb.closest(".ms-lf-slide");
-        if (!slide) return;
-        beginSlideDrag(e, slide);
+        if (typeof window.PointerEvent === "function") return;
+        onSlideStart(e);
+      },
+      { capture: true, passive: false }
+    );
+    resultsEl.addEventListener(
+      "mousedown",
+      (e) => {
+        if (typeof window.PointerEvent === "function") return;
+        onSlideStart(e);
       },
       true
     );
@@ -1997,15 +2054,17 @@
         return;
       }
       const max = slideMax(slide);
-      const cur = Number.parseFloat(slide.style.getPropertyValue("--ms-lf-slide-x")) || 0;
+      const cur = readSlideX(slide);
 
       if (e.key === "ArrowRight" || e.key === "End") {
         e.preventDefault();
-        if (e.key === "End" || slideCompletes(cur, max, max)) completeSlide(slide);
+        if (e.key === "End") completeSlide(slide);
         else {
+          const next = Math.min(max, cur + Math.max(28, max * 0.22));
           slide.classList.add("is-returning");
-          setSlideX(slide, Math.min(max, cur + Math.max(28, max * 0.22)), max);
-          window.setTimeout(() => slide.classList.remove("is-returning"), 220);
+          setSlideX(slide, next, max);
+          if (slideCompletes(next, max, next)) completeSlide(slide);
+          else window.setTimeout(() => slide.classList.remove("is-returning"), 220);
         }
       } else if (e.key === "ArrowLeft" || e.key === "Home" || e.key === "Escape") {
         e.preventDefault();
@@ -2135,11 +2194,11 @@
       '<div class="ms-lf-slide-track">' +
       '<div class="ms-lf-slide-fill" aria-hidden="true"></div>' +
       '<span class="ms-lf-slide-label" aria-hidden="true">Slide to generate</span>' +
-      '<div class="ms-lf-slide-thumb" role="button" tabindex="0" aria-label="Slide to generate site for ' +
+      '<button type="button" class="ms-lf-slide-thumb" aria-label="Slide to generate site for ' +
       escapeHtml(name) +
       '">' +
       ICO.hammer +
-      "</div>" +
+      "</button>" +
       "</div></div></footer></article>"
     );
   }

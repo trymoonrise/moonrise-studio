@@ -1,4 +1,4 @@
-/* Slide-to-generate overrides - keep thumb anchored left; position via --ms-lf-slide-x */
+/* Slide-to-generate — thumb position via --ms-lf-slide-x on .ms-lf-slide */
 .ms-lf-slide {
   --ms-lf-slide-x: 0px;
   --ms-lf-slide-fill: calc(var(--ms-lf-slide-pad) + 44px);
@@ -9,15 +9,15 @@
 .ms-lf-slide-track {
   position: relative !important;
   display: block !important;
-  align-items: unset !important;
-  justify-content: unset !important;
   box-sizing: border-box;
   padding: var(--ms-lf-slide-pad);
   border-radius: var(--ms-lf-slide-radius) !important;
   overflow: hidden !important;
-  cursor: default;
+  cursor: grab;
   touch-action: none;
   isolation: isolate;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .ms-lf-slide-fill {
@@ -48,24 +48,51 @@
 .ms-lf-slide-thumb {
   position: absolute !important;
   left: var(--ms-lf-slide-pad) !important;
-  right: auto !important;
   top: 50% !important;
-  bottom: auto !important;
   z-index: 2;
   width: 44px;
   height: 44px;
   margin: 0 !important;
-  margin-inline: 0 !important;
-  flex: none !important;
-  border: 0;
   padding: 0;
+  border: 0;
   appearance: none;
   -webkit-appearance: none;
   border-radius: 12px !important;
-  transform: translate3d(var(--ms-lf-slide-x), -50%, 0) !important;
+  background: #fff;
+  color: #2563eb;
+  cursor: grab;
+  pointer-events: auto;
+  touch-action: none;
+  transform: translate3d(var(--ms-lf-slide-x, 0px), -50%, 0);
+  will-change: transform;
 }
 
-.ms-lf-slide-thumb:hover,
-.ms-lf-slide-thumb:focus {
-  transform: translate3d(var(--ms-lf-slide-x), -50%, 0) !important;
+.ms-lf-slide.is-dragging .ms-lf-slide-track,
+.ms-lf-slide.is-dragging .ms-lf-slide-thumb {
+  cursor: grabbing;
+}
+
+.ms-lf-slide.is-dragging .ms-lf-slide-thumb {
+  transition: none;
+}
+
+.ms-lf-slide.is-returning .ms-lf-slide-thumb,
+.ms-lf-slide.is-completing .ms-lf-slide-thumb {
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ms-lf-slide-thumb:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.ms-lf-slide-thumb .ms-lf-pro-ico,
+.ms-lf-slide-thumb svg {
+  pointer-events: none;
+}
+
+body.ms-lf-slide-dragging {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
