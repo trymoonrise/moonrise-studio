@@ -1,7 +1,7 @@
 /**
  * Builder - recent projects rail.
  */
-(function () {
+(function (global) {
   const LIMIT = 40;
   let allProjects = [];
   let projectLiveFilter = "all";
@@ -191,7 +191,9 @@
     const listEl = document.getElementById("builder-recent-list");
     if (!listEl || document.body.dataset.page !== "builder") return;
 
-    listEl.innerHTML = '<p class="ms-muted ms-bs-recent-loading">Loading…</p>';
+    if (!allProjects.length) {
+      listEl.innerHTML = '<p class="ms-muted ms-bs-recent-loading">Loading…</p>';
+    }
 
     try {
       const user = await window.StudioAuth.getUser();
@@ -201,7 +203,11 @@
         return;
       }
 
-      const client = window.SiteSupabase.getClient();
+      const client = window.SiteSupabase?.getClient?.();
+      if (!client) {
+        throw new Error("Supabase client unavailable");
+      }
+
       const { data, error } = await window.StudioAuth.withTimeout(
         client
           .from("projects")
@@ -209,7 +215,7 @@
           .eq("user_id", user.id)
           .order("updated_at", { ascending: false })
           .limit(LIMIT),
-        6000,
+        8000,
         "Recent projects"
       );
       if (error) throw error;
@@ -218,8 +224,9 @@
       await paintBuilderRecentProjects();
     } catch (e) {
       console.warn("builder-recent load", e);
-      allProjects = [];
-      listEl.innerHTML = '<p class="ms-muted ms-bs-recent-empty">Could not load projects.</p>';
+      if (!allProjects.length) {
+        listEl.innerHTML = '<p class="ms-muted ms-bs-recent-empty">Could not load projects.</p>';
+      }
     }
   }
 
@@ -237,11 +244,26 @@
   bindProjectLiveFilter();
   bindRecentPanelHeightSync();
 
-  document.addEventListener("ms:auth-ready", () => {
-    void loadBuilderRecentProjects();
-  });
-
-  if (document.body.dataset.page === "builder") {
+  function start() {
     void loadBuilderRecentProjects();
   }
-})();
+
+  if (document.body.dataset.msAuthFired === "1") start();
+  else document.addEventListener("ms:auth-ready", start, { once: true });
+
+  window.setTimeout(() => {
+    if (document.body.dataset.page === "builder" && !allProjects.length) start();
+  }, 2500);
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && document.body.dataset.page === "builder") {
+      void loadBuilderRecentProjects();
+    }
+  });
+
+  window.addEventListener("pageshow", (e) => {
+    if (e.persisted && document.body.dataset.page === "builder") {
+      void loadBuilderRecentProjects();
+    }
+  });
+})(window);
