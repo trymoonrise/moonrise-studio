@@ -8,12 +8,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css?v=20260719-auth-email">
+  <link rel="stylesheet" href="css/studio.css?v=20260719-perf">
+  <link rel="stylesheet" href="css/studio-motion.css?v=20260719-perf">
   <meta name="color-scheme" content="light">
   <link rel="preconnect" href="https://erfaxgmnzdropviormpj.supabase.co" crossorigin>
-  <script src="js/config.js?v=20260719-seo"></script>
-  <script src="js/site-branding.js?v=20260719-seo"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="js/config.js?v=20260719-seo"></script>
+  <script defer src="js/site-branding.js?v=20260719-seo"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body data-page="login">
   <p class="ms-auth-file-warning" id="auth-file-warning" hidden role="alert">
@@ -97,10 +98,11 @@
       </div>
       <div class="ms-auth-autosave" id="autosave-wrap">
         <div class="ms-auth-autosave-copy">
-          <span class="ms-auth-autosave-title">Remember email</span>
+          <span class="ms-auth-autosave-title">Auto save</span>
+          <span class="ms-auth-autosave-hint">Remember email on this device</span>
         </div>
-        <label class="ms-switch" title="Remember email on this device">
-          <input type="checkbox" id="auth-autosave" role="switch" aria-checked="false" aria-label="Remember email on this device">
+        <label class="ms-switch" title="Auto save email on this device">
+          <input type="checkbox" id="auth-autosave" role="switch" aria-checked="false" aria-label="Auto save email on this device">
           <span class="ms-switch-track" aria-hidden="true"></span>
         </label>
       </div>
@@ -122,13 +124,13 @@
     </form>
   </div>
 
-  <script src="js/segment-switch.js"></script>
-  <script src="js/ui-motion.js?v=20260719-onb-motion"></script>
-  <script src="js/toast.js"></script>
-  <script src="js/handles.js"></script>
-  <script src="js/supabase-client.js?v=20260719-email-auto-login"></script>
-  <script src="js/auth.js?v=20260719-signin-simple"></script>
-  <script>
+  <script defer src="js/segment-switch.js"></script>
+  <script defer src="js/ui-motion.js?v=20260719-onb-motion"></script>
+  <script defer src="js/toast.js"></script>
+  <script defer src="js/handles.js"></script>
+  <script defer src="js/supabase-client.js?v=20260719-email-auto-login"></script>
+  <script defer src="js/auth.js?v=20260719-signin-simple"></script>
+  <script defer>
     (async function () {
       window.StudioAuth?.warmAuthService?.();
       if (location.protocol === "file:") {
@@ -490,7 +492,7 @@
         if (resendWrap) resendWrap.hidden = true;
         backWrap.hidden = !(showForgot || showRecover);
         if (autosaveWrap) {
-          autosaveWrap.hidden = mode !== "signup";
+          autosaveWrap.hidden = showForgot || showRecover;
         }
 
         if (emailInput) {

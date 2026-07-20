@@ -1,4 +1,4 @@
-@import url("studio-motion.css?v=20260719-onb-motion");
+/* Motion helpers loaded as a separate stylesheet (see HTML) to avoid @import blocking. */
 
 /* Hide protected app pages until auth is verified (see js/auth-gate-head.js). */
 html.ms-auth-gating body {
@@ -4302,7 +4302,7 @@ input.ms-input:-webkit-autofill:focus {
   background: #fff;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
   box-sizing: border-box;
-  contain: layout paint style;
+  contain: layout style;
 }
 
 .ms-lead-card.ms-lf-pro.is-saved {
@@ -4623,7 +4623,6 @@ input.ms-input:-webkit-autofill:focus {
   user-select: none;
   touch-action: none;
   -webkit-user-select: none;
-  contain: layout style;
 }
 
 .ms-lf-slide-track {
@@ -4633,7 +4632,8 @@ input.ms-input:-webkit-autofill:focus {
   padding: var(--ms-lf-slide-pad);
   border-radius: var(--ms-lf-slide-radius);
   overflow: hidden;
-  cursor: default;
+  cursor: grab;
+  touch-action: none;
   background: linear-gradient(135deg, #60a5fa, #2563eb);
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.28) inset,
@@ -4730,8 +4730,12 @@ input.ms-input:-webkit-autofill:focus {
   transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+.ms-lf-slide.is-dragging .ms-lf-slide-track,
 .ms-lf-slide.is-dragging .ms-lf-slide-thumb {
   cursor: grabbing;
+}
+
+.ms-lf-slide.is-dragging .ms-lf-slide-thumb {
   transition: none;
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.95) inset,
@@ -6813,6 +6817,26 @@ body[data-page="editor"].ms-lb-workspace .ms-builder-page {
 
 .ms-lb-publish-btn.needs-update:not(:disabled):hover {
   filter: brightness(1.06);
+}
+
+.ms-lb-publish-btn.is-loading,
+.ms-lb-publish-btn.is-loading:disabled {
+  opacity: 1;
+  cursor: wait;
+  pointer-events: none;
+  animation: none;
+  transform: none;
+  filter: brightness(0.98);
+}
+
+.ms-lb-publish-btn.is-loading .ms-lb-publish-icon {
+  animation: ms-lb-publish-spin 0.72s linear infinite;
+}
+
+@keyframes ms-lb-publish-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes ms-lb-publish-live-pulse {
@@ -9573,6 +9597,26 @@ body.ms-lb-onboarding .ms-lb-mode {
   box-shadow: 0 10px 22px rgba(59, 130, 246, 0.28);
 }
 
+.ms-lb-settings-publish.is-loading,
+.ms-lb-settings-publish.is-loading:disabled {
+  cursor: wait;
+  opacity: 0.88;
+  pointer-events: none;
+}
+
+.ms-lb-settings-publish.is-loading::before {
+  content: "";
+  display: inline-block;
+  width: 0.95rem;
+  height: 0.95rem;
+  margin-right: 0.45rem;
+  vertical-align: -0.12em;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: ms-lb-publish-spin 0.72s linear infinite;
+}
+
 .ms-lb-settings-unpublish {
   margin-top: 0;
   border: 1px solid rgba(239, 68, 68, 0.28);
@@ -9585,11 +9629,13 @@ body.ms-lb-onboarding .ms-lb-mode {
   border-color: rgba(239, 68, 68, 0.45);
 }
 
-.ms-lb-unpublish-dialog-panel {
+.ms-lb-unpublish-dialog-panel,
+.ms-lb-delete-dialog-panel {
   text-align: center;
 }
 
-.ms-lb-unpublish-dialog-icon {
+.ms-lb-unpublish-dialog-icon,
+.ms-lb-delete-dialog-icon {
   width: 52px;
   height: 52px;
   margin: 0 auto 0.85rem;
@@ -9602,20 +9648,24 @@ body.ms-lb-onboarding .ms-lb-mode {
   box-shadow: 0 10px 24px rgba(239, 68, 68, 0.12);
 }
 
-.ms-lb-unpublish-dialog-icon svg {
+.ms-lb-unpublish-dialog-icon svg,
+.ms-lb-delete-dialog-icon svg {
   width: 24px;
   height: 24px;
 }
 
-.ms-lb-unpublish-dialog-panel .ms-clients-dialog-head {
+.ms-lb-unpublish-dialog-panel .ms-clients-dialog-head,
+.ms-lb-delete-dialog-panel .ms-clients-dialog-head {
   margin-bottom: 0.55rem;
 }
 
-.ms-lb-unpublish-dialog-panel .ms-clients-dialog-title {
+.ms-lb-unpublish-dialog-panel .ms-clients-dialog-title,
+.ms-lb-delete-dialog-panel .ms-clients-dialog-title {
   font-size: 1.35rem;
 }
 
-.ms-lb-unpublish-dialog-panel .ms-clients-dialog-lead {
+.ms-lb-unpublish-dialog-panel .ms-clients-dialog-lead,
+.ms-lb-delete-dialog-panel .ms-clients-dialog-lead {
   margin: 0;
 }
 
@@ -9633,7 +9683,22 @@ body.ms-lb-onboarding .ms-lb-mode {
   white-space: nowrap;
 }
 
-.ms-lb-unpublish-dialog-panel .ms-clients-dialog-actions {
+.ms-lb-delete-project-name {
+  margin: 0.85rem 0 0.15rem;
+  padding: 0.55rem 0.8rem;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f172a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ms-lb-unpublish-dialog-panel .ms-clients-dialog-actions,
+.ms-lb-delete-dialog-panel .ms-clients-dialog-actions {
   margin-top: 0.35rem;
 }
 
@@ -13187,7 +13252,7 @@ body.is-home-ready .ms-home-hero-copy {
 
   .ms-home-hero {
     padding:
-      clamp(2.75rem, 10vw, 4.25rem)
+      clamp(3.25rem, 11vh, 5rem)
       max(1.35rem, env(safe-area-inset-right))
       2.75rem
       max(1.35rem, env(safe-area-inset-left));
@@ -13202,11 +13267,11 @@ body.is-home-ready .ms-home-hero-copy {
   .ms-home-hero-copy {
     width: 100%;
     max-width: none;
-    min-height: 0;
+    min-height: clamp(16rem, 38svh, 22rem);
     margin: 0;
-    padding: clamp(1.25rem, 3.5vw, 1.75rem) 0 0.35rem;
+    padding: clamp(1.75rem, 7vh, 3.25rem) 0 0.65rem;
     gap: 0.95rem;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: flex-start;
     text-align: left;
   }
@@ -13234,7 +13299,7 @@ body.is-home-ready .ms-home-hero-copy {
   .ms-home-cascade {
     max-width: none;
     width: 100%;
-    margin-top: 0.35rem;
+    margin-top: 0.85rem;
     grid-template-columns: repeat(6, minmax(0, 1fr));
     grid-template-rows: repeat(8, clamp(58px, 12vw, 88px));
     gap: 0.9rem;
@@ -13391,11 +13456,13 @@ body.is-home-ready .ms-home-hero-copy {
   }
 
   .ms-home-hero {
-    padding-top: clamp(2.5rem, 9vw, 3.75rem);
+    padding-top: clamp(3rem, 10vh, 4.5rem);
   }
 
   .ms-home-hero-copy {
     gap: 1.15rem;
+    min-height: clamp(15rem, 36svh, 21rem);
+    padding-top: clamp(1.5rem, 6vh, 2.75rem);
   }
 
   .ms-home-ctas {
@@ -13442,10 +13509,15 @@ body.is-home-ready .ms-home-hero-copy {
 
 @media (max-width: 520px) {
   .ms-home-hero {
-    padding-top: clamp(2.25rem, 8.5vw, 3.5rem);
+    padding-top: clamp(2.85rem, 9vh, 4rem);
     padding-left: max(1.25rem, env(safe-area-inset-left));
     padding-right: max(1.25rem, env(safe-area-inset-right));
     padding-bottom: 2.5rem;
+  }
+
+  .ms-home-hero-copy {
+    min-height: clamp(14rem, 34svh, 19.5rem);
+    padding-top: clamp(1.35rem, 5.5vh, 2.5rem);
   }
 
   .ms-home-title {
@@ -16514,7 +16586,7 @@ body.ms-lb-qr-open {
   border-radius: 1.35rem;
   padding: 1.1rem 1.15rem 1.15rem;
   transform-style: preserve-3d;
-  transform: rotateX(3deg) rotateY(-5deg);
+  transform: none;
   transition: transform 0.16s ease-out;
   background:
     linear-gradient(155deg, rgba(255, 255, 255, 0.92) 0%, rgba(248, 250, 252, 0.88) 42%, rgba(238, 242, 255, 0.9) 100%);
@@ -16539,7 +16611,7 @@ body.ms-lb-qr-open {
 .ms-lb-qr-card-copy {
   min-width: 0;
   display: grid;
-  gap: 0.45rem;
+  gap: 0.55rem;
   align-content: center;
   padding: 0 0.25rem 0 2.1rem;
 }
@@ -16660,13 +16732,13 @@ body.ms-lb-qr-open {
 }
 
 .ms-lb-qr-meta {
-  margin: 0;
+  margin: 0.1rem 0 0;
   padding: 0;
   list-style: none;
   position: relative;
   z-index: 1;
   display: grid;
-  gap: 0.35rem;
+  gap: 0.5rem;
 }
 
 .ms-lb-qr-meta li {

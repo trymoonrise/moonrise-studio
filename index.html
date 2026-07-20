@@ -19,10 +19,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css?v=20260719-bloom-nav">
+  <link rel="stylesheet" href="css/studio.css?v=20260719-home-mobile">
+  <link rel="stylesheet" href="css/studio-motion.css?v=20260719-perf">
   <meta name="color-scheme" content="light">
-  <script src="js/config.js?v=20260719-seo"></script>
-  <script src="js/site-branding.js?v=20260719-seo"></script>
+  <script defer src="js/config.js?v=20260719-seo"></script>
+  <script defer src="js/site-branding.js?v=20260719-seo"></script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -379,7 +380,7 @@
     <footer class="ms-home-footer">
       <div class="ms-home-footer-copy">
         <a class="ms-home-brand" href="index.html">
-          <img src="doc/MoonriseLogo.png" alt="" width="32" height="32">
+          <img src="doc/MoonriseLogo.png" alt="" width="32" height="32" loading="lazy" decoding="async">
           <strong>trymoonrise.com</strong>
         </a>
         <p>Build websites and get paid when owners unlock on the watermark. Sign up free - you keep 80%.</p>
@@ -396,10 +397,10 @@
     </footer>
   </div>
 
-  <script src="js/home-bloom-nav.js?v=20260719-bloom-nav"></script>
-  <script src="js/ui-motion.js?v=20260719-onb-motion"></script>
-  <script src="js/toast.js"></script>
-  <script>
+  <script defer src="js/home-bloom-nav.js?v=20260719-bloom-nav"></script>
+  <script defer src="js/ui-motion.js?v=20260719-onb-motion"></script>
+  <script defer src="js/toast.js"></script>
+  <script defer>
     (function () {
       if (new URLSearchParams(location.search).get("go") === "app") {
         location.replace("dashboard.html");

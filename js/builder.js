@@ -5411,6 +5411,7 @@
   }
 
   async function publish() {
+    if (publishInFlight) return;
     setError("");
     if (!isPaymentPolicyAgreed()) {
       setError("Check the payment policy agreement before publishing.");
@@ -5422,26 +5423,27 @@
       return;
     }
     if (!state.projectId) return;
-    if (state.mode === "edit") {
-      flushEditHtmlToState();
-      await flushEditAutosaveNow();
-    } else if (state.mode === "code") {
-      state.html = ensureMobileFriendlyHtml(document.getElementById("code-editor")?.value || state.html);
-      await persistHtmlQuiet(state.html).catch(() => {});
-    } else if (state.html) {
-      state.html = ensureMobileFriendlyHtml(state.html);
-      await persistHtmlQuiet(state.html).catch(() => {});
-    }
-    // Publishing is allowed while the watermark is on. The seller isn't the
-    // payer - the live site carries the "Complete your order" widget and the
-    // business owner pays there to remove the watermark (which auto-redeploys
-    // the clean site).
-    await persistPrice();
-    const wasLive = !!liveSiteUrl();
-    const hadUpdates = wasLive && hasUnpublishedChanges();
-    const watermarked = state.project?.watermark_enabled !== false;
-    setStatus(watermarked ? "Publishing to Vercel (with watermark)…" : "Publishing to Vercel…");
+    setPublishLoading(true);
     try {
+      if (state.mode === "edit") {
+        flushEditHtmlToState();
+        await flushEditAutosaveNow();
+      } else if (state.mode === "code") {
+        state.html = ensureMobileFriendlyHtml(document.getElementById("code-editor")?.value || state.html);
+        await persistHtmlQuiet(state.html).catch(() => {});
+      } else if (state.html) {
+        state.html = ensureMobileFriendlyHtml(state.html);
+        await persistHtmlQuiet(state.html).catch(() => {});
+      }
+      // Publishing is allowed while the watermark is on. The seller isn't the
+      // payer - the live site carries the "Complete your order" widget and the
+      // business owner pays there to remove the watermark (which auto-redeploys
+      // the clean site).
+      await persistPrice();
+      const wasLive = !!liveSiteUrl();
+      const hadUpdates = wasLive && hasUnpublishedChanges();
+      const watermarked = state.project?.watermark_enabled !== false;
+      setStatus(watermarked ? "Publishing to Vercel (with watermark)…" : "Publishing to Vercel…");
       const headers = await authHeaders();
       const res = await fetch(workerUrl() + "/publish", {
         method: "POST",
@@ -5466,6 +5468,8 @@
     } catch (e) {
       setError(e.message || "Publish failed");
       setStatus("");
+    } finally {
+      setPublishLoading(false);
     }
   }
 
@@ -5606,6 +5610,67 @@
     });
   }
 
+  let deleteConfirmResolver = null;
+
+  function closeDeleteConfirm(result) {
+    const dialog = document.getElementById("lb-delete-dialog");
+    const submit = document.getElementById("lb-delete-submit");
+    if (submit) {
+      submit.disabled = false;
+      submit.textContent = "Delete project";
+    }
+    dialog?.close();
+    if (!deleteConfirmResolver) return;
+    const resolve = deleteConfirmResolver;
+    deleteConfirmResolver = null;
+    resolve(!!result);
+  }
+
+  function confirmDeleteProject() {
+    return new Promise((resolve) => {
+      const dialog = document.getElementById("lb-delete-dialog");
+      const nameEl = document.getElementById("lb-delete-project-name");
+      if (!dialog) {
+        resolve(false);
+        return;
+      }
+      if (nameEl) {
+        const name = String(state.project?.business_name || state.businessName || "This project").trim();
+        nameEl.textContent = name || "This project";
+      }
+      deleteConfirmResolver = resolve;
+      if (typeof dialog.showModal === "function") dialog.showModal();
+      else dialog.setAttribute("open", "open");
+      window.requestAnimationFrame(() => {
+        document.getElementById("lb-delete-cancel")?.focus();
+      });
+    });
+  }
+
+  function bindDeleteConfirm() {
+    const dialog = document.getElementById("lb-delete-dialog");
+    if (!dialog) return;
+
+    document.getElementById("lb-delete-cancel")?.addEventListener("click", () => {
+      closeDeleteConfirm(false);
+    });
+    document.getElementById("lb-delete-submit")?.addEventListener("click", () => {
+      const submit = document.getElementById("lb-delete-submit");
+      if (submit) {
+        submit.disabled = true;
+        submit.textContent = "Deleting…";
+      }
+      closeDeleteConfirm(true);
+    });
+    dialog.addEventListener("cancel", (event) => {
+      event.preventDefault();
+      closeDeleteConfirm(false);
+    });
+    dialog.addEventListener("click", (event) => {
+      if (event.target === dialog) closeDeleteConfirm(false);
+    });
+  }
+
   async function deleteProject() {
     if (!state.projectId) {
       setError("No project to delete");
@@ -5615,7 +5680,8 @@
       setError("This website was paid for - it can’t be deleted.");
       return;
     }
-    if (!confirm("Delete this project permanently? This cannot be undone.")) return;
+    const confirmed = await confirmDeleteProject();
+    if (!confirmed) return;
     setError("");
     setStatus("Deleting project…");
     try {
@@ -5723,7 +5789,6 @@
       const rows = [];
       if (details.phone) rows.push({ label: "Phone", value: details.phone });
       if (details.address) rows.push({ label: "Address", value: details.address });
-      if (details.siteLabel) rows.push({ label: "Website", value: details.siteLabel });
       rows.forEach((row) => {
         const li = document.createElement("li");
         const label = document.createElement("span");
@@ -5741,7 +5806,7 @@
   }
 
   function qrCardRestTransform() {
-    return "rotateX(3deg) rotateY(-5deg)";
+    return "none";
   }
 
   function closeQrBusinessCard() {
@@ -5754,19 +5819,18 @@
   }
 
   function bindQrCardTilt() {
-    const scene = document.getElementById("lb-qr-scene");
     const card = document.getElementById("lb-qr-card");
-    if (!scene || !card || card.dataset.tiltBound === "1") return;
+    if (!card || card.dataset.tiltBound === "1") return;
     card.dataset.tiltBound = "1";
     card.style.transform = qrCardRestTransform();
-    scene.addEventListener("pointermove", (e) => {
-      const rect = scene.getBoundingClientRect();
+    card.addEventListener("pointermove", (e) => {
+      const rect = card.getBoundingClientRect();
       const x = (e.clientX - rect.left) / rect.width - 0.5;
       const y = (e.clientY - rect.top) / rect.height - 0.5;
       card.style.transform =
-        "rotateY(" + (-5 + x * 24).toFixed(2) + "deg) rotateX(" + (3 + -y * 18).toFixed(2) + "deg)";
+        "rotateY(" + (x * 24).toFixed(2) + "deg) rotateX(" + (-y * 18).toFixed(2) + "deg)";
     });
-    scene.addEventListener("pointerleave", () => {
+    card.addEventListener("pointerleave", () => {
       card.style.transform = qrCardRestTransform();
     });
   }
@@ -5809,6 +5873,34 @@
     });
   }
 
+  function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+    const words = String(text || "").split(/\s+/).filter(Boolean);
+    if (!words.length) return y;
+    let line = "";
+    let cy = y;
+    for (let i = 0; i < words.length; i++) {
+      const test = line ? line + " " + words[i] : words[i];
+      if (ctx.measureText(test).width > maxWidth && line) {
+        ctx.fillText(line, x, cy);
+        line = words[i];
+        cy += lineHeight;
+      } else {
+        line = test;
+      }
+    }
+    if (line) ctx.fillText(line, x, cy);
+    return cy + lineHeight;
+  }
+
+  function drawQrDownloadMetaRow(ctx, label, value, x, y, maxWidth) {
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "700 16px DM Sans, system-ui, sans-serif";
+    ctx.fillText(String(label || "").toUpperCase(), x, y);
+    ctx.fillStyle = "#475569";
+    ctx.font = "500 22px DM Sans, system-ui, sans-serif";
+    return wrapText(ctx, value, x, y + 28, maxWidth, 32);
+  }
+
   async function downloadQrBusinessCardPng() {
     const url = liveSiteUrl();
     const name = qrBusinessName();
@@ -5847,27 +5939,25 @@
     const copyMaxW = cardW * 0.52;
     const details = qrBusinessDetails();
 
+    let textY = cardY + 96;
     ctx.fillStyle = "#0f172a";
-    ctx.font = "700 48px DM Sans, system-ui, sans-serif";
-    let detailY = wrapText(ctx, name, copyX, cardY + 108, copyMaxW, 52);
+    ctx.font = "700 44px DM Sans, system-ui, sans-serif";
+    textY = wrapText(ctx, name, copyX, textY, copyMaxW, 54);
 
     if (details.category) {
+      textY += 8;
       ctx.fillStyle = "#64748b";
       ctx.font = "600 24px DM Sans, system-ui, sans-serif";
-      detailY = wrapText(ctx, details.category, copyX, detailY + 14, copyMaxW, 30);
+      textY = wrapText(ctx, details.category, copyX, textY, copyMaxW, 32);
     }
 
-    const detailLines = [];
-    if (details.phone) detailLines.push("Phone · " + details.phone);
-    if (details.address) detailLines.push(details.address);
-    if (details.siteLabel) detailLines.push("Website · " + details.siteLabel);
-
-    if (detailLines.length) {
-      ctx.fillStyle = "#475569";
-      ctx.font = "500 22px DM Sans, system-ui, sans-serif";
-      detailLines.forEach((line) => {
-        detailY = wrapText(ctx, line, copyX, detailY + 28, copyMaxW, 30);
-      });
+    if (details.phone) {
+      textY += 12;
+      textY = drawQrDownloadMetaRow(ctx, "Phone", details.phone, copyX, textY, copyMaxW);
+    }
+    if (details.address) {
+      textY += 8;
+      textY = drawQrDownloadMetaRow(ctx, "Address", details.address, copyX, textY, copyMaxW);
     }
 
     ctx.strokeStyle = "rgba(148, 163, 184, 0.35)";
@@ -5913,24 +6003,6 @@
     ctx.arcTo(x, y + h, x, y, radius);
     ctx.arcTo(x, y, x + w, y, radius);
     ctx.closePath();
-  }
-
-  function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-    const words = String(text || "").split(/\s+/).filter(Boolean);
-    let line = "";
-    let cy = y;
-    for (let i = 0; i < words.length; i++) {
-      const test = line ? line + " " + words[i] : words[i];
-      if (ctx.measureText(test).width > maxWidth && line) {
-        ctx.fillText(line, x, cy);
-        line = words[i];
-        cy += lineHeight;
-      } else {
-        line = test;
-      }
-    }
-    if (line) ctx.fillText(line, x, cy);
-    return cy;
   }
 
   async function openQrBusinessCard() {
@@ -6029,8 +6101,31 @@
     });
   }
 
+  function normalizeLiveSiteUrl(url) {
+    const raw = String(url || "").trim();
+    if (!raw) return "";
+    try {
+      const parsed = new URL(raw.startsWith("http") ? raw : "https://" + raw);
+      const host = parsed.hostname.toLowerCase();
+      const slug = String(state.project?.business_context?.vercelSlug || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+      if (slug && host.endsWith(".vercel.app") && host !== slug + ".vercel.app") {
+        const prefix = slug + "-";
+        if (host.startsWith(prefix)) {
+          parsed.hostname = slug + ".vercel.app";
+        }
+      }
+      return parsed.toString().replace(/\/$/, "");
+    } catch (_) {
+      return raw;
+    }
+  }
+
   function liveSiteUrl() {
-    return String(state.project?.vercel_url || "").trim();
+    return normalizeLiveSiteUrl(state.project?.vercel_url);
   }
 
   /** Must match worker publishContentHash for publish/update detection. */
@@ -6070,6 +6165,52 @@
   function publishTopLabel() {
     if (!liveSiteUrl()) return "Publish";
     return hasUnpublishedChanges() ? "Update" : "Live";
+  }
+
+  function publishBusyLabel() {
+    return liveSiteUrl() && hasUnpublishedChanges() ? "Updating…" : "Publishing…";
+  }
+
+  let publishInFlight = false;
+
+  function setPublishLoading(busy) {
+    publishInFlight = busy;
+    const topBtn = document.getElementById("btn-publish-top");
+    const settingsBtn = document.getElementById("lb-set-publish");
+
+    if (topBtn) {
+      topBtn.classList.toggle("is-loading", busy);
+      topBtn.setAttribute("aria-busy", busy ? "true" : "false");
+      const label = topBtn.querySelector(".ms-lb-publish-label");
+      if (label) {
+        if (busy) {
+          if (!label.dataset.idleText) label.dataset.idleText = label.textContent;
+          label.textContent = publishBusyLabel();
+        } else if (label.dataset.idleText) {
+          label.textContent = label.dataset.idleText;
+          delete label.dataset.idleText;
+        }
+      }
+      if (busy) topBtn.disabled = true;
+    }
+
+    if (settingsBtn) {
+      settingsBtn.classList.toggle("is-loading", busy);
+      settingsBtn.setAttribute("aria-busy", busy ? "true" : "false");
+      if (busy) {
+        if (!settingsBtn.dataset.idleText) settingsBtn.dataset.idleText = settingsBtn.textContent;
+        settingsBtn.textContent = publishBusyLabel();
+        settingsBtn.disabled = true;
+      } else if (settingsBtn.dataset.idleText) {
+        settingsBtn.textContent = settingsBtn.dataset.idleText;
+        delete settingsBtn.dataset.idleText;
+      }
+    }
+
+    if (!busy) {
+      setPublishEnabled();
+      syncSiteSettingsUi();
+    }
   }
 
   function settingsPublishLabel() {
@@ -7267,6 +7408,7 @@
     bindToolbar();
     bindQrBusinessCardUi();
     bindUnpublishConfirm();
+    bindDeleteConfirm();
     bindRedesignConfirm();
     bindSiteSettings();
     document.addEventListener("ms:credits-changed", (e) => {

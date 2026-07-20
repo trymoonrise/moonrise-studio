@@ -7,10 +7,11 @@
   <title>Editor · Moonrise Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css?v=20260719-lb-side-scroll">
+  <link rel="stylesheet" href="css/studio.css?v=20260719-perf">
+  <link rel="stylesheet" href="css/studio-motion.css?v=20260719-perf">
   <link rel="stylesheet" href="css/mvp-gate.css?v=20260717-mvp-fix">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     html.ms-lb-boot-project #builder-workspace {
       display: flex !important;
@@ -525,6 +526,23 @@
     </div>
   </dialog>
 
+  <dialog class="ms-clients-dialog" id="lb-delete-dialog" aria-labelledby="lb-delete-title">
+    <div class="ms-clients-dialog-panel ms-clients-dialog-panel--compact ms-lb-delete-dialog-panel">
+      <div class="ms-lb-delete-dialog-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+      </div>
+      <header class="ms-clients-dialog-head">
+        <h2 class="ms-clients-dialog-title" id="lb-delete-title">Delete this project?</h2>
+      </header>
+      <p class="ms-clients-dialog-lead">This permanently removes the site, preview, and publish record. This cannot be undone.</p>
+      <p class="ms-lb-delete-project-name" id="lb-delete-project-name" aria-live="polite"></p>
+      <div class="ms-clients-dialog-actions">
+        <button type="button" class="ms-clients-dialog-back" id="lb-delete-cancel">Keep project</button>
+        <button type="button" class="ms-btn ms-btn-danger ms-clients-dialog-next" id="lb-delete-submit">Delete project</button>
+      </div>
+    </div>
+  </dialog>
+
   <div class="ms-lb-qr" id="lb-qr-modal" hidden>
     <button type="button" class="ms-lb-qr-backdrop" id="lb-qr-close-backdrop" aria-label="Close"></button>
     <div class="ms-lb-qr-stage" role="dialog" aria-modal="true" aria-labelledby="lb-qr-name">
@@ -556,17 +574,17 @@
     </div>
   </div>
 
-  <script src="js/vendor/qrcode.min.js?v=1.5.1" data-ms-qrcode="1"></script>
-  <script src="js/config.js?v=20260719-gen-cors"></script>
-  <script src="js/site-branding.js"></script>
-  <script src="js/supabase-client.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/segment-switch.js"></script>
-  <script src="js/ui-motion.js?v=20260719-onb-motion"></script>
-  <script src="js/toast.js"></script>
-  <script src="js/income.js?v=20260718-income"></script>
-  <script src="js/app.js?v=20260718-builder-split"></script>
-  <script src="js/creator-contact.js?v=20260719-watermark-contact"></script>
-  <script src="js/builder.js?v=20260719-editor-wm-only"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="js/config.js?v=20260719-perf"></script>
+  <script defer src="js/site-branding.js"></script>
+  <script defer src="js/supabase-client.js"></script>
+  <script defer src="js/auth.js"></script>
+  <script defer src="js/segment-switch.js"></script>
+  <script defer src="js/ui-motion.js?v=20260719-perf"></script>
+  <script defer src="js/toast.js"></script>
+  <script defer src="js/income.js?v=20260718-income"></script>
+  <script defer src="js/app.js?v=20260719-perf"></script>
+  <script defer src="js/creator-contact.js?v=20260719-watermark-contact"></script>
+  <script defer src="js/builder.js?v=20260719-perf"></script>
 </body>
 </html>

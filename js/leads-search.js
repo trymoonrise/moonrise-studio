@@ -1770,18 +1770,45 @@
     return true;
   }
 
+  const SLIDE_COMPLETE_RATIO = 0.96;
+  const SLIDE_MIN_DRAG_PX = 36;
+
+  function slideCompletes(current, max, dragPx) {
+    if (max <= 0) return false;
+    if (dragPx < SLIDE_MIN_DRAG_PX) return false;
+    return current >= max - 3 || current >= max * SLIDE_COMPLETE_RATIO;
+  }
+
   function slidePad(track) {
     if (!track) return 4;
     const style = window.getComputedStyle(track);
     return Number.parseFloat(style.paddingLeft) || 4;
   }
 
-  function slideMax(slide) {
+  function slideMax(slide, pass) {
     const track = slide.querySelector(".ms-lf-slide-track");
     const thumb = slide.querySelector(".ms-lf-slide-thumb");
     if (!track || !thumb) return 0;
     const pad = slidePad(track);
-    return Math.max(0, track.clientWidth - pad * 2 - thumb.offsetWidth);
+    void track.offsetWidth;
+    const trackW =
+      track.getBoundingClientRect().width ||
+      track.clientWidth ||
+      slide.getBoundingClientRect().width ||
+      0;
+    const thumbW = thumb.getBoundingClientRect().width || thumb.offsetWidth || 44;
+    let max = Math.max(0, trackW - pad * 2 - thumbW);
+    if (max <= 0 && (pass || 0) < 2) {
+      return slideMax(slide, (pass || 0) + 1);
+    }
+    return max;
+  }
+
+  function clearSlideInlineStyles(slide) {
+    if (!slide) return;
+    slide.style.removeProperty("--ms-lf-slide-x");
+    slide.style.removeProperty("--ms-lf-slide-fill");
+    slide.querySelector(".ms-lf-slide-thumb")?.style.removeProperty("transform");
   }
 
   function setSlideX(slide, x, max) {
@@ -1792,6 +1819,9 @@
     const thumbW = thumb?.offsetWidth || 44;
     slide.style.setProperty("--ms-lf-slide-x", clamped + "px");
     slide.style.setProperty("--ms-lf-slide-fill", pad + clamped + thumbW + "px");
+    if (thumb) {
+      thumb.style.setProperty("transform", "translate3d(" + clamped + "px, -50%, 0)", "important");
+    }
     return clamped;
   }
 
@@ -1804,14 +1834,12 @@
       setSlideX(slide, 0, max);
       window.setTimeout(() => {
         slide.classList.remove("is-returning");
-        slide.style.removeProperty("--ms-lf-slide-x");
-        slide.style.removeProperty("--ms-lf-slide-fill");
+        clearSlideInlineStyles(slide);
       }, 280);
       return;
     }
     slide.classList.remove("is-returning");
-    slide.style.removeProperty("--ms-lf-slide-x");
-    slide.style.removeProperty("--ms-lf-slide-fill");
+    clearSlideInlineStyles(slide);
   }
 
   function completeSlide(slide) {
@@ -1844,79 +1872,120 @@
     })();
   }
 
+  function beginSlideDrag(e, slide) {
+    if (e.button != null && e.button !== 0) return false;
+    if (!slide || slide.classList.contains("is-disabled") || slide.classList.contains("is-done")) {
+      return false;
+    }
+    if (slide.classList.contains("is-completing") || slide.classList.contains("is-returning")) {
+      return false;
+    }
+
+    const track = slide.querySelector(".ms-lf-slide-track");
+    const thumb = slide.querySelector(".ms-lf-slide-thumb");
+    if (!track || !thumb) return false;
+    if (thumb.getAttribute("aria-disabled") === "true") return false;
+
+    const max = slideMax(slide);
+    if (max <= 0) return false;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const onThumb = e.target.closest(".ms-lf-slide-thumb");
+    const captureEl = onThumb ? thumb : track;
+    let startLeft = Number.parseFloat(slide.style.getPropertyValue("--ms-lf-slide-x")) || 0;
+    startLeft = Math.max(0, Math.min(max, startLeft));
+
+    const startX = e.clientX;
+    let current = startLeft;
+    let finished = false;
+    let moved = false;
+    let raf = 0;
+    let pendingX = startLeft;
+    const pointerId = e.pointerId ?? 1;
+    const usePointer = e.pointerId != null;
+
+    slide.classList.remove("is-returning", "is-completing");
+    slide.classList.add("is-dragging");
+    if (usePointer) {
+      try {
+        captureEl.setPointerCapture(pointerId);
+      } catch (_) {
+        /* ignore */
+      }
+    }
+
+    const flush = () => {
+      raf = 0;
+      if (finished) return;
+      current = setSlideX(slide, pendingX, max);
+    };
+
+    const onMove = (ev) => {
+      if (finished) return;
+      if (usePointer && ev.pointerId != null && ev.pointerId !== pointerId) return;
+      if (!usePointer && ev.type === "mousemove" && ev.buttons === 0) return;
+      const nextX = startLeft + (ev.clientX - startX);
+      if (Math.abs(ev.clientX - startX) >= 2) moved = true;
+      pendingX = nextX;
+      if (!raf) raf = window.requestAnimationFrame(flush);
+    };
+
+    const cleanup = (ev) => {
+      if (finished) return;
+      if (usePointer && ev?.pointerId != null && ev.pointerId !== pointerId) return;
+      finished = true;
+      if (raf) window.cancelAnimationFrame(raf);
+      if (usePointer) {
+        window.removeEventListener("pointermove", onMove, true);
+        window.removeEventListener("pointerup", cleanup, true);
+        window.removeEventListener("pointercancel", cleanup, true);
+      } else {
+        window.removeEventListener("mousemove", onMove, true);
+        window.removeEventListener("mouseup", cleanup, true);
+      }
+      if (usePointer) {
+        try {
+          captureEl.releasePointerCapture(pointerId);
+        } catch (_) {
+          /* ignore */
+        }
+      }
+      slide.classList.remove("is-dragging");
+      current = setSlideX(slide, pendingX, max);
+      const dragPx = Math.abs(ev?.clientX != null ? ev.clientX - startX : pendingX - startLeft);
+      if (moved && slideCompletes(current, max, dragPx)) completeSlide(slide);
+      else resetSlide(slide, true);
+    };
+
+    if (usePointer) {
+      window.addEventListener("pointermove", onMove, true);
+      window.addEventListener("pointerup", cleanup, true);
+      window.addEventListener("pointercancel", cleanup, true);
+    } else {
+      window.addEventListener("mousemove", onMove, true);
+      window.addEventListener("mouseup", cleanup, true);
+    }
+    return true;
+  }
+
   function bindGenerateSlides() {
     if (!resultsEl || resultsEl.dataset.slideBound === "1") return;
     resultsEl.dataset.slideBound = "1";
 
-    resultsEl.addEventListener("pointerdown", (e) => {
-      if (e.button != null && e.button !== 0) return;
-      const thumb = e.target.closest(".ms-lf-slide-thumb");
-      if (!thumb) return;
-      const slide = thumb.closest(".ms-lf-slide");
-      if (!slide || slide.classList.contains("is-disabled") || slide.classList.contains("is-done")) {
-        return;
-      }
-      if (slide.classList.contains("is-completing") || slide.classList.contains("is-returning")) {
-        return;
-      }
-      const track = slide.querySelector(".ms-lf-slide-track");
-      if (!track) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      const max = slideMax(slide);
-      if (max <= 0) return;
-
-      let startLeft = Number.parseFloat(slide.style.getPropertyValue("--ms-lf-slide-x")) || 0;
-      const startX = e.clientX;
-      let current = startLeft;
-      let finished = false;
-      let raf = 0;
-      let pendingX = startLeft;
-
-      slide.classList.remove("is-returning", "is-completing");
-      slide.classList.add("is-dragging");
-      try {
-        thumb.setPointerCapture(e.pointerId);
-      } catch (_) {
-        /* ignore */
-      }
-
-      const flush = () => {
-        raf = 0;
-        if (finished) return;
-        current = setSlideX(slide, pendingX, max);
-      };
-
-      const onMove = (ev) => {
-        if (finished) return;
-        pendingX = startLeft + (ev.clientX - startX);
-        if (!raf) raf = window.requestAnimationFrame(flush);
-      };
-
-      const onUp = (ev) => {
-        if (finished) return;
-        finished = true;
-        if (raf) window.cancelAnimationFrame(raf);
-        thumb.removeEventListener("pointermove", onMove);
-        thumb.removeEventListener("pointerup", onUp);
-        thumb.removeEventListener("pointercancel", onUp);
-        try {
-          thumb.releasePointerCapture(ev.pointerId);
-        } catch (_) {
-          /* ignore */
-        }
-        slide.classList.remove("is-dragging");
-        current = setSlideX(slide, pendingX, max);
-        if (current >= max * 0.78) completeSlide(slide);
-        else resetSlide(slide, true);
-      };
-
-      thumb.addEventListener("pointermove", onMove);
-      thumb.addEventListener("pointerup", onUp);
-      thumb.addEventListener("pointercancel", onUp);
-    });
+    resultsEl.addEventListener(
+      "pointerdown",
+      (e) => {
+        const slide = e.target.closest(".ms-lf-slide");
+        if (!slide) return;
+        const onTrack = e.target.closest(".ms-lf-slide-track");
+        const onThumb = e.target.closest(".ms-lf-slide-thumb");
+        if (!onTrack && !onThumb) return;
+        beginSlideDrag(e, slide);
+      },
+      true
+    );
 
     resultsEl.addEventListener("keydown", (e) => {
       const thumb = e.target.closest(".ms-lf-slide-thumb");
@@ -1930,7 +1999,7 @@
 
       if (e.key === "ArrowRight" || e.key === "End") {
         e.preventDefault();
-        if (e.key === "End" || cur >= max * 0.78) completeSlide(slide);
+        if (e.key === "End" || slideCompletes(cur, max, max)) completeSlide(slide);
         else {
           slide.classList.add("is-returning");
           setSlideX(slide, Math.min(max, cur + Math.max(28, max * 0.22)), max);
@@ -2064,11 +2133,11 @@
       '<div class="ms-lf-slide-track">' +
       '<div class="ms-lf-slide-fill" aria-hidden="true"></div>' +
       '<span class="ms-lf-slide-label" aria-hidden="true">Slide to generate</span>' +
-      '<button type="button" class="ms-lf-slide-thumb" aria-label="Slide to generate site for ' +
+      '<div class="ms-lf-slide-thumb" role="button" tabindex="0" aria-label="Slide to generate site for ' +
       escapeHtml(name) +
       '">' +
       ICO.hammer +
-      "</button>" +
+      "</div>" +
       "</div></div></footer></article>"
     );
   }
@@ -2762,7 +2831,8 @@
       refreshVisibleLeads();
       return;
     }
-    if (e.target.closest(".ms-lf-slide")) {
+    if (e.target.closest(".ms-lf-slide-thumb")) return;
+    if (e.target.closest(".ms-lf-slide-track")) {
       e.preventDefault();
       return;
     }
