@@ -2,7 +2,7 @@
  * Telegram alerts when a business owner pays to go live (watermark unlock).
  */
 
-const CREATOR_SHARE_RATE = 0.8;
+const CREATOR_SHARE_RATE = 0.9;
 
 function escapeHtml(value) {
   return String(value || "")
@@ -111,8 +111,8 @@ function buildSaleMessage(payload) {
     "",
     "<b>Payment</b>",
     "Website price: " + escapeHtml(formatMoney(saleCents)),
-    "Creator share (80%): " + escapeHtml(formatMoney(creatorShareCents)),
-    "Moonrise (20%): " + escapeHtml(formatMoney(platformShareCents)),
+    "Creator share (" + Math.round(CREATOR_SHARE_RATE * 100) + "%): " + escapeHtml(formatMoney(creatorShareCents)),
+    "Moonrise (" + Math.round((1 - CREATOR_SHARE_RATE) * 100) + "%): " + escapeHtml(formatMoney(platformShareCents)),
     hostingMonthlyCents
       ? "Hosting: " + escapeHtml(formatMoney(hostingMonthlyCents)) + "/mo"
       : "",

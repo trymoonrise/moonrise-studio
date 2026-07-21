@@ -24,7 +24,7 @@ window.SITE_CONFIG = {
     },
     {
       q: "How much does it cost to go live?",
-      a: "Creators build and preview for free. When a business owner goes live, they pay through the watermark checkout on the published site. Moonrise keeps 20% and the creator keeps 80%. The watermark is removed automatically after payment.",
+      a: "Creators build and preview for free. When a business owner goes live, they pay through the watermark checkout on the published site. Moonrise keeps 10% and the creator keeps 90%. The watermark is removed automatically after payment.",
     },
     {
       q: "Can business owners pay without a Moonrise account?",

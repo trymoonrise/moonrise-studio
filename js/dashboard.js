@@ -5,7 +5,7 @@
   const DEFAULT_GOAL = 1000;
   const MIN_GOAL = 1;
   const MAX_GOAL = 1000000;
-  const INCOME_RATE = window.StudioIncome?.INCOME_RATE ?? 0.8;
+  const INCOME_RATE = window.StudioIncome?.INCOME_RATE ?? 0.9;
 
   let goalTarget = DEFAULT_GOAL;
   let goalUserId = "";

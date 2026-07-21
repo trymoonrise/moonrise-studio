@@ -1,8 +1,8 @@
 /**
- * Creator income from paid client sites - 80% of sale price (@moonrise keeps 20%).
+ * Creator income from paid client sites - 90% of sale price (@moonrise keeps 10%).
  */
 (function (global) {
-  const INCOME_RATE = 0.8;
+  const INCOME_RATE = 0.9;
 
   function formatIncome(n) {
     return (

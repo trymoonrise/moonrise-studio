@@ -138,7 +138,7 @@
 
   function shareCents(amountCents) {
     const sale = Math.max(0, Number(amountCents) || 0);
-    const creator = Math.round(sale * (window.StudioIncome?.INCOME_RATE || 0.8));
+    const creator = Math.round(sale * (window.StudioIncome?.INCOME_RATE || 0.9));
     return {
       sale_cents: sale,
       creator_share_cents: creator,
@@ -542,7 +542,7 @@
       ["website", "Live site"],
       ["creator_handle", "Creator"],
       ["sale_cents", "Sale"],
-      ["creator_share_cents", "Owed (80%)"],
+      ["creator_share_cents", "Owed (90%)"],
       ["payout_method", "Payout method"],
       ["payout_handle", "Payout details"],
       ["payout_email", "Payout email"],

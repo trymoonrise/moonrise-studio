@@ -1,7 +1,7 @@
 /**
  * Record pending creator payouts when a go-live sale completes.
  */
-const CREATOR_SHARE_RATE = 0.8;
+const CREATOR_SHARE_RATE = 0.9;
 
 function readPayoutProfile(profile) {
   const raw = profile?.payout_profile;

@@ -1200,7 +1200,7 @@
         });
     if (valueEl) valueEl.textContent = formatted;
     if (tag) {
-      tag.title = "Your 80% share from paid client sites - @moonrise keeps 20%. Open Dashboard.";
+      tag.title = "Your 90% share from paid client sites - @moonrise keeps 10%. Open Dashboard.";
     }
     rememberIncomeCache(income);
   }
