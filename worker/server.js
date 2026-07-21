@@ -217,11 +217,13 @@ const {
   encodeContactPayload,
   readStoredCreatorContact,
 } = require("./creator-contact");
-const { clientIp, createRateLimiter, applySecurityHeaders } = security;
+const { clientIp, createDistributedRateLimiter, applySecurityHeaders } = security;
 const {
   resolveExistingGeneration,
   failGenerationJob,
   findJobByRequestId,
+  findActiveRunningJob,
+  markStaleRunningJobs,
   buildDonePayload,
   waitForGenerationJob,
   ACTIVE_JOB_MS,
@@ -615,7 +617,10 @@ app.use((req, res, next) => {
   next();
 });
 
-const corsOrigins = String(process.env.CORS_ORIGINS || "*")
+const defaultCorsOrigins = security.isProductionRuntime()
+  ? "https://trymoonrise.com,https://www.trymoonrise.com,https://moonrise-studio.vercel.app"
+  : "*";
+const corsOrigins = String(process.env.CORS_ORIGINS || defaultCorsOrigins)
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
@@ -990,52 +995,71 @@ async function requireUser(req, res, next) {
   }
 }
 
+const rateLimit = (opts) => createDistributedRateLimiter(db, opts);
+
+const GLOBAL_RATE_SKIP = new Set([
+  "/health",
+  "/webhooks/stripe",
+  "/embed.js",
+  "/contact-form.js",
+]);
+
 mountAuthRoutes(app, { db, security });
 
-const generateLimiter = createRateLimiter({
+const globalApiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 200,
+  name: "api-global",
+  keyFn: (req) => "global-ip:" + clientIp(req),
+  shouldCount: (req) => req.method !== "OPTIONS" && !GLOBAL_RATE_SKIP.has(req.path),
+});
+
+app.use(globalApiLimiter);
+
+const generateLimiter = rateLimit({
   windowMs: 10 * 60 * 1000,
   max: 12,
   name: "generate",
   keyFn: (req) => "gen:" + (req.user?.id || clientIp(req)),
   shouldCount: shouldCountGenerate,
 });
-const editLimiter = createRateLimiter({
+const editLimiter = rateLimit({
   windowMs: 10 * 60 * 1000,
   max: 30,
   name: "edit",
   keyFn: (req) => "edit:" + (req.user?.id || clientIp(req)),
 });
-const checkoutLimiter = createRateLimiter({
+const checkoutLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 20,
   name: "checkout",
   keyFn: (req) => "chk:" + (req.user?.id || clientIp(req)),
 });
-const publicCheckoutLimiter = createRateLimiter({
+const publicCheckoutLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 15,
   name: "public-checkout",
   keyFn: (req) => "pchk:" + clientIp(req),
 });
-const publishLimiter = createRateLimiter({
+const publishLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 20,
   name: "publish",
   keyFn: (req) => "pub:" + (req.user?.id || clientIp(req)),
 });
-const mapsLimiter = createRateLimiter({
+const mapsLimiter = rateLimit({
   windowMs: 10 * 60 * 1000,
   max: 40,
   name: "resolve-maps",
   keyFn: (req) => "maps:" + (req.user?.id || clientIp(req)),
 });
-const leadFinderLimiter = createRateLimiter({
+const leadFinderLimiter = rateLimit({
   windowMs: 10 * 60 * 1000,
   max: 6,
   name: "lead-finder",
   keyFn: (req) => "lf:" + (req.user?.id || clientIp(req)),
 });
-const contactSubmitLimiter = createRateLimiter({
+const contactSubmitLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 30,
   name: "contact-submit",
@@ -1858,6 +1882,24 @@ function urgencyHours() {
   return Number(process.env.WATERMARK_URGENCY_HOURS || 96);
 }
 
+app.get("/generate/active", requireUser, async (req, res) => {
+  try {
+    const supabase = db();
+    await markStaleRunningJobs(supabase, req.user.id);
+    const job = await findActiveRunningJob(supabase, req.user.id);
+    if (!job) return res.json({ active: false });
+    return res.json({
+      active: true,
+      jobId: job.id,
+      requestId: String(job.prompt?.requestId || "").trim() || null,
+      status: job.status,
+    });
+  } catch (e) {
+    console.error(e);
+    respondApiError(res, e, "Could not load active generation");
+  }
+});
+
 app.get("/generate/status", requireUser, async (req, res) => {
   try {
     const supabase = db();
@@ -1905,6 +1947,15 @@ app.post("/generate", requireUser, generateLimiter, async (req, res) => {
         requestId: existing.requestId || requestId || null,
         retryAfterSec: 3,
         message: "Generation already running.",
+      });
+    }
+    if (existing.action === "blocked") {
+      return res.status(409).json({
+        error: "A website is already being generated. Wait for it to finish before starting another.",
+        code: "generation_in_progress",
+        jobId: existing.jobId || null,
+        requestId: existing.requestId || null,
+        retryAfterSec: 3,
       });
     }
     if (existing.action === "error") {
@@ -1958,6 +2009,23 @@ app.post("/generate", requireUser, generateLimiter, async (req, res) => {
       .select("id")
       .single();
     activeJobId = jobInsert?.data?.id || null;
+    if (jobInsert?.error) {
+      const pgCode = String(jobInsert.error.code || "");
+      if (pgCode === "23505") {
+        const active = await findActiveRunningJob(supabase, req.user.id);
+        return res.status(409).json({
+          error: "A website is already being generated. Wait for it to finish before starting another.",
+          code: "generation_in_progress",
+          jobId: active?.id || null,
+          requestId: String(active?.prompt?.requestId || "").trim() || requestId || null,
+          retryAfterSec: 3,
+        });
+      }
+      throw new Error(jobInsert.error.message || "Could not start generation job");
+    }
+    if (!activeJobId) {
+      return res.status(500).json({ error: "Could not start generation job" });
+    }
 
     // Manifest must be loaded before kit selection (GitHub cache is empty on cold start).
     try {
@@ -3768,6 +3836,31 @@ function publishContentHash(html) {
   return (h >>> 0).toString(36);
 }
 
+/** Must match builder.js publishSettingsFingerprint (contact form + domain settings). */
+function publishSettingsHash(project) {
+  const ctx =
+    project?.business_context && typeof project.business_context === "object"
+      ? project.business_context
+      : {};
+  const cf = ctx.contactForm && typeof ctx.contactForm === "object" ? ctx.contactForm : {};
+  const domain = ctx.customDomain && typeof ctx.customDomain === "object" ? ctx.customDomain : {};
+  return publishContentHash(
+    JSON.stringify({
+      contactForm: {
+        enabled: !!cf.enabled,
+        mode: cf.mode === "custom" ? "custom" : "auto",
+        notificationEmail: String(cf.notificationEmail || "").trim(),
+        endpointUrl: String(cf.endpointUrl || "").trim(),
+        endpointType: String(cf.endpointType || "").trim(),
+      },
+      customDomain: {
+        hostname: String(domain.hostname || domain.domain || "").trim(),
+        status: String(domain.status || "").trim(),
+      },
+    })
+  );
+}
+
 async function attachCreatorContactSnapshot(supabase, project) {
   if (!project?.user_id) return project;
   const { data: profile, error } = await supabase
@@ -3810,6 +3903,7 @@ async function deployProjectToVercel(supabase, project) {
           : publishedAt,
       lastPublishedAt: publishedAt,
       publishedContentHash: publishContentHash(html),
+      publishedSettingsHash: publishSettingsHash(project),
     };
       await supabase
         .from("projects")
@@ -3863,6 +3957,7 @@ async function deployProjectToVercel(supabase, project) {
         : publishedAt,
     lastPublishedAt: publishedAt,
     publishedContentHash: publishContentHash(html),
+    publishedSettingsHash: publishSettingsHash(project),
   };
 
     await supabase

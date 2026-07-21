@@ -9,7 +9,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css?v=20260719-perf">
+  <link rel="stylesheet" href="css/generation-announce.css?v=20260721-float">
+  <link rel="stylesheet" href="css/studio.css?v=20260721-gen-announce">
   <link rel="stylesheet" href="css/studio-motion.css?v=20260719-perf">
   <link rel="stylesheet" href="css/mvp-gate.css?v=20260717-mvp-fix">
   <style>
@@ -271,8 +272,9 @@
               </div>
             </div>
             <div class="ms-preview-frame-wrap" id="preview-wrap">
-              <div class="ms-lb-loading" id="preview-loading" hidden aria-busy="true" aria-label="Building website">
+              <div class="ms-lb-loading" id="preview-loading" hidden aria-busy="true" aria-live="polite" aria-label="Building website">
                 <div class="ms-lb-loading-inner">
+                  <span class="ms-lb-loading-spinner" aria-hidden="true"></span>
                   <div class="ms-lb-progress" id="preview-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
                     <div class="ms-lb-progress-track">
                       <div class="ms-lb-progress-fill" id="preview-progress-fill"></div>
@@ -577,14 +579,16 @@
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="js/config.js?v=20260719-perf"></script>
   <script defer src="js/site-branding.js"></script>
-  <script defer src="js/supabase-client.js"></script>
+  <script defer src="js/auth-security.js?v=20260721-sec"></script>`r`n  <script defer src="js/supabase-client.js"></script>
   <script defer src="js/auth.js"></script>
   <script defer src="js/segment-switch.js"></script>
   <script defer src="js/ui-motion.js?v=20260719-perf"></script>
   <script defer src="js/toast.js"></script>
   <script defer src="js/income.js?v=20260718-income"></script>
-  <script defer src="js/app.js?v=20260720-global-fix"></script>
+  <script defer src="js/generation-announce.js?v=20260721-float"></script>
+  <script defer src="js/app.js?v=20260721-float"></script>
   <script defer src="js/creator-contact.js?v=20260719-watermark-contact"></script>
-  <script defer src="js/builder.js?v=20260719-perf"></script>
+  <script defer src="js/generation-lock.js?v=20260721-one-gen"></script>
+  <script defer src="js/builder.js?v=20260721-contact-form"></script>
 </body>
 </html>

@@ -2768,7 +2768,7 @@
     void frame.offsetWidth;
     setPreviewFrameViewportClass(frame, state.viewport);
     applyPreviewViewportSize();
-    const safeHtml = closeIncompleteHtml(ensureMobileFriendlyHtml(html));
+    const safeHtml = closeIncompleteHtml(ensureMobileFriendlyHtml(injectContactFormPreviewHtml(html)));
     revokePreviewObjectUrl();
     try {
       if (frame.getAttribute("src")) frame.removeAttribute("src");
@@ -4238,6 +4238,48 @@
       .replace(/<!--\s*moonrise:watermark\s*-->/gi, "");
   }
 
+  function escapePreviewAttr(value) {
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/"/g, "&quot;")
+      .replace(/</g, "&lt;");
+  }
+
+  /** Inject contact-form.js for editor preview (published sites get this on deploy). */
+  function injectContactFormPreviewHtml(html) {
+    const cfg = readContactFormConfig();
+    if (!cfg.enabled || !state.projectId) {
+      return stripRuntimeEmbedsFromStoredHtml(html);
+    }
+    const workerBase = workerUrl();
+    if (!workerBase) return stripRuntimeEmbedsFromStoredHtml(html);
+
+    let attrs =
+      `data-project-id="${escapePreviewAttr(state.projectId)}" ` +
+      `data-worker="${escapePreviewAttr(workerBase)}"`;
+
+    if (cfg.mode === "custom") {
+      const detected = detectContactEndpoint(cfg.endpointUrl);
+      if (!cfg.endpointUrl || detected.type === "invalid" || detected.needsChatId) {
+        return stripRuntimeEmbedsFromStoredHtml(html);
+      }
+      attrs +=
+        ` data-mode="custom"` +
+        ` data-endpoint="${escapePreviewAttr(cfg.endpointUrl)}"` +
+        ` data-endpoint-type="${escapePreviewAttr(detected.type)}"`;
+    } else {
+      if (!cfg.notificationEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cfg.notificationEmail)) {
+        return stripRuntimeEmbedsFromStoredHtml(html);
+      }
+      attrs += ` data-mode="auto"`;
+    }
+
+    let out = stripRuntimeEmbedsFromStoredHtml(html);
+    const tag = `\n<script src="${workerBase}/contact-form.js" ${attrs}></script>\n`;
+    if (/<\/body>/i.test(out)) return out.replace(/<\/body>/i, `${tag}</body>`);
+    return out + tag;
+  }
+
   async function persistHtmlQuiet(html) {
     if (!state.projectId) return;
     const clean = stripRuntimeEmbedsFromStoredHtml(html);
@@ -4911,6 +4953,7 @@
   }
 
   function readGenInflight() {
+    if (window.MsGenerationLock?.readInflight) return window.MsGenerationLock.readInflight();
     try {
       const raw = sessionStorage.getItem(GEN_INFLIGHT_KEY);
       if (!raw) return null;
@@ -4928,6 +4971,10 @@
   }
 
   function writeGenInflight(payload) {
+    if (window.MsGenerationLock?.writeInflight) {
+      window.MsGenerationLock.writeInflight(payload);
+      return;
+    }
     try {
       sessionStorage.setItem(
         GEN_INFLIGHT_KEY,
@@ -4942,6 +4989,10 @@
   }
 
   function clearGenInflight() {
+    if (window.MsGenerationLock?.clearInflight) {
+      window.MsGenerationLock.clearInflight();
+      return;
+    }
     try {
       sessionStorage.removeItem(GEN_INFLIGHT_KEY);
     } catch (_) {
@@ -4949,14 +5000,48 @@
     }
   }
 
-  function createGenerateRequestId(isRedesign) {
-    if (isRedesign) {
-      return typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : "gen-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+  function generationBlockedMessage() {
+    return "A website is already being generated. Wait for it to finish before starting another.";
+  }
+
+  function currentGenerationLeadId() {
+    const p = params();
+    return String(state.leadId || p.get("lead_id") || p.get("lead") || "").trim() || null;
+  }
+
+  function canResumeInflightGeneration(inflight, opts) {
+    if (!inflight?.requestId) return false;
+    if (opts?.resume) return true;
+    const leadId = currentGenerationLeadId();
+    if (inflight.leadId && leadId && inflight.leadId === leadId) return true;
+    if (inflight.projectId && state.projectId && inflight.projectId === state.projectId) return true;
+    if (
+      !inflight.leadId &&
+      !leadId &&
+      inflight.requestId &&
+      (opts?.fromFinder || state.fromFinder || hasFreshLeadIntake())
+    ) {
+      return true;
     }
-    const existing = readGenInflight();
-    if (existing?.requestId) return existing.requestId;
+    return false;
+  }
+
+  function assertCanStartGeneration(opts, isRedesign) {
+    const inflight = readGenInflight();
+    const lockActive = window.MsGenerationLock?.isActive?.() || !!inflight?.requestId;
+    if (!lockActive) return { ok: true, resume: false };
+    if (generateInFlight) return { ok: false, reason: "in_tab" };
+    if (!isRedesign && canResumeInflightGeneration(inflight, opts)) {
+      return { ok: true, resume: true };
+    }
+    return { ok: false, reason: "blocked" };
+  }
+
+  function createGenerateRequestId(isRedesign, opts) {
+    if (!isRedesign && opts?.resume) {
+      const existing = readGenInflight();
+      if (existing?.requestId) return existing.requestId;
+    }
     return typeof crypto !== "undefined" && crypto.randomUUID
       ? crypto.randomUUID()
       : "gen-" + Date.now() + "-" + Math.random().toString(36).slice(2);
@@ -5018,6 +5103,11 @@
         signal
       );
     }
+    if (res.status === 409 && data.code === "generation_in_progress") {
+      const err = new Error(data.error || generationBlockedMessage());
+      err.code = "generation_in_progress";
+      throw err;
+    }
     if (res.status === 429 || data.code === "rate_limited") {
       try {
         return await pollGenerateUntilDone(base, requestId, headers, signal);
@@ -5049,10 +5139,22 @@
     const fromOnboard = !!(opts && opts.fromOnboard);
     const fromFinderFlow = !!(opts && opts.fromFinder) || !!state.fromFinder || hasFreshLeadIntake();
     const isRedesign = !!(opts && opts.redesign);
-    // One swipe = one generation flight. Resume uses the same requestId after refresh.
     if (generateInFlight && !isRedesign) return;
-    const inflight = readGenInflight();
-    if (inflight?.requestId && !isRedesign && generateInFlight) return;
+
+    const startCheck = assertCanStartGeneration(opts, isRedesign);
+    if (!startCheck.ok) {
+      if (startCheck.reason === "blocked") {
+        const msg = generationBlockedMessage();
+        if (fromOnboard) setOnboardError(msg);
+        else setError(msg);
+        window.StudioToast?.error?.(msg);
+      }
+      return;
+    }
+    if (startCheck.resume) {
+      opts = { ...(opts || {}), resume: true };
+    }
+
     generateInFlight = true;
     syncBuilderChannelGenerating({ cancellable: false });
     setError("");
@@ -5195,10 +5297,11 @@
       }
       renderGenerateProgress(Math.max(genProgressPct, 18), "Building your website…");
       const headers = await authHeaders();
-      const requestId = createGenerateRequestId(isRedesign);
+      const requestId = createGenerateRequestId(isRedesign, opts);
       writeGenInflight({
         requestId,
         projectId: state.projectId || null,
+        leadId: intake.leadId || state.leadId || null,
         redesign: isRedesign,
       });
       renderGenerateProgress(Math.max(genProgressPct, 25), "Building your website…");
@@ -5267,6 +5370,10 @@
         return;
       }
       let msg = e.message || "Generation failed";
+      if (e?.code === "generation_in_progress") {
+        clearGenInflight();
+        msg = generationBlockedMessage();
+      }
       if (/failed to fetch|networkerror|load failed|network request failed/i.test(msg)) {
         msg = workerUnreachableMessage(workerUrl(), msg);
       }
@@ -6148,9 +6255,34 @@
     return ensureMobileFriendlyHtml(state.html || "");
   }
 
+  function publishSettingsFingerprint() {
+    const cfg = readContactFormConfig();
+    const ctx = state.project?.business_context || {};
+    const domain = ctx.customDomain && typeof ctx.customDomain === "object" ? ctx.customDomain : {};
+    return publishContentHash(
+      JSON.stringify({
+        contactForm: {
+          enabled: cfg.enabled,
+          mode: cfg.mode,
+          notificationEmail: cfg.notificationEmail,
+          endpointUrl: cfg.endpointUrl,
+          endpointType: cfg.endpointType,
+        },
+        customDomain: {
+          hostname: String(domain.hostname || domain.domain || "").trim(),
+          status: String(domain.status || "").trim(),
+        },
+      })
+    );
+  }
+
   function hasUnpublishedChanges() {
     if (!liveSiteUrl()) return false;
     const ctx = state.project?.business_context || {};
+    const publishedSettings = String(ctx.publishedSettingsHash || "").trim();
+    const currentSettings = publishSettingsFingerprint();
+    if (!publishedSettings && readContactFormConfig().enabled) return true;
+    if (publishedSettings && currentSettings !== publishedSettings) return true;
     const publishedHash = String(ctx.publishedContentHash || "").trim();
     const currentHash = publishContentHash(currentPublishHtml());
     if (publishedHash) return currentHash !== publishedHash;
@@ -6659,19 +6791,26 @@
     if (!state.projectId) {
       state.project = { ...(state.project || {}), business_context: ctx };
       syncContactFormWidgetUi();
-      setSiteSettingsStatus("Contact form settings saved locally.");
+      setSiteSettingsStatus("Contact form settings saved locally. Publish to activate.");
       return;
     }
 
     try {
       await persistProjectPatch({ business_context: ctx });
+      syncContactFormWidgetUi();
+      syncPublishLiveUi();
       syncSiteSettingsUi();
+      if (state.html && state.mode === "preview") {
+        writePreviewDocument(state.html);
+      }
       const live = liveSiteUrl();
       if (live) {
-        setSiteSettingsStatus("Contact form settings saved. Republish to apply on the live site.");
-        window.StudioToast?.success?.("Republish your site to activate the contact form on the live URL.");
+        setSiteSettingsStatus(
+          "Contact form saved. Click Update (top bar) to apply on the live site."
+        );
+        window.StudioToast?.success?.("Contact form saved — click Update to apply on your live URL.");
       } else {
-        setSiteSettingsStatus("Contact form settings saved.");
+        setSiteSettingsStatus("Contact form settings saved. Publish to activate on the live site.");
       }
     } catch (e) {
       setSiteSettingsError(e.message || "Could not save contact form settings");
