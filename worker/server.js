@@ -117,10 +117,10 @@ const PRESET_PACK_CATEGORIES = [
  * starve generation into "invent a hero from scratch" mode.
  */
 const PRESET_MAX_FILES = Math.max(10, Number(process.env.WEBSITE_PRESET_MAX_FILES || 12));
-const PRESET_MAX_CHARS_EACH = Math.max(2800, Number(process.env.WEBSITE_PRESET_MAX_CHARS_EACH || 3600));
+const PRESET_MAX_CHARS_EACH = Math.max(3200, Number(process.env.WEBSITE_PRESET_MAX_CHARS_EACH || 4400));
 const PRESET_MAX_TOTAL_CHARS = Math.max(
-  24000,
-  Number(process.env.WEBSITE_PRESET_MAX_TOTAL_CHARS || 32000)
+  28000,
+  Number(process.env.WEBSITE_PRESET_MAX_TOTAL_CHARS || 42000)
 );
 
 const {
@@ -208,6 +208,8 @@ const {
   detectContactEndpoint,
   readContactFormConfig,
   escapeHtmlAttr,
+  withDefaultContactFormContext,
+  ensureContactFormHtml,
 } = require("./contact-endpoint");
 const {
   buildCreatorContactSnapshot,
@@ -1574,9 +1576,20 @@ function selectKitIdsLocally(ctx) {
   const used = new Set();
   for (const { section, role, categories } of sectionRoles) {
     if (ids.length >= PRESET_MAX_FILES) break;
-    const pool = [];
+    let pool = [];
     for (const cat of categories) {
       for (const item of byCategory.get(cat) || []) pool.push(item);
+    }
+    if (section === "contact_form" && pool.length) {
+      pool = pool.filter((item) => {
+        const slug = String(item?.slug || item?.title || "").toLowerCase();
+        return !/login|subscribe|newsletter|sign-?up|inline-form|multi-step/.test(slug);
+      });
+      if (!pool.length) {
+        for (const cat of categories) {
+          for (const item of byCategory.get(cat) || []) pool.push(item);
+        }
+      }
     }
     if (!pool.length) continue;
     const start = hashPick(`${seed}:${section}`, pool.length);
@@ -1717,8 +1730,13 @@ async function generateWithOpenRouter(ctx, presetPack, plan) {
   let { html, finishReason } = await assemble();
   const firstPass = assessSiteCompleteness(html, structure);
   const truncated = finishReason === "length";
+  const missingForm = firstPass.reasons.includes("missing form");
+  const missingFooter = firstPass.reasons.includes("missing footer");
   // Retry when structurally thin OR the model hit max_tokens mid-page.
-  if ((truncated || !firstPass.ok) && html.length < 28000) {
+  if (
+    (truncated || !firstPass.ok) &&
+    (html.length < 28000 || missingForm || missingFooter)
+  ) {
     console.warn(
       "Assembled page needs retry:",
       truncated ? "finish_reason=length" : firstPass.reasons.join(", ")
@@ -1737,6 +1755,7 @@ async function generateWithOpenRouter(ctx, presetPack, plan) {
   if (finishReason === "length") {
     console.warn("Assemble finished with finish_reason=length; closed tags via closeIncompleteHtml");
   }
+  html = ensureContactFormHtml(html, ctx);
   return closeIncompleteHtml(html);
 }
 
@@ -2016,13 +2035,16 @@ app.post("/generate", requireUser, generateLimiter, async (req, res) => {
       if (!existing || existing.user_id !== req.user.id) {
         return res.status(403).json({ error: "Project not found" });
       }
-      const nextContext = {
-        ...(existing.business_context && typeof existing.business_context === "object"
-          ? existing.business_context
-          : {}),
-        ...ctx,
-        redesignedAt: isRedesign ? new Date().toISOString() : undefined,
-      };
+      const nextContext = withDefaultContactFormContext(
+        {
+          ...(existing.business_context && typeof existing.business_context === "object"
+            ? existing.business_context
+            : {}),
+          ...ctx,
+          redesignedAt: isRedesign ? new Date().toISOString() : undefined,
+        },
+        existing.business_context
+      );
       const patch = {
           business_name: ctx.businessName,
           lead_id: ctx.leadId,
@@ -2040,6 +2062,7 @@ app.post("/generate", requireUser, generateLimiter, async (req, res) => {
       const { error } = await supabase.from("projects").update(patch).eq("id", projectId);
       if (error) throw error;
     } else {
+      const nextContext = withDefaultContactFormContext(ctx);
       const { data, error } = await supabase
         .from("projects")
         .insert({
@@ -2051,7 +2074,7 @@ app.post("/generate", requireUser, generateLimiter, async (req, res) => {
           status: "preview",
           watermark_enabled: true,
           urgency_ends_at: ends,
-          business_context: ctx,
+          business_context: nextContext,
         })
         .select("id")
         .single();
@@ -2459,7 +2482,12 @@ app.post("/security-card/start", requireUser, checkoutLimiter, async (req, res) 
     const stripe = stripeClient();
     if (!stripe) return sendStripeMissing(res);
     const email = String(req.body?.email || req.user.email || "").trim();
-    const data = await startSecurityCardVerification(stripe, db(), req.user.id, email);
+    const paymentMethodId = String(
+      req.body?.paymentMethodId || req.body?.payment_method_id || ""
+    ).trim();
+    const data = await startSecurityCardVerification(stripe, db(), req.user.id, email, {
+      paymentMethodId,
+    });
     res.json(data);
   } catch (e) {
     console.error(e);
@@ -3369,6 +3397,13 @@ function preparePublishedHtml(project) {
   let html = ensureMobileFriendlyHtml(
     stripRuntimeEmbedsFromStoredHtml(project.html || "<!doctype html><title>Site</title>")
   );
+  html = ensureContactFormHtml(html, {
+    businessName: project.business_name,
+    phone:
+      project.business_context && typeof project.business_context === "object"
+        ? project.business_context.phone
+        : "",
+  });
   if (isWatermarkActive(project)) {
     html = injectWatermarkEmbed(html, project);
   }

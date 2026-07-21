@@ -1,9 +1,12 @@
 /* Slide-to-generate — thumb position via --ms-lf-slide-x on .ms-lf-slide */
 .ms-lf-slide {
   --ms-lf-slide-x: 0px;
+  --ms-lf-slide-max: 0px;
   --ms-lf-slide-fill: calc(var(--ms-lf-slide-pad) + 44px);
   --ms-lf-slide-pad: 4px;
   --ms-lf-slide-radius: 12px;
+  width: 100%;
+  overflow: hidden;
 }
 
 .ms-lf-slide-track {
@@ -63,7 +66,11 @@
   cursor: grab;
   pointer-events: auto;
   touch-action: none;
-  transform: translate3d(var(--ms-lf-slide-x, 0px), -50%, 0);
+  transform: translate3d(
+    min(var(--ms-lf-slide-x, 0px), var(--ms-lf-slide-max, 0px)),
+    -50%,
+    0
+  );
   will-change: transform;
 }
 

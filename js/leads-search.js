@@ -1788,36 +1788,44 @@
   }
 
   function slideThumbWidth(thumb) {
-    return thumb?.getBoundingClientRect().width || thumb?.offsetWidth || 44;
+    if (!thumb) return 44;
+    void thumb.offsetWidth;
+    const w = thumb.getBoundingClientRect().width || thumb.offsetWidth || 0;
+    return w > 8 ? w : 44;
   }
 
-  function slideXFromPointer(track, clientX, max) {
+  function slideMetrics(slide) {
+    const track = slide?.querySelector(".ms-lf-slide-track");
+    const thumb = slide?.querySelector(".ms-lf-slide-thumb");
+    if (!track || !thumb) return null;
+    const pad = slidePad(track);
+    void track.offsetWidth;
+    void thumb.offsetWidth;
+    void slide?.offsetWidth;
+    const thumbW = slideThumbWidth(thumb);
+    const innerW = Math.max(0, track.clientWidth - pad * 2);
+    const max = Math.max(0, innerW - thumbW);
+    return { track, thumb, pad, thumbW, max };
+  }
+
+  function slideXFromPointer(track, clientX, max, grabOffsetX) {
+    const thumb = track.querySelector(".ms-lf-slide-thumb");
+    if (!thumb || max <= 0) return 0;
     const rect = track.getBoundingClientRect();
     const pad = slidePad(track);
-    const thumbW = slideThumbWidth(track.querySelector(".ms-lf-slide-thumb"));
-    const raw = clientX - rect.left - pad - thumbW / 2;
+    const thumbW = slideThumbWidth(thumb);
+    const centerX = clientX - (grabOffsetX || 0);
+    const raw = centerX - rect.left - pad - thumbW / 2;
     return Math.max(0, Math.min(max, raw));
   }
 
   function slideMax(slide, pass) {
-    const track = slide.querySelector(".ms-lf-slide-track");
-    const thumb = slide.querySelector(".ms-lf-slide-thumb");
-    if (!track || !thumb) return 0;
-    const pad = slidePad(track);
-    void track.offsetWidth;
-    void slide.offsetWidth;
-    const trackW =
-      track.getBoundingClientRect().width ||
-      track.clientWidth ||
-      slide.getBoundingClientRect().width ||
-      slide.clientWidth ||
-      0;
-    const thumbW = slideThumbWidth(thumb);
-    let max = Math.max(0, trackW - pad * 2 - thumbW);
-    if (max <= 0 && (pass || 0) < 3) {
+    const metrics = slideMetrics(slide);
+    if (!metrics) return 0;
+    if (metrics.max <= 0 && (pass || 0) < 3) {
       return slideMax(slide, (pass || 0) + 1);
     }
-    return max;
+    return metrics.max;
   }
 
   function readSlideX(slide) {
@@ -1834,27 +1842,38 @@
   function clearSlideInlineStyles(slide) {
     if (!slide) return;
     slide.style.removeProperty("--ms-lf-slide-x");
+    slide.style.removeProperty("--ms-lf-slide-max");
     slide.style.removeProperty("--ms-lf-slide-fill");
   }
 
-  function setSlideX(slide, x, max) {
-    const track = slide.querySelector(".ms-lf-slide-track");
-    const thumb = slide.querySelector(".ms-lf-slide-thumb");
+  function setSlideX(slide, x, metricsOrMax) {
+    const metrics =
+      metricsOrMax && typeof metricsOrMax === "object"
+        ? metricsOrMax
+        : slideMetrics(slide);
+    if (!metrics) return 0;
+    const max =
+      typeof metricsOrMax === "number" && Number.isFinite(metricsOrMax)
+        ? metricsOrMax
+        : metrics.max;
     const clamped = Math.max(0, Math.min(max, x));
-    const pad = slidePad(track);
-    const thumbW = slideThumbWidth(thumb);
     slide.style.setProperty("--ms-lf-slide-x", clamped + "px");
-    slide.style.setProperty("--ms-lf-slide-fill", pad + clamped + thumbW + "px");
+    slide.style.setProperty("--ms-lf-slide-max", max + "px");
+    slide.style.setProperty(
+      "--ms-lf-slide-fill",
+      metrics.pad + clamped + metrics.thumbW + "px"
+    );
     return clamped;
   }
 
   function resetSlide(slide, animated) {
     if (!slide) return;
-    const max = slideMax(slide);
+    const metrics = slideMetrics(slide);
+    if (!metrics) return;
     slide.classList.remove("is-dragging", "is-done", "is-completing");
     if (animated) {
       slide.classList.add("is-returning");
-      setSlideX(slide, 0, max);
+      setSlideX(slide, 0, metrics);
       window.setTimeout(() => {
         slide.classList.remove("is-returning");
         clearSlideInlineStyles(slide);
@@ -1870,7 +1889,8 @@
       return;
     }
     const id = slide.getAttribute("data-lead-slide") || "";
-    const max = slideMax(slide);
+    const metrics = slideMetrics(slide);
+    if (!metrics) return;
     const lead =
       lastLeads.find((item) => leadId(item) === id) || savedMap[id] || null;
     if (!lead) {
@@ -1881,7 +1901,7 @@
     void (async () => {
       slide.classList.remove("is-dragging", "is-returning");
       slide.classList.add("is-completing");
-      setSlideX(slide, max, max);
+      setSlideX(slide, metrics.max, metrics);
       window.setTimeout(() => {
         slide.classList.remove("is-completing");
         void launchBuilderForLead(lead).then((ok) => {
@@ -1905,23 +1925,23 @@
     }
     if (slide.dataset.slideDragging === "1") return false;
 
-    const track = slide.querySelector(".ms-lf-slide-track");
-    const thumb = slide.querySelector(".ms-lf-slide-thumb");
-    if (!track || !thumb) return false;
+    const metrics = slideMetrics(slide);
+    if (!metrics || metrics.max <= 0) return false;
+    const { track, thumb, max } = metrics;
     if (thumb.disabled || thumb.getAttribute("aria-disabled") === "true") return false;
-
-    const max = slideMax(slide);
-    if (max <= 0) return false;
 
     e.preventDefault();
     e.stopPropagation();
 
-    const onThumb = e.target.closest(".ms-lf-slide-thumb");
-    let startLeft = onThumb ? readSlideX(slide) : slideXFromPointer(track, e.clientX, max);
-    startLeft = Math.max(0, Math.min(max, startLeft));
-    setSlideX(slide, startLeft, max);
-
     const startX = e.clientX;
+    const onThumb = e.target.closest(".ms-lf-slide-thumb");
+    const thumbRect = thumb.getBoundingClientRect();
+    const grabOffsetX = onThumb
+      ? startX - (thumbRect.left + thumbRect.width / 2)
+      : metrics.thumbW / 2;
+    let startLeft = onThumb ? readSlideX(slide) : 0;
+    startLeft = Math.max(0, Math.min(max, startLeft));
+    setSlideX(slide, startLeft, metrics);
     let current = startLeft;
     let finished = false;
     let moved = false;
@@ -1947,7 +1967,8 @@
     const flush = () => {
       raf = 0;
       if (finished) return;
-      current = setSlideX(slide, pendingX, max);
+      const live = slideMetrics(slide) || metrics;
+      current = setSlideX(slide, pendingX, live);
     };
 
     const clientXFromEvent = (ev) => {
@@ -1962,9 +1983,9 @@
       if (!usePointer && ev.type === "mousemove" && ev.buttons === 0) return;
       ev.preventDefault();
       const cx = clientXFromEvent(ev);
-      const nextX = startLeft + (cx - startX);
+      const liveMax = (slideMetrics(slide) || metrics).max;
+      pendingX = slideXFromPointer(track, cx, liveMax, grabOffsetX);
       if (Math.abs(cx - startX) >= 2) moved = true;
-      pendingX = nextX;
       if (!raf) raf = window.requestAnimationFrame(flush);
     };
 
@@ -1994,10 +2015,11 @@
         }
       }
       slide.classList.remove("is-dragging");
-      current = setSlideX(slide, pendingX, max);
-      const endX = ev ? clientXFromEvent(ev) : pendingX;
+      const live = slideMetrics(slide) || metrics;
+      current = setSlideX(slide, pendingX, live);
+      const endX = ev ? clientXFromEvent(ev) : startX;
       const dragPx = Math.abs(endX - startX);
-      if (moved && slideCompletes(current, max, dragPx)) completeSlide(slide);
+      if (moved && slideCompletes(current, live.max, dragPx)) completeSlide(slide);
       else resetSlide(slide, true);
     };
 
@@ -2053,7 +2075,9 @@
       if (!slide || slide.classList.contains("is-done") || slide.classList.contains("is-completing")) {
         return;
       }
-      const max = slideMax(slide);
+      const metrics = slideMetrics(slide);
+      if (!metrics) return;
+      const { max } = metrics;
       const cur = readSlideX(slide);
 
       if (e.key === "ArrowRight" || e.key === "End") {
@@ -2062,7 +2086,7 @@
         else {
           const next = Math.min(max, cur + Math.max(28, max * 0.22));
           slide.classList.add("is-returning");
-          setSlideX(slide, next, max);
+          setSlideX(slide, next, metrics);
           if (slideCompletes(next, max, next)) completeSlide(slide);
           else window.setTimeout(() => slide.classList.remove("is-returning"), 220);
         }

@@ -205,10 +205,20 @@ Return ONLY one complete HTML document (doctype + html). No markdown fences. No 
 
 ## Website Presets kit rule (critical)
 1) The kit is NOT optional inspiration. For every kit item, ADAPT that preset's real HTML structure and CSS patterns into the matching bone-structure section.
-2) Keep the preset's layout skeleton: wrappers, grids, media placement, spacing rhythm. Recolor to the palette. Rewrite ALL demo/placeholder copy with THIS business's facts.
+2) Keep the preset's layout skeleton: wrappers, grids, media placement, spacing rhythm, border-radius, shadows, and button shapes. Recolor to the palette. Rewrite ALL demo/placeholder copy with THIS business's facts.
 3) Do NOT invent a generic hero or section layout when a kit preset already covers that role. Start from the kit markup, then customize through the shared design system.
-4) Merge kit CSS into ONE <style> block. Strip demo chrome, toggles, and gallery controls.
-5) Sections without a kit preset: still build them using the shared design system (palette, fonts, spacing, stock media).
+4) Merge kit CSS into ONE <style> block. Port preset selectors into shared classes (.btn, .card, .section-head) instead of leaving orphaned one-off rules.
+5) Sections without a kit preset: still build them using the shared design system (palette, fonts, spacing, stock media) - match the visual language of the kits you did use.
+6) Component fidelity bar: at least 6 page sections (nav, hero, 2+ content blocks, contact form, footer) must visibly inherit kit structure - a visitor should see preset-quality polish, not a generic template.
+7) When a kit shows a card grid, split hero, sticky nav, fieldset form, or accent CTA band - reproduce that composition. Do not flatten it into plain stacked divs.
+
+## Component adaptation workflow (follow for EVERY kit item)
+1) READ the kit snippet's HTML tree: outer wrapper, grid/flex classes, media slots, heading hierarchy, button markup.
+2) COPY the DOM skeleton into your section (same nesting depth, same grid columns, same media placement).
+3) PORT the kit's CSS: extract border-radius, padding, shadows, typography scale, hover states → map to :root vars + shared classes.
+4) REPLACE all demo text, names, prices, and placeholder images with business facts + stock media pack URLs.
+5) STRIP demo-only controls (toggles, gallery chrome, preset labels) but KEEP the visual design patterns.
+6) CROSS-POLLINATE: the button style from hero/cta kits becomes .btn--primary everywhere; card treatment from services kit becomes .card everywhere.
 
 ## Full-page requirement (critical)
 1) Build EVERY section listed in the bone structure, in order, as real on-page sections.
@@ -392,6 +402,94 @@ function buildBusinessBrief(ctx) {
 /**
  * Compact catalog lines for stage 1 (ids only - no HTML).
  */
+function extractPresetStructureHints(html) {
+  const raw = String(html || "");
+  const classes = new Set();
+  const classRe = /class="([^"]+)"/gi;
+  let match;
+  while ((match = classRe.exec(raw))) {
+    match[1].split(/\s+/).forEach((token) => {
+      const c = String(token || "").trim();
+      if (c && c.length < 48 && !/^is-|^has-/.test(c)) classes.add(c);
+    });
+  }
+  const classList = [...classes].slice(0, 14);
+  const hasGrid = /display:\s*grid|grid-template|\.grid\b/i.test(raw);
+  const hasFlex = /display:\s*flex|flex-direction|\.flex\b/i.test(raw);
+  const layout = hasGrid ? "CSS grid" : hasFlex ? "flex" : "stack/block";
+  const patterns = [];
+  if (/card|tile|panel|surface|shell/i.test(raw)) patterns.push("card surfaces");
+  if (/button|\.btn|\.send|\.cta/i.test(raw)) patterns.push("styled buttons");
+  if (/border-radius|rounded/i.test(raw)) patterns.push("rounded corners");
+  if (/box-shadow|shadow/i.test(raw)) patterns.push("shadows/elevation");
+  if (/gradient|clip-path|backdrop-filter/i.test(raw)) patterns.push("accent fills/effects");
+  if (/<video\b|<img\b/i.test(raw)) patterns.push("media frame");
+  if (/<form\b|<fieldset\b|<input\b/i.test(raw)) patterns.push("form fields");
+  return {
+    layout,
+    patterns: patterns.length ? patterns.join(", ") : "minimal styling",
+    keyClasses: classList.length ? classList.join(", ") : "(inline/unclassified)",
+  };
+}
+
+function formatKitUsagePlaybook(presetPack) {
+  const kits = Array.isArray(presetPack) ? presetPack : [];
+  if (!kits.length) return "";
+
+  const byRole = new Map();
+  for (const kit of kits) {
+    const role = String(kit.role || kit.category || "component").trim().toLowerCase();
+    if (!byRole.has(role)) byRole.set(role, kit);
+  }
+
+  const lines = [
+    "## Kit usage playbook (mandatory - compose presets into one premium site)",
+    "The finished page must LOOK like these Website Presets were professionally assembled - not a generic AI layout.",
+    "",
+  ];
+
+  const playbook = [
+    ["navigation", "Navigation: reuse the nav kit's bar height, logo placement, link spacing, and CTA button shape."],
+    ["hero", "Hero: reuse the hero kit's media frame (image/video placement), headline stack, and dual-CTA layout."],
+    [
+      "services",
+      "Services: reuse the services kit's card grid, icon/media slots, equal tile rhythm, and section header pattern.",
+    ],
+    [
+      "credibility",
+      "Credibility: reuse the credibility kit's trust strip, stat row, or badge row - do not replace with plain bullet text.",
+    ],
+    [
+      "testimonials",
+      "Testimonials: reuse the testimonial kit's quote cards, avatar slots, and spacing - never bare blockquotes.",
+    ],
+    ["pricing", "Pricing: reuse the pricing kit's tier cards, price typography, and feature lists."],
+    ["gallery", "Gallery: reuse the gallery kit's image grid/masonry and hover treatment."],
+    ["cta_band", "CTA band: reuse the CTA kit's contrast band, headline scale, and primary button styling."],
+    [
+      "contact_form",
+      "Contact form: reuse the form kit's field layout, labels, input styling, and submit button - not a bare unstyled form.",
+    ],
+    ["footer", "Footer: reuse the footer kit's column grid, typography scale, and link styling."],
+  ];
+
+  for (const [role, instruction] of playbook) {
+    if (byRole.has(role)) lines.push(`- ${instruction}`);
+  }
+
+  lines.push(
+    "",
+    "Cohesion rules:",
+    "- Merge CSS from ALL kits into one stylesheet. Extract the best button rule from hero/cta kits → apply globally as .btn--primary.",
+    "- Extract card padding, radius, and shadow from the services/cards kit → apply to every .card (services, testimonials, pricing, team).",
+    "- Extract section header rhythm (eyebrow + title + lead) from the strongest kit and reuse via .section-head on every section.",
+    "- Do NOT write generic Bootstrap-style sections when a kit exists for that role.",
+    "- Minimum bar: nav, hero, 2+ content sections, contact form, and footer must clearly inherit kit structure."
+  );
+
+  return lines.join("\n");
+}
+
 function formatPresetCatalog(catalog) {
   const rows = Array.isArray(catalog) ? catalog : [];
   if (!rows.length) return "(empty catalog)";
@@ -430,12 +528,16 @@ function formatPresetPack(presetPack, media) {
       const html = media
         ? rewriteStockPathsInHtml(String(p.html || "").trim(), media)
         : String(p.html || "").trim();
+      const hints = extractPresetStructureHints(html);
       return [
         `### Kit ${i + 1} | role: ${role} | ${p.title || p.id || "untitled"}`,
         `id: ${p.id || ""}${tags ? ` | tags: ${tags}` : ""}`,
+        `Structure hints: ${hints.layout} layout | ${hints.patterns}`,
+        `Key classes to preserve or remap: ${hints.keyClasses}`,
         `REQUIRED: Adapt this preset into the "${role}" bone-structure section.`,
-        "Keep its HTML grid/layout skeleton and media placement. Rewrite placeholder copy with business facts.",
-        "Recolor hard-coded demo colors → :root palette vars. Map buttons → .btn classes. Map tiles → .card.",
+        "COPY its HTML tree (wrappers → grid → media/copy slots). PORT its CSS patterns into shared classes.",
+        "Keep grid columns, media placement, card shells, button shapes, and spacing rhythm.",
+        "Rewrite placeholder copy with business facts. Recolor hard-coded demo colors → :root palette vars.",
         "Do not replace with a generic invented layout. Strip demo-only animation if it fights the unified system.",
         "```html",
         html,
@@ -502,6 +604,7 @@ function formatDesignSystemBlueprint(plan) {
     ".btn | .btn--primary | .btn--secondary | .card | .grid | .grid--2 | .grid--3",
     "",
     "Kit adaptation rule: preserve each preset's grid/media hierarchy; remap colors to vars; map buttons → .btn; map tiles → .card.",
+    "Component quality bar: the assembled site must look like these presets were composed by a designer - not a generic outline with palette vars slapped on top.",
   ].join("\n");
 }
 
@@ -522,7 +625,7 @@ function formatAssemblyMap(structure, presetPack) {
 
   const lines = [
     "## Section → kit assembly map",
-    "Build every section below in order. Adapt the listed kit; if none, build from the shared design system.",
+    "Build every section below in order. When a kit is listed, you MUST adapt that kit's HTML/CSS - do not freestyle a generic section.",
     "",
   ];
 
@@ -531,12 +634,14 @@ function formatAssemblyMap(structure, presetPack) {
     const role = String(section).toLowerCase();
     const kit = kitByRole.get(role);
     if (kit) {
+      const hints = extractPresetStructureHints(String(kit.html || ""));
       lines.push(
-        `${i + 1}. ${label} (\`${section}\`) → Kit "${kit.title || kit.id}" [id: ${kit.id}, role: ${kit.role || kit.category}]`
+        `${i + 1}. ${label} (\`${section}\`) → ADAPT Kit "${kit.title || kit.id}" [id: ${kit.id}]`,
+        `   Use its ${hints.layout} layout (${hints.patterns}). Preserve classes/patterns: ${hints.keyClasses}`
       );
     } else {
       lines.push(
-        `${i + 1}. ${label} (\`${section}\`) → no kit - build with shared .section/.card/.btn primitives + stock media`
+        `${i + 1}. ${label} (\`${section}\`) → no kit - build with shared .section/.card/.btn primitives + stock media, matching the visual language of the kits above`
       );
     }
   });
@@ -552,7 +657,7 @@ function buildGenerationUserPrompt(ctx, presetPack, plan, media, options = {}) {
   const structure = plan?.structure || null;
   const sectionCount = plan?.structure?.sections?.length || 10;
   const retryNote = options.retryIncomplete
-    ? "\nIMPORTANT: Your previous draft was incomplete (hero-only or missing sections). This time include ALL bone-structure sections through the footer."
+    ? "\nIMPORTANT: Your previous draft was incomplete or too generic. Include ALL bone-structure sections through the footer AND visibly adapt the Website Presets kit (nav, hero, cards, form, footer) - do not freestyle plain sections when kits exist."
     : "";
   const finderBlock = ctx.fromFinder
     ? [
@@ -579,23 +684,27 @@ function buildGenerationUserPrompt(ctx, presetPack, plan, media, options = {}) {
     "",
     structure ? formatAssemblyMap(structure, presetPack) : "",
     "",
+    formatKitUsagePlaybook(presetPack),
+    "",
     formatStockMediaForPrompt(stock),
     "",
     "## Website Presets component kit",
-    "These kit components are REQUIRED building blocks. Adapt each into its mapped section using the shared design system.",
-    "One cohesive page: same buttons, cards, fonts, and spacing everywhere - not a patchwork of demo styles.",
+    "These kit components are REQUIRED building blocks - not optional reference. Adapt each into its mapped section using the shared design system.",
+    "One cohesive page: same buttons, cards, fonts, and spacing everywhere - composed FROM these presets, not a patchwork of demo styles or generic AI layouts.",
     formatPresetPack(presetPack, stock),
     "",
     "## Task",
     `Assemble one complete single-page site with all ${sectionCount} bone-structure sections.`,
     "Step 1: Write :root tokens + shared utility classes (.container, .section, .btn, .card, .grid).",
-    "Step 2: Build each section in assembly-map order by adapting its kit (or shared primitives if no kit).",
-    "Step 3: Hero must include real image or muted looping video from the pack.",
+    "Step 2: For each section in the assembly map, COPY the mapped kit's HTML skeleton and PORT its CSS patterns before writing copy.",
+    "Step 3: Cross-pollinate kit styles - hero button → .btn--primary globally; services card → .card globally; nav spacing → all sections.",
+    "Step 4: Hero must include real image or muted looping video from the pack, using the hero kit's media frame.",
     "Include contact form and footer. Do not use em dashes in visible copy.",
     ctx.notes
       ? "Honor the creator generation instructions in Business facts - they override generic layout/style defaults when specific."
       : "",
     "Quality bar: professional, modern, premium local-business - generous whitespace, crisp hierarchy, consistent components.",
+    "Kit fidelity bar: the page must look like a designer composed Website Presets - rich cards, polished nav, styled form, cohesive footer - not a bare HTML outline.",
     "Uniqueness bar: follow the Creative variation block - this page must not look like a generic duplicate of prior sites for the same trade.",
     "Responsive essentials: viewport meta, no horizontal scroll, fluid grids/images, clamp type, mobile nav that fits, columns stack on small screens, touch-friendly CTAs.",
     "Apply the palette consistently (Coolors-level harmony + contrast) via :root CSS variables across the whole page.",
@@ -858,6 +967,8 @@ module.exports = {
   formatPresetCatalog,
   formatDesignSystemBlueprint,
   formatAssemblyMap,
+  formatKitUsagePlaybook,
+  extractPresetStructureHints,
   suggestGoogleFontsHint,
   trimHtmlForEdit,
   ensurePaletteContrast,

@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css?v=20260719-perf">
+  <link rel="stylesheet" href="css/studio.css?v=20260720-login-fix">
   <link rel="stylesheet" href="css/studio-motion.css?v=20260719-perf">
   <meta name="color-scheme" content="light">
   <link rel="preconnect" href="https://erfaxgmnzdropviormpj.supabase.co" crossorigin>
@@ -125,7 +125,7 @@
   </div>
 
   <script defer src="js/segment-switch.js"></script>
-  <script defer src="js/ui-motion.js?v=20260719-onb-motion"></script>
+  <script defer src="js/ui-motion.js?v=20260720-login-fix"></script>
   <script defer src="js/toast.js"></script>
   <script defer src="js/handles.js"></script>
   <script defer src="js/supabase-client.js?v=20260719-email-auto-login"></script>
@@ -345,61 +345,212 @@
       bindHoldToRevealPassword(passwordInput, document.getElementById("password-reveal"));
       bindHoldToRevealPassword(passwordConfirm, document.getElementById("password-confirm-reveal"));
 
-      const sb = StudioAuth.getClient?.();
-      if (sb?.auth?.onAuthStateChange) {
-        sb.auth.onAuthStateChange((event) => {
-          if (event === "PASSWORD_RECOVERY") {
-            recoveryPending = true;
-            sessionStorage.setItem("ms_pw_recovery", "1");
-            setMode("recover");
-          }
-        });
+      function showAuthError(errOrMsg) {
+        if (errOrMsg === "" || errOrMsg == null) {
+          err.hidden = true;
+          err.textContent = "";
+          window.StudioToast?.clear?.();
+          return;
+        }
+        let text = "";
+        if (typeof errOrMsg === "string") {
+          text = errOrMsg.trim();
+        } else if (errOrMsg && typeof errOrMsg === "object") {
+          text = window.StudioAuth?.formatAuthError?.(errOrMsg, "") || String(errOrMsg.message || "").trim();
+        }
+        if (!text || text === "[object Object]" || text === "{}") {
+          text = "Something went wrong. Please try again.";
+        }
+        const friendly =
+          window.StudioAuth?.friendlyNetworkMessage?.({ message: text }, text) || text;
+        err.hidden = true;
+        err.textContent = "";
+        if (friendly) window.StudioToast?.error?.(friendly);
       }
 
-      const hasAuthCallback =
-        emailConfirmPending
-        || params.get("code")
-        || hashParams.get("access_token")
-        || params.get("token_hash");
-      if (hasAuthCallback) {
-        const sessionFromCallback = await StudioAuth.completeAuthCallbackFromUrl?.();
-        if (sessionFromCallback && mode !== "recover" && mode !== "forgot") {
+      document.querySelectorAll(".ms-auth-tab").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          if (btn.dataset.mode === "signin") clearSignupEmailPrompt();
+          setMode(btn.dataset.mode);
+        });
+      });
+      document.getElementById("forgot-link").addEventListener("click", () => {
+        setMode("forgot");
+      });
+      document.getElementById("back-to-signin").addEventListener("click", () => {
+        sessionStorage.removeItem("ms_pw_recovery");
+        recoveryPending = false;
+        setMode("signin");
+      });
+      resendConfirmLink?.addEventListener("click", async () => {
+        const email = String(form.email.value || "").trim();
+        if (!email) {
+          showAuthError("Enter your email first");
+          form.email.focus();
+          return;
+        }
+        resendConfirmLink.disabled = true;
+        try {
+          await StudioAuth.resendConfirmationEmail(email);
+          hint.textContent =
+            "We sent another confirmation email. Tap the link in your inbox to verify and sign in automatically.";
+          window.StudioToast?.success?.("Confirmation email sent");
+        } catch (ex) {
+          showAuthError(ex);
+        } finally {
+          resendConfirmLink.disabled = false;
+        }
+      });
+
+      passwordInput.addEventListener("input", updatePasswordMeter);
+      setMode(mode, true);
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        showAuthError("");
+        if (mode !== "forgot" && mode !== "signin") hint.textContent = "";
+        if (mode === "signin") clearSignupEmailPrompt();
+
+        if (mode === "signup" || mode === "recover") {
+          const strength = updatePasswordMeter();
+          if (!strength.ok) {
+            showAuthError(
+              "Choose a stronger password: 8+ characters with upper & lowercase letters and a number."
+            );
+            passwordInput.focus();
+            return;
+          }
+        }
+        if (mode === "recover" && passwordInput.value !== passwordConfirm.value) {
+          showAuthError("Passwords do not match");
+          passwordConfirm.focus();
+          return;
+        }
+
+        submit.disabled = true;
+        try {
+          if (mode === "forgot") {
+            await StudioAuth.requestPasswordReset(form.email.value);
+            sessionStorage.setItem("ms_pw_recovery", "1");
+            hint.textContent = "Check your email for a reset link. You can close this tab.";
+            window.StudioToast?.success?.("Reset link sent");
+          } else if (mode === "recover") {
+            await StudioAuth.setPassword(passwordInput.value);
+            sessionStorage.removeItem("ms_pw_recovery");
+            recoveryPending = false;
+            window.StudioToast?.success?.("Password updated");
+            location.replace(nextUrl);
+            return;
+          } else if (mode === "signup") {
+            const data = await StudioAuth.signUp(
+              form.email.value,
+              form.password.value,
+              form.handle.value
+            );
+            persistAutosavedFields();
+            if (data?.session || data?.access_token) {
+              await continueAfterAuth();
+              return;
+            }
+            hint.textContent = "Check your email for the Moonrise confirmation link — tap it to verify and sign in automatically.";
+            setMode("signin");
+            window.StudioToast?.info?.("We sent a confirmation email — check your inbox");
+            try {
+              sessionStorage.setItem(CHECK_EMAIL_FLAG, "1");
+              const nextQs = new URLSearchParams();
+              nextQs.set("check_email", "1");
+              if (nextUrl !== "dashboard.html") nextQs.set("next", nextUrl);
+              history.replaceState(null, "", location.pathname + "?" + nextQs.toString());
+            } catch (_) {
+              /* ignore */
+            }
+          } else {
+            await StudioAuth.signIn(form.email.value, form.password.value);
+            persistAutosavedFields();
+            await continueAfterAuth();
+          }
+        } catch (ex) {
+          if (ex.code === "email_not_confirmed") {
+            hint.textContent =
+              "Check your email for the Moonrise confirmation link, then try again.";
+            if (resendWrap) resendWrap.hidden = false;
+            window.StudioToast?.info?.(ex.message || "Verify your email first");
+          } else if (ex.code === "signup_exists") {
+            window.StudioToast?.info?.(ex.message || "An account with this email already exists.");
+            setMode("signin");
+          } else if (ex.code === "auth_failed" || ex.code === "auth_locked") {
+            showAuthError(ex);
+            if (ex.code === "auth_failed" && mode === "signin") {
+              hint.textContent = "Forgot your password? Use Forgot password? above to get a reset link.";
+            }
+          } else {
+            showAuthError(ex);
+          }
+        } finally {
+          submit.disabled = false;
+        }
+      });
+
+      async function bootstrapAuthSession() {
+        const sb = StudioAuth.getClient?.();
+        if (sb?.auth?.onAuthStateChange) {
+          sb.auth.onAuthStateChange((event) => {
+            if (event === "PASSWORD_RECOVERY") {
+              recoveryPending = true;
+              sessionStorage.setItem("ms_pw_recovery", "1");
+              setMode("recover");
+            }
+          });
+        }
+
+        const hasAuthCallback =
+          emailConfirmPending
+          || params.get("code")
+          || hashParams.get("access_token")
+          || params.get("token_hash");
+        if (hasAuthCallback) {
+          const sessionFromCallback = await StudioAuth.completeAuthCallbackFromUrl?.();
+          if (sessionFromCallback && mode !== "recover" && mode !== "forgot") {
+            cleanAuthCallbackUrl();
+            window.StudioToast?.success?.("Email verified! Signing you in…");
+            await continueAfterAuth();
+            return;
+          }
+        }
+
+        const session = await StudioAuth.getSession();
+        if (
+          (recoveryPending || emailConfirmPending)
+          && !session
+          && (params.get("code") || hashParams.get("access_token") || emailConfirmPending)
+        ) {
+          await waitForAuthSession(emailConfirmPending ? 24 : 12);
+        }
+        const sessionNow = await StudioAuth.getSession();
+        if (sessionNow && emailConfirmPending && mode !== "recover" && mode !== "forgot") {
           cleanAuthCallbackUrl();
           window.StudioToast?.success?.("Email verified! Signing you in…");
           await continueAfterAuth();
           return;
         }
+        if (sessionNow && !recoveryPending && mode !== "recover" && mode !== "forgot") {
+          await continueAfterAuth();
+          return;
+        }
+        if (recoveryPending && sessionNow) mode = "recover";
+        if (
+          params.get("check_email") === "1"
+          && mode === "signin"
+          && sessionStorage.getItem(CHECK_EMAIL_FLAG) === "1"
+        ) {
+          hint.textContent = "Check your email for the Moonrise confirmation link — tap it to verify and sign in automatically.";
+          window.StudioToast?.info?.("We sent a confirmation email — open it to continue");
+          sessionStorage.removeItem(CHECK_EMAIL_FLAG);
+        }
+        if (recoveryPending && sessionNow) setMode("recover", true);
       }
 
-      const session = await StudioAuth.getSession();
-      if (
-        (recoveryPending || emailConfirmPending)
-        && !session
-        && (params.get("code") || hashParams.get("access_token") || emailConfirmPending)
-      ) {
-        await waitForAuthSession(emailConfirmPending ? 24 : 12);
-      }
-      const sessionNow = await StudioAuth.getSession();
-      if (sessionNow && emailConfirmPending && mode !== "recover" && mode !== "forgot") {
-        cleanAuthCallbackUrl();
-        window.StudioToast?.success?.("Email verified! Signing you in…");
-        await continueAfterAuth();
-        return;
-      }
-      if (sessionNow && !recoveryPending && mode !== "recover" && mode !== "forgot") {
-        await continueAfterAuth();
-        return;
-      }
-      if (recoveryPending && sessionNow) mode = "recover";
-      if (
-        params.get("check_email") === "1"
-        && mode === "signin"
-        && sessionStorage.getItem(CHECK_EMAIL_FLAG) === "1"
-      ) {
-        hint.textContent = "Check your email for the Moonrise confirmation link — tap it to verify and sign in automatically.";
-        window.StudioToast?.info?.("We sent a confirmation email — open it to continue");
-        sessionStorage.removeItem(CHECK_EMAIL_FLAG);
-      }
+      void bootstrapAuthSession();
 
       function clearSignupEmailPrompt() {
         try {
@@ -539,152 +690,6 @@
           pwMeter.dataset.level = "empty";
         }
       }
-
-      document.querySelectorAll(".ms-auth-tab").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          if (btn.dataset.mode === "signin") clearSignupEmailPrompt();
-          setMode(btn.dataset.mode);
-        });
-      });
-      document.getElementById("forgot-link").addEventListener("click", () => {
-        setMode("forgot");
-      });
-      document.getElementById("back-to-signin").addEventListener("click", () => {
-        sessionStorage.removeItem("ms_pw_recovery");
-        recoveryPending = false;
-        setMode("signin");
-      });
-      resendConfirmLink?.addEventListener("click", async () => {
-        const email = String(form.email.value || "").trim();
-        if (!email) {
-          showAuthError("Enter your email first");
-          form.email.focus();
-          return;
-        }
-        resendConfirmLink.disabled = true;
-        try {
-          await StudioAuth.resendConfirmationEmail(email);
-          hint.textContent =
-            "We sent another confirmation email. Tap the link in your inbox to verify and sign in automatically.";
-          window.StudioToast?.success?.("Confirmation email sent");
-        } catch (ex) {
-          showAuthError(ex);
-        } finally {
-          resendConfirmLink.disabled = false;
-        }
-      });
-
-      passwordInput.addEventListener("input", updatePasswordMeter);
-      setMode(mode, true);
-
-      function showAuthError(errOrMsg) {
-        if (errOrMsg === "" || errOrMsg == null) {
-          err.hidden = true;
-          err.textContent = "";
-          window.StudioToast?.clear?.();
-          return;
-        }
-        let text = "";
-        if (typeof errOrMsg === "string") {
-          text = errOrMsg.trim();
-        } else if (errOrMsg && typeof errOrMsg === "object") {
-          text = window.StudioAuth?.formatAuthError?.(errOrMsg, "") || String(errOrMsg.message || "").trim();
-        }
-        if (!text || text === "[object Object]" || text === "{}") {
-          text = "Something went wrong. Please try again.";
-        }
-        const friendly =
-          window.StudioAuth?.friendlyNetworkMessage?.({ message: text }, text) || text;
-        err.hidden = true;
-        err.textContent = "";
-        if (friendly) window.StudioToast?.error?.(friendly);
-      }
-
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        showAuthError("");
-        if (mode !== "forgot" && mode !== "signin") hint.textContent = "";
-        if (mode === "signin") clearSignupEmailPrompt();
-
-        if (mode === "signup" || mode === "recover") {
-          const strength = updatePasswordMeter();
-          if (!strength.ok) {
-            showAuthError(
-              "Choose a stronger password: 8+ characters with upper & lowercase letters and a number."
-            );
-            passwordInput.focus();
-            return;
-          }
-        }
-        if (mode === "recover" && passwordInput.value !== passwordConfirm.value) {
-          showAuthError("Passwords do not match");
-          passwordConfirm.focus();
-          return;
-        }
-
-        submit.disabled = true;
-        try {
-          if (mode === "forgot") {
-            await StudioAuth.requestPasswordReset(form.email.value);
-            sessionStorage.setItem("ms_pw_recovery", "1");
-            hint.textContent = "Check your email for a reset link. You can close this tab.";
-            window.StudioToast?.success?.("Reset link sent");
-          } else if (mode === "recover") {
-            await StudioAuth.setPassword(passwordInput.value);
-            sessionStorage.removeItem("ms_pw_recovery");
-            recoveryPending = false;
-            window.StudioToast?.success?.("Password updated");
-            location.replace(nextUrl);
-            return;
-          } else if (mode === "signup") {
-            const data = await StudioAuth.signUp(
-              form.email.value,
-              form.password.value,
-              form.handle.value
-            );
-            persistAutosavedFields();
-            if (data?.session || data?.access_token) {
-              await continueAfterAuth();
-              return;
-            }
-            hint.textContent = "Check your email for the Moonrise confirmation link — tap it to verify and sign in automatically.";
-            setMode("signin");
-            window.StudioToast?.info?.("We sent a confirmation email — check your inbox");
-            try {
-              sessionStorage.setItem(CHECK_EMAIL_FLAG, "1");
-              const nextQs = new URLSearchParams();
-              nextQs.set("check_email", "1");
-              if (nextUrl !== "dashboard.html") nextQs.set("next", nextUrl);
-              history.replaceState(null, "", location.pathname + "?" + nextQs.toString());
-            } catch (_) {
-              /* ignore */
-            }
-          } else {
-            await StudioAuth.signIn(form.email.value, form.password.value);
-            persistAutosavedFields();
-            await continueAfterAuth();
-          }
-        } catch (ex) {
-          if (ex.code === "email_not_confirmed") {
-            hint.textContent =
-              "Check your email for the Moonrise confirmation link, then try again.";
-            if (resendWrap) resendWrap.hidden = false;
-            window.StudioToast?.info?.(ex.message || "Verify your email first");
-          } else if (ex.code === "signup_exists") {
-            window.StudioToast?.info?.(ex.message || "An account with this email already exists.");
-            setMode("signin");
-          } else if (ex.code === "auth_failed" || ex.code === "auth_locked") {
-            showAuthError(ex);
-            if (ex.code === "auth_failed" && mode === "signin") {
-              hint.textContent = "Forgot your password? Use Forgot password? above to get a reset link.";
-            }
-          } else {
-            showAuthError(ex);
-          }
-        } finally {
-          submit.disabled = false;
-        }
-      });
     })();
   </script>
 </body>

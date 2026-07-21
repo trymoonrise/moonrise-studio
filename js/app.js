@@ -1,7 +1,7 @@
 /**
  * Moonrise Studio shell - SiteDrop-style sidebar layout.
  */
-(function () {
+(function (global) {
   const MENU = [
     { id: "dashboard", href: "dashboard.html", label: "Dashboard", icon: "grid" },
     { id: "leads", href: "leads.html", label: "Business Finder", icon: "search" },
@@ -1360,4 +1360,4 @@
   } else {
     boot();
   }
-})();
+})(window);

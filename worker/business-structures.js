@@ -57,7 +57,7 @@ const SECTION_PRESET_CATEGORIES = {
   hours_location: ["sections", "maps", "text"],
   map: ["maps"],
   cta_band: ["cta", "buttons", "announcements"],
-  contact_form: ["forms", "inputs", "textareas"],
+  contact_form: ["forms"],
   footer: ["footers"],
   accent: ["backgrounds", "effects", "animation", "ease-in"],
 };
@@ -274,6 +274,8 @@ const PRESET_SECTION_PRIORITY = [
   "footer",
 ];
 
+const MANDATORY_PRESET_SECTIONS = new Set(["contact_form", "footer"]);
+
 function getStructurePresetRoles(structure, maxFiles = 10) {
   const structureSet = new Set(structure.sections);
   const ordered = [];
@@ -290,9 +292,18 @@ function getStructurePresetRoles(structure, maxFiles = 10) {
     seen.add(section);
   }
 
+  const mandatory = ordered.filter((section) => MANDATORY_PRESET_SECTIONS.has(section));
+  const optionalLimit = Math.max(0, maxFiles - mandatory.length);
   const roles = [];
+  let optionalCount = 0;
+
   for (const section of ordered) {
-    if (roles.length >= maxFiles) break;
+    if (roles.length >= maxFiles && !MANDATORY_PRESET_SECTIONS.has(section)) continue;
+    if (!structureSet.has(section)) continue;
+    if (!MANDATORY_PRESET_SECTIONS.has(section)) {
+      if (optionalCount >= optionalLimit) continue;
+      optionalCount += 1;
+    }
     const cats = SECTION_PRESET_CATEGORIES[section];
     if (!cats) continue;
     roles.push({ section, role: section, categories: cats });

@@ -138,6 +138,36 @@ async function assertCardFingerprintAvailable(supabase, fingerprint, userId) {
   }
 }
 
+async function assertPaymentMethodFingerprintAvailable(stripe, supabase, userId, paymentMethodId) {
+  const pmId = String(paymentMethodId || "").trim();
+  if (!pmId.startsWith("pm_")) {
+    throw Object.assign(new Error("Valid payment method required"), { status: 400 });
+  }
+
+  const pm = await stripe.paymentMethods.retrieve(pmId);
+  if (pm.type !== "card" || !pm.card) {
+    throw Object.assign(new Error("A card payment method is required"), { status: 400 });
+  }
+
+  const fingerprint = String(pm.card.fingerprint || "").trim();
+  await assertCardFingerprintAvailable(supabase, fingerprint, userId);
+  return { pm, fingerprint };
+}
+
+async function refundSecurityVerifyIntent(stripe, intentId) {
+  try {
+    await stripe.refunds.create({ payment_intent: intentId });
+  } catch (refundErr) {
+    const msg = String(refundErr?.message || "");
+    if (!/already been refunded|refund/i.test(msg)) {
+      console.error("Security card refund failed:", refundErr.message);
+      throw Object.assign(new Error("Card verified but refund failed - contact support"), {
+        status: 502,
+      });
+    }
+  }
+}
+
 async function getOrCreateStripeCustomer(stripe, supabase, userId, email) {
   const profile = await loadProfile(supabase, userId);
   const payout = profile.payout_profile || {};
@@ -174,18 +204,30 @@ async function getOrCreateStripeCustomer(stripe, supabase, userId, email) {
   return { customerId: customer.id, payoutProfile: payout };
 }
 
-async function startSecurityCardVerification(stripe, supabase, userId, email) {
+async function startSecurityCardVerification(stripe, supabase, userId, email, opts = {}) {
+  const paymentMethodId = String(
+    opts?.paymentMethodId || opts?.payment_method_id || ""
+  ).trim();
+  if (!paymentMethodId) {
+    throw Object.assign(
+      new Error("Payment method is required before card verification can start."),
+      { status: 400 }
+    );
+  }
+
+  await assertPaymentMethodFingerprintAvailable(stripe, supabase, userId, paymentMethodId);
+
   const { customerId } = await getOrCreateStripeCustomer(stripe, supabase, userId, email);
   const paymentIntent = await stripe.paymentIntents.create({
     amount: SECURITY_VERIFY_CENTS,
     currency: "usd",
     customer: customerId,
+    payment_method: paymentMethodId,
     setup_future_usage: "off_session",
     metadata: {
       type: "security_card_verify",
       userId,
     },
-    automatic_payment_methods: { enabled: true },
     description: "Moonrise security card confirmation (refunded immediately)",
   });
 
@@ -226,23 +268,18 @@ async function completeSecurityCardVerification(stripe, supabase, userId, paymen
     throw Object.assign(new Error("Missing Stripe customer"), { status: 400 });
   }
 
-  try {
-    await stripe.refunds.create({ payment_intent: intentId });
-  } catch (refundErr) {
-    const msg = String(refundErr?.message || "");
-    if (!/already been refunded|refund/i.test(msg)) {
-      console.error("Security card refund failed:", refundErr.message);
-      throw Object.assign(new Error("Card verified but refund failed - contact support"), {
-        status: 502,
-      });
-    }
-  }
-
   const pm = await stripe.paymentMethods.retrieve(paymentMethodId);
   const card = pm.card || {};
   const fingerprint = String(card.fingerprint || "").trim();
 
-  await assertCardFingerprintAvailable(supabase, fingerprint, userId);
+  try {
+    await assertCardFingerprintAvailable(supabase, fingerprint, userId);
+  } catch (dupErr) {
+    await refundSecurityVerifyIntent(stripe, intentId);
+    throw dupErr;
+  }
+
+  await refundSecurityVerifyIntent(stripe, intentId);
 
   await stripe.paymentMethods.attach(paymentMethodId, { customer: customerId }).catch((e) => {
     if (!/already been attached/i.test(String(e.message || ""))) throw e;
@@ -383,6 +420,7 @@ module.exports = {
   cardAlreadyRegisteredMessage,
   normalizeSecurityCard,
   securityCardFromProfile,
+  assertPaymentMethodFingerprintAvailable,
   startSecurityCardVerification,
   completeSecurityCardVerification,
   chargeSecurityCard,

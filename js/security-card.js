@@ -211,12 +211,26 @@
     if (!stripe || !cardElement) throw new Error("Add your payment method details first.");
 
     const email = String(opts?.email || "").trim();
+    const pmResult = await stripe.createPaymentMethod({
+      type: "card",
+      card: cardElement,
+      billing_details: email ? { email } : undefined,
+    });
+    if (pmResult.error) {
+      throw new Error(pmResult.error.message || "Could not save payment method");
+    }
+    const paymentMethodId = String(pmResult.paymentMethod?.id || "").trim();
+    if (!paymentMethodId) throw new Error("Could not create payment method");
+
     const startRes = await workerFetch(
       "/security-card/start",
       {
         method: "POST",
         headers: await authHeaders(),
-        body: JSON.stringify({ email: email || undefined }),
+        body: JSON.stringify({
+          email: email || undefined,
+          paymentMethodId,
+        }),
       },
       { retries: 1 }
     );
@@ -227,10 +241,7 @@
     if (!startData.clientSecret) throw new Error("Missing Stripe client secret");
 
     const result = await stripe.confirmCardPayment(startData.clientSecret, {
-      payment_method: {
-        card: cardElement,
-        billing_details: email ? { email } : undefined,
-      },
+      payment_method: paymentMethodId,
     });
 
     if (result.error) {
