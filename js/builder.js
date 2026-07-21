@@ -7505,12 +7505,7 @@
 
     if (document.body.dataset.msAuthFired !== "1") {
       await new Promise((resolve) => {
-        const done = () => {
-          document.removeEventListener("ms:auth-ready", done);
-          resolve();
-        };
-        document.addEventListener("ms:auth-ready", done, { once: true });
-        window.setTimeout(done, 2500);
+        window.StudioBoot?.whenAuthReady?.(resolve) ?? resolve();
       });
     }
 
@@ -7570,17 +7565,15 @@
     // Finder handoff uses a shorter wait - generate must start ASAP.
     if (document.body.dataset.msAuthFired !== "1") {
       await new Promise((resolve) => {
-        const done = () => {
-          document.removeEventListener("ms:auth-ready", done);
-          resolve();
-        };
-        document.addEventListener("ms:auth-ready", done, { once: true });
-        window.setTimeout(done, finderEarly ? 800 : 2500);
+        window.StudioBoot?.whenAuthReady?.(resolve) ?? resolve();
       });
     }
-    const bootUser = await window.StudioAuth.getUser();
+    const [bootUser, profile] = await Promise.all([
+      window.StudioAuth.getUser(),
+      window.StudioAuth.getProfile(),
+    ]);
     state.userId = bootUser?.id || "";
-    state.profile = await window.StudioAuth.getProfile();
+    state.profile = profile;
     syncBuilderOnboardedFromProfile(state.profile);
     await inferBuilderOnboardedFromProjects();
     await syncMvpFromProfile(state.profile);

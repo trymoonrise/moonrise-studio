@@ -2,6 +2,7 @@
  * Runs synchronously in <head> on protected pages.
  * Hides the page until StudioAuth confirms the session, and redirects immediately
  * when there is no stored session (prevents a flash of private UI).
+ * This is a UX gate only — tokens are not cryptographically verified here.
  */
 (function () {
   var PUBLIC = {
@@ -21,6 +22,11 @@
 
   document.documentElement.classList.add("ms-auth-gating");
 
+  var preconnect = document.createElement("link");
+  preconnect.rel = "preconnect";
+  preconnect.href = "https://erfaxgmnzdropviormpj.supabase.co";
+  document.head.appendChild(preconnect);
+
   var style = document.createElement("style");
   style.textContent = "html.ms-auth-gating body{visibility:hidden!important}";
   document.head.appendChild(style);
@@ -39,7 +45,11 @@
         parsed?.access_token ||
         parsed?.session?.access_token ||
         parsed?.currentSession?.access_token;
-      if (!token) return false;
+      var refresh =
+        parsed?.refresh_token ||
+        parsed?.session?.refresh_token ||
+        parsed?.currentSession?.refresh_token;
+      if (!token || !refresh) return false;
       var exp =
         parsed?.expires_at ||
         parsed?.session?.expires_at ||
@@ -60,4 +70,7 @@
     document.documentElement.classList.remove("ms-auth-gating");
     document.documentElement.classList.add("ms-auth-ready");
   };
+
+  // Valid local session — show page immediately; requireAuth() validates in background.
+  window.__msReleaseAuthGate();
 })();

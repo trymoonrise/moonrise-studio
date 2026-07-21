@@ -57,24 +57,33 @@
 
   function renderLinks(data) {
     if (!linksEl) return;
+    const esc = window.MsAuthSecurity?.escapeHtml || function (v) {
+      return String(v ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    };
     linksEl.innerHTML = "";
     if (data.phone) {
       const li = document.createElement("li");
+      const phoneDisplay = esc(data.phoneDisplay || data.phone);
       li.innerHTML =
         '<a class="ms-help-vcard-link" href="tel:' +
-        encodeURIComponent(data.phone.replace(/\s/g, "")) +
+        encodeURIComponent(String(data.phone).replace(/\s/g, "")) +
         '"><span class="ms-help-vcard-icon ms-help-vcard-icon--phone" aria-hidden="true"><img src="doc/iMessages.jpg" alt="" width="46" height="46"></span><span class="ms-help-vcard-link-text"><strong>Number</strong><em>' +
-        (data.phoneDisplay || data.phone) +
+        phoneDisplay +
         "</em></span></a>";
       linksEl.appendChild(li);
     }
     if (data.email) {
       const li = document.createElement("li");
+      const emailDisplay = esc(data.email);
       li.innerHTML =
         '<a class="ms-help-vcard-link" href="mailto:' +
         encodeURIComponent(data.email) +
         '"><span class="ms-help-vcard-icon ms-help-vcard-icon--email" aria-hidden="true"><img src="doc/Gmail.jpg" alt="" width="46" height="46"></span><span class="ms-help-vcard-link-text"><strong>Email</strong><em>' +
-        data.email +
+        emailDisplay +
         "</em></span></a>";
       linksEl.appendChild(li);
     }

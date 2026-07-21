@@ -70,6 +70,7 @@ function applySecurityHeaders(req, res, next) {
   );
   res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
   res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+  res.setHeader("X-Permitted-Cross-Domain-Policies", "none");
 
   const proto = String(req.headers["x-forwarded-proto"] || req.protocol || "")
     .split(",")[0]
@@ -129,6 +130,108 @@ function createRateLimiter({ windowMs, max, keyFn, name, shouldCount }) {
       console.error("rateLimit error", e);
       next();
     }
+  };
+}
+
+function sendRateLimited(res, { label, max, remaining, retryAfterMs }) {
+  const retryAfterSec = Math.max(1, Math.ceil(retryAfterMs / 1000));
+  res.setHeader("X-RateLimit-Limit", String(max));
+  res.setHeader("X-RateLimit-Remaining", String(Math.max(0, remaining)));
+  res.setHeader("X-RateLimit-Reset", String(retryAfterSec));
+  res.setHeader("Retry-After", String(retryAfterSec));
+  return res.status(429).json({
+    error: `Too many requests (${label}). Try again in ${retryAfterSec}s.`,
+    code: "rate_limited",
+    retryAfterSec,
+  });
+}
+
+/**
+ * Fixed-window counter stored in public.auth_rate_limits (shared across serverless instances).
+ */
+async function consumeRateLimitBucket(supabase, { key, windowMs, max }) {
+  const now = Date.now();
+  const bucketKey = String(key || "").slice(0, 256);
+  if (!bucketKey) {
+    return { allowed: true, remaining: max, retryAfterMs: 0 };
+  }
+
+  const { data: existing, error: readError } = await supabase
+    .from("auth_rate_limits")
+    .select("bucket_key, window_start, hit_count")
+    .eq("bucket_key", bucketKey)
+    .maybeSingle();
+
+  if (readError) throw readError;
+
+  let windowStartMs = existing?.window_start ? new Date(existing.window_start).getTime() : 0;
+  let hitCount = Number(existing?.hit_count) || 0;
+
+  if (!existing || !Number.isFinite(windowStartMs) || now - windowStartMs >= windowMs) {
+    windowStartMs = now;
+    hitCount = 1;
+  } else {
+    hitCount += 1;
+  }
+
+  const { error: upsertError } = await supabase.from("auth_rate_limits").upsert(
+    {
+      bucket_key: bucketKey,
+      window_start: new Date(windowStartMs).toISOString(),
+      hit_count: hitCount,
+      updated_at: new Date(now).toISOString(),
+    },
+    { onConflict: "bucket_key" }
+  );
+
+  if (upsertError) throw upsertError;
+
+  const allowed = hitCount <= max;
+  const remaining = Math.max(0, max - hitCount);
+  const retryAfterMs = allowed ? 0 : Math.max(0, windowMs - (now - windowStartMs));
+  return { allowed, remaining, retryAfterMs };
+}
+
+/**
+ * Postgres-backed rate limiter with in-memory fallback when DB is unavailable.
+ */
+function createDistributedRateLimiter(getSupabase, { windowMs, max, keyFn, name, shouldCount }) {
+  const memoryFallback = createRateLimiter({ windowMs, max, keyFn, name, shouldCount });
+  const label = name || "rate limit";
+  const countFn = typeof shouldCount === "function" ? shouldCount : () => true;
+
+  return function distributedRateLimit(req, res, next) {
+    if (countFn(req) === false) return next();
+
+    void (async () => {
+      try {
+        const supabase = typeof getSupabase === "function" ? getSupabase() : null;
+        if (!supabase) {
+          memoryFallback(req, res, next);
+          return;
+        }
+
+        const key = String(keyFn(req) || clientIp(req)).slice(0, 256);
+        const result = await consumeRateLimitBucket(supabase, { key, windowMs, max });
+        res.setHeader("X-RateLimit-Limit", String(max));
+        res.setHeader("X-RateLimit-Remaining", String(result.remaining));
+        const retryAfterSec = Math.max(1, Math.ceil(result.retryAfterMs / 1000));
+        res.setHeader("X-RateLimit-Reset", String(retryAfterSec));
+        if (!result.allowed) {
+          sendRateLimited(res, {
+            label,
+            max,
+            remaining: result.remaining,
+            retryAfterMs: result.retryAfterMs,
+          });
+          return;
+        }
+        next();
+      } catch (e) {
+        console.error("distributed rateLimit fallback", e.message || e);
+        memoryFallback(req, res, next);
+      }
+    })();
   };
 }
 
@@ -295,7 +398,11 @@ module.exports = {
   AUTH_LOCKOUT_MS,
   clientIp,
   normalizeEmail,
+  emailHash,
+  ipHash,
   createRateLimiter,
+  createDistributedRateLimiter,
+  consumeRateLimitBucket,
   applySecurityHeaders,
   isProductionRuntime,
   assertNotLocked,

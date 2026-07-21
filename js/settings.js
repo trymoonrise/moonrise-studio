@@ -454,9 +454,5 @@
     }
   }
 
-  if (document.body.dataset.msAuthFired === "1") start();
-  else document.addEventListener("ms:auth-ready", start, { once: true });
-  setTimeout(() => {
-    if (!started) start();
-  }, 2500);
+  window.StudioBoot?.whenAuthReady?.(start) ?? start();
 })();

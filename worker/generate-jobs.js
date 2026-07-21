@@ -149,16 +149,23 @@ async function resolveExistingGeneration(supabase, userId, requestId, getBalance
   const active = await findActiveRunningJob(supabase, userId);
   if (active) {
     const activeRid = String(active.prompt?.requestId || "").trim();
-    const waited = await waitForGenerationJob(supabase, active.id, getBalance, userId, ACTIVE_JOB_MS);
-    if (waited.ok) return { action: "return", payload: waited.payload };
-    if (waited.inProgress) {
-      return {
-        action: "poll",
-        jobId: active.id,
-        requestId: activeRid || rid || null,
-      };
+    if (rid && activeRid && rid === activeRid) {
+      const waited = await waitForGenerationJob(supabase, active.id, getBalance, userId, ACTIVE_JOB_MS);
+      if (waited.ok) return { action: "return", payload: waited.payload };
+      if (waited.inProgress) {
+        return {
+          action: "poll",
+          jobId: active.id,
+          requestId: activeRid,
+        };
+      }
+      if (waited.error) return { action: "error", error: waited.error };
     }
-    if (waited.error) return { action: "error", error: waited.error };
+    return {
+      action: "blocked",
+      jobId: active.id,
+      requestId: activeRid || rid || null,
+    };
   }
 
   return { action: "create" };

@@ -2,7 +2,7 @@
   "name": "Moonrise",
   "short_name": "Moonrise",
   "description": "AI landing page builder for local businesses.",
-  "start_url": "./dashboard.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",

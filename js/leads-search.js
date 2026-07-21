@@ -713,6 +713,18 @@
     }
   }
 
+  function generationBlockedMessage() {
+    return "A website is already being generated. Wait for it to finish before starting another.";
+  }
+
+  function syncGenerateSlideLockState() {
+    /* Slides stay interactive; builder enforces one generation at a time. */
+  }
+
+  function refreshGenerateSlideLockState() {
+    return false;
+  }
+
   async function canAffordGeneration() {
     return { ok: true };
   }
@@ -935,6 +947,15 @@
     if (prefetchAbort) {
       prefetchAbort.abort();
       prefetchAbort = null;
+    }
+  }
+
+  function schedulePrefetchSupabaseLeads() {
+    const run = () => void prefetchRemainingSupabaseLeads();
+    if (typeof requestIdleCallback === "function") {
+      requestIdleCallback(run, { timeout: 2500 });
+    } else {
+      window.setTimeout(run, 400);
     }
   }
 
@@ -1770,329 +1791,75 @@
     return true;
   }
 
-  const SLIDE_COMPLETE_TOLERANCE_PX = 2;
-  const SLIDE_MIN_DRAG_RATIO = 0.88;
-  const SLIDE_COMPLETE_RATIO = 0.94;
-
-  function slideCompletes(current, max, dragPx) {
-    if (max <= 0) return false;
-    const minDrag = max * SLIDE_MIN_DRAG_RATIO;
-    if (dragPx < minDrag) return false;
-    return current >= max * SLIDE_COMPLETE_RATIO - SLIDE_COMPLETE_TOLERANCE_PX;
-  }
-
-  function slidePad(track) {
-    if (!track) return 4;
-    const style = window.getComputedStyle(track);
-    return Number.parseFloat(style.paddingLeft) || 4;
-  }
-
-  function slideThumbWidth(thumb) {
-    if (!thumb) return 44;
-    void thumb.offsetWidth;
-    const w = thumb.getBoundingClientRect().width || thumb.offsetWidth || 0;
-    return w > 8 ? w : 44;
-  }
-
-  function slideMetrics(slide) {
-    const track = slide?.querySelector(".ms-lf-slide-track");
-    const thumb = slide?.querySelector(".ms-lf-slide-thumb");
-    if (!track || !thumb) return null;
-    const pad = slidePad(track);
-    void track.offsetWidth;
-    void thumb.offsetWidth;
-    void slide?.offsetWidth;
-    const thumbW = slideThumbWidth(thumb);
-    const innerW = Math.max(0, track.clientWidth - pad * 2);
-    const max = Math.max(0, innerW - thumbW);
-    return { track, thumb, pad, thumbW, max };
-  }
-
-  function slideXFromPointer(track, clientX, max, grabOffsetX) {
-    const thumb = track.querySelector(".ms-lf-slide-thumb");
-    if (!thumb || max <= 0) return 0;
-    const rect = track.getBoundingClientRect();
-    const pad = slidePad(track);
-    const thumbW = slideThumbWidth(thumb);
-    const centerX = clientX - (grabOffsetX || 0);
-    const raw = centerX - rect.left - pad - thumbW / 2;
-    return Math.max(0, Math.min(max, raw));
-  }
-
-  function slideMax(slide, pass) {
-    const metrics = slideMetrics(slide);
-    if (!metrics) return 0;
-    if (metrics.max <= 0 && (pass || 0) < 3) {
-      return slideMax(slide, (pass || 0) + 1);
-    }
-    return metrics.max;
-  }
-
-  function readSlideX(slide) {
-    const inline = slide.style.getPropertyValue("--ms-lf-slide-x");
-    if (inline) {
-      const parsed = Number.parseFloat(inline);
-      if (Number.isFinite(parsed)) return parsed;
-    }
-    const computed = window.getComputedStyle(slide).getPropertyValue("--ms-lf-slide-x");
-    const parsed = Number.parseFloat(computed);
-    return Number.isFinite(parsed) ? parsed : 0;
-  }
-
-  function clearSlideInlineStyles(slide) {
-    if (!slide) return;
-    slide.style.removeProperty("--ms-lf-slide-x");
-    slide.style.removeProperty("--ms-lf-slide-max");
-    slide.style.removeProperty("--ms-lf-slide-fill");
-  }
-
-  function setSlideX(slide, x, metricsOrMax) {
-    const metrics =
-      metricsOrMax && typeof metricsOrMax === "object"
-        ? metricsOrMax
-        : slideMetrics(slide);
-    if (!metrics) return 0;
-    const max =
-      typeof metricsOrMax === "number" && Number.isFinite(metricsOrMax)
-        ? metricsOrMax
-        : metrics.max;
-    const clamped = Math.max(0, Math.min(max, x));
-    slide.style.setProperty("--ms-lf-slide-x", clamped + "px");
-    slide.style.setProperty("--ms-lf-slide-max", max + "px");
-    slide.style.setProperty(
-      "--ms-lf-slide-fill",
-      metrics.pad + clamped + metrics.thumbW + "px"
-    );
-    return clamped;
-  }
-
-  function resetSlide(slide, animated) {
-    if (!slide) return;
-    const metrics = slideMetrics(slide);
-    if (!metrics) return;
-    slide.classList.remove("is-dragging", "is-done", "is-completing");
-    if (animated) {
-      slide.classList.add("is-returning");
-      setSlideX(slide, 0, metrics);
-      window.setTimeout(() => {
-        slide.classList.remove("is-returning");
-        clearSlideInlineStyles(slide);
-      }, 280);
-      return;
-    }
-    slide.classList.remove("is-returning");
-    clearSlideInlineStyles(slide);
-  }
-
-  function completeSlide(slide) {
-    if (!slide || slide.classList.contains("is-done") || slide.classList.contains("is-completing")) {
-      return;
-    }
-    const id = slide.getAttribute("data-lead-slide") || "";
-    const metrics = slideMetrics(slide);
-    if (!metrics) return;
-    const lead =
-      lastLeads.find((item) => leadId(item) === id) || savedMap[id] || null;
-    if (!lead) {
-      resetSlide(slide, true);
-      showGenerateBlocked("Could not open that lead. Try again.");
-      return;
-    }
-    void (async () => {
-      slide.classList.remove("is-dragging", "is-returning");
-      slide.classList.add("is-completing");
-      setSlideX(slide, metrics.max, metrics);
-      window.setTimeout(() => {
-        slide.classList.remove("is-completing");
-        void launchBuilderForLead(lead).then((ok) => {
-          if (!ok) {
-            resetSlide(slide, true);
-            return;
-          }
-          slide.classList.add("is-done");
-        });
-      }, 220);
-    })();
-  }
-
-  function beginSlideDrag(e, slide) {
-    if (e.button != null && e.button !== 0) return false;
+  function canInteractGenerateSlide(slide) {
     if (!slide || slide.classList.contains("is-disabled") || slide.classList.contains("is-done")) {
       return false;
     }
     if (slide.classList.contains("is-completing") || slide.classList.contains("is-returning")) {
       return false;
     }
-    if (slide.dataset.slideDragging === "1") return false;
+    const thumb = slide.querySelector(".ms-lf-slide-thumb");
+    return thumb?.getAttribute("aria-disabled") !== "true";
+  }
 
-    const metrics = slideMetrics(slide);
-    if (!metrics || metrics.max <= 0) return false;
-    const { track, thumb, max } = metrics;
-    if (thumb.disabled || thumb.getAttribute("aria-disabled") === "true") return false;
-
-    e.preventDefault();
-    e.stopPropagation();
-
-    const startX = e.clientX;
-    const onThumb = e.target.closest(".ms-lf-slide-thumb");
-    const thumbRect = thumb.getBoundingClientRect();
-    const grabOffsetX = onThumb
-      ? startX - (thumbRect.left + thumbRect.width / 2)
-      : metrics.thumbW / 2;
-    let startLeft = onThumb ? readSlideX(slide) : 0;
-    startLeft = Math.max(0, Math.min(max, startLeft));
-    setSlideX(slide, startLeft, metrics);
-    let current = startLeft;
-    let finished = false;
-    let moved = false;
-    let raf = 0;
-    let pendingX = startLeft;
-    const pointerId = e.pointerId ?? 1;
-    const usePointer = e.pointerId != null;
-    const captureEl = track;
-
-    slide.dataset.slideDragging = "1";
-    slide.classList.remove("is-returning", "is-completing");
-    slide.classList.add("is-dragging");
-    document.body.classList.add("ms-lf-slide-dragging");
-
-    if (usePointer) {
-      try {
-        captureEl.setPointerCapture(pointerId);
-      } catch (_) {
-        /* ignore */
-      }
+  function onGenerateSlideComplete(slide) {
+    if (!slide || slide.classList.contains("is-done")) return;
+    const id = slide.getAttribute("data-lead-slide") || "";
+    const lead =
+      lastLeads.find((item) => leadId(item) === id) || savedMap[id] || null;
+    if (!lead) {
+      window.MsLfSlide?.resetSlide(slide, true);
+      showGenerateBlocked("Could not open that lead. Try again.");
+      return;
     }
-
-    const flush = () => {
-      raf = 0;
-      if (finished) return;
-      const live = slideMetrics(slide) || metrics;
-      current = setSlideX(slide, pendingX, live);
-    };
-
-    const clientXFromEvent = (ev) => {
-      if (ev.clientX != null) return ev.clientX;
-      const touch = ev.changedTouches?.[0] || ev.touches?.[0];
-      return touch ? touch.clientX : startX;
-    };
-
-    const onMove = (ev) => {
-      if (finished) return;
-      if (usePointer && ev.pointerId != null && ev.pointerId !== pointerId) return;
-      if (!usePointer && ev.type === "mousemove" && ev.buttons === 0) return;
-      ev.preventDefault();
-      const cx = clientXFromEvent(ev);
-      const liveMax = (slideMetrics(slide) || metrics).max;
-      pendingX = slideXFromPointer(track, cx, liveMax, grabOffsetX);
-      if (Math.abs(cx - startX) >= 2) moved = true;
-      if (!raf) raf = window.requestAnimationFrame(flush);
-    };
-
-    const cleanup = (ev) => {
-      if (finished) return;
-      if (usePointer && ev?.pointerId != null && ev.pointerId !== pointerId) return;
-      finished = true;
-      delete slide.dataset.slideDragging;
-      document.body.classList.remove("ms-lf-slide-dragging");
-      if (raf) window.cancelAnimationFrame(raf);
-      if (usePointer) {
-        window.removeEventListener("pointermove", onMove, true);
-        window.removeEventListener("pointerup", cleanup, true);
-        window.removeEventListener("pointercancel", cleanup, true);
-      } else {
-        window.removeEventListener("mousemove", onMove, true);
-        window.removeEventListener("mouseup", cleanup, true);
-        window.removeEventListener("touchmove", onMove, true);
-        window.removeEventListener("touchend", cleanup, true);
-        window.removeEventListener("touchcancel", cleanup, true);
+    void launchBuilderForLead(lead).then((ok) => {
+      if (!ok) {
+        window.MsLfSlide?.resetSlide(slide, true);
+        return;
       }
-      if (usePointer) {
-        try {
-          captureEl.releasePointerCapture(pointerId);
-        } catch (_) {
-          /* ignore */
-        }
-      }
-      slide.classList.remove("is-dragging");
-      const live = slideMetrics(slide) || metrics;
-      current = setSlideX(slide, pendingX, live);
-      const endX = ev ? clientXFromEvent(ev) : startX;
-      const dragPx = Math.abs(endX - startX);
-      if (moved && slideCompletes(current, live.max, dragPx)) completeSlide(slide);
-      else resetSlide(slide, true);
-    };
-
-    if (usePointer) {
-      window.addEventListener("pointermove", onMove, true);
-      window.addEventListener("pointerup", cleanup, true);
-      window.addEventListener("pointercancel", cleanup, true);
-    } else if (e.type === "touchstart") {
-      window.addEventListener("touchmove", onMove, { capture: true, passive: false });
-      window.addEventListener("touchend", cleanup, true);
-      window.addEventListener("touchcancel", cleanup, true);
-    } else {
-      window.addEventListener("mousemove", onMove, true);
-      window.addEventListener("mouseup", cleanup, true);
-    }
-    return true;
+      slide.classList.add("is-done");
+    });
   }
 
   function bindGenerateSlides() {
     if (!resultsEl || resultsEl.dataset.slideBound === "1") return;
+    if (!window.MsLfSlide) return;
     resultsEl.dataset.slideBound = "1";
 
-    function onSlideStart(e) {
-      const track = e.target.closest(".ms-lf-slide-track");
-      if (!track) return;
-      const slide = track.closest(".ms-lf-slide");
-      if (!slide) return;
-      beginSlideDrag(e, slide);
-    }
-
-    resultsEl.addEventListener("pointerdown", onSlideStart, true);
-    resultsEl.addEventListener(
-      "touchstart",
-      (e) => {
-        if (typeof window.PointerEvent === "function") return;
-        onSlideStart(e);
+    window.MsLfSlide.bindContainer(resultsEl, {
+      canInteract(slide) {
+        return canInteractGenerateSlide(slide);
       },
-      { capture: true, passive: false }
-    );
-    resultsEl.addEventListener(
-      "mousedown",
-      (e) => {
-        if (typeof window.PointerEvent === "function") return;
-        onSlideStart(e);
-      },
-      true
-    );
+      onComplete: onGenerateSlideComplete,
+    });
 
     resultsEl.addEventListener("keydown", (e) => {
       const thumb = e.target.closest(".ms-lf-slide-thumb");
       if (!thumb) return;
       const slide = thumb.closest(".ms-lf-slide");
-      if (!slide || slide.classList.contains("is-done") || slide.classList.contains("is-completing")) {
-        return;
-      }
-      const metrics = slideMetrics(slide);
+      if (!slide || !canInteractGenerateSlide(slide)) return;
+      const metrics = window.MsLfSlide.metrics(slide);
       if (!metrics) return;
       const { max } = metrics;
-      const cur = readSlideX(slide);
+      const cur = window.MsLfSlide.readX(slide);
 
       if (e.key === "ArrowRight" || e.key === "End") {
         e.preventDefault();
-        if (e.key === "End") completeSlide(slide);
-        else {
+        if (e.key === "End") {
+          window.MsLfSlide.completeSlide(slide, onGenerateSlideComplete);
+        } else {
           const next = Math.min(max, cur + Math.max(28, max * 0.22));
           slide.classList.add("is-returning");
-          setSlideX(slide, next, metrics);
-          if (slideCompletes(next, max, next)) completeSlide(slide);
-          else window.setTimeout(() => slide.classList.remove("is-returning"), 220);
+          window.MsLfSlide.setX(slide, next, metrics);
+          if (window.MsLfSlide.completes(next, max)) {
+            window.MsLfSlide.completeSlide(slide, onGenerateSlideComplete);
+          } else {
+            window.setTimeout(() => slide.classList.remove("is-returning"), 220);
+          }
         }
       } else if (e.key === "ArrowLeft" || e.key === "Home" || e.key === "Escape") {
         e.preventDefault();
-        resetSlide(slide, true);
+        window.MsLfSlide.resetSlide(slide, true);
       }
     });
   }
@@ -2285,6 +2052,8 @@
         : "");
 
     observeLeadReveals(resultsEl);
+    window.MsLfSlide?.prime(resultsEl);
+    refreshGenerateSlideLockState();
 
     if (websiteFilter === "without") {
       enqueueWebsiteVerification(shown);
@@ -2361,7 +2130,7 @@
       if (data?.fromCache && paintedFromCache) {
         loader.checkForUpdates?.().catch(() => null);
       }
-      void prefetchRemainingSupabaseLeads();
+      schedulePrefetchSupabaseLeads();
     } catch (e) {
       console.error(e);
       clearLoadingCards();
@@ -2908,7 +2677,7 @@
             refreshVisibleLeads();
             return;
           }
-          void prefetchRemainingSupabaseLeads();
+          schedulePrefetchSupabaseLeads();
         });
         return;
       }
@@ -3004,6 +2773,8 @@
         bindSuggestField("location");
         bindAreaToggle();
         syncListViewToggle();
+        refreshGenerateSlideLockState();
+        document.addEventListener("ms:generation-lock-changed", refreshGenerateSlideLockState);
         void hydrateClaimedFromProjects().then((changed) => {
           if (changed && lastLeads.length) refreshVisibleLeads();
         });
@@ -3019,17 +2790,7 @@
         }
       }
     };
-    if (document.body?.dataset?.msAuthFired === "1") {
-      run();
-      return;
-    }
-    document.addEventListener("ms:auth-ready", run, { once: true });
-    void window.StudioAuth?.getSession?.().then((session) => {
-      if (session) run();
-    });
-    setTimeout(() => {
-      if (!booted) run();
-    }, 12000);
+    window.StudioBoot?.whenAuthReady?.(run) ?? run();
   }
 
   window.LeadHandoff = {

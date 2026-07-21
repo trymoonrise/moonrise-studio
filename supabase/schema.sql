@@ -71,6 +71,10 @@ create table if not exists public.generation_jobs (
 create index if not exists generation_jobs_user_id_idx on public.generation_jobs (user_id);
 create index if not exists generation_jobs_status_idx on public.generation_jobs (status);
 
+create unique index if not exists generation_jobs_one_active_per_user_idx
+  on public.generation_jobs (user_id)
+  where status in ('pending', 'running');
+
 -- Payments
 create table if not exists public.payments (
   id uuid primary key default gen_random_uuid(),

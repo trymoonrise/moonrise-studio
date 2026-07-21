@@ -1296,18 +1296,11 @@
   }
 
   async function boot() {
+    let session = null;
     if (window.StudioAuth?.requireAuth) {
       try {
-        const session = await window.StudioAuth.requireAuth();
+        session = await window.StudioAuth.requireAuth();
         if (!session) return;
-        if (session && window.StudioAuth.ensureStudioOnboarding) {
-          const redirected = await window.StudioAuth.ensureStudioOnboarding();
-          if (redirected === "redirect") {
-            document.body.dataset.msAuthFired = "1";
-            document.dispatchEvent(new Event("ms:auth-ready"));
-            return;
-          }
-        }
       } catch (e) {
         console.warn(e);
         return;
@@ -1326,6 +1319,18 @@
     setChannelGenerating(null, false);
     document.body.classList.add("ms-ready");
     document.dispatchEvent(new Event("ms:shell-ready"));
+    document.body.dataset.msAuthFired = "1";
+    document.dispatchEvent(new Event("ms:auth-ready"));
+
+    if (session && window.StudioAuth.ensureStudioOnboarding) {
+      try {
+        const redirected = await window.StudioAuth.ensureStudioOnboarding(session);
+        if (redirected === "redirect") return;
+      } catch (e) {
+        console.warn(e);
+      }
+    }
+
     window.requestAnimationFrame(function () {
       window.requestAnimationFrame(function () {
         window.StudioMotion?.playPageMotion?.();
@@ -1336,9 +1341,20 @@
     void hydrateUser().catch(() => ({ handle: "", avatarUrl: "" }));
     void hydrateIncome();
 
-    document.body.dataset.msAuthFired = "1";
-    document.dispatchEvent(new Event("ms:auth-ready"));
     ensureInstallHintScript();
+    ensureGenerationAnnounceScript();
+  }
+
+  function ensureGenerationAnnounceScript() {
+    if (window.MsGenerationAnnounce) {
+      window.MsGenerationAnnounce.init?.();
+      return;
+    }
+    if (document.querySelector('script[src*="generation-announce.js"]')) return;
+    const s = document.createElement("script");
+    s.src = "js/generation-announce.js?v=20260721-float";
+    s.defer = true;
+    document.head.appendChild(s);
   }
 
   function ensureInstallHintScript() {

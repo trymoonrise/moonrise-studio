@@ -248,12 +248,7 @@
     void loadBuilderRecentProjects();
   }
 
-  if (document.body.dataset.msAuthFired === "1") start();
-  else document.addEventListener("ms:auth-ready", start, { once: true });
-
-  window.setTimeout(() => {
-    if (document.body.dataset.page === "builder" && !allProjects.length) start();
-  }, 2500);
+  window.StudioBoot?.whenAuthReady?.(start) ?? start();
 
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible" && document.body.dataset.page === "builder") {

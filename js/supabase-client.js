@@ -28,8 +28,7 @@
         autoRefreshToken: true,
         detectSessionInUrl: true,
         storage: global.localStorage,
-        // Implicit so email confirmation links return #access_token (server-side signup has no PKCE verifier).
-        flowType: "implicit",
+        flowType: "pkce",
       },
     });
     return client;

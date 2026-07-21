@@ -360,3 +360,23 @@ window.resolveLeadFinderUrl = function resolveLeadFinderUrl() {
   }
   return "";
 };
+
+/** Shared auth-ready helper — pages should use this instead of custom long timeouts. */
+window.StudioBoot = {
+  AUTH_WAIT_MS: 1500,
+  whenAuthReady(fn) {
+    if (typeof fn !== "function") return;
+    if (document.body?.dataset?.msAuthFired === "1") {
+      fn();
+      return;
+    }
+    let called = false;
+    const run = () => {
+      if (called) return;
+      called = true;
+      fn();
+    };
+    document.addEventListener("ms:auth-ready", run, { once: true });
+    window.setTimeout(run, window.StudioBoot.AUTH_WAIT_MS);
+  },
+};

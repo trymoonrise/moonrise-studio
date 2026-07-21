@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Theme Slider Test · Moonrise Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/ms-lf-slide.css?v=20260721-slide-physics">
+  <style>
+    :root {
+      color-scheme: light;
+      --ts-bg: #eef2f7;
+      --ts-surface: #ffffff;
+      --ts-text: #0f172a;
+      --ts-muted: #64748b;
+      --ts-border: rgba(148, 163, 184, 0.22);
+      --ts-track: linear-gradient(135deg, #4338ca, #312e81);
+      --ts-track-shadow: 0 8px 20px rgba(49, 46, 129, 0.28);
+      --ts-accent: #2563eb;
+      --ts-accent-soft: rgba(37, 99, 235, 0.1);
+      --ts-preview-bg: #f8fafc;
+      --ts-slide-label: #ffffff;
+    }
+
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --ts-bg: #0a0f1a;
+      --ts-surface: #111827;
+      --ts-text: #f1f5f9;
+      --ts-muted: #94a3b8;
+      --ts-border: rgba(148, 163, 184, 0.14);
+      --ts-track: linear-gradient(135deg, #f59e0b, #d97706);
+      --ts-track-shadow: 0 8px 20px rgba(217, 119, 6, 0.32);
+      --ts-accent: #818cf8;
+      --ts-accent-soft: rgba(129, 140, 248, 0.14);
+      --ts-preview-bg: #0f172a;
+      --ts-slide-label: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "DM Sans", system-ui, sans-serif;
+      background: var(--ts-bg);
+      color: var(--ts-text);
+      transition: background 0.35s ease, color 0.35s ease;
+    }
+
+    .ts-page {
+      max-width: 28rem;
+      margin: 0 auto;
+      padding: 2rem 1rem 2.5rem;
+    }
+
+    .ts-card {
+      background: var(--ts-surface);
+      border-radius: 20px;
+      padding: 1.35rem;
+      box-shadow: 0 16px 36px rgba(15, 23, 42, 0.07);
+      border: 1px solid var(--ts-border);
+      transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+    }
+
+    html[data-theme="dark"] .ts-card {
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.32);
+    }
+
+    .ts-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 1.1rem;
+    }
+
+    .ts-head-copy {
+      min-width: 0;
+    }
+
+    h1 {
+      margin: 0 0 0.25rem;
+      font-size: 1.35rem;
+      letter-spacing: -0.02em;
+      font-weight: 700;
+    }
+
+    .ts-lead {
+      margin: 0;
+      color: var(--ts-muted);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .ts-mode {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      flex-shrink: 0;
+      margin: 0.15rem 0 0;
+      padding: 0.38rem 0.7rem;
+      border-radius: 999px;
+      background: var(--ts-accent-soft);
+      color: var(--ts-accent);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+    }
+
+    .ts-mode-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .ts-slide-wrap {
+      margin-top: 0.25rem;
+    }
+
+    .ts-slide-wrap .ms-lf-slide-track {
+      min-height: 50px;
+      background: var(--ts-track);
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.2) inset,
+        var(--ts-track-shadow);
+    }
+
+    .ts-slide-wrap .ms-lf-slide-thumb {
+      color: var(--ts-accent);
+    }
+
+    html[data-theme="dark"] .ts-slide-wrap .ms-lf-slide-thumb {
+      color: #b45309;
+    }
+
+    /* Keep label clear of the thumb — never overlap */
+    .ts-slide-wrap .ms-lf-slide-label {
+      color: var(--ts-slide-label);
+      font-weight: 700;
+      font-size: 0.88rem;
+      letter-spacing: -0.01em;
+      padding-left: calc(var(--ms-lf-slide-pad, 4px) + 44px + 0.65rem);
+      padding-right: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      opacity: 0.96;
+      transition: opacity 0.2s ease;
+    }
+
+    .ts-slide-wrap .ms-lf-slide.is-dragging .ms-lf-slide-label,
+    .ts-slide-wrap .ms-lf-slide.is-completing .ms-lf-slide-label {
+      opacity: 0.55;
+    }
+
+    .ts-preview {
+      margin-top: 1.1rem;
+      padding: 0.95rem;
+      border-radius: 14px;
+      background: var(--ts-preview-bg);
+      border: 1px solid var(--ts-border);
+      transition: background 0.35s ease, border-color 0.35s ease;
+    }
+
+    .ts-preview-label {
+      margin: 0 0 0.65rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ts-muted);
+    }
+
+    .ts-preview-card {
+      padding: 0.85rem;
+      border-radius: 12px;
+      background: var(--ts-surface);
+      border: 1px solid var(--ts-border);
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+    }
+
+    html[data-theme="dark"] .ts-preview-card {
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+    }
+
+    .ts-preview-card h2 {
+      margin: 0 0 0.25rem;
+      font-size: 0.98rem;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+    }
+
+    .ts-preview-card p {
+      margin: 0 0 0.75rem;
+      font-size: 0.84rem;
+      line-height: 1.45;
+      color: var(--ts-muted);
+    }
+
+    .ts-preview-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 2.15rem;
+      padding: 0 0.9rem;
+      border: 0;
+      border-radius: 999px;
+      background: var(--ts-accent);
+      color: #fff;
+      font: inherit;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    html[data-theme="dark"] .ts-preview-btn {
+      color: #0f172a;
+    }
+  </style>
+  <script>
+    (function () {
+      var KEY = "ms_testslider_theme_v1";
+      var theme = localStorage.getItem(KEY);
+      if (theme === "dark" || theme === "light") {
+        document.documentElement.setAttribute("data-theme", theme);
+      }
+    })();
+  </script>
+</head>
+<body>
+  <main class="ts-page">
+    <div class="ts-card">
+      <header class="ts-head">
+        <div class="ts-head-copy">
+          <h1>Theme slider</h1>
+          <p class="ts-lead">Slide all the way across to switch themes.</p>
+        </div>
+        <p class="ts-mode" id="ts-mode-badge" aria-live="polite">
+          <span class="ts-mode-dot" aria-hidden="true"></span>
+          <span id="ts-mode-label">Light</span>
+        </p>
+      </header>
+
+      <div class="ts-slide-wrap">
+        <div
+          class="ms-lf-slide"
+          id="theme-slide"
+          role="group"
+          aria-label="Slide to change color mode"
+        >
+          <div class="ms-lf-slide-track">
+            <div class="ms-lf-slide-fill" aria-hidden="true"></div>
+            <span class="ms-lf-slide-label" id="theme-slide-label" aria-hidden="true">Slide for dark mode</span>
+            <button type="button" class="ms-lf-slide-thumb" id="theme-slide-thumb" aria-label="Slide to change color mode">
+              <svg id="theme-slide-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="ts-preview" id="ts-preview">
+        <p class="ts-preview-label">Live preview</p>
+        <div class="ts-preview-card">
+          <h2 id="ts-preview-title">Sample card</h2>
+          <p id="ts-preview-copy">Background, surface, text, and accent colors update when the theme toggles.</p>
+          <button type="button" class="ts-preview-btn">Primary action</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/ms-lf-slide.js?v=20260721-slide-physics"></script>
+  <script>
+    (function () {
+      var THEME_KEY = "ms_testslider_theme_v1";
+      var slide = document.getElementById("theme-slide");
+      var thumb = document.getElementById("theme-slide-thumb");
+      var track = slide.querySelector(".ms-lf-slide-track");
+      var modeLabel = document.getElementById("ts-mode-label");
+      var slideLabel = document.getElementById("theme-slide-label");
+      var slideIcon = document.getElementById("theme-slide-icon");
+
+      var MOON_SVG =
+        '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+      var SUN_SVG =
+        '<circle cx="12" cy="12" r="4"></circle>' +
+        '<path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>';
+
+      function getTheme() {
+        return document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+      }
+
+      function setTheme(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        localStorage.setItem(THEME_KEY, theme);
+        syncCopy();
+      }
+
+      function syncCopy() {
+        var dark = getTheme() === "dark";
+        modeLabel.textContent = dark ? "Dark" : "Light";
+        slideLabel.textContent = dark ? "Slide for light mode" : "Slide for dark mode";
+        thumb.setAttribute("aria-label", slideLabel.textContent);
+        slideIcon.innerHTML = dark ? SUN_SVG : MOON_SVG;
+      }
+
+      window.MsLfSlide.bindTrack(track, {
+        onComplete: function () {
+          setTheme(getTheme() === "dark" ? "light" : "dark");
+          window.MsLfSlide.resetSlide(slide, true);
+        },
+      });
+
+      syncCopy();
+      window.requestAnimationFrame(function () {
+        window.MsLfSlide.prime(slide);
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -68,35 +68,124 @@ function mapSignupAuthError(error) {
   };
 }
 
+function validatePassword(password, email) {
+  const value = String(password || "");
+  if (value.length < 8) {
+    return { ok: false, error: "Password must be at least 8 characters", code: "weak_password" };
+  }
+  if (value.length > 128) {
+    return { ok: false, error: "Password is too long", code: "weak_password" };
+  }
+  if (!/[a-zA-Z]/.test(value) || !/\d/.test(value)) {
+    return {
+      ok: false,
+      error: "Password must include at least one letter and one number",
+      code: "weak_password",
+    };
+  }
+  const local = String(email || "").split("@")[0].toLowerCase();
+  if (local && local.length >= 3 && value.toLowerCase().includes(local)) {
+    return {
+      ok: false,
+      error: "Password must not contain your email address",
+      code: "weak_password",
+    };
+  }
+  const common = new Set([
+    "password",
+    "password1",
+    "12345678",
+    "qwerty123",
+    "moonrise",
+    "admin123",
+    "letmein1",
+    "welcome1",
+    "passw0rd",
+  ]);
+  if (common.has(value.toLowerCase())) {
+    return { ok: false, error: "Choose a stronger password", code: "weak_password" };
+  }
+  return { ok: true };
+}
+
 function mountAuthRoutes(app, { db, security }) {
   const {
     clientIp,
     normalizeEmail,
-    createRateLimiter,
+    emailHash,
+    createDistributedRateLimiter,
     assertNotLocked,
     recordAuthFailure,
     clearAuthFailures,
   } = security;
 
-  const authIpLimiter = createRateLimiter({
+  const limit = (opts) => createDistributedRateLimiter(db, opts);
+
+  const authIpLimiter = limit({
     windowMs: 15 * 60 * 1000,
     max: 30,
     name: "auth",
     keyFn: (req) => "auth-ip:" + clientIp(req),
   });
 
-  const signupLimiter = createRateLimiter({
+  const signupLimiter = limit({
     windowMs: 60 * 60 * 1000,
     max: 5,
     name: "signup",
     keyFn: (req) => "signup-ip:" + clientIp(req),
   });
 
-  const forgotLimiter = createRateLimiter({
+  const signinEmailLimiter = limit({
+    windowMs: 15 * 60 * 1000,
+    max: 12,
+    name: "signin-email",
+    keyFn: (req) => "signin-email:" + emailHash(normalizeEmail(req.body?.email || "")),
+    shouldCount: (req) => !!normalizeEmail(req.body?.email),
+  });
+
+  const signupEmailLimiter = limit({
+    windowMs: 60 * 60 * 1000,
+    max: 3,
+    name: "signup-email",
+    keyFn: (req) => "signup-email:" + emailHash(normalizeEmail(req.body?.email || "")),
+    shouldCount: (req) => !!normalizeEmail(req.body?.email),
+  });
+
+  const forgotLimiter = limit({
     windowMs: 60 * 60 * 1000,
     max: 5,
     name: "password-reset",
     keyFn: (req) => "forgot-ip:" + clientIp(req),
+  });
+
+  const forgotEmailLimiter = limit({
+    windowMs: 60 * 60 * 1000,
+    max: 3,
+    name: "password-reset-email",
+    keyFn: (req) => "forgot-email:" + emailHash(normalizeEmail(req.body?.email || "")),
+    shouldCount: (req) => !!normalizeEmail(req.body?.email),
+  });
+
+  const resendLimiter = limit({
+    windowMs: 60 * 60 * 1000,
+    max: 5,
+    name: "resend-confirm",
+    keyFn: (req) => "resend-ip:" + clientIp(req),
+  });
+
+  const resendEmailLimiter = limit({
+    windowMs: 60 * 60 * 1000,
+    max: 3,
+    name: "resend-confirm-email",
+    keyFn: (req) => "resend-email:" + emailHash(normalizeEmail(req.body?.email || "")),
+    shouldCount: (req) => !!normalizeEmail(req.body?.email),
+  });
+
+  const verifyPasswordLimiter = limit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    name: "verify-password",
+    keyFn: (req) => "verify-pw-ip:" + clientIp(req),
   });
 
   let _auth = null;
@@ -122,24 +211,19 @@ function mountAuthRoutes(app, { db, security }) {
   app.get("/auth/status", authIpLimiter, async (req, res) => {
     if (!authConfigured(res)) return;
     try {
-      const email = normalizeEmail(req.query.email || "");
       const ip = clientIp(req);
-      const gate = await assertNotLocked(db(), { email: email || null, ip });
+      const gate = await assertNotLocked(db(), { email: null, ip });
       res.json({
         locked: !!gate.locked,
         retryAfterMs: gate.retryAfterMs || 0,
-        failedCount: gate.failedCount || 0,
-        message: gate.locked ? gate.message : null,
-        maxFailures: security.AUTH_MAX_FAILURES,
-        lockoutMs: security.AUTH_LOCKOUT_MS,
       });
     } catch (e) {
       console.error(e);
-      res.status(500).json({ error: e.message || "Status check failed" });
+      res.status(500).json({ error: "Status check failed" });
     }
   });
 
-  app.post("/auth/signin", authIpLimiter, async (req, res) => {
+  app.post("/auth/signin", authIpLimiter, signinEmailLimiter, async (req, res) => {
     if (!authConfigured(res)) return;
     try {
       const email = normalizeEmail(req.body?.email);
@@ -193,7 +277,7 @@ function mountAuthRoutes(app, { db, security }) {
     }
   });
 
-  app.post("/auth/signup", authIpLimiter, signupLimiter, async (req, res) => {
+  app.post("/auth/signup", authIpLimiter, signupLimiter, signupEmailLimiter, async (req, res) => {
     if (!authConfigured(res)) return;
     try {
       const email = normalizeEmail(req.body?.email);
@@ -206,8 +290,9 @@ function mountAuthRoutes(app, { db, security }) {
       if (!email || !password) {
         return res.status(400).json({ error: "Email and password are required", code: "invalid_input" });
       }
-      if (password.length < 8) {
-        return res.status(400).json({ error: "Password must be at least 8 characters", code: "weak_password" });
+      const pwCheck = validatePassword(password, email);
+      if (!pwCheck.ok) {
+        return res.status(400).json({ error: pwCheck.error, code: pwCheck.code });
       }
 
       const gate = await assertNotLocked(db(), { email, ip });
@@ -266,7 +351,7 @@ function mountAuthRoutes(app, { db, security }) {
     }
   });
 
-  app.post("/auth/forgot", authIpLimiter, forgotLimiter, async (req, res) => {
+  app.post("/auth/forgot", authIpLimiter, forgotLimiter, forgotEmailLimiter, async (req, res) => {
     if (!authConfigured(res)) return;
     try {
       const email = normalizeEmail(req.body?.email);
@@ -287,14 +372,7 @@ function mountAuthRoutes(app, { db, security }) {
     }
   });
 
-  const resendLimiter = createRateLimiter({
-    windowMs: 60 * 60 * 1000,
-    max: 5,
-    name: "resend-confirm",
-    keyFn: (req) => "resend-ip:" + clientIp(req),
-  });
-
-  app.post("/auth/resend-confirm", authIpLimiter, resendLimiter, async (req, res) => {
+  app.post("/auth/resend-confirm", authIpLimiter, resendLimiter, resendEmailLimiter, async (req, res) => {
     if (!authConfigured(res)) return;
     try {
       const email = normalizeEmail(req.body?.email);
@@ -324,7 +402,7 @@ function mountAuthRoutes(app, { db, security }) {
    * Verify current password under lockout rules (Settings → change password).
    * Body: { email?, password } - email defaults from Bearer user.
    */
-  app.post("/auth/verify-password", authIpLimiter, async (req, res) => {
+  app.post("/auth/verify-password", authIpLimiter, verifyPasswordLimiter, async (req, res) => {
     if (!authConfigured(res)) return;
     try {
       const password = String(req.body?.password || "");

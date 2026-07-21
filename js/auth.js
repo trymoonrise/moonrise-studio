@@ -202,6 +202,7 @@
         "Session"
       );
       if (error) throw error;
+      global.MsAuthSecurity?.scrubUrlAuthFragments?.();
       return data;
     } catch (e) {
       throw authError({
@@ -246,6 +247,7 @@
         access_token: accessToken,
         refresh_token: refreshToken,
       });
+      global.MsAuthSecurity?.scrubUrlAuthFragments?.();
       return data?.session || (await getSession());
     }
 
@@ -257,7 +259,10 @@
           AUTH_TIMEOUT_MS,
           "Confirm email"
         );
-        if (!error && data?.session) return data.session;
+        if (!error && data?.session) {
+          global.MsAuthSecurity?.scrubUrlAuthFragments?.();
+          return data.session;
+        }
       } catch (e) {
         console.warn(e);
       }
@@ -280,7 +285,10 @@
           AUTH_TIMEOUT_MS,
           "Verify email"
         );
-        if (!error && data?.session) return data.session;
+        if (!error && data?.session) {
+          global.MsAuthSecurity?.scrubUrlAuthFragments?.();
+          return data.session;
+        }
       } catch (e) {
         console.warn(e);
       }
@@ -292,6 +300,7 @@
   function clearAuthCallbackFromUrl() {
     if (typeof location === "undefined") return;
     try {
+      global.MsAuthSecurity?.scrubUrlAuthFragments?.();
       const params = new URLSearchParams(location.search);
       params.delete("code");
       params.delete("token_hash");
@@ -358,7 +367,7 @@
   async function signOut() {
     const sb = getClient();
     try {
-      localStorage.removeItem("ms_studio_onboarding_draft_v1");
+      global.MsAuthSecurity?.clearSensitiveClientStorage?.();
     } catch (_) {
       /* ignore */
     }
@@ -367,6 +376,11 @@
       await withTimeout(sb.auth.signOut(), 4000, "Sign out");
     } catch (e) {
       /* still clear local session best-effort */
+    }
+    try {
+      global.localStorage.removeItem("moonrise-studio-auth");
+    } catch (_) {
+      /* ignore */
     }
   }
 
@@ -506,12 +520,12 @@
     return "onboarding.html?next=" + encodeURIComponent(destination);
   }
 
-  async function ensureStudioOnboarding() {
+  async function ensureStudioOnboarding(existingSession) {
     const page = document.body?.dataset?.page || "";
     if (PUBLIC_PAGES.has(page)) return null;
     if (page === "onboarding") return null;
 
-    const session = await getSession();
+    const session = existingSession || (await getSession());
     if (!session) return null;
 
     const profile = await getProfile();

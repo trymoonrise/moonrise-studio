@@ -4684,22 +4684,25 @@ input.ms-input:-webkit-autofill:focus {
 .ms-lf-slide-label {
   position: absolute;
   inset: 0;
-  display: grid;
-  place-items: center;
-  padding-left: 2.8rem;
-  padding-right: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: calc(var(--ms-lf-slide-pad, 4px) + 44px + 0.65rem);
+  padding-right: 0.85rem;
   color: rgba(255, 255, 255, 0.92);
   font-size: 0.95rem;
   font-weight: 700;
   letter-spacing: -0.01em;
+  text-align: center;
   pointer-events: none;
+  opacity: 0.96;
   transition: opacity 0.2s ease;
 }
 
 .ms-lf-slide.is-dragging .ms-lf-slide-label,
 .ms-lf-slide.is-completing .ms-lf-slide-label,
 .ms-lf-slide.is-done .ms-lf-slide-label {
-  opacity: 0.28;
+  opacity: 0.55;
 }
 
 .ms-lf-slide-thumb {
@@ -4718,11 +4721,7 @@ input.ms-input:-webkit-autofill:focus {
   background: #fff;
   color: #2563eb;
   cursor: grab;
-  transform: translate3d(
-    min(var(--ms-lf-slide-x, 0px), var(--ms-lf-slide-max, 0px)),
-    -50%,
-    0
-  );
+  transform: translate3d(var(--ms-lf-slide-x, 0px), -50%, 0);
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.9) inset,
     0 6px 14px rgba(15, 23, 42, 0.18);
@@ -4733,11 +4732,6 @@ input.ms-input:-webkit-autofill:focus {
 
 .ms-lf-slide-thumb:hover,
 .ms-lf-slide-thumb:focus {
-  transform: translate3d(
-    min(var(--ms-lf-slide-x, 0px), var(--ms-lf-slide-max, 0px)),
-    -50%,
-    0
-  );
   background: #fff;
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.9) inset,
@@ -7361,6 +7355,23 @@ body.ms-lb-pane-resizing .ms-lb-pane-resizer::before {
   gap: 0.85rem;
   padding: 1rem;
   width: min(22rem, calc(100% - 2rem));
+}
+
+.ms-lb-loading-spinner {
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(37, 99, 235, 0.22);
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: ms-lb-loading-spin 0.75s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes ms-lb-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .ms-lb-loading-copy {
@@ -13287,16 +13298,13 @@ body.is-home-ready .ms-home-hero-copy {
   .ms-home-hero-copy {
     width: 100%;
     max-width: none;
-    min-height: 0;
-    margin: 0;
-    padding:
-      calc(50svh - env(safe-area-inset-top, 0px) - 5.5rem)
-      0
-      0.5rem;
+    min-height: calc(100svh - 5.75rem - clamp(12rem, 38vh, 22rem));
+    margin: 0 auto;
+    padding: clamp(1.25rem, 4vh, 2rem) 0 0.75rem;
     gap: 0.85rem;
-    justify-content: flex-start;
-    align-items: flex-start;
-    text-align: left;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
   }
 
   .ms-home-title {
@@ -13315,7 +13323,7 @@ body.is-home-ready .ms-home-hero-copy {
 
   .ms-home-ctas {
     width: 100%;
-    justify-content: flex-start;
+    justify-content: center;
     gap: 0.7rem;
     margin-top: 0.35rem;
   }
@@ -13481,12 +13489,13 @@ body.is-home-ready .ms-home-hero-copy {
 
   .ms-home-hero-copy {
     gap: 0.8rem;
-    min-height: 0;
-    padding-top: calc(50svh - env(safe-area-inset-top, 0px) - 5.35rem);
+    min-height: calc(100svh - 5.75rem - clamp(11rem, 36vh, 20rem));
   }
 
   .ms-home-ctas {
     gap: 0.75rem;
+    flex-direction: column;
+    align-items: center;
   }
 
   .ms-home-brand {
@@ -13513,14 +13522,9 @@ body.is-home-ready .ms-home-hero-copy {
     height: 42px;
   }
 
-  .ms-home-ctas {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
   .ms-home-cta-primary,
   .ms-home-cta-secondary {
-    width: 100%;
+    width: min(100%, 18rem);
     min-height: 3rem;
     font-size: 0.98rem;
     padding: 0.8rem 1.1rem;
@@ -13535,8 +13539,8 @@ body.is-home-ready .ms-home-hero-copy {
   }
 
   .ms-home-hero-copy {
-    min-height: 0;
-    padding-top: calc(50svh - env(safe-area-inset-top, 0px) - 5.15rem);
+    min-height: calc(100svh - 5.75rem - clamp(10rem, 34vh, 18rem));
+    padding: clamp(1rem, 3vh, 1.5rem) 0 0.5rem;
     gap: 0.75rem;
   }
 
@@ -13626,7 +13630,8 @@ body.is-home-ready .ms-home-hero-copy {
 
 @media (max-height: 740px) and (max-width: 800px) {
   .ms-home-hero-copy {
-    padding-top: calc(48svh - env(safe-area-inset-top, 0px) - 5rem);
+    min-height: auto;
+    padding: 1rem 0 0.5rem;
     gap: 0.6rem;
   }
 
