@@ -3606,7 +3606,7 @@
   }
 
   function writePreviewDocument(html) {
-    const frame = getPreviewFrame();
+    let frame = getPreviewFrame();
     if (!frame || !html) return null;
     // Keep the frame in the layout tree - never display:none / parked while painting.
     frame.hidden = false;
@@ -3618,38 +3618,34 @@
     applyPreviewViewportSize();
     const safeHtml = closeIncompleteHtml(ensureMobileFriendlyHtml(injectContactFormPreviewHtml(html)));
     revokePreviewObjectUrl();
-    // Force nav rebind after document.write wipes listeners.
+    // Force nav rebind after a fresh document load.
     editState.uploadNavDoc = null;
-    try {
-      if (frame.getAttribute("src")) frame.removeAttribute("src");
-    } catch (_) {
-      /* ignore */
-    }
 
     const finishPaint = () => {
+      const live = getPreviewFrame();
+      if (!live) return;
       bindPreviewScrollBridge();
       try {
-        bindUploadSitePreviewNav(frame.contentDocument);
+        bindUploadSitePreviewNav(live.contentDocument);
       } catch (_) {
         /* ignore */
       }
-      frame.classList.remove("is-parked");
+      live.classList.remove("is-parked");
       applyPreviewViewportSize();
       let painted = false;
       try {
-        painted = previewDocLooksPainted(frame.contentDocument);
+        painted = previewDocLooksPainted(live.contentDocument);
       } catch (_) {
         painted = false;
       }
-      // srcdoc/blob can be opaque briefly - treat a non-tiny frame as painted.
-      if (!painted && frame.clientWidth > 80 && frame.clientHeight > 80) {
-        painted = !frame.classList.contains("is-parked");
+      if (!painted && live.clientWidth > 80 && live.clientHeight > 80) {
+        painted = !live.classList.contains("is-parked");
       }
       markPreviewPainted(painted);
       if (!painted) {
         window.setTimeout(() => {
           try {
-            markPreviewPainted(previewDocLooksPainted(frame.contentDocument));
+            markPreviewPainted(previewDocLooksPainted(getPreviewFrame()?.contentDocument));
           } catch (_) {
             /* ignore */
           }
@@ -3657,28 +3653,55 @@
       }
     };
 
-    // Prefer srcdoc; fall back to blob URL (requires CSP frame-src blob:).
-    let paintedViaWrite = false;
+    // Replace the iframe node so each paint gets a fresh JS realm.
+    // Re-using document.write on the same frame redeclares const/let (pill, player, …).
     try {
-      const doc = frame.contentDocument;
-      if (doc) {
-        doc.open();
-        doc.write(safeHtml);
-        doc.close();
-        paintedViaWrite = previewDocLooksPainted(doc);
-        bindUploadSitePreviewNav(doc);
+      const parent = frame.parentNode;
+      if (parent) {
+        const next = frame.cloneNode(false);
+        next.removeAttribute("src");
+        next.removeAttribute("srcdoc");
+        next.className = frame.className;
+        next.id = "preview-frame";
+        next.title = frame.title || "Site preview";
+        next.setAttribute(
+          "sandbox",
+          frame.getAttribute("sandbox") || PREVIEW_SANDBOX_PREVIEW
+        );
+        next.hidden = false;
+        next.classList.remove("is-parked");
+        parent.replaceChild(next, frame);
+        frame = next;
+        setPreviewFrameViewportClass(frame, state.viewport);
+        applyPreviewViewportSize();
       }
     } catch (_) {
-      paintedViaWrite = false;
+      /* keep existing frame */
+      frame = getPreviewFrame() || frame;
     }
 
-    if (!paintedViaWrite) {
+    let paintedSync = false;
+    try {
+      frame.srcdoc = safeHtml;
+    } catch (_) {
       try {
-        frame.srcdoc = safeHtml;
-      } catch (_) {
         const blob = new Blob([safeHtml], { type: "text/html;charset=utf-8" });
         editState.previewObjectUrl = URL.createObjectURL(blob);
         frame.src = editState.previewObjectUrl;
+      } catch (__) {
+        /* last resort: document.write on blank frame */
+        try {
+          const doc = frame.contentDocument;
+          if (doc) {
+            doc.open("text/html", "replace");
+            doc.write(safeHtml);
+            doc.close();
+            paintedSync = previewDocLooksPainted(doc);
+            bindUploadSitePreviewNav(doc);
+          }
+        } catch (___) {
+          paintedSync = false;
+        }
       }
     }
 
@@ -3686,6 +3709,7 @@
     frame.addEventListener("load", finishPaint, { once: true });
     window.setTimeout(finishPaint, 0);
     window.setTimeout(finishPaint, 120);
+    if (paintedSync) finishPaint();
     try {
       return frame.contentDocument;
     } catch (_) {
@@ -3718,7 +3742,7 @@
     [0, 50, 150, 400, 900, 1800].forEach((ms) => {
       window.setTimeout(() => {
         if (!(state.html && String(state.html).trim()) || state.mode === "code") return;
-        writePreviewDocument(state.html);
+        // Only rewrite when content is missing — avoid redeclaring preview scripts.
         ensurePreviewPainted();
       }, ms);
     });
@@ -6829,11 +6853,47 @@
   function ownerTelHref(raw) {
     const digits = String(raw || "").replace(/\D/g, "");
     if (digits.length < 7) return "";
-    return "tel:+" + (digits.length === 10 ? "1" + digits : digits);
+    // US 10-digit → E.164; otherwise keep country code if already present.
+    const e164 =
+      digits.length === 10
+        ? "1" + digits
+        : digits.length === 11 && digits.startsWith("1")
+          ? digits
+          : digits;
+    return "tel:+" + e164;
   }
 
-  function contactOwner() {
-    const href = ownerTelHref(ownerPhone());
+  function formatOwnerPhoneDisplay(raw) {
+    const digits = String(raw || "").replace(/\D/g, "");
+    if (digits.length === 10) {
+      return "(" + digits.slice(0, 3) + ") " + digits.slice(3, 6) + "-" + digits.slice(6);
+    }
+    if (digits.length === 11 && digits.startsWith("1")) {
+      return (
+        "+1 (" +
+        digits.slice(1, 4) +
+        ") " +
+        digits.slice(4, 7) +
+        "-" +
+        digits.slice(7)
+      );
+    }
+    return String(raw || "").trim();
+  }
+
+  function openTelLink(href) {
+    const a = document.createElement("a");
+    a.href = href;
+    a.setAttribute("rel", "noopener");
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  async function contactOwner() {
+    const phone = ownerPhone();
+    const href = ownerTelHref(phone);
     if (!href) {
       window.StudioToast?.info?.(
         "Add the owner's phone in Settings → Contact, then try again."
@@ -6841,7 +6901,26 @@
       setSiteSettingsOpen(true, "contact");
       return;
     }
-    window.location.href = href;
+
+    const display = formatOwnerPhoneDisplay(phone) || phone;
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(display.replace(/[^\d+]/g, "") || phone);
+      }
+    } catch (_) {
+      /* clipboard optional */
+    }
+
+    openTelLink(href);
+
+    const coarse =
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(pointer: coarse)").matches;
+    window.StudioToast?.info?.(
+      coarse
+        ? "Calling " + display + "…"
+        : "Opening dialer for " + display + " — number copied. On Windows, pick Phone Link / your phone app."
+    );
   }
 
   function qrBusinessDetails() {
@@ -6905,36 +6984,16 @@
     }
   }
 
-  function qrCardRestTransform() {
-    return "none";
-  }
-
   function closeQrBusinessCard() {
     const modal = document.getElementById("lb-qr-modal");
     if (!modal) return;
     modal.hidden = true;
+    modal.classList.remove("ms-lb-qr--portrait");
     document.body.classList.remove("ms-lb-qr-open");
-    const card = document.getElementById("lb-qr-card");
-    if (card) card.style.transform = qrCardRestTransform();
   }
 
   function bindQrCardTilt() {
-    const card = document.getElementById("lb-qr-card");
-    if (!card || card.dataset.tiltBound === "1") return;
-    card.dataset.tiltBound = "1";
-    card.style.transform = qrCardRestTransform();
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    if (window.matchMedia("(pointer: coarse)").matches) return;
-    card.addEventListener("pointermove", (e) => {
-      const rect = card.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width - 0.5;
-      const y = (e.clientY - rect.top) / rect.height - 0.5;
-      card.style.transform =
-        "rotateY(" + (x * 16).toFixed(2) + "deg) rotateX(" + (-y * 12).toFixed(2) + "deg)";
-    });
-    card.addEventListener("pointerleave", () => {
-      card.style.transform = qrCardRestTransform();
-    });
+    // Auto sway only (CSS). No pointer-follow tilt.
   }
 
   async function ensureQrLibrary() {
@@ -7174,6 +7233,10 @@
 
     modal.hidden = false;
     document.body.classList.add("ms-lb-qr-open");
+    modal.classList.toggle(
+      "ms-lb-qr--portrait",
+      window.matchMedia("(max-width: 900px)").matches
+    );
     bindQrCardTilt();
   }
 

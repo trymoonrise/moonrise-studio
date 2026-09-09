@@ -1,9 +1,9 @@
-﻿/**
+/**
  * Moonrise floating watermark - from watermark/moonrise-watermark.html
  *
  * Usage on live sites:
- *   <script src="â€¦/embed.js"
- *     data-project-id="â€¦"
+ *   <script src=".../embed.js"
+ *     data-project-id="..."
  *     data-worker="https://worker.example.com"
  *     defer></script>
  *
@@ -20,7 +20,7 @@
     kind: "hq",
     name: "Moonrise",
     org: "Moonrise Studio",
-    subtitle: "Headquarters Â· trymoonrise.com",
+    subtitle: "Headquarters \u00B7 trymoonrise.com",
     email: "trymoonrise@gmail.com",
     phone: "+14013000957",
     phoneDisplay: "(401) 300-0957",
@@ -69,14 +69,18 @@
 .mr-wm-pay:disabled{opacity:.55;cursor:not-allowed}
 .mr-wm-note{margin:0;text-align:center;font-size:.78rem;color:#94a3b8;line-height:1.4}
 .mr-wm-error{margin:0;color:#b91c1c;font-size:.85rem;font-weight:600;line-height:1.4}
-.mr-wm-contact-btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;min-height:2.85rem;padding:.65rem 1rem;border:1px solid var(--mr-line,#e8edf3);border-radius:12px;background:#fff;color:var(--mr-ink,#0f172a);font:inherit;font-family:var(--mr-font);font-size:.92rem;font-weight:650;letter-spacing:-.01em;text-decoration:none;text-align:center;transition:border-color .15s ease,background .15s ease,color .15s ease}
+.mr-wm-contact-btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;width:100%;min-height:2.85rem;padding:.65rem .75rem;border:1px solid var(--mr-line,#e8edf3);border-radius:12px;background:#fff;color:var(--mr-ink,#0f172a);font:inherit;font-family:var(--mr-font);font-size:.86rem;font-weight:650;letter-spacing:-.01em;text-decoration:none;text-align:center;transition:border-color .15s ease,background .15s ease,color .15s ease;box-sizing:border-box}
 .mr-wm-contact-btn:hover{border-color:#bfdbfe;background:#f8fbff;color:#1d4ed8}
 .mr-wm-contact-btn--primary{background:linear-gradient(180deg,rgba(255,255,255,.18) 0%,rgba(255,255,255,0) 42%),linear-gradient(135deg,#60a5fa 0%,#3b82f6 48%,#2563eb 100%);border-color:rgba(255,255,255,.18);color:#fff;box-shadow:0 8px 18px rgba(37,99,235,.24)}
 .mr-wm-contact-btn--primary:hover{filter:brightness(1.03);color:#fff;background:linear-gradient(180deg,rgba(255,255,255,.22) 0%,rgba(255,255,255,0) 42%),linear-gradient(135deg,#60a5fa 0%,#3b82f6 48%,#2563eb 100%)}
-.mr-wm-contact-btn--hq{align-self:start;width:auto;min-height:2rem;padding:.42rem .72rem;font-size:.78rem;font-weight:600;border-radius:10px;color:#64748b}
-.mr-wm-contact-btn--hq:hover{color:#1d4ed8;background:#f8fafc}
+.mr-wm-contact-btn--hq{min-height:2.85rem;padding:.65rem .75rem;font-size:.86rem;font-weight:650;border-radius:12px;color:#475569;background:#fff}
+.mr-wm-contact-btn--hq:hover{color:#1d4ed8;background:#f8fafc;border-color:#bfdbfe}
 .mr-wm-contacts{display:grid;gap:.55rem}
+.mr-wm-contacts-row{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;align-items:stretch}
+.mr-wm-contacts-row .mr-wm-contact-btn{width:100%}
+.mr-wm-contacts-row:has(> :only-child){grid-template-columns:1fr}
 .mr-wm-contacts-label{margin:0;font-size:.78rem;font-weight:650;letter-spacing:.04em;text-transform:uppercase;color:#94a3b8}
+@media (max-width:380px){.mr-wm-contacts-row{grid-template-columns:1fr}}
 .mr-wm-step[hidden]{display:none!important}
 .mr-wm-vcard{display:grid;gap:.75rem}
 .mr-wm-vcard-back{appearance:none;border:0;background:transparent;color:#64748b;font:inherit;font-size:.82rem;font-weight:600;cursor:pointer;padding:0;text-align:left}
@@ -107,7 +111,7 @@
 .mr-wm-faq summary{list-style:none;cursor:pointer;padding:.85rem 0;font-size:.9rem;font-weight:600;color:var(--mr-ink,#0f172a);display:flex;align-items:center;justify-content:space-between;gap:.75rem}
 .mr-wm-faq summary::-webkit-details-marker{display:none}
 .mr-wm-faq summary::after{content:"+";width:1.4rem;height:1.4rem;flex-shrink:0;display:grid;place-items:center;border-radius:999px;background:#f1f5f9;color:#64748b;font-size:.95rem;font-weight:600;line-height:1;transition:transform .25s ease,background-color .2s ease,color .2s ease}
-.mr-wm-faq details.is-open summary::after{content:"â€“";background:#e8f1ff;color:#2563eb}
+.mr-wm-faq details.is-open summary::after{content:"-";background:#e8f1ff;color:#2563eb}
 .mr-wm-faq-panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows .32s cubic-bezier(.22,1,.36,1)}
 .mr-wm-faq details.is-open .mr-wm-faq-panel{grid-template-rows:1fr}
 .mr-wm-faq-panel-inner{overflow:hidden;min-height:0}
@@ -316,12 +320,14 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
       '<p class="mr-wm-timer" id="mr-wm-timer" aria-live="polite"></p>' +
       '<button type="button" class="mr-wm-pay" id="mr-wm-pay">Unlock site</button>' +
       '<p class="mr-wm-error" id="mr-wm-error" hidden></p>' +
-      '<p class="mr-wm-note">Secure Stripe checkout Â· promo codes accepted Â· hosting included</p>' +
+      '<p class="mr-wm-note">Secure Stripe checkout &middot; promo codes accepted &middot; hosting included</p>' +
       "</div>" +
       '<div class="mr-wm-contacts">' +
       '<p class="mr-wm-contacts-label">Need a site change?</p>' +
+      '<div class="mr-wm-contacts-row">' +
       creatorBtn +
       hqBtn +
+      "</div>" +
       "</div>" +
       '<div class="mr-wm-faq" id="mr-wm-faq">' +
       faqHtml() +
@@ -531,7 +537,7 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
       '" alt="" width="40" height="40" />' +
       '<div><h2 id="mr-wm-title">Unlock your website</h2>' +
       '<p id="mr-wm-subtitle">Watermark removed automatically after payment. This is a preview of your new website. Go live today and start sharing your link with customers.</p></div>' +
-      '<button type="button" class="mr-wm-close" id="mr-wm-close" aria-label="Close">Ã—</button></header>' +
+      '<button type="button" class="mr-wm-close" id="mr-wm-close" aria-label="Close">&times;</button></header>' +
       panelBodyHtml(creatorContact, hqContact, workerUrl, projectId) +
       "</div></div>";
 

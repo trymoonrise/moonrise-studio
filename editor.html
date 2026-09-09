@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/generation-announce.css?v=20260721-float">
-  <link rel="stylesheet" href="css/studio.css?v=20260907-publish-press">
+  <link rel="stylesheet" href="css/studio.css?v=20260909-qr-vert">
   <link rel="stylesheet" href="css/studio-motion.css?v=20260719-perf">
   <link rel="stylesheet" href="css/mvp-gate.css?v=20260717-mvp-fix">
   <style>
@@ -662,29 +662,27 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
       </button>
       <div class="ms-lb-qr-scene" id="lb-qr-scene">
-        <p class="ms-lb-qr-eyebrow">QR business card</p>
-        <div class="ms-lb-qr-card" id="lb-qr-card">
-          <div class="ms-lb-qr-card-sheen" aria-hidden="true"></div>
-          <div class="ms-lb-qr-card-inner">
-            <div class="ms-lb-qr-card-copy">
-              <p class="ms-lb-qr-kicker">On the web</p>
-              <a class="ms-lb-qr-name" id="lb-qr-name" href="#" target="_blank" rel="noopener noreferrer">Business</a>
-              <p class="ms-lb-qr-category" id="lb-qr-category" hidden></p>
-              <ul class="ms-lb-qr-meta" id="lb-qr-meta" hidden></ul>
-              <a class="ms-lb-qr-site" id="lb-qr-site" href="#" target="_blank" rel="noopener noreferrer" hidden></a>
-              <p class="ms-lb-qr-brand">moonrise</p>
-            </div>
-            <div class="ms-lb-qr-code-col">
-              <a class="ms-lb-qr-code-wrap" id="lb-qr-code-link" href="#" target="_blank" rel="noopener noreferrer" aria-label="Open live site">
-                <canvas id="lb-qr-canvas" width="192" height="192" aria-hidden="true"></canvas>
-              </a>
-              <p class="ms-lb-qr-hint">Scan to open the site</p>
+        <div class="ms-lb-qr-float" id="lb-qr-float">
+          <div class="ms-lb-qr-card" id="lb-qr-card">
+            <div class="ms-lb-qr-card-face">
+              <div class="ms-lb-qr-card-inner">
+                <div class="ms-lb-qr-card-copy">
+                  <a class="ms-lb-qr-name" id="lb-qr-name" href="#" target="_blank" rel="noopener noreferrer">Business</a>
+                  <p class="ms-lb-qr-category" id="lb-qr-category" hidden></p>
+                  <ul class="ms-lb-qr-meta" id="lb-qr-meta" hidden></ul>
+                  <div class="ms-lb-qr-actions">
+                    <button type="button" class="ms-lb-qr-btn ms-lb-qr-btn--ghost" id="lb-qr-copy">Copy link</button>
+                    <button type="button" class="ms-lb-qr-btn ms-lb-qr-btn--primary" id="lb-qr-download">Download</button>
+                  </div>
+                </div>
+                <div class="ms-lb-qr-code-col">
+                  <a class="ms-lb-qr-code-wrap" id="lb-qr-code-link" href="#" target="_blank" rel="noopener noreferrer" aria-label="Open live site">
+                    <canvas id="lb-qr-canvas" width="192" height="192" aria-hidden="true"></canvas>
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="ms-lb-qr-actions">
-          <button type="button" class="ms-btn ms-btn-ghost" id="lb-qr-copy">Copy link</button>
-          <button type="button" class="ms-btn" id="lb-qr-download">Download card</button>
         </div>
       </div>
     </div>
@@ -704,6 +702,6 @@
   <script defer src="js/app.js?v=20260907-remember"></script>
   <script defer src="js/creator-contact.js?v=20260719-watermark-contact"></script>
   <script defer src="js/generation-lock.js?v=20260721-one-gen"></script>
-  <script defer src="js/builder.js?v=20260907-qr-card"></script>
+  <script defer src="js/builder.js?v=20260909-qr-vert"></script>
 </body>
 </html>

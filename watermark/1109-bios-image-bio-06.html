@@ -201,7 +201,7 @@
       display:grid;place-items:center;border-radius:999px;
       background:#f1f5f9;color:#64748b;font-size:.95rem;font-weight:600;line-height:1;
     }
-    .mr-wm-faq details[open] summary::after{content:"–";background:#e8f1ff;color:#2563eb}
+    .mr-wm-faq details[open] summary::after{content:"-";background:#e8f1ff;color:#2563eb}
     .mr-wm-faq details p{margin:0;padding:0 0 .9rem;color:#64748b;font-size:.88rem;line-height:1.5}
     .mr-wm-faq a{color:#2563eb;font-weight:600;text-decoration:none}
     .mr-wm-faq a:hover{text-decoration:underline}
@@ -239,13 +239,13 @@
           <h2 id="mr-wm-title">Complete your order</h2>
           <p>Pay once to remove the watermark and unlock this website.</p>
         </div>
-        <button type="button" class="mr-wm-close" id="mr-wm-close" aria-label="Close">×</button>
+        <button type="button" class="mr-wm-close" id="mr-wm-close" aria-label="Close">&times;</button>
       </header>
       <div class="mr-wm-body">
         <div class="mr-wm-offer">
           <button type="button" class="mr-wm-pay" id="mr-wm-pay">Pay with Stripe</button>
           <p class="mr-wm-error" id="mr-wm-error" hidden></p>
-          <p class="mr-wm-note">Secure checkout · watermark leaves after payment</p>
+          <p class="mr-wm-note">Secure checkout &middot; watermark leaves after payment</p>
         </div>
         <div class="mr-wm-faq">
           <details>
