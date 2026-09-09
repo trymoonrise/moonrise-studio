@@ -34,6 +34,8 @@
     const F = fmt();
     lead.website = "";
     lead.website_url = "";
+    lead.has_website = false;
+    lead.hasWebsite = false;
     lead.websiteStatus = "missing";
     lead.websiteEnriched = true;
     lead.websiteConfirmed = true;
@@ -57,12 +59,22 @@
 
   function needsWebsiteCheck(lead) {
     const F = fmt();
-    if (F?.resolveSupabaseHasWebsiteFlag?.(lead) !== null) return false;
     if (F?.resolveLeadHasWebsite?.(lead)) return false;
-    if (F?.resolveLeadMissingWebsite?.(lead)) return false;
     const maps = mapsKey(lead);
     if (!maps.startsWith("http")) return false;
     if (checked.has(maps)) return false;
+
+    // Already live-confirmed missing — don't re-hit Maps every render.
+    if (
+      lead?.websiteEnriched === true &&
+      lead?.websiteConfirmed === true &&
+      String(lead?.websiteStatus || "").toLowerCase() === "missing"
+    ) {
+      return false;
+    }
+
+    // DB says they have a site — nothing to verify for the "no website" path.
+    if (F?.resolveSupabaseHasWebsiteFlag?.(lead) === true) return false;
 
     const rawSite = String(lead?.website || lead?.website_url || lead?.websiteUrl || "").trim();
     const storedIsNoise =
@@ -70,6 +82,7 @@
       (F?.isValidWebsiteUrl ? !F.isValidWebsiteUrl(rawSite) : /google\.com\/aclk/i.test(rawSite));
     if (storedIsNoise) return true;
 
+    // Re-verify stale DB has_website=false / missing when no real URL is stored.
     return F?.resolveLeadNeedsWebsiteCheck ? F.resolveLeadNeedsWebsiteCheck(lead) : true;
   }
 
@@ -87,6 +100,8 @@
       lead.website = normalized;
       lead.website_url = normalized;
       lead["lcr4fd href"] = normalized;
+      lead.has_website = true;
+      lead.hasWebsite = true;
       lead.websiteStatus = "has";
       lead.websiteEnriched = true;
       lead.websiteConfirmed = true;

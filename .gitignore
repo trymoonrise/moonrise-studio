@@ -38,3 +38,12 @@ css/studio.css.restored
 worker/scripts/lead-structure-analysis.json
 website-presets/
 .env*
+
+test-results/
+
+
+# Parent vault (never commit)
+../accesstokens.env
+accesstokens.env
+*.pem
+

@@ -1,5 +1,6 @@
 import path from "node:path";
 import process from "node:process";
+import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 
@@ -9,8 +10,38 @@ export function projectRoot() {
   return path.resolve(__dirname, "..");
 }
 
-dotenv.config({ path: path.join(projectRoot(), ".env") });
-dotenv.config({ path: path.join(projectRoot(), "..", "LeadFinder", ".env") });
+/**
+ * Load env in layers (later only fills blank keys):
+ * 1) leadfinder-cloud/.env
+ * 2) moonrise-studio/LeadFinder/.env (legacy)
+ * 3) repo vault Moonrise/accesstokens.env (shared secrets)
+ */
+function loadLeadFinderEnv() {
+  const root = projectRoot();
+  const files = [
+    path.join(root, ".env"),
+    path.join(root, "..", "LeadFinder", ".env"),
+    path.join(root, "..", "..", "accesstokens.env"),
+  ];
+
+  for (const filePath of files) {
+    try {
+      if (!fs.existsSync(filePath)) continue;
+      dotenv.config({ path: filePath });
+      // Fill blanks even if a parent shell exported empty values.
+      const parsed = dotenv.parse(fs.readFileSync(filePath));
+      for (const [key, value] of Object.entries(parsed)) {
+        if (process.env[key] == null || String(process.env[key]).trim() === "") {
+          process.env[key] = value;
+        }
+      }
+    } catch (_) {
+      /* ignore missing/unreadable env files */
+    }
+  }
+}
+
+loadLeadFinderEnv();
 
 export function config() {
   const root = projectRoot();
@@ -38,7 +69,7 @@ export function config() {
     ),
     maxScrolls: Math.max(20, Number(process.env.MAX_SCROLLS || 260)),
     noNewLeadTimeoutMs: Math.max(400, Number(process.env.NO_NEW_LEAD_TIMEOUT_MS || 1600)),
-    maxMapsWaitMs: Number(process.env.MAX_MAPS_WAIT_MS || 20000),
+    maxMapsWaitMs: Number(process.env.MAX_MAPS_WAIT_MS || 60000),
     pageReadyMs: Number(process.env.PAGE_READY_MS || 6000),
     pageSettleMs: Number(process.env.PAGE_SETTLE_MS || 250),
     settleFastMs: Number(process.env.SETTLE_FAST_MS || 40),

@@ -1,19 +1,27 @@
-/* Slide-to-generate — thumb position via --ms-lf-slide-x on .ms-lf-slide */
+/* Slide-to-generate — thumb stays inside the track (CSS clamp + fixed size). */
 .ms-lf-slide {
   --ms-lf-slide-x: 0px;
   --ms-lf-slide-max: 0px;
-  --ms-lf-slide-fill: calc(var(--ms-lf-slide-pad) + 44px);
+  --ms-lf-slide-thumb: 44px;
   --ms-lf-slide-pad: 4px;
   --ms-lf-slide-radius: 12px;
+  --ms-lf-slide-fill: calc(var(--ms-lf-slide-pad) + var(--ms-lf-slide-thumb));
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .ms-lf-slide-track {
   position: relative !important;
   display: block !important;
   box-sizing: border-box;
-  min-height: 52px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: calc(var(--ms-lf-slide-thumb) + var(--ms-lf-slide-pad) * 2);
+  height: calc(var(--ms-lf-slide-thumb) + var(--ms-lf-slide-pad) * 2);
   padding: var(--ms-lf-slide-pad);
   border-radius: var(--ms-lf-slide-radius) !important;
   overflow: hidden !important;
@@ -29,7 +37,8 @@
   left: 0 !important;
   top: 0 !important;
   bottom: 0 !important;
-  width: var(--ms-lf-slide-fill);
+  width: min(var(--ms-lf-slide-fill), 100%);
+  max-width: 100%;
   border-radius: var(--ms-lf-slide-radius) 0 0 var(--ms-lf-slide-radius) !important;
   pointer-events: none;
   opacity: 0;
@@ -54,7 +63,8 @@
 .ms-lf-slide-label {
   position: absolute !important;
   inset: 0 !important;
-  padding-left: calc(var(--ms-lf-slide-pad, 4px) + 44px + 0.65rem);
+  box-sizing: border-box;
+  padding-left: calc(var(--ms-lf-slide-pad) + var(--ms-lf-slide-thumb) + 0.65rem);
   padding-right: 0.85rem;
   display: flex;
   align-items: center;
@@ -63,6 +73,9 @@
   pointer-events: none;
   opacity: 0.96;
   transition: opacity 0.2s ease;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .ms-lf-slide.is-dragging .ms-lf-slide-label,
@@ -70,19 +83,35 @@
   opacity: 0.55;
 }
 
+/*
+ * Thumb travel uses --ms-lf-slide-x (0 → max).
+ * left is CSS-clamped so the button can never leave the track,
+ * even if JS metrics are briefly wrong.
+ */
 .ms-lf-slide-thumb {
   position: absolute !important;
-  left: var(--ms-lf-slide-pad) !important;
   top: 50% !important;
+  left: min(
+    calc(var(--ms-lf-slide-pad) + var(--ms-lf-slide-x, 0px)),
+    calc(100% - var(--ms-lf-slide-pad) - var(--ms-lf-slide-thumb))
+  ) !important;
   z-index: 2;
-  width: 44px;
-  height: 44px;
+  box-sizing: border-box !important;
+  width: var(--ms-lf-slide-thumb) !important;
+  height: var(--ms-lf-slide-thumb) !important;
+  min-width: var(--ms-lf-slide-thumb) !important;
+  max-width: var(--ms-lf-slide-thumb) !important;
+  min-height: var(--ms-lf-slide-thumb) !important;
+  max-height: var(--ms-lf-slide-thumb) !important;
   margin: 0 !important;
-  padding: 0;
-  border: 0;
+  padding: 0 !important;
+  border: 0 !important;
   appearance: none;
   -webkit-appearance: none;
-  border-radius: 12px !important;
+  border-radius: 10px !important;
+  display: grid !important;
+  place-items: center !important;
+  flex: none !important;
   background: #fff;
   color: #2563eb;
   cursor: grab;
@@ -90,8 +119,13 @@
   touch-action: none;
   -webkit-user-drag: none;
   user-select: none;
-  transform: translate3d(var(--ms-lf-slide-x, 0px), -50%, 0);
-  will-change: transform;
+  transform: translate3d(0, -50%, 0);
+  will-change: left;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 4px 12px rgba(15, 23, 42, 0.16);
+  -webkit-tap-highlight-color: transparent;
+  backface-visibility: hidden;
 }
 
 .ms-lf-slide.is-dragging .ms-lf-slide-track,
@@ -101,11 +135,14 @@
 
 .ms-lf-slide.is-dragging .ms-lf-slide-thumb {
   transition: none !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 8px 16px rgba(15, 23, 42, 0.2);
 }
 
 .ms-lf-slide.is-returning .ms-lf-slide-thumb,
 .ms-lf-slide.is-completing .ms-lf-slide-thumb {
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: left 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .ms-lf-slide-thumb:hover,
@@ -115,18 +152,29 @@
 
 .ms-lf-slide-thumb:focus-visible {
   outline: 2px solid #fff;
-  outline-offset: 2px;
+  outline-offset: -2px;
 }
 
 .ms-lf-slide-thumb .ms-lf-pro-ico,
 .ms-lf-slide-thumb svg {
+  width: 18px;
+  height: 18px;
+  display: block;
   pointer-events: none;
+  flex-shrink: 0;
 }
 
 body.ms-lf-slide-dragging {
   touch-action: none;
   -webkit-user-select: none;
   user-select: none;
+}
+
+body.ms-lf-slide-dragging .ms-lf-map-results,
+body.ms-lf-slide-dragging #lf-results {
+  overflow: hidden !important;
+  touch-action: none !important;
+  overscroll-behavior: none;
 }
 
 .ms-lf-slide.is-disabled {

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Moonrise Studio shell - SiteDrop-style sidebar layout.
  */
 (function (global) {
@@ -34,7 +34,7 @@
     },
     {
       id: "discord",
-      href: (window.SITE_CONFIG && window.SITE_CONFIG.discordUrl) || "https://discord.gg/yFJajbBNj",
+      href: (window.SITE_CONFIG && window.SITE_CONFIG.discordUrl) || "https://discord.gg/gdbA3gEVY",
       label: "Discord",
       icon: "discord",
       external: true,
@@ -100,10 +100,22 @@
     }
   }
 
+  function peekAuthStorageRaw() {
+    if (typeof window.SiteSupabase?.readStoredAuthRaw === "function") {
+      return window.SiteSupabase.readStoredAuthRaw();
+    }
+    try {
+      const remember = localStorage.getItem("ms_auth_autosave_enabled") !== "0";
+      return (remember ? localStorage : sessionStorage).getItem("moonrise-studio-auth");
+    } catch (_) {
+      return null;
+    }
+  }
+
   /** Sync peek at persisted auth so owner nav can paint without a flash. */
   function syncOwnerFromAuthStorage() {
     try {
-      const raw = localStorage.getItem("moonrise-studio-auth");
+      const raw = peekAuthStorageRaw();
       if (!raw) return false;
       const parsed = JSON.parse(raw);
       const user = parsed?.user || parsed?.currentSession?.user || parsed?.session?.user;
@@ -300,12 +312,12 @@
         el.setAttribute("aria-busy", "true");
         el.setAttribute(
           "title",
-          channelGeneratingCancellable ? "Generating website…" : "Looking up business…"
+          channelGeneratingCancellable ? "Generating websiteâ€¦" : "Looking up businessâ€¦"
         );
       } else {
         el.removeAttribute("aria-busy");
         const title = el.getAttribute("title");
-        if (title === "Generating website…" || title === "Looking up business…") {
+        if (title === "Generating websiteâ€¦" || title === "Looking up businessâ€¦") {
           el.removeAttribute("title");
         }
       }
@@ -393,7 +405,7 @@
     });
     return (
       '<nav class="ms-sidebar-legal" aria-label="Help and legal">' +
-      links.join('<span class="ms-sidebar-legal-sep" aria-hidden="true">•</span>') +
+      links.join('<span class="ms-sidebar-legal-sep" aria-hidden="true">â€¢</span>') +
       "</nav>"
     );
   }
@@ -452,6 +464,13 @@
   function ensureHardRefreshButton() {
     stripHardRefreshParam();
     if (!document.body) return;
+    const page = document.body.dataset?.page || "";
+    // Finder has its own chrome; skip the global hard-refresh control there.
+    if (page === "leads") {
+      const existing = document.getElementById("ms-hard-refresh");
+      if (existing) existing.remove();
+      return;
+    }
     let btn = document.getElementById("ms-hard-refresh");
     if (!btn) {
       btn = document.createElement("button");
@@ -551,7 +570,7 @@
       "</div>" +
       '</div></aside>' +
       '<div class="ms-sidebar-resizer" id="ms-sidebar-resizer" role="separator" aria-orientation="vertical" aria-label="Resize sidebar" tabindex="0"></div>' +
-      '<button type="button" class="ms-menu-toggle" id="ms-menu-toggle" aria-label="Open menu">☰</button>';
+      '<button type="button" class="ms-menu-toggle" id="ms-menu-toggle" aria-label="Open menu">â˜°</button>';
 
     document.getElementById("ms-signout")?.addEventListener("click", async () => {
       await window.StudioAuth?.signOut?.();
@@ -575,7 +594,14 @@
     document.addEventListener("click", (event) => {
       if (!window.matchMedia("(max-width: 900px)").matches) return;
       if (!document.body.classList.contains("ms-nav-open")) return;
-      if (sidebar?.contains(event.target) || menuToggle?.contains(event.target)) return;
+      const finderMenu = document.getElementById("lf-menu-toggle");
+      if (
+        sidebar?.contains(event.target) ||
+        menuToggle?.contains(event.target) ||
+        finderMenu?.contains(event.target)
+      ) {
+        return;
+      }
       setNavOpen(false);
     });
 
@@ -648,7 +674,7 @@
   function discordUrl() {
     return (
       (window.SITE_CONFIG && window.SITE_CONFIG.discordUrl) ||
-      "https://discord.gg/yFJajbBNj"
+      "https://discord.gg/gdbA3gEVY"
     );
   }
 
@@ -667,7 +693,7 @@
       TELEGRAM_LOGO +
       "</div>" +
       '<h2 id="ms-redirect-title">Open Telegram?</h2>' +
-      '<p class="ms-redirect-copy">You’re about to open <strong>Telegram</strong> in a new tab. You’ll leave Moonrise Studio temporarily.</p>' +
+      '<p class="ms-redirect-copy">Youâ€™re about to open <strong>Telegram</strong> in a new tab. Youâ€™ll leave Moonrise Studio temporarily.</p>' +
       "</header>" +
       '<footer class="ms-redirect-actions">' +
       '<button type="button" class="ms-redirect-cancel" id="ms-redirect-cancel">Stay here</button>' +
@@ -712,9 +738,9 @@
     if (title) title.textContent = "Open " + name + "?";
     if (copy) {
       copy.innerHTML =
-        "You’re about to open <strong>" +
+        "Youâ€™re about to open <strong>" +
         name.replace(/</g, "&lt;") +
-        "</strong> in a new tab. You’ll leave Moonrise Studio temporarily.";
+        "</strong> in a new tab. Youâ€™ll leave Moonrise Studio temporarily.";
     }
     if (goBtn) goBtn.textContent = "Continue to " + name;
     setRedirectOpen(true);
@@ -970,7 +996,7 @@
           avatarUrl: String(cached.avatarUrl || "").trim(),
         };
       }
-      const raw = localStorage.getItem("moonrise-studio-auth");
+      const raw = peekAuthStorageRaw();
       if (!raw) return null;
       const parsed = JSON.parse(raw);
       const user = parsed?.user || parsed?.currentSession?.user || parsed?.session?.user;
@@ -1154,7 +1180,7 @@
   function generationBlockMessage(reason) {
     switch (reason) {
       case "offline":
-        return "You're offline. Connect to Wi‑Fi or mobile data, then try again.";
+        return "You're offline. Connect to Wiâ€‘Fi or mobile data, then try again.";
       case "network":
       case "server":
         return window.isLocalDevHost?.()

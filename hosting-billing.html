@@ -1,0 +1,172 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage hosting Â· Moonrise</title>
+  <meta name="description" content="Manage or cancel Moonrise website hosting after go-live payment.">
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/studio.css?v=20260812-hosting-billing">
+  <script defer src="js/config.js?v=20260909-discord"></script>
+  <style>
+    .ms-hosting-main {
+      max-width: 28rem;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+    .ms-hosting-card {
+      display: grid;
+      gap: 0.85rem;
+      padding: 1.35rem 1.25rem;
+      border-radius: 16px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+    }
+    .ms-hosting-card h1 {
+      margin: 0;
+      font-size: 1.35rem;
+      letter-spacing: -0.02em;
+    }
+    .ms-hosting-card p {
+      margin: 0;
+      color: #64748b;
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+    .ms-hosting-card label {
+      display: grid;
+      gap: 0.3rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #94a3b8;
+    }
+    .ms-hosting-card input {
+      width: 100%;
+      padding: 0.7rem 0.8rem;
+      border: 1px solid #dbe3ee;
+      border-radius: 10px;
+      font: inherit;
+      font-size: 0.95rem;
+      color: #0f172a;
+      background: #fff;
+    }
+    .ms-hosting-card button {
+      margin-top: 0.2rem;
+      border: 0;
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      background: #0f172a;
+      color: #fff;
+      font: inherit;
+      font-weight: 650;
+      cursor: pointer;
+    }
+    .ms-hosting-card button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+    .ms-hosting-status {
+      min-height: 1.2rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .ms-hosting-status.is-error { color: #b91c1c; }
+    .ms-hosting-status.is-ok { color: #0f766e; }
+  </style>
+</head>
+<body data-page="hosting-billing" class="ms-contact-public">
+  <header class="ms-orders-nav">
+    <a class="ms-home-brand" href="index.html">
+      <img src="doc/MoonriseLogo.png" alt="" width="36" height="36">
+      <strong>Moonrise Studio</strong>
+    </a>
+    <nav class="ms-orders-nav-links" aria-label="Page">
+      <a class="ms-orders-nav-link" href="contact.html">Support</a>
+    </nav>
+  </header>
+
+  <main class="ms-hosting-main">
+    <form class="ms-hosting-card" id="hosting-billing-form">
+      <h1>Manage or cancel hosting</h1>
+      <p>Enter the email you used when you paid to remove the watermark. Weâ€™ll open Stripeâ€™s secure billing portal so you can update your card or cancel.</p>
+      <label>
+        Project ID
+        <input id="hosting-project-id" name="projectId" autocomplete="off" spellcheck="false" required>
+      </label>
+      <label>
+        Checkout email
+        <input id="hosting-email" name="email" type="email" autocomplete="email" required placeholder="you@business.com">
+      </label>
+      <button type="submit" id="hosting-submit">Open billing portal</button>
+      <p class="ms-hosting-status" id="hosting-status" role="status" aria-live="polite"></p>
+    </form>
+  </main>
+
+  <script>
+    (function () {
+      const params = new URLSearchParams(location.search);
+      const projectInput = document.getElementById("hosting-project-id");
+      const emailInput = document.getElementById("hosting-email");
+      const statusEl = document.getElementById("hosting-status");
+      const submitBtn = document.getElementById("hosting-submit");
+      const prefill = String(params.get("project") || params.get("projectId") || "").trim();
+      if (prefill && projectInput) projectInput.value = prefill;
+
+      function workerBase() {
+        const fromConfig = String(window.MS_CONFIG?.workerUrl || window.MS_CONFIG?.WORKER_URL || "").replace(/\/$/, "");
+        if (fromConfig) return fromConfig;
+        if (/trymoonrise\.com$/i.test(location.hostname) || /vercel\.app$/i.test(location.hostname)) {
+          return location.origin;
+        }
+        return "https://trymoonrise.com";
+      }
+
+      function setStatus(msg, kind) {
+        if (!statusEl) return;
+        statusEl.textContent = msg || "";
+        statusEl.classList.toggle("is-error", kind === "error");
+        statusEl.classList.toggle("is-ok", kind === "ok");
+      }
+
+      document.getElementById("hosting-billing-form")?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const projectId = String(projectInput?.value || "").trim();
+        const email = String(emailInput?.value || "").trim().toLowerCase();
+        if (!projectId || !email) {
+          setStatus("Enter project ID and checkout email.", "error");
+          return;
+        }
+        try {
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Openingâ€¦";
+          }
+          setStatus("Opening Stripe billing portalâ€¦");
+          const res = await fetch(workerBase() + "/public-hosting-portal", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify({ projectId, email }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || "Could not open billing portal");
+          if (!data.url) throw new Error("Billing portal URL missing");
+          setStatus("Redirectingâ€¦", "ok");
+          location.href = data.url;
+        } catch (err) {
+          setStatus(err?.message || "Could not open billing portal", "error");
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Open billing portal";
+          }
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -22,7 +22,7 @@
   <link rel="stylesheet" href="css/studio.css?v=20260720-hero-center">
   <link rel="stylesheet" href="css/studio-motion.css?v=20260719-perf">
   <meta name="color-scheme" content="light">
-  <script defer src="js/config.js?v=20260719-seo"></script>
+  <script defer src="js/config.js?v=20260909-discord"></script>
   <script defer src="js/site-branding.js?v=20260719-seo"></script>
   <script type="application/ld+json">
   {
@@ -402,27 +402,13 @@
   <script defer src="js/toast.js"></script>
   <script defer>
     (function () {
+      // Explicit app deep-link only (PWA / bookmarks). Never auto-bounce `/` away
+      // from the marketing landing page â€” stale localStorage sessions were sending
+      // visitors to dashboard â†’ login and skipping the homepage entirely.
       if (new URLSearchParams(location.search).get("go") === "app") {
         location.replace("dashboard.html");
         return;
       }
-
-      // Signed-in creators land in the app shell, not the marketing homepage.
-      (function redirectSignedInToApp() {
-        if (new URLSearchParams(location.search).get("home") === "1") return;
-        try {
-          const raw = localStorage.getItem("moonrise-studio-auth");
-          if (!raw) return;
-          const parsed = JSON.parse(raw);
-          const session =
-            parsed?.currentSession?.access_token ||
-            parsed?.session?.access_token ||
-            parsed?.access_token;
-          if (session) location.replace("dashboard.html");
-        } catch (_) {
-          /* ignore */
-        }
-      })();
 
       const body = document.body;
       const greet = document.getElementById("ms-home-greet");

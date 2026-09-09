@@ -1,14 +1,14 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="js/auth-gate-head.js?v=20260721-perf"></script>
+  <script src="js/auth-gate-head.js?v=20260909-login3"></script>
   <title>Builder · Moonrise Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css?v=20260718-projects-page">
+  <link rel="stylesheet" href="css/studio.css?v=20260815-site-folder">
   <link rel="stylesheet" href="css/studio-motion.css?v=20260719-perf">
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -20,22 +20,28 @@
       <header class="ms-page-head ms-bs-hero">
         <div class="ms-page-head-copy">
           <h1>Builder</h1>
-          <p class="lead">Gather business details, then generate a website in the Editor.</p>
+          <p class="lead">Choose how to start — Google link, manual details, or upload your own site.</p>
         </div>
       </header>
 
       <section class="ms-bs-card" id="builder-setup-card">
       <div class="ms-lb-onboard-step is-active" data-step="1" id="onboard-step-1">
         <div class="ms-lb-onboard-body">
-          <div class="ms-bs-paths">
-            <section class="ms-bs-path ms-bs-path--google" aria-labelledby="bs-path-google-title">
+          <div class="ms-bs-mode-tabs" role="tablist" aria-label="How to start">
+            <button type="button" class="ms-bs-mode-tab is-active" id="bs-mode-google" data-builder-mode="google" role="tab" aria-selected="true" aria-controls="bs-panel-google">Google link</button>
+            <button type="button" class="ms-bs-mode-tab" id="bs-mode-manual" data-builder-mode="manual" role="tab" aria-selected="false" aria-controls="bs-panel-manual">Manual</button>
+            <button type="button" class="ms-bs-mode-tab" id="bs-mode-upload" data-builder-mode="upload" role="tab" aria-selected="false" aria-controls="bs-panel-upload">Upload</button>
+          </div>
+
+          <div class="ms-bs-panels">
+            <section class="ms-bs-path ms-bs-path--google is-active" id="bs-panel-google" data-builder-panel="google" role="tabpanel" aria-labelledby="bs-mode-google">
               <header class="ms-bs-path-head">
                 <span class="ms-bs-path-icon ms-bs-path-icon--google" aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
                 </span>
                 <div class="ms-bs-path-copy">
                   <h3 id="bs-path-google-title">Google link</h3>
-                  <p>Paste a Maps or g.page URL - we'll pull the details.</p>
+                  <p>Paste a Maps or g.page URL — we’ll pull the details.</p>
                 </div>
               </header>
               <div class="ms-lb-onboard-maps">
@@ -48,18 +54,14 @@
               </div>
             </section>
 
-            <div class="ms-bs-path-split" aria-hidden="true">
-              <span>or</span>
-            </div>
-
-            <section class="ms-bs-path ms-bs-path--manual" aria-labelledby="bs-path-manual-title">
+            <section class="ms-bs-path ms-bs-path--manual" id="bs-panel-manual" data-builder-panel="manual" role="tabpanel" aria-labelledby="bs-mode-manual" hidden>
               <header class="ms-bs-path-head">
                 <span class="ms-bs-path-icon ms-bs-path-icon--manual" aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
                 </span>
                 <div class="ms-bs-path-copy">
                   <h3 id="bs-path-manual-title">Manual input</h3>
-                  <p>Fill every field below if you don't have a link.</p>
+                  <p>Fill every field below if you don’t have a link.</p>
                 </div>
               </header>
               <div class="ms-lb-onboard-fields ms-lb-onboard-fields--manual">
@@ -71,7 +73,7 @@
                   <label class="ms-lb-onboard-label" for="onb-phone">Phone</label>
                   <input class="ms-lb-onboard-input" id="onb-phone" placeholder="(555) 123-4567" autocomplete="off" data-1p-ignore data-lpignore="true">
                 </div>
-                <div class="ms-lb-onboard-fields-extra" id="onb-manual-extra">
+                <div class="ms-lb-onboard-fields-extra is-manual-expanded" id="onb-manual-extra">
                   <div class="ms-lb-onboard-field">
                     <label class="ms-lb-onboard-label" for="onb-category">Category</label>
                     <input class="ms-lb-onboard-input" id="onb-category" placeholder="Plumbing" autocomplete="off" data-1p-ignore data-lpignore="true">
@@ -87,7 +89,93 @@
                 </div>
               </div>
             </section>
+
+            <section class="ms-bs-path ms-bs-path--upload" id="bs-panel-upload" data-builder-panel="upload" role="tabpanel" aria-labelledby="bs-mode-upload" hidden>
+              <header class="ms-bs-path-head">
+                <span class="ms-bs-path-icon ms-bs-path-icon--upload" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+                </span>
+                <div class="ms-bs-path-copy">
+                  <h3 id="bs-path-upload-title">Upload from GitHub</h3>
+                  <p id="bs-path-upload-lead">Paste a GitHub token to connect your account.</p>
+                </div>
+              </header>
+
+              <div class="ms-bs-gh" id="bs-gh" data-gh-step="1">
+                <div class="ms-bs-gh-progress" aria-label="Upload steps">
+                  <div class="ms-bs-gh-progress-item is-active" data-gh-step-indicator="1">
+                    <span class="ms-bs-gh-progress-dot">1</span>
+                    <span class="ms-bs-gh-progress-label">Token</span>
+                  </div>
+                  <div class="ms-bs-gh-progress-line" aria-hidden="true"></div>
+                  <div class="ms-bs-gh-progress-item" data-gh-step-indicator="2">
+                    <span class="ms-bs-gh-progress-dot">2</span>
+                    <span class="ms-bs-gh-progress-label">Repo</span>
+                  </div>
+                  <div class="ms-bs-gh-progress-line" aria-hidden="true"></div>
+                  <div class="ms-bs-gh-progress-item" data-gh-step-indicator="3">
+                    <span class="ms-bs-gh-progress-dot">3</span>
+                    <span class="ms-bs-gh-progress-label">Details</span>
+                  </div>
+                </div>
+
+                <div class="ms-bs-gh-step is-active" data-gh-step-panel="1">
+                  <div class="ms-bs-gh-provider" role="group" aria-label="Upload source">
+                    <button type="button" class="ms-bs-gh-provider-btn is-active" id="bs-gh-provider-github" aria-pressed="true">
+                      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 2C6.48 2 2 6.58 2 12.26c0 4.52 2.87 8.35 6.84 9.71.5.1.68-.22.68-.48 0-.24-.01-.87-.01-1.71-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.89 1.57 2.34 1.12 2.91.86.09-.66.35-1.12.63-1.37-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.73 0 0 .84-.27 2.75 1.05A9.3 9.3 0 0 1 12 6.8c.85 0 1.71.12 2.51.34 1.91-1.32 2.75-1.05 2.75-1.05.55 1.42.2 2.47.1 2.73.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.8-4.57 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .26.18.58.69.48A10.03 10.03 0 0 0 22 12.26C22 6.58 17.52 2 12 2z"/></svg>
+                      GitHub
+                    </button>
+                  </div>
+                  <div class="ms-lb-onboard-field ms-bs-gh-token-field">
+                    <label class="ms-lb-onboard-label" for="bs-gh-token">GitHub token</label>
+                    <input class="ms-lb-onboard-input" id="bs-gh-token" type="password" placeholder="ghp_… or github_pat_…" autocomplete="off" spellcheck="false" data-1p-ignore data-lpignore="true">
+                    <p class="ms-muted ms-bs-gh-hint">Needs <strong>repo</strong> scope for private repos. Token is used only for this import — never stored.</p>
+                    <p class="ms-muted ms-bs-gh-status" id="bs-gh-status" hidden></p>
+                  </div>
+                </div>
+
+                <div class="ms-bs-gh-step" data-gh-step-panel="2" hidden>
+                  <div class="ms-lb-onboard-field ms-bs-gh-repo-field">
+                    <span class="ms-lb-onboard-label" id="bs-gh-repo-label">Repository <span class="ms-lb-onboard-optional">(required)</span></span>
+                    <div class="ms-bs-gh-select is-disabled" id="bs-gh-select">
+                      <input type="hidden" id="bs-gh-repo" value="" required>
+                      <button
+                        type="button"
+                        class="ms-bs-gh-select-trigger"
+                        id="bs-gh-repo-trigger"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        aria-controls="bs-gh-repo-menu"
+                        aria-labelledby="bs-gh-repo-label"
+                        disabled
+                      >
+                        <span class="ms-bs-gh-select-label is-placeholder" id="bs-gh-repo-label-text">Select a repository…</span>
+                        <svg class="ms-bs-gh-select-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                      </button>
+                      <div class="ms-bs-gh-select-menu" id="bs-gh-repo-menu" role="listbox" aria-labelledby="bs-gh-repo-label" hidden></div>
+                    </div>
+                    <p class="ms-muted ms-bs-gh-hint" id="bs-gh-repo-hint">Choose the repo that contains your website HTML.</p>
+                  </div>
+                </div>
+
+                <div class="ms-bs-gh-step" data-gh-step-panel="3" hidden>
+                  <div class="ms-lb-onboard-field ms-bs-gh-path-field">
+                    <label class="ms-lb-onboard-label" for="bs-gh-path">Site folder</label>
+                    <select class="ms-lb-onboard-input ms-bs-gh-path" id="bs-gh-path" aria-describedby="bs-gh-path-hint">
+                      <option value="">Loading folders…</option>
+                    </select>
+                    <p class="ms-muted ms-bs-gh-hint" id="bs-gh-path-hint">Pick the folder that contains your website’s index.html.</p>
+                  </div>
+                  <div class="ms-lb-onboard-field ms-bs-upload-name-field">
+                    <label class="ms-lb-onboard-label" for="onb-upload-name">Business name <span class="ms-lb-onboard-optional">(optional)</span></label>
+                    <input class="ms-lb-onboard-input" id="onb-upload-name" placeholder="Uploaded site" autocomplete="off" data-1p-ignore data-lpignore="true">
+                  </div>
+                  <p class="ms-muted ms-bs-upload-watermark-note">After import, use <strong>Moonrise watermark</strong> in the Editor sidebar to turn the paywall badge on or off.</p>
+                </div>
+              </div>
+            </section>
           </div>
+
           <p class="ms-error" id="onboard-error" hidden></p>
         </div>
         <footer class="ms-lb-onboard-foot">
@@ -127,16 +215,16 @@
     </div>
   </div>
 
-  <script defer src="js/config.js?v=20260721-perf"></script>
+  <script defer src="js/config.js?v=20260909-discord"></script>
   <script defer src="js/site-branding.js"></script>
-  <script defer src="js/supabase-client.js"></script>
-  <script defer src="js/auth.js"></script>
-  <script defer src="js/segment-switch.js"></script>
+  <script defer src="js/supabase-client.js?v=20260909-login3"></script>
+  <script defer src="js/auth.js?v=20260909-login3"></script>
+  <script defer src="js/segment-switch.js?v=20260813-mode-tabs-solid"></script>
   <script defer src="js/ui-motion.js?v=20260719-onb-motion"></script>
   <script defer src="js/toast.js"></script>
   <script defer src="js/income.js?v=20260718-income"></script>
-  <script defer src="js/app.js?v=20260721-perf"></script>
+  <script defer src="js/app.js?v=20260907-remember"></script>
   <script defer src="js/builder-recent.js?v=20260721-perf"></script>
-  <script defer src="js/builder.js?v=20260719-same-origin-api"></script>
+  <script defer src="js/builder.js?v=20260815-editor-multipage"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Public Studio config only - never put secret keys here.
  * Worker secrets live in worker/.env / Render env vars.
  */
@@ -57,8 +57,9 @@ window.SITE_CONFIG = {
   localWorkerUrl: "http://127.0.0.1:8787",
 
   /**
-   * Local LeadFinderCloud on-demand scrape API (npm run search:server).
-   * When set, Business Finder triggers a live Maps scrape for type + location.
+   * Optional local LeadFinderCloud scrape API (npm run search:server).
+   * Live Maps search defaults to the cloud worker proxy (/lead-finder â†’ Render).
+   * Opt into local :8790 with: localStorage.setItem("ms_use_local_leadfinder", "1")
    */
   leadFinderUrl: "http://127.0.0.1:8790",
 
@@ -71,6 +72,10 @@ window.SITE_CONFIG = {
   /** Urgency timer length for unpaid previews (hours). */
   watermarkUrgencyHours: 48,
 
+  /**
+   * Business Finder leads source.
+   * Overridden below: local/LAN â†’ Maps/LeadFinder only; production â†’ Supabase.
+   */
   useSupabaseLeads: true,
 
   /** Profile handles reserved for the official Moonrise account. */
@@ -82,11 +87,11 @@ window.SITE_CONFIG = {
    */
   reservedHandles: ["moonrise"],
 
-  /** Official team Telegram chat (Account → Telegram). */
+  /** Official team Telegram chat (Account â†’ Telegram). */
   telegramUrl: "https://t.me/c/3541685239/1",
 
-  /** Official Discord community (Account → Discord). */
-  discordUrl: "https://discord.gg/yFJajbBNj",
+  /** Official Discord community (Account â†’ Discord). */
+  discordUrl: "https://discord.gg/gdbA3gEVY",
 };
 
 function isPrivateNetworkHost(hostname) {
@@ -110,6 +115,15 @@ window.isLocalDevHost = function isLocalDevHost() {
   }
 };
 
+// Local Finder uses live Maps scrape; production keeps the Supabase leads table.
+try {
+  if (window.SITE_CONFIG && typeof window.SITE_CONFIG === "object") {
+    window.SITE_CONFIG.useSupabaseLeads = !window.isLocalDevHost();
+  }
+} catch (_) {
+  /* keep default */
+}
+
 function isMoonriseProductionHost(hostname) {
   const host = String(hostname || "").toLowerCase();
   if (host === "trymoonrise.com" || host === "www.trymoonrise.com") return true;
@@ -125,7 +139,7 @@ function moonriseCanonicalWorkerBase() {
     .replace(/\/$/, "");
 }
 
-/** www → apex so API calls stay same-origin (www /health 308 breaks fetch CORS). */
+/** www â†’ apex so API calls stay same-origin (www /health 308 breaks fetch CORS). */
 function enforceMoonriseApexHost() {
   try {
     if (typeof location === "undefined") return;
@@ -252,7 +266,7 @@ window.resolveWorkerUrl = function resolveWorkerUrl() {
   return cloud || localConfigured;
 };
 
-/** Ordered worker bases to try when probing reachability (primary → cloud → page origin). */
+/** Ordered worker bases to try when probing reachability (primary â†’ cloud â†’ page origin). */
 window.workerUrlCandidates = function workerUrlCandidates() {
   const out = [];
   const push = (url) => {
@@ -266,7 +280,7 @@ window.workerUrlCandidates = function workerUrlCandidates() {
       const host = String(location.hostname || "").toLowerCase();
       push(moonriseProductionWorkerBase(location.hostname));
       push(moonriseCanonicalWorkerBase());
-      // Never probe www — it 308-redirects /health without CORS on the redirect.
+      // Never probe www â€” it 308-redirects /health without CORS on the redirect.
       if (host !== "trymoonrise.com" && host !== "www.trymoonrise.com") {
         if (location.origin) push(location.origin);
       }
@@ -341,19 +355,45 @@ window.pingMoonriseWorker = async function pingMoonriseWorker(signal) {
 };
 
 /**
- * LeadFinder scrape API - always via authenticated worker proxy when available.
- * Avoids mixed-content / private-network blocks to localhost from HTTPS Studio.
+ * LeadFinder scrape API â€” cloud by default (worker /lead-finder â†’ Render).
+ * Local :8790 only when opted in: localStorage.ms_use_local_leadfinder = "1"
  */
 window.resolveLeadFinderUrl = function resolveLeadFinderUrl() {
   try {
+    const useLocal =
+      typeof localStorage !== "undefined" &&
+      localStorage.getItem("ms_use_local_leadfinder") === "1";
+    if (useLocal && window.isLocalDevHost?.()) {
+      const configured = String(window.SITE_CONFIG?.leadFinderUrl || "")
+        .trim()
+        .replace(/\/$/, "");
+      try {
+        const pageHost = String(location.hostname || "").toLowerCase();
+        const port =
+          (configured && (() => {
+            try {
+              return new URL(configured).port || "8790";
+            } catch (_) {
+              return "8790";
+            }
+          })()) ||
+          "8790";
+        if (pageHost && pageHost !== "127.0.0.1" && pageHost !== "localhost") {
+          return "http://" + pageHost + ":" + port;
+        }
+        if (pageHost === "localhost") return "http://localhost:" + port;
+        if (pageHost === "127.0.0.1" || pageHost === "[::1]" || pageHost === "::1") {
+          return "http://127.0.0.1:" + port;
+        }
+      } catch (_) {
+        /* fall through */
+      }
+      if (configured) return configured;
+      return "http://127.0.0.1:8790";
+    }
     if (typeof window.resolveWorkerUrl === "function") {
       const worker = String(window.resolveWorkerUrl() || "").trim().replace(/\/$/, "");
       if (worker) return worker + "/lead-finder";
-    }
-    if (window.isLocalDevHost()) {
-      return String(window.SITE_CONFIG?.leadFinderUrl || "")
-        .trim()
-        .replace(/\/$/, "");
     }
   } catch (_) {
     /* keep empty */
@@ -361,7 +401,34 @@ window.resolveLeadFinderUrl = function resolveLeadFinderUrl() {
   return "";
 };
 
-/** Shared auth-ready helper — pages should use this instead of custom long timeouts. */
+/** LeadFinder URL candidates (cloud worker first; local :8790 only when opted in). */
+window.leadFinderUrlCandidates = function leadFinderUrlCandidates() {
+  const primary = String(window.resolveLeadFinderUrl?.() || "")
+    .trim()
+    .replace(/\/$/, "");
+  const out = [];
+  const push = (url) => {
+    const u = String(url || "").trim().replace(/\/$/, "");
+    if (u && !out.includes(u)) out.push(u);
+  };
+  push(primary);
+  const useLocal =
+    typeof localStorage !== "undefined" &&
+    localStorage.getItem("ms_use_local_leadfinder") === "1";
+  if (useLocal && window.isLocalDevHost?.()) {
+    push("http://127.0.0.1:8790");
+    push("http://localhost:8790");
+    try {
+      const host = String(location.hostname || "").trim();
+      if (host) push("http://" + host + ":8790");
+    } catch (_) {
+      /* ignore */
+    }
+  }
+  return out;
+};
+
+/** Shared auth-ready helper â€” pages should use this instead of custom long timeouts. */
 window.StudioBoot = {
   AUTH_WAIT_MS: 1500,
   whenAuthReady(fn) {

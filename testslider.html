@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/ms-lf-slide.css?v=20260721-slide-physics">
+  <link rel="stylesheet" href="css/ms-lf-slide.css?v=20260811-slide-contain">
   <style>
     :root {
       color-scheme: light;
@@ -146,19 +146,6 @@
       font-weight: 700;
       font-size: 0.88rem;
       letter-spacing: -0.01em;
-      padding-left: calc(var(--ms-lf-slide-pad, 4px) + 44px + 0.65rem);
-      padding-right: 0.85rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      opacity: 0.96;
-      transition: opacity 0.2s ease;
-    }
-
-    .ts-slide-wrap .ms-lf-slide.is-dragging .ms-lf-slide-label,
-    .ts-slide-wrap .ms-lf-slide.is-completing .ms-lf-slide-label {
-      opacity: 0.55;
     }
 
     .ts-preview {
@@ -278,7 +265,7 @@
     </div>
   </main>
 
-  <script src="js/ms-lf-slide.js?v=20260721-slide-physics"></script>
+  <script src="js/ms-lf-slide.js?v=20260811-slide-contain"></script>
   <script>
     (function () {
       var THEME_KEY = "ms_testslider_theme_v1";

@@ -2,10 +2,38 @@
  * Secured auth routes - lockouts + rate limits in front of Supabase Auth.
  */
 const { createClient } = require("@supabase/supabase-js");
+const { sendPasswordResetEmail } = require("./contact-mail");
 
 const SUPPORT_EMAIL =
   String(process.env.MOONRISE_SUPPORT_EMAIL || "trymoonrise@gmail.com").trim() ||
   "trymoonrise@gmail.com";
+
+function publicAppBase() {
+  return String(process.env.PUBLIC_APP_URL || "https://trymoonrise.com").replace(/\/$/, "");
+}
+
+/** Keep recovery redirects on Moonrise hosts only. */
+function safeAuthRedirect(raw, fallbackPath) {
+  const fallback = `${publicAppBase()}${fallbackPath.startsWith("/") ? fallbackPath : "/" + fallbackPath}`;
+  const candidate = String(raw || "").trim();
+  if (!candidate) return fallback;
+  try {
+    const url = new URL(candidate);
+    const host = url.hostname.toLowerCase();
+    const allowed =
+      host === "trymoonrise.com" ||
+      host === "www.trymoonrise.com" ||
+      host === "localhost" ||
+      host === "127.0.0.1" ||
+      (host.endsWith(".vercel.app") && host.includes("moonrise"));
+    if (!allowed || (url.protocol !== "https:" && host !== "localhost" && host !== "127.0.0.1")) {
+      return fallback;
+    }
+    return url.href;
+  } catch (_) {
+    return fallback;
+  }
+}
 
 function createAuthClient() {
   const url = String(process.env.SUPABASE_URL || "").trim();
@@ -355,16 +383,66 @@ function mountAuthRoutes(app, { db, security }) {
     if (!authConfigured(res)) return;
     try {
       const email = normalizeEmail(req.body?.email);
-      const publicAppUrl = String(process.env.PUBLIC_APP_URL || "https://trymoonrise.com").replace(/\/$/, "");
-      const redirectTo =
-        String(req.body?.redirectTo || "").trim() || `${publicAppUrl}/login.html?mode=recover`;
+      const redirectTo = safeAuthRedirect(req.body?.redirectTo, "/login.html?mode=recover");
       if (!email) {
         return res.status(400).json({ error: "Enter your email", code: "invalid_input" });
       }
-      // Always return success-shaped response to avoid email enumeration,
-      // but still enforce IP rate limits above.
-      const { error } = await authClient().auth.resetPasswordForEmail(email, { redirectTo });
-      if (error) console.warn("resetPasswordForEmail", error.message);
+
+      // Generate the recovery link with the service role, then deliver via Resend.
+      // Supabase SMTP recover was rate-limited and the old handler still told the UI
+      // "link sent" even when nothing went out.
+      const { data, error } = await db().auth.admin.generateLink({
+        type: "recovery",
+        email,
+        options: { redirectTo },
+      });
+
+      if (error) {
+        const msg = String(error.message || "");
+        const code = String(error.code || "");
+        // Unknown account — same success shape (no email enumeration).
+        if (/user not found|unable to find|not found/i.test(msg) || code === "user_not_found") {
+          return res.json({ ok: true, message: "If that email exists, a reset link is on the way." });
+        }
+        if (/rate limit|over_email_send_rate_limit/i.test(msg) || code === "over_email_send_rate_limit") {
+          return res.status(429).json({
+            error: "Too many reset emails were sent. Wait about a minute and try again.",
+            code: "email_rate_limited",
+          });
+        }
+        console.warn("generateLink recovery", msg || error);
+        return res.status(503).json({
+          error: "Could not create a reset link right now. Please try again in a minute.",
+          code: "reset_link_failed",
+        });
+      }
+
+      const actionLink =
+        data?.properties?.action_link ||
+        data?.action_link ||
+        data?.user?.action_link ||
+        "";
+      if (!actionLink) {
+        console.warn("generateLink recovery missing action_link", data);
+        return res.status(503).json({
+          error: "Could not create a reset link right now. Please try again in a minute.",
+          code: "reset_link_failed",
+        });
+      }
+
+      try {
+        await sendPasswordResetEmail({ to: email, resetUrl: actionLink });
+      } catch (mailErr) {
+        console.error("sendPasswordResetEmail", mailErr);
+        return res.status(503).json({
+          error:
+            "Moonrise couldn't send the reset email. Check spam in a minute, or try again. If it keeps failing, contact " +
+            SUPPORT_EMAIL +
+            ".",
+          code: "email_send_failed",
+        });
+      }
+
       res.json({ ok: true, message: "If that email exists, a reset link is on the way." });
     } catch (e) {
       console.error(e);

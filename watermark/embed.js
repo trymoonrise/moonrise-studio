@@ -1,9 +1,9 @@
-/**
+﻿/**
  * Moonrise floating watermark - from watermark/moonrise-watermark.html
  *
  * Usage on live sites:
- *   <script src="…/embed.js"
- *     data-project-id="…"
+ *   <script src="â€¦/embed.js"
+ *     data-project-id="â€¦"
  *     data-worker="https://worker.example.com"
  *     defer></script>
  *
@@ -20,12 +20,12 @@
     kind: "hq",
     name: "Moonrise",
     org: "Moonrise Studio",
-    subtitle: "Headquarters · trymoonrise.com",
+    subtitle: "Headquarters Â· trymoonrise.com",
     email: "trymoonrise@gmail.com",
     phone: "+14013000957",
     phoneDisplay: "(401) 300-0957",
     url: "https://trymoonrise.com",
-    discordUrl: "https://discord.gg/yFJajbBNj",
+    discordUrl: "https://discord.gg/gdbA3gEVY",
   };
 
   let timerId = null;
@@ -34,19 +34,20 @@
   function css() {
     return `
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap");
-.mr-wm{--mr-brand:#3b82f6;--mr-ink:#0f172a;--mr-muted:#64748b;--mr-line:#e8edf3;--mr-font:"DM Sans",system-ui,sans-serif;position:fixed;bottom:max(1.75rem,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:2147483000;pointer-events:none;font-family:var(--mr-font)}
+.mr-wm{--mr-brand:#3b82f6;--mr-ink:#0f172a;--mr-muted:#64748b;--mr-line:#e8edf3;--mr-font:"DM Sans",system-ui,sans-serif;position:fixed;bottom:max(1.75rem,env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);z-index:2147483000;pointer-events:none;font-family:var(--mr-font);width:max-content;max-width:calc(100vw - 1.5rem);box-sizing:border-box}
 .mr-wm.mr-wm--hosted{position:absolute;width:max-content;max-width:calc(100% - 1.5rem)}
 .mr-wm.is-hidden{visibility:hidden;opacity:0;pointer-events:none}
-.mr-wm-chip{pointer-events:auto;appearance:none;-webkit-appearance:none;display:inline-flex;align-items:center;gap:1.1rem;max-width:min(calc(100vw - 1.5rem),36rem);margin:0;padding:1.15rem 1.65rem 1.15rem 1.15rem;border:0;border-radius:18px;color:#fff;cursor:pointer;text-align:left;background:var(--mr-brand);box-shadow:0 18px 48px rgba(59,130,246,.4),0 6px 18px rgba(15,23,42,.14);transition:filter .18s ease,transform .18s ease,box-shadow .18s ease;animation:mr-widget-in .5s cubic-bezier(.22,1,.36,1) both}
-.mr-wm-chip:hover{filter:brightness(1.05);transform:translateY(-3px);box-shadow:0 22px 56px rgba(59,130,246,.46),0 8px 22px rgba(15,23,42,.16)}
+.mr-wm-chip{pointer-events:auto;appearance:none;-webkit-appearance:none;display:inline-flex;align-items:center;gap:1.1rem;box-sizing:border-box;width:100%;max-width:min(calc(100vw - 1.5rem),36rem);margin:0;padding:1.15rem 1.65rem 1.15rem 1.15rem;border:0;border-radius:18px;color:#fff;cursor:pointer;text-align:left;background:var(--mr-brand);box-shadow:0 18px 48px rgba(59,130,246,.4),0 6px 18px rgba(15,23,42,.14);transition:filter .18s ease,transform .18s ease,box-shadow .18s ease;animation:mr-widget-in .5s cubic-bezier(.22,1,.36,1) both;-webkit-tap-highlight-color:transparent}
 .mr-wm-chip:focus-visible{outline:2px solid #fff;outline-offset:3px}
-.mr-wm-avatar{width:56px;height:56px;border-radius:14px;object-fit:cover;background:#fff;flex-shrink:0;box-shadow:0 0 0 1px rgba(15,23,42,.06)}
-.mr-wm-copy{display:grid;gap:.12rem;min-width:0;line-height:1.2;text-align:left}
-.mr-wm-copy strong{font-size:1.28rem;font-weight:650;letter-spacing:-.02em;line-height:1.15;white-space:nowrap;color:#fff}
-.mr-wm-copy span{font-size:.98rem;font-weight:500;color:rgba(255,255,255,.8)}
+.mr-wm-avatar{width:56px;height:56px;border-radius:14px;object-fit:cover;background:#fff;flex:0 0 auto;box-shadow:0 0 0 1px rgba(15,23,42,.06)}
+.mr-wm-copy{display:grid;gap:.12rem;min-width:0;flex:1 1 auto;line-height:1.2;text-align:left;overflow:hidden}
+.mr-wm-copy strong{font-size:1.28rem;font-weight:650;letter-spacing:-.02em;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
+.mr-wm-copy span{font-size:.98rem;font-weight:500;color:rgba(255,255,255,.8);line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mr-wm-copy a{color:inherit;text-decoration:none;pointer-events:none}
 @keyframes mr-widget-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-@media (max-width:520px){.mr-wm-chip{padding:.95rem 1.25rem .95rem .95rem;gap:.9rem;border-radius:16px}.mr-wm-avatar{width:48px;height:48px;border-radius:12px}.mr-wm-copy strong{font-size:1.1rem}.mr-wm-copy span{font-size:.86rem}}
+@media (hover:hover) and (pointer:fine){.mr-wm-chip:hover{filter:brightness(1.05);transform:translateY(-3px);box-shadow:0 22px 56px rgba(59,130,246,.46),0 8px 22px rgba(15,23,42,.16)}}
+@media (max-width:520px){.mr-wm{bottom:max(1rem,env(safe-area-inset-bottom,0px));max-width:calc(100vw - 1.25rem);width:calc(100vw - 1.25rem)}.mr-wm.mr-wm--hosted{width:calc(100% - 1rem);max-width:calc(100% - 1rem)}.mr-wm-chip{width:100%;max-width:100%;padding:.72rem .85rem .72rem .72rem;gap:.65rem;border-radius:14px;transform:none!important;filter:none}.mr-wm-avatar{width:40px;height:40px;border-radius:10px}.mr-wm-copy{gap:.08rem}.mr-wm-copy strong{font-size:clamp(.92rem,3.8vw,1.05rem)}.mr-wm-copy span{font-size:clamp(.7rem,3.1vw,.8rem)}}
+@media (max-width:360px){.mr-wm{max-width:calc(100vw - 1rem);width:calc(100vw - 1rem)}.mr-wm-chip{padding:.62rem .72rem .62rem .62rem;gap:.55rem;border-radius:12px}.mr-wm-avatar{width:36px;height:36px;border-radius:9px}.mr-wm-copy strong{font-size:.88rem}.mr-wm-copy span{font-size:.68rem}}
 #mr-wm-overlay-root{position:fixed;inset:0;z-index:2147483646;pointer-events:none;display:none!important}
 #mr-wm-overlay-root[data-open="1"]{display:block!important;pointer-events:auto}
 .mr-wm-overlay{position:fixed;inset:0;z-index:2147483646;display:grid;place-items:center;padding:1rem;background:rgba(15,23,42,.55);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .22s ease,visibility .22s ease;font-family:var(--mr-font)}
@@ -77,34 +78,36 @@
 .mr-wm-contacts{display:grid;gap:.55rem}
 .mr-wm-contacts-label{margin:0;font-size:.78rem;font-weight:650;letter-spacing:.04em;text-transform:uppercase;color:#94a3b8}
 .mr-wm-step[hidden]{display:none!important}
-.mr-wm-vcard{display:grid;gap:.85rem}
+.mr-wm-vcard{display:grid;gap:.75rem}
 .mr-wm-vcard-back{appearance:none;border:0;background:transparent;color:#64748b;font:inherit;font-size:.82rem;font-weight:600;cursor:pointer;padding:0;text-align:left}
 .mr-wm-vcard-back:hover{color:#2563eb}
-.mr-wm-vcard-card{border:1px solid var(--mr-line,#e8edf3);border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 10px 24px rgba(15,23,42,.06)}
-.mr-wm-vcard-hero{height:4.5rem;background:linear-gradient(135deg,#dbeafe 0%,#eff6ff 55%,#f8fafc 100%)}
-.mr-wm-vcard-body{padding:0 1rem 1rem;display:grid;gap:.85rem;margin-top:-2.1rem}
-.mr-wm-vcard-top{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding-top:.15rem}
-.mr-wm-vcard-brand{font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#64748b}
-.mr-wm-vcard-avatar{width:4.5rem;height:4.5rem;border-radius:16px;display:grid;place-items:center;background:#fff;border:3px solid #fff;box-shadow:0 8px 18px rgba(15,23,42,.12);overflow:hidden;font-size:1.15rem;font-weight:700;color:#2563eb}
-.mr-wm-vcard-avatar img{width:100%;height:100%;object-fit:cover;display:block}
-.mr-wm-vcard-name{margin:0;font-size:1.35rem;font-weight:700;letter-spacing:-.03em;color:var(--mr-ink,#0f172a)}
-.mr-wm-vcard-role{margin:.2rem 0 0;color:var(--mr-muted,#64748b);font-size:.88rem;line-height:1.4}
-.mr-wm-vcard-save{appearance:none;display:inline-flex;align-items:center;justify-content:center;min-height:2.75rem;border:0;border-radius:12px;background:#0f172a;color:#fff;font:inherit;font-size:.92rem;font-weight:650;cursor:pointer}
+.mr-wm-vcard-card{position:relative;border:1px solid rgba(15,23,42,.08);border-radius:20px;overflow:hidden;background:#fff;box-shadow:0 1px 0 rgba(255,255,255,.95) inset,0 14px 36px rgba(15,23,42,.08)}
+.mr-wm-vcard-hero{position:relative;height:6.5rem;background:radial-gradient(ellipse 90% 100% at 50% 0%,rgba(255,255,255,.85),transparent 58%),linear-gradient(165deg,#f4f7fb 0%,#e8eef6 48%,#dde6f0 100%)}
+.mr-wm-vcard-body{position:relative;padding:0 1.15rem 1.25rem;text-align:center}
+.mr-wm-vcard-top{position:absolute;top:1rem;left:1.1rem;right:1.1rem;z-index:3;display:flex;align-items:center;justify-content:space-between;pointer-events:none}
+.mr-wm-vcard-brand{font-size:.72rem;font-weight:650;letter-spacing:.08em;text-transform:uppercase;color:rgba(71,85,105,.78)}
+.mr-wm-vcard-avatar{width:5rem;height:5rem;margin:-2.55rem auto 1rem;border-radius:1.15rem;display:grid;place-items:center;background:#fff;border:4px solid #fff;box-shadow:0 10px 28px rgba(15,23,42,.1);overflow:hidden;position:relative;z-index:1;font-size:1.2rem;font-weight:700;color:#2563eb}
+.mr-wm-vcard-avatar img{width:70%;height:70%;object-fit:contain;display:block}
+.mr-wm-vcard-identity{text-align:center;margin:0 0 1.1rem}
+.mr-wm-vcard-name{margin:0;font-size:1.45rem;font-weight:750;letter-spacing:-.035em;color:var(--mr-ink,#0f172a);line-height:1.1}
+.mr-wm-vcard-role{margin:.3rem 0 0;color:var(--mr-muted,#64748b);font-size:.9rem;font-weight:500;line-height:1.4;letter-spacing:-.01em}
+.mr-wm-vcard-save{appearance:none;display:inline-flex;align-items:center;justify-content:center;width:100%;min-height:2.85rem;padding:.85rem 1.15rem;border:0;border-radius:999px;background:#0f172a;color:#fff;font:inherit;font-size:.95rem;font-weight:650;letter-spacing:-.01em;cursor:pointer;margin:0 0 1.1rem;box-shadow:0 10px 24px rgba(15,23,42,.16)}
 .mr-wm-vcard-save:hover{filter:brightness(1.06)}
-.mr-wm-vcard-links{list-style:none;margin:0;padding:0;display:grid;gap:.55rem}
-.mr-wm-vcard-link{display:flex;align-items:center;gap:.75rem;padding:.75rem .85rem;border:1px solid var(--mr-line,#e8edf3);border-radius:12px;text-decoration:none;color:var(--mr-ink,#0f172a);background:#fff;transition:border-color .15s ease,background .15s ease}
-.mr-wm-vcard-link:hover{border-color:#bfdbfe;background:#f8fbff}
-.mr-wm-vcard-icon{width:2.65rem;height:2.65rem;border-radius:.85rem;overflow:hidden;flex-shrink:0;background:#f8fafc}
+.mr-wm-vcard-links{list-style:none;margin:0;padding:.1rem 0 0;display:grid;gap:.45rem;text-align:left}
+.mr-wm-vcard-link{display:flex;align-items:center;gap:.85rem;padding:.7rem .75rem;border:1px solid transparent;border-radius:14px;text-decoration:none;color:var(--mr-ink,#0f172a);background:transparent;transition:border-color .15s ease,background .15s ease}
+.mr-wm-vcard-link:hover{border-color:rgba(15,23,42,.06);background:#f8fafc}
+.mr-wm-vcard-icon{width:2.65rem;height:2.65rem;border-radius:.8rem;overflow:hidden;flex-shrink:0;background:#f8fafc;box-shadow:0 6px 14px rgba(15,23,42,.1)}
 .mr-wm-vcard-icon img{width:100%;height:100%;object-fit:cover;display:block}
 .mr-wm-vcard-link-text{display:grid;gap:.08rem;min-width:0}
-.mr-wm-vcard-link-text strong{font-size:.88rem;font-weight:700}
-.mr-wm-vcard-link-text em{font-style:normal;font-size:.78rem;color:var(--mr-muted,#64748b);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mr-wm-vcard-link-text strong{font-size:.92rem;font-weight:650;letter-spacing:-.01em}
+.mr-wm-vcard-link-text em{font-style:normal;font-size:.8rem;color:var(--mr-muted,#64748b);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mr-wm-vcard-card .mr-wm-contact-btn{width:100%;margin-top:.35rem}
 .mr-wm-faq{display:grid;gap:0;margin:.15rem 0 0;border-top:1px solid var(--mr-line,#e8edf3)}
 .mr-wm-faq details{border:0;border-bottom:1px solid var(--mr-line,#e8edf3);background:transparent}
 .mr-wm-faq summary{list-style:none;cursor:pointer;padding:.85rem 0;font-size:.9rem;font-weight:600;color:var(--mr-ink,#0f172a);display:flex;align-items:center;justify-content:space-between;gap:.75rem}
 .mr-wm-faq summary::-webkit-details-marker{display:none}
 .mr-wm-faq summary::after{content:"+";width:1.4rem;height:1.4rem;flex-shrink:0;display:grid;place-items:center;border-radius:999px;background:#f1f5f9;color:#64748b;font-size:.95rem;font-weight:600;line-height:1;transition:transform .25s ease,background-color .2s ease,color .2s ease}
-.mr-wm-faq details.is-open summary::after{content:"–";background:#e8f1ff;color:#2563eb}
+.mr-wm-faq details.is-open summary::after{content:"â€“";background:#e8f1ff;color:#2563eb}
 .mr-wm-faq-panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows .32s cubic-bezier(.22,1,.36,1)}
 .mr-wm-faq details.is-open .mr-wm-faq-panel{grid-template-rows:1fr}
 .mr-wm-faq-panel-inner{overflow:hidden;min-height:0}
@@ -231,22 +234,24 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
         : "";
     return (
       '<div class="mr-wm-vcard">' +
-      '<button type="button" class="mr-wm-vcard-back" data-mr-vcard-back>← Back</button>' +
+      '<button type="button" class="mr-wm-vcard-back" data-mr-vcard-back>â† Back</button>' +
       '<div class="mr-wm-vcard-card">' +
       '<div class="mr-wm-vcard-hero" aria-hidden="true"></div>' +
       '<div class="mr-wm-vcard-body">' +
       '<div class="mr-wm-vcard-top"><span class="mr-wm-vcard-brand">' +
       brand +
       "</span></div>" +
-      '<div class="mr-wm-vcard-avatar">' +
+      '<div class="mr-wm-vcard-avatar" aria-hidden="true">' +
       avatarHtml +
       "</div>" +
-      "<h3 class=\"mr-wm-vcard-name\">" +
+      '<div class="mr-wm-vcard-identity">' +
+      '<h3 class="mr-wm-vcard-name">' +
       name +
       "</h3>" +
       '<p class="mr-wm-vcard-role">' +
       subtitle +
       "</p>" +
+      "</div>" +
       '<button type="button" class="mr-wm-vcard-save" data-mr-vcard-save>Save Contact</button>' +
       '<ul class="mr-wm-vcard-links">' +
       links.join("") +
@@ -311,7 +316,7 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
       '<p class="mr-wm-timer" id="mr-wm-timer" aria-live="polite"></p>' +
       '<button type="button" class="mr-wm-pay" id="mr-wm-pay">Unlock site</button>' +
       '<p class="mr-wm-error" id="mr-wm-error" hidden></p>' +
-      '<p class="mr-wm-note">Secure Stripe checkout · hosting included</p>' +
+      '<p class="mr-wm-note">Secure Stripe checkout Â· promo codes accepted Â· hosting included</p>' +
       "</div>" +
       '<div class="mr-wm-contacts">' +
       '<p class="mr-wm-contacts-label">Need a site change?</p>' +
@@ -526,7 +531,7 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
       '" alt="" width="40" height="40" />' +
       '<div><h2 id="mr-wm-title">Unlock your website</h2>' +
       '<p id="mr-wm-subtitle">Watermark removed automatically after payment. This is a preview of your new website. Go live today and start sharing your link with customers.</p></div>' +
-      '<button type="button" class="mr-wm-close" id="mr-wm-close" aria-label="Close">×</button></header>' +
+      '<button type="button" class="mr-wm-close" id="mr-wm-close" aria-label="Close">Ã—</button></header>' +
       panelBodyHtml(creatorContact, hqContact, workerUrl, projectId) +
       "</div></div>";
 

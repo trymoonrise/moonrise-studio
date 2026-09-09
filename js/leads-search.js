@@ -1,25 +1,36 @@
 /**
- * Lead Finder - business type + location search.
+ * Lead Finder - map-first search + slide-to-generate.
  */
 (function () {
+  const MAP_UI = !!document.getElementById("lf-map");
   const typeInput = document.getElementById("lf-type");
   const locationInput = document.getElementById("lf-location");
+  const queryInput = document.getElementById("lf-query");
   const areaToggle = document.getElementById("lf-area-toggle");
   const form = document.getElementById("lf-form");
   const statusEl = document.getElementById("lf-status");
   const errorEl = document.getElementById("lf-error");
   const resultsEl = document.getElementById("lf-results");
+  const resultsPanel = document.getElementById("lf-results-panel");
+  const sheetHandle = document.getElementById("lf-sheet-handle");
   const listCountEl = document.getElementById("lf-list-count");
   const findBtn = document.getElementById("lf-find");
+  const searchPill = document.getElementById("lf-search-pill");
+  const searchToggle = document.getElementById("lf-search-toggle");
+  const menuToggleBtn = document.getElementById("lf-menu-toggle");
+  const locateBtn = document.getElementById("lf-locate");
+  const scanNearBtn = document.getElementById("lf-scan-near");
+  const scanAllBtn = document.getElementById("lf-scan-all");
   const SAVED_KEY = "ms_lf_quick_save_v1";
   const CLAIMED_KEY = "ms_lf_claimed_v1";
   const AREA_PREF_KEY = "ms_lf_in_my_area_v1";
-  const DEV_NOTICE_KEY = "ms_lf_dev_notice_dismissed_v1";
-  const NEARBY_RADIUS_MILES = 5;
+  const NEARBY_RADIUS_MILES = 10;
   const AREA_LOCATION_LABEL = "Using your location";
-  const DISPLAY_PAGE = 100;
-  const LOADING_CARD_COUNT = 6;
-  const MIN_SEARCH_RESULTS = 50;
+  const DISPLAY_PAGE = MAP_UI ? 40 : 100;
+  const MAP_MARKER_LIMIT = 120;
+  const LOADING_CARD_COUNT = MAP_UI ? 2 : 6;
+  const MIN_SEARCH_RESULTS = MAP_UI ? 18 : 50;
+  const MAP_DEFAULT = { lat: 34.05, lng: -118.25, zoom: 8 };
   let listView = "default";
   let allLeads = [];
   let leadsReady = false;
@@ -39,6 +50,17 @@
   let prefetchAbort = null;
   let websiteRefreshTimer = null;
   let listCountJob = 0;
+  let lfMap = null;
+  let lfMarkersLayer = null;
+  let lfMarkerById = new Map();
+  let selectedLeadId = "";
+  let userLocationMarker = null;
+  let mapResizeTimer = null;
+  let mapIconDefault = null;
+  let mapIconSelected = null;
+  let lastMarkerSignature = "";
+  let lastMarkerIdsSignature = "";
+  let mapIdlePreloadTimer = null;
 
   function readAreaPref() {
     try {
@@ -67,16 +89,36 @@
     return r * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   }
 
-  function leadCoords(lead) {
-    const lat = Number(lead?.latitude ?? lead?.lat);
-    const lng = Number(lead?.longitude ?? lead?.lng);
-    if (Number.isFinite(lat) && Number.isFinite(lng)) return { lat, lng };
-    const url = String(lead?.mapsUrl || lead?.maps_url || "");
-    let match = url.match(/@(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/);
+  function parseCoordNumber(value) {
+    if (value == null || value === "") return NaN;
+    const n = Number(value);
+    return Number.isFinite(n) ? n : NaN;
+  }
+
+  function coordsFromMapsUrl(url) {
+    const href = String(url || "");
+    let match = href.match(/@(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/);
     if (match) return { lat: Number(match[1]), lng: Number(match[2]) };
-    match = url.match(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/);
+    match = href.match(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/);
     if (match) return { lat: Number(match[1]), lng: Number(match[2]) };
     return null;
+  }
+
+  function leadCoords(lead) {
+    // Empty-string lat/lng from fast scrapes become Number("") === 0 — do not
+    // treat that as Null Island or Near Me filters wipe every result.
+    let lat = parseCoordNumber(lead?.latitude ?? lead?.lat);
+    let lng = parseCoordNumber(lead?.longitude ?? lead?.lng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng) || (lat === 0 && lng === 0)) {
+      const fromUrl = coordsFromMapsUrl(lead?.mapsUrl || lead?.maps_url);
+      if (!fromUrl) return null;
+      lat = fromUrl.lat;
+      lng = fromUrl.lng;
+    }
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+    if (lat === 0 && lng === 0) return null;
+    if (Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
+    return { lat, lng };
   }
 
   function withDistanceFromUser(leads, coords) {
@@ -106,6 +148,20 @@
     const inRadius = withDistance
       .filter((row) => row.distanceMiles <= radius)
       .sort((a, b) => a.distanceMiles - b.distanceMiles);
+
+    // Live Maps scrape already centered on the user — if every parsed pin
+    // falls outside the radius (bad coords), keep the scrape instead of empty.
+    if (!inRadius.length && opts.trustScrapeRadius && (leads || []).length) {
+      return withDistance
+        .sort((a, b) => a.distanceMiles - b.distanceMiles)
+        .map((row) => ({
+          ...row.lead,
+          distanceMiles: Math.round(row.distanceMiles * 10) / 10,
+        }))
+        .concat(
+          withoutDistance.map((row) => ({ ...row.lead, distanceMiles: null }))
+        );
+    }
 
     const ranked = inRadius.map((row) => ({
       ...row.lead,
@@ -143,8 +199,13 @@
 
   async function reverseGeocodeSearchContext(coords) {
     if (!coords) return null;
-    if (coords.searchCity) {
-      return { city: coords.searchCity, region: coords.searchRegion || "", label: coords.searchLabel || "" };
+    if (coords.searchCity || coords.searchRegion || coords.searchState) {
+      return {
+        city: coords.searchCity || "",
+        region: coords.searchRegion || "",
+        state: coords.searchState || stateDisplayName(coords.searchRegion || ""),
+        label: coords.searchLabel || "",
+      };
     }
     try {
       const url =
@@ -156,17 +217,86 @@
       const res = await fetch(url, { method: "GET" });
       const data = await res.json().catch(() => ({}));
       const city = String(data?.city || data?.locality || "").trim();
-      const region = String(data?.principalSubdivisionCode || data?.principalSubdivision || "")
+      const regionCode = String(data?.principalSubdivisionCode || "")
         .trim()
         .replace(/^US-/i, "");
-      const label = city && region ? city + ", " + region : city || region || "";
+      const regionName = String(data?.principalSubdivision || "").trim();
+      const region = regionCode || regionName;
+      const state = stateDisplayName(regionCode || regionName);
+      const label = city && region ? city + ", " + (regionCode || region) : city || state || region || "";
       coords.searchCity = city;
       coords.searchRegion = region;
+      coords.searchState = state;
       coords.searchLabel = label;
-      return { city, region, label };
+      return { city, region, state, label };
     } catch (_) {
       return null;
     }
+  }
+
+  const US_STATE_BY_CODE = {
+    AL: "Alabama",
+    AK: "Alaska",
+    AZ: "Arizona",
+    AR: "Arkansas",
+    CA: "California",
+    CO: "Colorado",
+    CT: "Connecticut",
+    DE: "Delaware",
+    FL: "Florida",
+    GA: "Georgia",
+    HI: "Hawaii",
+    ID: "Idaho",
+    IL: "Illinois",
+    IN: "Indiana",
+    IA: "Iowa",
+    KS: "Kansas",
+    KY: "Kentucky",
+    LA: "Louisiana",
+    ME: "Maine",
+    MD: "Maryland",
+    MA: "Massachusetts",
+    MI: "Michigan",
+    MN: "Minnesota",
+    MS: "Mississippi",
+    MO: "Missouri",
+    MT: "Montana",
+    NE: "Nebraska",
+    NV: "Nevada",
+    NH: "New Hampshire",
+    NJ: "New Jersey",
+    NM: "New Mexico",
+    NY: "New York",
+    NC: "North Carolina",
+    ND: "North Dakota",
+    OH: "Ohio",
+    OK: "Oklahoma",
+    OR: "Oregon",
+    PA: "Pennsylvania",
+    RI: "Rhode Island",
+    SC: "South Carolina",
+    SD: "South Dakota",
+    TN: "Tennessee",
+    TX: "Texas",
+    UT: "Utah",
+    VT: "Vermont",
+    VA: "Virginia",
+    WA: "Washington",
+    WV: "West Virginia",
+    WI: "Wisconsin",
+    WY: "Wyoming",
+    DC: "District of Columbia",
+  };
+
+  function stateDisplayName(region) {
+    const raw = String(region || "").trim();
+    if (!raw) return "";
+    if (/^[A-Za-z]{2}$/.test(raw)) {
+      return US_STATE_BY_CODE[raw.toUpperCase()] || raw.toUpperCase();
+    }
+    const low = raw.toLowerCase();
+    const match = Object.values(US_STATE_BY_CODE).find((n) => n.toLowerCase() === low);
+    return match || raw;
   }
 
   function leadsMatchingSearchCity(leads, cityContext) {
@@ -195,6 +325,10 @@
 
   async function scrapeAuthHeaders() {
     const headers = { "Content-Type": "application/json" };
+    // Local LeadFinderCloud does not need auth; sending Authorization
+    // triggers a CORS preflight that used to fail and look "offline".
+    const base = leadFinderBaseUrl();
+    if (!isWorkerLeadFinderBase(base)) return headers;
     try {
       const session = await window.StudioAuth?.getSession?.();
       if (session?.access_token) {
@@ -206,7 +340,59 @@
     return headers;
   }
 
-  function requestUserLocation() {
+  const LOCATION_DENIED_MSG =
+    "Location is blocked for this site. Allow location, then tap again. " +
+    "If you chose Don’t allow, open the lock/info icon in the address bar → Site settings → Location → Allow.";
+
+  let locationPermissionState = "unknown";
+  let locationPermissionWatchBound = false;
+
+  function isLocationDeniedError(err) {
+    return /permission denied|location is blocked|don’t allow|don't allow/i.test(
+      String(err?.message || err || "")
+    );
+  }
+
+  async function queryGeolocationPermission() {
+    try {
+      if (!navigator.permissions?.query) return "unknown";
+      const status = await navigator.permissions.query({ name: "geolocation" });
+      locationPermissionState = status.state || "unknown";
+      if (!locationPermissionWatchBound && typeof status.addEventListener === "function") {
+        locationPermissionWatchBound = true;
+        status.addEventListener("change", () => {
+          locationPermissionState = status.state || "unknown";
+          if (status.state === "granted" && MAP_UI && !userCoords) {
+            void ensureUserLocation({ quiet: true, fly: true });
+          }
+        });
+      }
+      return locationPermissionState;
+    } catch (_) {
+      return "unknown";
+    }
+  }
+
+  function syncLocationChrome(denied) {
+    locateBtn?.classList.toggle("is-location-blocked", !!denied);
+    locateBtn?.setAttribute("aria-pressed", denied ? "false" : locateBtn.getAttribute("aria-pressed") || "false");
+    if (denied) {
+      locateBtn?.setAttribute(
+        "title",
+        "Location blocked — tap to allow access"
+      );
+    } else {
+      locateBtn?.setAttribute("title", "My location");
+    }
+  }
+
+  /**
+   * Always hits the browser geolocation API (never skips after a prior denial).
+   * Browsers only re-show the native dialog when state is "prompt"; if permanently
+   * blocked we still call it and surface clear steps to re-enable.
+   */
+  function requestUserLocation(options) {
+    const opts = options && typeof options === "object" ? options : {};
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) {
         reject(new Error("Location is not supported in this browser."));
@@ -220,12 +406,16 @@
             reject(new Error("Could not read your location."));
             return;
           }
+          locationPermissionState = "granted";
+          syncLocationChrome(false);
           resolve({ lat, lng, accuracyMeters: Number(pos?.coords?.accuracy) || null });
         },
         (err) => {
           const code = Number(err?.code);
           if (code === 1) {
-            reject(new Error("Location permission denied. Allow location to search near you."));
+            locationPermissionState = "denied";
+            syncLocationChrome(true);
+            reject(Object.assign(new Error(LOCATION_DENIED_MSG), { code: 1, permissionDenied: true }));
           } else if (code === 2) {
             reject(new Error("Location unavailable. Try again or enter a city manually."));
           } else if (code === 3) {
@@ -234,9 +424,59 @@
             reject(new Error(err?.message || "Could not get your location."));
           }
         },
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 120000 }
+        {
+          enableHighAccuracy: opts.enableHighAccuracy !== false,
+          timeout: Number(opts.timeout) > 0 ? Number(opts.timeout) : 15000,
+          // Fresh fix when the user taps Locate / Scan Near Me.
+          maximumAge: opts.fresh ? 0 : Number.isFinite(opts.maximumAge) ? opts.maximumAge : 60000,
+        }
       );
     });
+  }
+
+  async function ensureUserLocation(options) {
+    const opts = options && typeof options === "object" ? options : {};
+    await queryGeolocationPermission();
+    try {
+      const coords = await requestUserLocation({
+        fresh: opts.fresh !== false,
+        timeout: opts.timeout,
+        maximumAge: opts.maximumAge,
+        enableHighAccuracy: opts.enableHighAccuracy,
+      });
+      userCoords = coords;
+      syncLocationChrome(false);
+      if (opts.fly !== false && MAP_UI) flyToUserLocation(coords);
+      return coords;
+    } catch (e) {
+      if (!opts.quiet) {
+        setError(e?.message || LOCATION_DENIED_MSG);
+        if (MAP_UI && isLocationDeniedError(e)) {
+          setStatus("Allow location to scan businesses near you.");
+          revealResults();
+        }
+      }
+      throw e;
+    }
+  }
+
+  /** First open: ask the browser for location and center the map (no auto-scan). */
+  async function promptMapLocationOnOpen() {
+    if (!MAP_UI) return;
+    try {
+      await ensureUserLocation({
+        fresh: false,
+        maximumAge: 120000,
+        fly: true,
+        quiet: true,
+      });
+      setStatus("");
+    } catch (e) {
+      syncLocationChrome(isLocationDeniedError(e));
+      if (isLocationDeniedError(e)) {
+        setStatus("Allow location to scan businesses near you.");
+      }
+    }
   }
 
   function isAreaLocationLabel(value) {
@@ -271,10 +511,11 @@
     if (areaToggle) areaToggle.disabled = true;
     if (willSearch) {
       showLoadingCards();
-      setFindBusy(true);
+      setFindBusy(true, "near");
     }
     try {
-      const coords = await requestUserLocation();
+      // Always re-prompt the browser — do not reuse a prior denial.
+      const coords = await ensureUserLocation({ fresh: true, fly: !!MAP_UI, quiet: true });
       if (token !== areaRequestToken) return false;
       userCoords = coords;
       inMyArea = true;
@@ -282,6 +523,7 @@
       setAreaLocationField();
       syncAreaUi();
       hideSuggest("location");
+      setError("");
       if (willSearch) {
         await findNearbyLeads({ fromAreaToggle: true });
       }
@@ -297,7 +539,11 @@
         clearLoadingCards();
         setFindBusy(false);
       }
-      setError(e?.message || "Could not use your location.");
+      setError(e?.message || LOCATION_DENIED_MSG);
+      if (MAP_UI) {
+        setStatus("Allow location to scan businesses near you.");
+        revealResults();
+      }
       return false;
     } finally {
       if (areaToggle) areaToggle.disabled = false;
@@ -313,6 +559,19 @@
     setStatus("");
     setError("");
     setListCount(0);
+    selectedLeadId = "";
+    if (MAP_UI) {
+      if (resultsEl) {
+        resultsEl.innerHTML = "";
+        resultsEl.hidden = false;
+      }
+      hideResultsPanel();
+      lastMarkerSignature = "";
+      lastMarkerIdsSignature = "";
+      syncMapMarkers([]);
+      setSearchPillMode("idle");
+      return;
+    }
     if (!resultsEl) return;
     resultsEl.hidden = false;
     resultsEl.innerHTML = isDbConnected()
@@ -378,10 +637,8 @@
   }
 
   function shouldTryLiveScrape() {
-    return (
-      window.isLocalDevHost?.() === true &&
-      Boolean(String(window.SITE_CONFIG?.leadFinderUrl || "").trim())
-    );
+    // Live Maps via local :8790 (dev) or worker → LEADFINDER_SEARCH_URL (prod).
+    return Boolean(leadFinderBaseUrl());
   }
 
   function restoreNormalList() {
@@ -447,7 +704,8 @@
       }
       disableInMyArea();
     });
-    if (readAreaPref()) {
+    // Map Finder starts idle; Near Me is explicit via Scan Near Me.
+    if (readAreaPref() && !MAP_UI) {
       areaToggle.checked = true;
       void enableInMyArea({ autoSearch: true });
     } else {
@@ -859,8 +1117,8 @@
 
   function setStatus(msg) {
     if (!statusEl) return;
-    // Keep the status line for rare empty-state notes only - never show scrape chatter.
-    if (!msg || /scraping|searching|loading leads/i.test(msg)) {
+    // Hide scrape chatter on legacy list UI; map Finder shows short scan notes.
+    if (!msg || (!MAP_UI && /scraping|searching|loading leads|scanning/i.test(msg))) {
       statusEl.hidden = true;
       statusEl.textContent = "";
       return;
@@ -869,25 +1127,84 @@
     statusEl.textContent = msg;
   }
 
-  function setFindBusy(busy) {
-    if (!findBtn) return;
-    findBtn.disabled = !!busy;
-    findBtn.classList.toggle("is-busy", !!busy);
-    findBtn.setAttribute("aria-busy", busy ? "true" : "false");
-    if (busy) {
-      findBtn.dataset.prevLabel = findBtn.textContent || "";
-      findBtn.textContent = "Finding…";
-    } else if (findBtn.dataset.prevLabel) {
-      findBtn.textContent = findBtn.dataset.prevLabel;
-      delete findBtn.dataset.prevLabel;
+  function setFindBusy(busy, source) {
+    const src = source || (MAP_UI ? "near" : "find");
+    if (findBtn) {
+      findBtn.disabled = !!busy;
+      findBtn.classList.toggle("is-busy", !!busy);
+      findBtn.setAttribute("aria-busy", busy ? "true" : "false");
+      if (busy) {
+        findBtn.dataset.prevLabel = findBtn.textContent || "";
+        findBtn.textContent = "Finding…";
+      } else if (findBtn.dataset.prevLabel) {
+        findBtn.textContent = findBtn.dataset.prevLabel;
+        delete findBtn.dataset.prevLabel;
+      }
+    }
+
+    const nearLoading = !!busy && (src === "near" || (MAP_UI && src === "find"));
+    const allLoading = !!busy && src === "all";
+
+    if (scanNearBtn) {
+      scanNearBtn.disabled = !!busy;
+      scanNearBtn.classList.toggle("is-loading", nearLoading);
+      scanNearBtn.setAttribute("aria-busy", nearLoading ? "true" : "false");
+      if (nearLoading) {
+        if (!scanNearBtn.dataset.prevLabel) {
+          scanNearBtn.dataset.prevLabel = scanNearBtn.textContent || "Scan nearby";
+        }
+        scanNearBtn.innerHTML =
+          '<span class="ms-lf-map-scan-spin" aria-hidden="true"></span><span class="ms-lf-map-scan-label">Scanning…</span>';
+      } else if (scanNearBtn.dataset.prevLabel) {
+        scanNearBtn.textContent = scanNearBtn.dataset.prevLabel;
+        delete scanNearBtn.dataset.prevLabel;
+      } else if (!busy) {
+        scanNearBtn.classList.remove("is-loading");
+        scanNearBtn.removeAttribute("aria-busy");
+      }
+    }
+
+    if (scanAllBtn) {
+      scanAllBtn.disabled = !!busy;
+      scanAllBtn.classList.toggle("is-loading", allLoading);
+      scanAllBtn.setAttribute("aria-busy", allLoading ? "true" : "false");
+      if (allLoading) {
+        if (!scanAllBtn.dataset.prevLabel) {
+          scanAllBtn.dataset.prevLabel = scanAllBtn.textContent || "All";
+        }
+        scanAllBtn.innerHTML =
+          '<span class="ms-lf-map-scan-spin" aria-hidden="true"></span>';
+        scanAllBtn.setAttribute("title", "Scanning…");
+      } else if (scanAllBtn.dataset.prevLabel) {
+        scanAllBtn.textContent = scanAllBtn.dataset.prevLabel;
+        scanAllBtn.setAttribute("title", "All businesses in the state");
+        delete scanAllBtn.dataset.prevLabel;
+      } else if (!busy) {
+        scanAllBtn.classList.remove("is-loading");
+        scanAllBtn.removeAttribute("aria-busy");
+      }
     }
   }
 
   function setListCount(n) {
     if (!listCountEl) return;
     const count = Math.max(0, Number(n) || 0);
+    if (MAP_UI) {
+      listCountEl.textContent =
+        count.toLocaleString() + " Business" + (count === 1 ? "" : "es");
+      listCountEl.hidden = false;
+      return;
+    }
     listCountEl.textContent = count.toLocaleString() + " lead" + (count === 1 ? "" : "s");
     listCountEl.hidden = false;
+  }
+
+  function setResultsPanelOpen(open) {
+    if (!resultsPanel) return;
+    if (open) revealResults();
+    else if (!resultsEl?.classList.contains("is-loading") && !(lastLeads || []).length) {
+      hideResultsPanel();
+    }
   }
 
   async function refreshListCount(fallbackCount) {
@@ -933,6 +1250,8 @@
   }
 
   function shouldPrefetchAllLeads() {
+    // Map Finder is scan-driven; prefetching the full DB on idle wastes bandwidth/CPU.
+    if (MAP_UI) return false;
     return (
       isDbConnected() &&
       !typeInput?.value?.trim() &&
@@ -1007,6 +1326,15 @@
     return "";
   }
 
+  function hydrateLeadCoords(lead) {
+    if (!lead || typeof lead !== "object") return lead;
+    const point = leadCoords(lead);
+    if (!point) return lead;
+    if (parseCoordNumber(lead.latitude) !== point.lat) lead.latitude = point.lat;
+    if (parseCoordNumber(lead.longitude) !== point.lng) lead.longitude = point.lng;
+    return lead;
+  }
+
   function rowsToFinderLeads(rows) {
     const parse = window.LeadCsvFormat?.parseRow;
     const out = [];
@@ -1014,32 +1342,35 @@
       if (!row || typeof row !== "object") return;
       const lead = parse ? parse(row) : null;
       if (lead?.mapsUrl || lead?.name) {
-        out.push(lead);
+        out.push(hydrateLeadCoords(lead));
         return;
       }
       const mapsUrl = String(row.maps_url || row.mapsUrl || "").trim();
       const name = String(row.business_name || row.name || "").trim();
       if (!mapsUrl && !name) return;
-      out.push({
-        id: row.id || mapsUrl || name,
-        name: name || "Business",
-        category: String(row.category_group || row.category || "").trim(),
-        categoryGroup: String(row.category_group || row.category || "").trim(),
-        phone: String(row.phone || "").trim(),
-        address: String(row.address || "").trim(),
-        mapsUrl,
-        website: window.LeadCsvFormat?.resolveLeadWebsite
-          ? window.LeadCsvFormat.resolveLeadWebsite(row)
-          : String(row.website_url || "").trim(),
-        hours: String(row.hours || "").trim(),
-        hasWebsite: window.LeadCsvFormat?.resolveLeadHasWebsite
-          ? window.LeadCsvFormat.resolveLeadHasWebsite(row)
-          : Boolean(String(row.website_url || "").trim()),
-        searchQuery: String(row.search_query || "").trim(),
-        latitude: row.latitude ?? null,
-        longitude: row.longitude ?? null,
-        formatValid: true,
-      });
+      const fromUrl = coordsFromMapsUrl(mapsUrl);
+      out.push(
+        hydrateLeadCoords({
+          id: row.id || mapsUrl || name,
+          name: name || "Business",
+          category: String(row.category_group || row.category || "").trim(),
+          categoryGroup: String(row.category_group || row.category || "").trim(),
+          phone: String(row.phone || "").trim(),
+          address: String(row.address || "").trim(),
+          mapsUrl,
+          website: window.LeadCsvFormat?.resolveLeadWebsite
+            ? window.LeadCsvFormat.resolveLeadWebsite(row)
+            : String(row.website_url || "").trim(),
+          hours: String(row.hours || "").trim(),
+          hasWebsite: window.LeadCsvFormat?.resolveLeadHasWebsite
+            ? window.LeadCsvFormat.resolveLeadHasWebsite(row)
+            : Boolean(String(row.website_url || "").trim()),
+          searchQuery: String(row.search_query || "").trim(),
+          latitude: parseCoordNumber(row.latitude) || fromUrl?.lat || null,
+          longitude: parseCoordNumber(row.longitude) || fromUrl?.lng || null,
+          formatValid: true,
+        })
+      );
     });
     return out;
   }
@@ -1048,8 +1379,11 @@
    * Ask local LeadFinderCloud (search:server) to scrape Maps for type + location.
    */
   async function scrapeViaLeadFinder(type, location, query, geo) {
-    const base = leadFinderBaseUrl();
-    if (!base) return { ok: false, skipped: true, reason: "not_configured" };
+    const candidates =
+      typeof window.leadFinderUrlCandidates === "function"
+        ? window.leadFinderUrlCandidates()
+        : [leadFinderBaseUrl()].filter(Boolean);
+    if (!candidates.length) return { ok: false, skipped: true, reason: "not_configured" };
     const t = String(type || "").trim();
     const loc = String(location || "").trim();
     const q = String(query || "").trim();
@@ -1061,15 +1395,15 @@
       return { ok: false, skipped: true, reason: "empty_query" };
     }
 
-    const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
-    const timer = controller
-      ? setTimeout(() => controller.abort(), 180000)
-      : null;
-
     const body = {
       type: t,
       location: loc,
       minResults: MIN_SEARCH_RESULTS,
+      // Interactive Finder: skip place-page enrichment so first results return faster.
+      enrich: false,
+      fast: true,
+      // Do not write leadfinder-cloud/data/*.csv — watchers treat that as a hard refresh.
+      upload: false,
     };
     if (q) body.query = q;
     if (hasGeo) {
@@ -1078,42 +1412,97 @@
       body.radiusMiles = Number(geo.radiusMiles) || NEARBY_RADIUS_MILES;
     }
 
-    try {
-      const headers = await scrapeAuthHeaders();
-      if (isWorkerLeadFinderBase(base) && !headers.Authorization) {
-        return { ok: false, skipped: true, reason: "sign_in_required" };
-      }
-      const res = await fetch(base + "/search", {
-        method: "POST",
-        headers,
-        body: JSON.stringify(body),
-        signal: controller?.signal,
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data?.ok) {
+    let lastOffline = false;
+    let lastError = "";
+    let lastAborted = false;
+
+    for (let i = 0; i < candidates.length; i += 1) {
+      const base = candidates[i];
+      const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+      const timer = controller
+        ? setTimeout(() => controller.abort(), 180000)
+        : null;
+      try {
+        const headers = await scrapeAuthHeadersForBase(base);
+        if (isWorkerLeadFinderBase(base) && !headers.Authorization) {
+          return { ok: false, skipped: true, reason: "sign_in_required" };
+        }
+        const res = await fetch(base + "/search", {
+          method: "POST",
+          headers,
+          body: JSON.stringify(body),
+          signal: controller?.signal,
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 409) {
+          const retryAfter = Math.min(
+            60_000,
+            Math.max(4_000, Number(data?.retryAfterMs) || 8_000)
+          );
+          lastError =
+            data?.error ||
+            "A Maps scan is already running. Wait a moment, then try again.";
+          // One automatic retry — covers a scrape that just finished or a stale lock.
+          if (!body._retried409) {
+            await new Promise((r) => setTimeout(r, retryAfter));
+            body._retried409 = true;
+            i -= 1;
+            continue;
+          }
+          return { ok: false, error: lastError };
+        }
+        if (!res.ok || !data?.ok) {
+          lastError = data?.error || "LeadFinder scrape failed (" + res.status + ")";
+          return { ok: false, error: lastError };
+        }
+        const leads = rowsToFinderLeads(data.leads || []);
         return {
-          ok: false,
-          error: data?.error || "LeadFinder scrape failed (" + res.status + ")",
+          ok: true,
+          query: data.query || q,
+          leads,
+          rowCount: Number(data.rowCount) || leads.length,
+          imported: Number(data.imported) || 0,
+          durationMs: Number(data.durationMs) || 0,
         };
+      } catch (e) {
+        const aborted = e?.name === "AbortError";
+        const msg = scrapeErrorMessage(e);
+        const offline =
+          !aborted &&
+          /failed to fetch|networkerror|network error|load failed|unreachable/i.test(msg);
+        lastAborted = aborted;
+        lastOffline = offline;
+        lastError = aborted ? "LeadFinder scrape timed out" : msg;
+        if (!offline) break;
+      } finally {
+        if (timer) clearTimeout(timer);
       }
-      const leads = rowsToFinderLeads(data.leads || []);
-      return {
-        ok: true,
-        query: data.query || q,
-        leads,
-        rowCount: Number(data.rowCount) || leads.length,
-        imported: Number(data.imported) || 0,
-        durationMs: Number(data.durationMs) || 0,
-      };
-    } catch (e) {
-      const aborted = e?.name === "AbortError";
-      return {
-        ok: false,
-        error: aborted ? "LeadFinder scrape timed out" : scrapeErrorMessage(e),
-      };
-    } finally {
-      if (timer) clearTimeout(timer);
     }
+
+    return {
+      ok: false,
+      error: lastAborted
+        ? "LeadFinder scrape timed out"
+        : lastOffline && !candidates.some(isWorkerLeadFinderBase)
+          ? "Live Maps search server is not running. On this machine only: localStorage.setItem('ms_use_local_leadfinder','1') then cd leadfinder-cloud && npm run search:server — otherwise use tryMoonrise.com (cloud)."
+          : lastOffline
+            ? "Live Maps search is temporarily unavailable. Try again in a moment."
+          : lastError || "LeadFinder scrape failed",
+    };
+  }
+
+  async function scrapeAuthHeadersForBase(base) {
+    const headers = { "Content-Type": "application/json" };
+    if (!isWorkerLeadFinderBase(base)) return headers;
+    try {
+      const session = await window.StudioAuth?.getSession?.();
+      if (session?.access_token) {
+        headers.Authorization = "Bearer " + session.access_token;
+      }
+    } catch (_) {
+      /* ignore */
+    }
+    return headers;
   }
 
   function setError(msg) {
@@ -1323,7 +1712,8 @@
   }
 
   function enqueueWebsiteVerification(leads) {
-    if (isDbConnected()) return;
+    // Always allow local Maps re-checks — Supabase has_website can be stale
+    // (e.g. Crumbl marked missing while the place page has a real site).
     const maxBatch = Number(window.LeadWebsiteEnrich?.MAX_PER_BATCH) || 48;
     const candidates = (leads || [])
       .filter((lead) => needsWebsiteCheck(lead))
@@ -1374,7 +1764,6 @@
   }
 
   function needsWebsiteCheck(lead) {
-    if (isDbConnected()) return false;
     if (window.LeadWebsiteEnrich?.needsWebsiteCheck) {
       return window.LeadWebsiteEnrich.needsWebsiteCheck(lead);
     }
@@ -1382,17 +1771,20 @@
   }
 
   function getWebsiteFilter() {
-    const active = document.querySelector("#lf-website-filter .ms-lf-website-btn.is-active");
-    return String(active?.getAttribute("data-website") || "all").toLowerCase();
+    const active =
+      document.querySelector("#lf-website-filter .ms-lf-map-filter-btn.is-active") ||
+      document.querySelector("#lf-website-filter .ms-lf-website-btn.is-active");
+    return String(active?.getAttribute("data-website") || "without").toLowerCase();
   }
 
   function applyWebsiteFilter(leads, filter) {
     const mode = String(filter || "all").toLowerCase();
     const pool = reconcileLeadList(leads);
+    // Strict filters:
+    // - with → confirmed has website
+    // - without → confirmed missing website (unknowns stay in All only)
     if (mode === "with") return pool.filter(leadHasWebsite);
-    if (mode === "without") {
-      return pool.filter((lead) => !leadHasWebsite(lead) && (leadMissingWebsite(lead) || leadNeedsWebsiteCheck(lead)));
-    }
+    if (mode === "without") return pool.filter(leadMissingWebsite);
     return pool;
   }
 
@@ -1425,6 +1817,294 @@
     if (!resultsEl) return;
     resultsEl.hidden = false;
     resultsEl.classList.add("is-visible");
+    if (resultsPanel) {
+      const firstOpen =
+        resultsPanel.hidden || !resultsPanel.classList.contains("is-sheet-open");
+      resultsPanel.hidden = false;
+      if (firstOpen) {
+        resultsPanel.classList.remove("is-sheet-open");
+        // Two frames: paint off-screen, then ease up into view.
+        window.requestAnimationFrame(() => {
+          window.requestAnimationFrame(() => {
+            resultsPanel.classList.add("is-sheet-open");
+          });
+        });
+      } else {
+        resultsPanel.classList.add("is-sheet-open");
+      }
+    }
+    syncSheetLayoutVars();
+    ensureMobileSheetHeight();
+    // Re-measure after paint — dock height can settle one frame later.
+    window.requestAnimationFrame(() => {
+      syncSheetLayoutVars();
+      ensureMobileSheetHeight();
+    });
+  }
+
+  function hideResultsPanel() {
+    if (!resultsPanel) return;
+    resultsPanel.classList.remove("is-sheet-open");
+    resultsPanel.hidden = true;
+  }
+
+  const SHEET_MQ = "(max-width: 900px)";
+  /** Ratios of the free band between top chrome and Scan dock (not full viewport). */
+  const SHEET_SNAPS = [
+    { id: "peek", ratio: 0.42 },
+    { id: "mid", ratio: 0.68 },
+    { id: "full", ratio: 1 },
+  ];
+  const SHEET_UI_GAP = 10;
+  let sheetSnapIndex = 1;
+  let sheetDragBound = false;
+
+  function isMobileSheetLayout() {
+    return MAP_UI && window.matchMedia?.(SHEET_MQ)?.matches === true;
+  }
+
+  function sheetUiClearance() {
+    const stage = document.querySelector(".ms-lf-map-stage");
+    const top = document.querySelector(".ms-lf-map-top");
+    const actions = document.querySelector(".ms-lf-map-actions");
+    const stageRect = stage?.getBoundingClientRect?.();
+    const topRect = top?.getBoundingClientRect?.();
+    const actionsRect = actions?.getBoundingClientRect?.();
+    const stageTop = stageRect?.top ?? 0;
+    const stageBottom = stageRect?.bottom ?? (Number(window.innerHeight) || 640);
+    const stageH = Math.max(320, stageRect?.height || stageBottom - stageTop);
+
+    const topInset = topRect
+      ? Math.max(96, Math.ceil(topRect.bottom - stageTop) + SHEET_UI_GAP)
+      : Math.round(stageH * 0.22);
+
+    // Dock height used as sheet padding-bottom (panel is floor-anchored).
+    const fromRect = actionsRect
+      ? Math.ceil(stageBottom - actionsRect.top)
+      : 0;
+    const fromOffset = actions ? Math.ceil(actions.offsetHeight || 0) : 0;
+    const dockH = Math.max(72, fromRect, fromOffset) || Math.round(stageH * 0.16);
+
+    const maxH = Math.max(150, stageH - topInset - dockH);
+    return { stageH, topInset, dockH, maxH };
+  }
+
+  function syncSheetLayoutVars() {
+    if (!resultsPanel) return sheetUiClearance();
+    const clear = sheetUiClearance();
+    const stage = document.querySelector(".ms-lf-map-stage");
+    const pageBody = document.getElementById("page-body");
+    // Mobile uses --lf-sheet-dock; PC uses --lf-actions-clearance. Keep both in sync.
+    resultsPanel.style.setProperty("--lf-sheet-dock", clear.dockH + "px");
+    stage?.style?.setProperty("--lf-sheet-dock", clear.dockH + "px");
+    pageBody?.style?.setProperty("--lf-actions-clearance", clear.dockH + "px");
+    stage?.style?.setProperty("--lf-actions-clearance", clear.dockH + "px");
+    resultsPanel.style.setProperty("--lf-sheet-max", clear.maxH + "px");
+    stage?.style?.setProperty("--lf-sheet-max", clear.maxH + "px");
+    return clear;
+  }
+
+  function sheetSnapHeights() {
+    const { maxH } = syncSheetLayoutVars();
+    const minPeek = Math.min(maxH, Math.round(Math.max(150, maxH * SHEET_SNAPS[0].ratio)));
+    return SHEET_SNAPS.map((snap, i) => {
+      const raw = Math.round(maxH * snap.ratio);
+      const px = i === 0 ? minPeek : Math.max(minPeek, Math.min(maxH, raw));
+      return { id: snap.id, px };
+    });
+  }
+
+  function setSheetHeightPx(px, options) {
+    if (!MAP_UI || !resultsPanel) return;
+    const opts = options && typeof options === "object" ? options : {};
+    const snaps = sheetSnapHeights();
+    const minH = snaps[0].px;
+    const maxH = snaps[snaps.length - 1].px;
+    const next = Math.max(minH, Math.min(maxH, Math.round(Number(px) || minH)));
+    if (opts.dragging) resultsPanel.classList.add("is-sheet-dragging");
+    else resultsPanel.classList.remove("is-sheet-dragging");
+    resultsPanel.style.setProperty("--lf-sheet-h", next + "px");
+    const stage = document.querySelector(".ms-lf-map-stage");
+    stage?.style?.setProperty("--lf-sheet-h", next + "px");
+    if (!opts.dragging) scheduleMapInvalidate();
+  }
+
+  function setSheetSnap(index, options) {
+    const snaps = sheetSnapHeights();
+    const i = Math.max(0, Math.min(snaps.length - 1, Number(index) || 0));
+    sheetSnapIndex = i;
+    setSheetHeightPx(snaps[i].px, options);
+    if (sheetHandle) {
+      sheetHandle.setAttribute("aria-valuenow", String(i));
+      sheetHandle.setAttribute("aria-valuetext", snaps[i].id);
+    }
+  }
+
+  function nearestSheetSnapIndex(px) {
+    const snaps = sheetSnapHeights();
+    let best = 0;
+    let bestDist = Infinity;
+    snaps.forEach((snap, i) => {
+      const d = Math.abs(snap.px - px);
+      if (d < bestDist) {
+        bestDist = d;
+        best = i;
+      }
+    });
+    return best;
+  }
+
+  function currentSheetHeightPx() {
+    if (!resultsPanel) return sheetSnapHeights()[sheetSnapIndex]?.px || 0;
+    const raw = String(
+      resultsPanel.style.getPropertyValue("--lf-sheet-h") || ""
+    ).trim();
+    const fromStyle = Number.parseFloat(raw);
+    if (Number.isFinite(fromStyle) && fromStyle > 0) return fromStyle;
+    const dock = Number.parseFloat(
+      String(resultsPanel.style.getPropertyValue("--lf-sheet-dock") || "").trim()
+    );
+    const total = resultsPanel.getBoundingClientRect().height || 0;
+    if (total > 0 && Number.isFinite(dock) && dock > 0) {
+      return Math.max(0, total - dock);
+    }
+    return sheetSnapHeights()[1].px;
+  }
+
+  function ensureMobileSheetHeight() {
+    if (!MAP_UI || !resultsPanel || resultsPanel.hidden) return;
+    const hasExplicit = String(
+      resultsPanel.style.getPropertyValue("--lf-sheet-h") || ""
+    ).trim();
+    if (!hasExplicit) setSheetSnap(sheetSnapIndex || 1);
+    else setSheetHeightPx(currentSheetHeightPx());
+  }
+
+  function initMobileResultsSheet() {
+    if (!MAP_UI || !resultsPanel || !sheetHandle || sheetDragBound) return;
+    sheetDragBound = true;
+
+    let dragging = false;
+    let pointerId = null;
+    let startY = 0;
+    let startH = 0;
+
+    const onMove = (e) => {
+      if (!dragging || e.pointerId !== pointerId) return;
+      e.preventDefault();
+      const dy = startY - e.clientY; // drag up → taller
+      setSheetHeightPx(startH + dy, { dragging: true });
+    };
+
+    const endDrag = (e) => {
+      if (!dragging || (e && e.pointerId !== pointerId)) return;
+      dragging = false;
+      try {
+        sheetHandle.releasePointerCapture?.(pointerId);
+      } catch (_) {
+        /* ignore */
+      }
+      pointerId = null;
+      const h = currentSheetHeightPx();
+      const snaps = sheetSnapHeights();
+      // Velocity-ish bias: if dragged past midpoint toward next snap, prefer it.
+      let idx = nearestSheetSnapIndex(h);
+      const cur = snaps[sheetSnapIndex]?.px || h;
+      if (h > cur + 28) idx = Math.min(snaps.length - 1, sheetSnapIndex + 1);
+      else if (h < cur - 28) idx = Math.max(0, sheetSnapIndex - 1);
+      else idx = nearestSheetSnapIndex(h);
+      setSheetSnap(idx);
+    };
+
+    sheetHandle.addEventListener(
+      "pointerdown",
+      (e) => {
+        if (resultsPanel.hidden) return;
+        if (e.button != null && e.button !== 0) return;
+        dragging = true;
+        pointerId = e.pointerId;
+        startY = e.clientY;
+        startH = currentSheetHeightPx();
+        sheetHandle.setPointerCapture?.(pointerId);
+        resultsPanel.classList.add("is-sheet-dragging");
+        e.preventDefault();
+      },
+      { passive: false }
+    );
+
+    sheetHandle.addEventListener("pointermove", onMove, { passive: false });
+    sheetHandle.addEventListener("pointerup", endDrag);
+    sheetHandle.addEventListener("pointercancel", endDrag);
+
+    sheetHandle.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowUp" || e.key === "PageUp") {
+        e.preventDefault();
+        setSheetSnap(sheetSnapIndex + 1);
+      } else if (e.key === "ArrowDown" || e.key === "PageDown") {
+        e.preventDefault();
+        setSheetSnap(sheetSnapIndex - 1);
+      } else if (e.key === "Home") {
+        e.preventDefault();
+        setSheetSnap(0);
+      } else if (e.key === "End") {
+        e.preventDefault();
+        setSheetSnap(SHEET_SNAPS.length - 1);
+      }
+    });
+
+    // Pull-down from top of list collapses (touch / mobile primarily).
+    let listPullStartY = 0;
+    let listPulling = false;
+    resultsEl?.addEventListener(
+      "touchstart",
+      (e) => {
+        if (!e.touches?.[0]) return;
+        if ((resultsEl.scrollTop || 0) > 2) return;
+        listPullStartY = e.touches[0].clientY;
+        listPulling = true;
+        startH = currentSheetHeightPx();
+      },
+      { passive: true }
+    );
+    resultsEl?.addEventListener(
+      "touchmove",
+      (e) => {
+        if (!listPulling || !e.touches?.[0]) return;
+        const dy = e.touches[0].clientY - listPullStartY;
+        if (dy <= 8) return;
+        if ((resultsEl.scrollTop || 0) > 2) {
+          listPulling = false;
+          return;
+        }
+        e.preventDefault();
+        setSheetHeightPx(startH - dy, { dragging: true });
+      },
+      { passive: false }
+    );
+    const endListPull = () => {
+      if (!listPulling) return;
+      listPulling = false;
+      if (!resultsPanel.classList.contains("is-sheet-dragging")) return;
+      const h = currentSheetHeightPx();
+      let idx = nearestSheetSnapIndex(h);
+      const cur = sheetSnapHeights()[sheetSnapIndex]?.px || h;
+      if (h < cur - 28) idx = Math.max(0, sheetSnapIndex - 1);
+      setSheetSnap(idx);
+    };
+    resultsEl?.addEventListener("touchend", endListPull);
+    resultsEl?.addEventListener("touchcancel", endListPull);
+
+    window.addEventListener(
+      "resize",
+      () => {
+        syncSheetLayoutVars();
+        if (!resultsPanel.hidden) setSheetSnap(sheetSnapIndex);
+      },
+      { passive: true }
+    );
+
+    syncSheetLayoutVars();
+    setSheetSnap(1);
   }
 
   function renderLoadingSkeletonRow() {
@@ -1436,7 +2116,26 @@
     );
   }
 
+  function renderMapLoadingCard(index) {
+    return (
+      '<div class="ms-lf-map-skel" aria-hidden="true" style="animation-delay:' +
+      index * 80 +
+      'ms">' +
+      '<div class="ms-lf-map-skel-row">' +
+      '<span class="ms-lf-map-skel-avatar"></span>' +
+      '<span class="ms-lf-map-skel-lines">' +
+      '<span class="ms-lf-map-skel-line"></span>' +
+      '<span class="ms-lf-map-skel-line ms-lf-map-skel-line--med"></span>' +
+      '<span class="ms-lf-map-skel-line ms-lf-map-skel-line--short"></span>' +
+      '<span class="ms-lf-map-skel-line ms-lf-map-skel-line--tiny"></span>' +
+      "</span></div>" +
+      '<div class="ms-lf-map-skel-slide"></div>' +
+      "</div>"
+    );
+  }
+
   function renderLoadingCard(index) {
+    if (MAP_UI) return renderMapLoadingCard(index);
     const mainRows = Array.from({ length: 3 }, () => renderLoadingSkeletonRow()).join("");
     const sideRows = Array.from({ length: 2 }, () => renderLoadingSkeletonRow()).join("");
     return (
@@ -1476,13 +2175,14 @@
     resultsEl.classList.add("is-loading");
     resultsEl.setAttribute("aria-busy", "true");
     revealResults();
-    if (listCountEl) listCountEl.hidden = true;
+    if (listCountEl && !MAP_UI) listCountEl.hidden = true;
   }
 
   function clearLoadingCards() {
     if (!resultsEl) return;
     resultsEl.classList.remove("is-loading");
     resultsEl.removeAttribute("aria-busy");
+    if (listCountEl && MAP_UI) listCountEl.hidden = false;
   }
 
   const LD = window.LeadDisplay || null;
@@ -1510,12 +2210,47 @@
       const c = LD.formatCategory(lead);
       if (c && c !== "Category not listed" && c !== "Uncategorized") candidate = c;
     }
-    if (!candidate) candidate = String(lead.category || lead.categoryGroup || "").trim();
-    const cleaned = cleanCategoryText(candidate);
-    // Drop junk: leftover digits, business-name-like length, or matches the name.
-    if (!cleaned || /\d/.test(cleaned) || cleaned.length > 26) return "";
+    if (!candidate) {
+      candidate = String(
+        lead.category || lead.categoryGroup || lead.type || lead.types || ""
+      ).trim();
+    }
+    // Prefer first type from Google-style types arrays.
+    if (!candidate && Array.isArray(lead.types) && lead.types.length) {
+      candidate = String(lead.types[0] || "").replace(/_/g, " ");
+    }
+    const cleaned = cleanCategoryText(candidate)
+      .replace(/\b\d+(\.\d+)?\s*(mi|miles|km)\b/gi, "")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+    if (!cleaned) return "";
+    // Drop junk that is clearly not a category.
+    if (cleaned.length > 40) return cleaned.slice(0, 38).trim() + "…";
     if (cleaned.toLowerCase() === displayName(lead).toLowerCase()) return "";
+    if (/^(business|company|store|shop)$/i.test(cleaned)) return "";
     return cleaned;
+  }
+
+  function formatPhoneDisplay(phone) {
+    const raw = String(phone || "").trim();
+    if (!raw) return "";
+    const digits = raw.replace(/\D/g, "");
+    if (digits.length === 11 && digits.startsWith("1")) {
+      return (
+        "(" +
+        digits.slice(1, 4) +
+        ") " +
+        digits.slice(4, 7) +
+        "-" +
+        digits.slice(7)
+      );
+    }
+    if (digits.length === 10) {
+      return (
+        "(" + digits.slice(0, 3) + ") " + digits.slice(3, 6) + "-" + digits.slice(6)
+      );
+    }
+    return raw.replace(/^\+1\s*/, "").replace(/^\+1/, "");
   }
 
   function displayAddress(lead) {
@@ -1603,6 +2338,7 @@
     star: '<svg class="ms-lf-pro-ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg>',
     hammer:
       '<svg class="ms-lf-pro-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 12-8.5 8.5a2.12 2.12 0 1 1-3-3L12 9"/><path d="M17.64 15 22 10.64"/><path d="m20.91 11.7-1.25-2.5L16 7.84"/><path d="m12 9 4.5-4.5a2.12 2.12 0 0 1 3 3L15 12"/></svg>',
+    near: '<svg class="ms-lf-pro-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>',
   };
 
   function renderProRow(iconHtml, label, valueHtml, opts) {
@@ -1614,7 +2350,10 @@
       (empty ? " is-empty" : "") +
       (opts.href && !empty ? " is-link" : "") +
       (opts.status === "open" ? " is-open" : "") +
-      (opts.status === "closed" ? " is-closed" : "");
+      (opts.status === "closed" ? " is-closed" : "") +
+      (opts.status === "has-site" ? " is-has-site" : "") +
+      (opts.status === "no-site" ? " is-no-site" : "") +
+      (opts.rowClass ? " " + opts.rowClass : "");
     const attrs = ['class="' + cls + '"', 'aria-label="' + escapeHtml(label) + '"'];
     if (opts.href && !empty) {
       attrs.push('href="' + escapeHtml(opts.href) + '"');
@@ -1649,7 +2388,9 @@
       (empty ? " is-empty" : "") +
       (opts.href && !empty ? " is-link" : "") +
       (opts.status === "open" ? " is-open" : "") +
-      (opts.status === "closed" ? " is-closed" : "");
+      (opts.status === "closed" ? " is-closed" : "") +
+      (opts.status === "has-site" ? " is-has-site" : "") +
+      (opts.status === "no-site" ? " is-no-site" : "");
     const attrs = ['class="' + cls + '"'];
     if (opts.href && !empty) {
       attrs.push('href="' + escapeHtml(opts.href) + '"');
@@ -1676,6 +2417,7 @@
         empty: !!opts.leftEmpty,
         href: opts.leftHref,
         external: opts.leftExternal,
+        status: opts.leftStatus,
       }) +
       renderProRowCell(rightHtml, {
         slot: "aside",
@@ -1864,7 +2606,139 @@
     });
   }
 
+  function renderMapLeadCard(lead, index) {
+    const id = leadId(lead);
+    const name = displayName(lead);
+    const category = displayCategory(lead);
+    const address = displayAddress(lead);
+    const phone = formatPhoneDisplay(displayPhone(lead));
+    const phoneRaw = displayPhone(lead);
+    const openStatus = displayOpenStatus(lead);
+    const ratingLine = formatRatingCompact(lead);
+    const website = leadWebsite(lead);
+    const hasSite = leadHasWebsite(lead);
+    const missingSite = leadMissingWebsite(lead);
+    const checkingSite = !!lead.websiteCheckPending || leadNeedsWebsiteCheck(lead);
+    const distanceLine =
+      lead.distanceMiles != null
+        ? lead.distanceMiles < 0.2
+          ? "< 0.2 mi"
+          : lead.distanceMiles.toFixed(1) + " mi"
+        : "";
+    const selected = selectedLeadId && selectedLeadId === id;
+    const tel = telHref(phoneRaw || phone);
+    const mapsUrl = String(lead.mapsUrl || lead.maps_url || "").trim();
+
+    let websiteLabel;
+    let websiteStatus = "";
+    let websiteHref;
+    if (hasSite && website) {
+      websiteLabel = escapeHtml(formatWebsiteLabel(website));
+      websiteHref = website;
+      websiteStatus = "has-site";
+    } else if (hasSite) {
+      websiteLabel = '<span class="ms-lf-pro-has-site">Has website</span>';
+      websiteStatus = "has-site";
+    } else if (checkingSite && !missingSite) {
+      websiteLabel = '<span class="ms-lf-pro-site-check">Checking…</span>';
+    } else {
+      websiteLabel = '<span class="ms-lf-pro-no-site">No website</span>';
+      websiteStatus = "no-site";
+    }
+
+    const detailRows = [
+      renderProRowPair(
+        ICO.pin,
+        "Address and hours",
+        escapeHtml(address || "Address not listed"),
+        escapeHtml(openStatus.text || "Hours not listed"),
+        {
+          leftEmpty: !address,
+          leftHref: address && mapsUrl ? mapsUrl : undefined,
+          leftExternal: !!(address && mapsUrl),
+          rightEmpty: !openStatus.text,
+          rightStatus: openStatus.kind || "",
+        }
+      ),
+      renderProRowPair(
+        ICO.phone,
+        "Phone and rating",
+        phone ? escapeHtml(phone) : "Phone not listed",
+        escapeHtml(ratingLine || "No reviews"),
+        {
+          leftEmpty: !phone,
+          leftHref: phone ? tel || undefined : undefined,
+          rightEmpty: !ratingLine,
+        }
+      ),
+      renderProRowPair(
+        ICO.globe,
+        "Website and Google Maps",
+        websiteLabel,
+        mapsUrl ? "Google Maps" : "Maps unavailable",
+        {
+          rowClass: "ms-lf-map-card-website",
+          leftHref: websiteHref,
+          leftExternal: !!websiteHref,
+          leftStatus: websiteStatus,
+          rightEmpty: !mapsUrl,
+          rightHref: mapsUrl || undefined,
+          rightExternal: !!mapsUrl,
+        }
+      ),
+    ];
+
+    const metaBits = [];
+    if (category) metaBits.push(escapeHtml(category));
+    if (distanceLine) {
+      metaBits.push(
+        '<span class="ms-lf-map-card-distance">' + escapeHtml(distanceLine) + "</span>"
+      );
+    }
+
+    return (
+      '<article class="ms-lf-map-card ms-lead-card is-compact' +
+      (selected ? " is-selected" : "") +
+      '" data-lead-id="' +
+      escapeHtml(id) +
+      '" data-map-card="' +
+      escapeHtml(id) +
+      '">' +
+      '<div class="ms-lf-map-card-head">' +
+      '<div class="ms-lf-pro-avatar" style="' +
+      escapeHtml(avatarStyleAttr(lead)) +
+      '" aria-hidden="true">' +
+      escapeHtml(displayInitials(lead)) +
+      "</div>" +
+      '<div class="ms-lf-map-card-titles">' +
+      "<h3>" +
+      escapeHtml(name) +
+      "</h3>" +
+      (metaBits.length ? "<p>" + metaBits.join(" · ") + "</p>" : "") +
+      "</div></div>" +
+      '<div class="ms-lf-map-card-details" aria-label="Business details">' +
+      detailRows.join("") +
+      "</div>" +
+      '<footer class="ms-lf-pro-foot">' +
+      '<div class="ms-lf-slide" data-lead-slide="' +
+      escapeHtml(id) +
+      '" role="group" aria-label="Slide to generate site for ' +
+      escapeHtml(name) +
+      '">' +
+      '<div class="ms-lf-slide-track">' +
+      '<div class="ms-lf-slide-fill" aria-hidden="true"></div>' +
+      '<span class="ms-lf-slide-label" aria-hidden="true">Slide to generate</span>' +
+      '<button type="button" class="ms-lf-slide-thumb" aria-label="Slide to generate site for ' +
+      escapeHtml(name) +
+      '">' +
+      ICO.hammer +
+      "</button>" +
+      "</div></div></footer></article>"
+    );
+  }
+
   function renderLeadCard(lead, index) {
+    if (MAP_UI) return renderMapLeadCard(lead, index);
     const id = leadId(lead);
     const revealDelay = Math.min((index || 0) % 8, 7) * 45;
     const alreadyVisible = revealedLeadIds.has(id);
@@ -2027,6 +2901,12 @@
               : "No leads loaded yet. Refresh the page or check your connection.") +
         "</div>";
       setStatus("");
+      if (MAP_UI) {
+        lastMarkerSignature = "";
+        lastMarkerIdsSignature = "";
+        syncMapMarkers([]);
+        setSearchPillMode("idle");
+      }
       return;
     }
 
@@ -2054,6 +2934,10 @@
     observeLeadReveals(resultsEl);
     window.MsLfSlide?.prime(resultsEl);
     refreshGenerateSlideLockState();
+    if (MAP_UI) {
+      syncMapMarkers(shown);
+      setSearchPillMode("idle");
+    }
 
     if (websiteFilter === "without") {
       enqueueWebsiteVerification(shown);
@@ -2073,6 +2957,7 @@
   function paintPreloadedLeads(leads) {
     allLeads = rankLeadList(Array.isArray(leads) ? leads : []);
     leadsReady = allLeads.length > 0;
+    if (MAP_UI) return false;
     if (shouldSkipBulkPaint()) return false;
     displayLimit = DISPLAY_PAGE;
     if (!allLeads.length) return false;
@@ -2081,24 +2966,27 @@
     return true;
   }
 
-  async function preloadAllLeads() {
+  async function preloadAllLeads(options) {
+    const opts = options && typeof options === "object" ? options : {};
     if (!isDbConnected()) {
       window.LeadsLoader?.clearCache?.();
       allLeads = [];
       leadsReady = false;
-      showSearchPrompt();
+      if (!opts.quiet) showSearchPrompt();
       return;
     }
     if (leadsLoading) return;
     const loader = window.LeadsLoader;
     if (!loader?.load) {
-      setError("Leads loader is not available.");
+      if (!opts.quiet) setError("Leads loader is not available.");
       return;
     }
     leadsLoading = true;
-    setError("");
-    setStatus("");
-    showLoadingCards();
+    if (!opts.quiet) {
+      setError("");
+      setStatus("");
+    }
+    if (!MAP_UI) showLoadingCards();
     try {
       const cached = loader.peekCache?.();
       let paintedFromCache = false;
@@ -2108,8 +2996,10 @@
       }
 
       const data = await loader.load({
-        watch: true,
+        // Map UI does not need realtime watch churn on the idle map screen.
+        watch: !MAP_UI,
         onPartial: (payload) => {
+          if (MAP_UI) return;
           if (!payload?.leads?.length) return;
           if (shouldSkipBulkPaint()) return;
           if (typeInput?.value?.trim() || locationInput?.value?.trim()) return;
@@ -2120,6 +3010,10 @@
 
       if (!paintPreloadedLeads(data?.leads || [])) {
         clearLoadingCards();
+        if (MAP_UI) {
+          setListCount(0);
+          return;
+        }
         setStatus("No leads in the database yet.");
         setListCount(0);
         resultsEl.innerHTML =
@@ -2130,14 +3024,18 @@
       if (data?.fromCache && paintedFromCache) {
         loader.checkForUpdates?.().catch(() => null);
       }
-      schedulePrefetchSupabaseLeads();
+      if (!MAP_UI) schedulePrefetchSupabaseLeads();
     } catch (e) {
       console.error(e);
       clearLoadingCards();
-      setError(e?.message || "Could not load leads from Supabase.");
-      setStatus("");
-      resultsEl.innerHTML =
-        '<div class="ms-dash-empty">Could not load leads. Check your connection and refresh.</div>';
+      if (!opts.quiet) {
+        setError(e?.message || "Could not load leads from Supabase.");
+        setStatus("");
+      }
+      if (!MAP_UI && resultsEl) {
+        resultsEl.innerHTML =
+          '<div class="ms-dash-empty">Could not load leads. Check your connection and refresh.</div>';
+      }
     } finally {
       leadsLoading = false;
     }
@@ -2150,35 +3048,91 @@
       const ok = await enableInMyArea({ autoSearch: false });
       if (!ok || token !== areaRequestToken) return;
     }
+    if (!userCoords) {
+      setError(LOCATION_DENIED_MSG);
+      return;
+    }
+
     const searchType = nearbySearchType(typeInput?.value || "");
     const scrapeType = searchType || "businesses";
     const websiteFilter = getWebsiteFilter();
     const query = searchType ? searchType + " near you" : "Businesses near you";
+    const geoContext = await reverseGeocodeSearchContext(userCoords);
+    const nearbyLocation =
+      geoContext?.label ||
+      [geoContext?.city, geoContext?.region].filter(Boolean).join(", ") ||
+      "";
 
     setError("");
     setStatus("");
     hideAllSuggests();
     displayLimit = DISPLAY_PAGE;
     resetLeadReveals();
-    setFindBusy(true);
+    setFindBusy(true, "near");
     if (!opts.fromAreaToggle) showLoadingCards();
+    if (MAP_UI) setStatus("Scanning nearby…");
+    flyToUserLocation(userCoords);
 
     let leads = [];
     let remoteError = "";
     let scrapedFresh = false;
 
+    function mergeById(base, extra) {
+      const byId = new Map();
+      (base || []).forEach((lead) => {
+        const id = leadId(lead);
+        if (id) byId.set(id, lead);
+        else byId.set(String(lead.mapsUrl || lead.name || Math.random()), lead);
+      });
+      (extra || []).forEach((lead) => {
+        const id = leadId(lead) || String(lead.mapsUrl || lead.name || "");
+        if (id) byId.set(id, lead);
+      });
+      return Array.from(byId.values());
+    }
+
     try {
+      // Prefer true distance from cached/local leads so "nearby" is geo-real.
+      if (!allLeads.length && isDbConnected()) {
+        try {
+          await preloadAllLeads({ quiet: true });
+        } catch (_) {
+          /* continue with remote search */
+        }
+      }
+
+      const memoryPool = applyWebsiteFilter(
+        searchType ? filterLocalLeads(searchType, "") : (allLeads.length ? allLeads.slice() : lastLeads.slice()),
+        websiteFilter
+      );
+      const memoryNearby = applyNearbyFilterAndSort(
+        memoryPool,
+        userCoords,
+        NEARBY_RADIUS_MILES,
+        { includeUnknownDistance: false }
+      );
+      if (memoryNearby.length) {
+        leads = mergeById(leads, memoryNearby);
+      }
+
       if (isDbConnected()) {
-        const db = await searchSupabaseLeads(scrapeType, "", websiteFilter);
+        const db = await searchSupabaseLeads(
+          scrapeType,
+          nearbyLocation,
+          websiteFilter
+        );
         if (db.ok && db.leads?.length) {
-          leads = applyWebsiteFilter(
-            applyNearbyFilterAndSort(db.leads, userCoords, NEARBY_RADIUS_MILES, {
+          const dbNearby = applyNearbyFilterAndSort(
+            applyWebsiteFilter(db.leads, websiteFilter),
+            userCoords,
+            NEARBY_RADIUS_MILES,
+            {
               trustScrapeRadius: false,
               includeUnknownDistance: false,
-            }),
-            websiteFilter
+            }
           );
           mergeScrapedIntoAllLeads(db.leads);
+          leads = mergeById(leads, dbNearby);
         } else if (db.reason === "sign_in_required") {
           remoteError = "Sign in to search Business Finder leads.";
         } else if (!db.skipped && db.error) {
@@ -2186,39 +3140,58 @@
         }
       }
 
-      if (!leads.length && shouldTryLiveScrape()) {
-        const scraped = await scrapeViaLeadFinder(scrapeType, "", "", {
+      if (leads.length && MAP_UI) {
+        setStatus(shouldTryLiveScrape() ? "Showing nearby businesses — refreshing…" : "");
+        setError("");
+        renderLeads(
+          rankLeadsForView(leads, { trustScrapeRadius: false }),
+          query
+        );
+      }
+
+      if ((!leads.length || (MAP_UI && leads.length < 8)) && shouldTryLiveScrape()) {
+        if (MAP_UI && !leads.length) setStatus("Scanning Google Maps near you…");
+        const scraped = await scrapeViaLeadFinder(scrapeType, nearbyLocation, "", {
           latitude: userCoords.lat,
           longitude: userCoords.lng,
           radiusMiles: NEARBY_RADIUS_MILES,
         });
         if (scraped.ok && scraped.leads?.length) {
           scrapedFresh = true;
-          leads = applyWebsiteFilter(scraped.leads, websiteFilter);
-          leads = applyNearbyFilterAndSort(leads, userCoords, NEARBY_RADIUS_MILES, {
-            trustScrapeRadius: true,
-            includeUnknownDistance: true,
-          });
+          let scrapedFiltered = applyWebsiteFilter(scraped.leads, websiteFilter);
+          scrapedFiltered = applyNearbyFilterAndSort(
+            scrapedFiltered,
+            userCoords,
+            NEARBY_RADIUS_MILES,
+            {
+              trustScrapeRadius: true,
+              includeUnknownDistance: true,
+            }
+          );
           mergeScrapedIntoAllLeads(scraped.leads);
+          leads = mergeById(leads, scrapedFiltered);
         } else if (!scraped.skipped) {
           remoteError = scraped.error || "Nearby scrape returned no leads";
           console.warn("Nearby scrape:", remoteError);
         }
       }
 
-      if (!leads.length && allLeads.length) {
-        const pool = applyWebsiteFilter(
-          searchType ? filterLocalLeads(searchType, "") : allLeads.slice(),
-          websiteFilter
-        );
-        leads = applyNearbyFilterAndSort(pool, userCoords, NEARBY_RADIUS_MILES, {
-          includeUnknownDistance: false,
-        });
-      }
+      // Final pass: re-filter merged set so nothing outside the radius remains.
+      leads = applyNearbyFilterAndSort(leads, userCoords, NEARBY_RADIUS_MILES, {
+        trustScrapeRadius: scrapedFresh,
+        includeUnknownDistance: scrapedFresh,
+      });
+      leads = applyWebsiteFilter(leads, websiteFilter);
 
       if (!leads.length) {
         if (remoteError) {
           setError(remoteError);
+        } else {
+          setError(
+            "No businesses found within " +
+              NEARBY_RADIUS_MILES +
+              " miles. Try All for statewide results."
+          );
         }
       } else {
         setStatus("");
@@ -2231,6 +3204,7 @@
         rankLeadsForView(leads, { trustScrapeRadius: scrapedFresh }),
         query
       );
+      if (MAP_UI && leads.length) flyToUserLocation(userCoords);
     } finally {
       setFindBusy(false);
     }
@@ -2298,8 +3272,9 @@
     displayLimit = DISPLAY_PAGE;
     resetLeadReveals();
 
-    setFindBusy(true);
+    setFindBusy(true, MAP_UI ? "all" : "find");
     if (!opts.fromAreaToggle) showLoadingCards();
+    if (MAP_UI) setStatus("Scanning Google Maps…");
 
     let leads = [];
     let remoteError = "";
@@ -2319,12 +3294,33 @@
         }
       }
 
-      if (!leads.length && shouldTryLiveScrape() && (searchType || location.trim())) {
+      // Paint DB hits immediately; live scrape can still fill gaps afterward.
+      if (leads.length && MAP_UI) {
+        setStatus(shouldTryLiveScrape() ? "Showing saved leads — refreshing from Maps…" : "");
+        setError("");
+        renderLeads(rankLeadList(leads), query);
+      }
+
+      if ((!leads.length || (MAP_UI && leads.length < MIN_SEARCH_RESULTS)) && shouldTryLiveScrape() && (searchType || location.trim())) {
+        if (MAP_UI && !leads.length) setStatus("Scanning Google Maps…");
         const scraped = await scrapeViaLeadFinder(searchType, location, "", null);
         if (scraped.ok && scraped.leads?.length) {
           scrapedFresh = true;
-          leads = applyWebsiteFilter(scraped.leads, websiteFilter);
+          const scrapedFiltered = applyWebsiteFilter(scraped.leads, websiteFilter);
           mergeScrapedIntoAllLeads(scraped.leads);
+          if (scrapedFiltered.length) {
+            const byId = new Map();
+            leads.forEach((lead) => {
+              const id = leadId(lead);
+              if (id) byId.set(id, lead);
+            });
+            scrapedFiltered.forEach((lead) => {
+              const id = leadId(lead);
+              if (id) byId.set(id, lead);
+              else leads.push(lead);
+            });
+            leads = Array.from(byId.values());
+          }
         } else if (!scraped.skipped) {
           remoteError = scraped.error || "Live scrape returned no leads";
           console.warn("LeadFinder scrape:", remoteError);
@@ -2340,6 +3336,7 @@
       if (remoteError && !leads.length) {
         setError(remoteError);
       }
+      leads = applyWebsiteFilter(leads, websiteFilter);
       renderLeads(rankLeadList(leads), query);
     } finally {
       setFindBusy(false);
@@ -2521,6 +3518,7 @@
     input.focus();
     input.dispatchEvent(new Event("input", { bubbles: true }));
     if (
+      !MAP_UI &&
       !inMyArea &&
       !typeInput?.value?.trim() &&
       !locationInput?.value?.trim() &&
@@ -2615,38 +3613,51 @@
 
   form?.addEventListener("submit", (e) => {
     e.preventDefault();
+    if (MAP_UI) {
+      void runMapSearchSubmit();
+      return;
+    }
     findLeads();
   });
 
   document.getElementById("lf-website-filter")?.addEventListener("click", (e) => {
-    const btn = e.target.closest("button[data-website]");
+    const btn =
+      e.target.closest("button[data-website].ms-lf-map-filter-btn") ||
+      e.target.closest("button[data-website]");
     if (!btn) return;
-    document.querySelectorAll("#lf-website-filter .ms-lf-website-btn").forEach((b) => {
-      b.classList.toggle("is-active", b === btn);
-    });
+    document
+      .querySelectorAll("#lf-website-filter .ms-lf-map-filter-btn, #lf-website-filter .ms-lf-website-btn")
+      .forEach((b) => {
+        const on = b === btn;
+        b.classList.toggle("is-active", on);
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+      });
     if (listView === "saved") {
       resetLeadReveals();
       refreshVisibleLeads();
       return;
     }
-    if (allLeads.length || inMyArea) {
+    // Always re-run the active search so All / No Website / Website is applied at source.
+    if (inMyArea || typeInput?.value?.trim() || locationInput?.value?.trim() || MAP_UI) {
       displayLimit = DISPLAY_PAGE;
-      const type = typeInput?.value || "";
-      const location = locationInput?.value || "";
-      if (type.trim() || location.trim() || inMyArea) {
-        findLeads();
-      } else {
-        resetLeadReveals();
+      if (MAP_UI && !inMyArea && !typeInput?.value?.trim() && !locationInput?.value?.trim()) {
+        if (lastLeads.length) {
+          resetLeadReveals();
+          refreshVisibleLeads();
+        }
+        return;
+      }
+      void findLeads();
+      return;
+    }
+    if (allLeads.length || lastLeads.length) {
+      displayLimit = DISPLAY_PAGE;
+      resetLeadReveals();
+      if (lastLeads.length) refreshVisibleLeads();
+      else if (allLeads.length && !MAP_UI) {
         renderLeads(allLeads, "All leads");
         setStatus("");
       }
-      return;
-    }
-    if (typeInput?.value?.trim() || locationInput?.value?.trim() || inMyArea) {
-      findLeads();
-    } else if (lastLeads.length) {
-      resetLeadReveals();
-      refreshVisibleLeads();
     }
   });
 
@@ -2732,53 +3743,547 @@
 
   let booted = false;
 
-  function initDevNotice() {
-    const notice = document.getElementById("lf-dev-notice");
-    if (!notice) return;
-    try {
-      if (localStorage.getItem(DEV_NOTICE_KEY) === "1") {
-        notice.classList.add("is-hidden");
-        return;
-      }
-    } catch (e) {
-      /* ignore */
+  function setSearchPillMode(mode) {
+    if (!searchPill) return;
+    searchPill.dataset.mode = mode === "search" ? "search" : "idle";
+    if (mode === "search") {
+      window.requestAnimationFrame(() => queryInput?.focus());
     }
-    const dismiss = () => {
-      notice.classList.add("is-hidden");
-      try {
-        localStorage.setItem(DEV_NOTICE_KEY, "1");
-      } catch (e) {
-        /* ignore */
+  }
+
+  function scheduleMapInvalidate() {
+    if (!lfMap) return;
+    if (mapResizeTimer) window.clearTimeout(mapResizeTimer);
+    mapResizeTimer = window.setTimeout(() => {
+      mapResizeTimer = null;
+      lfMap?.invalidateSize({ animate: false });
+    }, 120);
+  }
+
+  function getMapIcons() {
+    const pinSvg =
+      '<svg class="ms-lf-map-pin-svg" viewBox="0 0 28 36" aria-hidden="true" focusable="false">' +
+      '<path class="ms-lf-map-pin-body" d="M14 1.2C7.1 1.2 1.5 6.8 1.5 13.7c0 8.6 10.1 18.8 12.05 20.7a.7.7 0 0 0 1.1 0C16.7 32.5 26.5 22.3 26.5 13.7 26.5 6.8 20.9 1.2 14 1.2z"/>' +
+      '<circle class="ms-lf-map-pin-dot" cx="14" cy="13.5" r="4.2"/>' +
+      "</svg>";
+    if (!mapIconDefault) {
+      mapIconDefault = L.divIcon({
+        className: "ms-lf-map-marker",
+        html: '<div class="ms-lf-map-pin">' + pinSvg + "</div>",
+        iconSize: [28, 36],
+        iconAnchor: [14, 34],
+      });
+    }
+    if (!mapIconSelected) {
+      mapIconSelected = L.divIcon({
+        className: "ms-lf-map-marker",
+        html: '<div class="ms-lf-map-pin is-selected">' + pinSvg + "</div>",
+        iconSize: [32, 40],
+        iconAnchor: [16, 38],
+      });
+    }
+    return { def: mapIconDefault, sel: mapIconSelected };
+  }
+
+  function setMapLoading(isLoading) {
+    const stage = document.getElementById("lf-map-stage");
+    const loader = document.getElementById("lf-map-loader");
+    if (!stage) return;
+    stage.classList.toggle("is-map-loading", !!isLoading);
+    if (loader) loader.setAttribute("aria-busy", isLoading ? "true" : "false");
+  }
+
+  function initLeadMap(attempt) {
+    if (!MAP_UI || lfMap) return;
+    if (typeof L === "undefined") {
+      const n = Number(attempt) || 0;
+      if (n < 60) window.setTimeout(() => initLeadMap(n + 1), 50);
+      else setMapLoading(false);
+      return;
+    }
+    const el = document.getElementById("lf-map");
+    if (!el) {
+      setMapLoading(false);
+      return;
+    }
+    setMapLoading(true);
+    try {
+      const reduceMotion =
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+        document.documentElement.getAttribute("data-reduce-motion") === "1";
+      lfMap = L.map(el, {
+        zoomControl: true,
+        attributionControl: true,
+        preferCanvas: false,
+        fadeAnimation: !reduceMotion,
+        zoomAnimation: !reduceMotion,
+        markerZoomAnimation: !reduceMotion,
+      }).setView([MAP_DEFAULT.lat, MAP_DEFAULT.lng], MAP_DEFAULT.zoom);
+      const tiles = L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+        {
+          attribution:
+            "Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ",
+          maxZoom: 16,
+          updateWhenIdle: false,
+          updateWhenZooming: true,
+          keepBuffer: 2,
+          crossOrigin: true,
+        }
+      );
+      let revealed = false;
+      const revealMap = () => {
+        if (revealed) return;
+        revealed = true;
+        setMapLoading(false);
+        scheduleMapInvalidate();
+      };
+      tiles.once("tileload", revealMap);
+      tiles.once("load", revealMap);
+      tiles.on("tileerror", () => {
+        window.setTimeout(revealMap, 200);
+      });
+      tiles.addTo(lfMap);
+      lfMap.whenReady(() => {
+        scheduleMapInvalidate();
+        window.setTimeout(revealMap, 700);
+      });
+      window.setTimeout(revealMap, 1600);
+      lfMarkersLayer = L.layerGroup().addTo(lfMap);
+      const scrollSafe = [
+        resultsPanel,
+        document.querySelector(".ms-lf-map-top"),
+        document.querySelector(".ms-lf-map-actions"),
+      ].filter(Boolean);
+      scrollSafe.forEach((node) => {
+        try {
+          L.DomEvent.disableScrollPropagation(node);
+          L.DomEvent.disableClickPropagation(node);
+        } catch (_) {
+          /* ignore */
+        }
+        node.addEventListener(
+          "wheel",
+          (e) => {
+            e.stopPropagation();
+          },
+          { passive: true }
+        );
+      });
+      scheduleMapInvalidate();
+      window.setTimeout(scheduleMapInvalidate, 250);
+    } catch (e) {
+      console.error("Business Finder map init failed", e);
+      lfMap = null;
+      setMapLoading(false);
+    }
+  }
+
+  function selectLeadOnMap(id, { scrollCard = true } = {}) {
+    const next = String(id || "");
+    if (selectedLeadId === next && !scrollCard) return;
+    const prev = selectedLeadId;
+    selectedLeadId = next;
+    const icons = typeof L !== "undefined" ? getMapIcons() : null;
+    if (icons) {
+      if (prev && lfMarkerById.has(prev)) {
+        lfMarkerById.get(prev).setIcon(icons.def);
       }
-    };
-    notice.addEventListener("click", dismiss);
-    notice.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        dismiss();
+      if (selectedLeadId && lfMarkerById.has(selectedLeadId)) {
+        lfMarkerById.get(selectedLeadId).setIcon(icons.sel);
+      }
+    }
+    resultsEl?.querySelectorAll(".ms-lf-map-card.is-selected").forEach((card) => {
+      if (card.getAttribute("data-lead-id") !== selectedLeadId) {
+        card.classList.remove("is-selected");
       }
     });
+    if (selectedLeadId) {
+      const card = resultsEl?.querySelector(
+        '.ms-lf-map-card[data-lead-id="' +
+          selectedLeadId.replace(/\\/g, "\\\\").replace(/"/g, '\\"') +
+          '"]'
+      );
+      card?.classList.add("is-selected");
+      if (scrollCard) {
+        card?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      }
+    }
+  }
+
+  function syncMapMarkers(leads, options) {
+    if (!MAP_UI || !lfMap || !lfMarkersLayer) return;
+    const opts = options && typeof options === "object" ? options : {};
+    const icons = getMapIcons();
+    const pool = Array.isArray(leads) ? leads : [];
+    const withCoords = [];
+    for (let i = 0; i < pool.length && withCoords.length < MAP_MARKER_LIMIT; i += 1) {
+      const lead = pool[i];
+      const coords = leadCoords(lead);
+      if (!coords) continue;
+      withCoords.push({ lead, coords, id: leadId(lead) });
+    }
+    const idsSignature = withCoords.map((row) => row.id).join("|");
+    const signature = idsSignature + "#" + selectedLeadId;
+    if (signature === lastMarkerSignature && lfMarkerById.size === withCoords.length) {
+      return;
+    }
+
+    const leadsChanged = idsSignature !== lastMarkerIdsSignature;
+    lastMarkerIdsSignature = idsSignature;
+    lastMarkerSignature = signature;
+
+    // Selection-only change: swap icons in place — never pan/zoom the map.
+    if (!leadsChanged && lfMarkerById.size === withCoords.length) {
+      withCoords.forEach(({ id }) => {
+        const marker = lfMarkerById.get(id);
+        if (!marker) return;
+        marker.setIcon(id === selectedLeadId ? icons.sel : icons.def);
+      });
+      return;
+    }
+
+    lfMarkersLayer.clearLayers();
+    lfMarkerById = new Map();
+    const bounds = [];
+    withCoords.forEach(({ lead, coords, id }) => {
+      const marker = L.marker([coords.lat, coords.lng], {
+        icon: id === selectedLeadId ? icons.sel : icons.def,
+        title: displayName(lead),
+        keyboard: false,
+        riseOnHover: true,
+      });
+      marker.on("click", () => {
+        // Highlight + scroll the card only — keep current map center/zoom.
+        revealResults();
+        selectLeadOnMap(id, { scrollCard: true });
+      });
+      marker.addTo(lfMarkersLayer);
+      lfMarkerById.set(id, marker);
+      bounds.push([coords.lat, coords.lng]);
+    });
+
+    // Fit bounds only when the business set changes (initial scan / new results).
+    if (opts.fit === false || !bounds.length) return;
+    if (bounds.length === 1) {
+      lfMap.setView(bounds[0], Math.max(lfMap.getZoom(), 13));
+    } else {
+      try {
+        lfMap.fitBounds(bounds, { padding: [48, 48], maxZoom: 14, animate: false });
+      } catch (_) {
+        /* ignore */
+      }
+    }
+  }
+
+  function flyToUserLocation(coords) {
+    if (!lfMap || !coords) return;
+    lfMap.setView([coords.lat, coords.lng], 13, { animate: true });
+    if (userLocationMarker) {
+      userLocationMarker.setLatLng([coords.lat, coords.lng]);
+    } else {
+      userLocationMarker = L.circleMarker([coords.lat, coords.lng], {
+        radius: 7,
+        color: "#fff",
+        weight: 2,
+        fillColor: "#38bdf8",
+        fillOpacity: 0.95,
+        interactive: false,
+      }).addTo(lfMap);
+    }
+  }
+
+  function applyFreeTextSearch(raw) {
+    const text = String(raw || "").trim();
+    const parsed = text ? parseCombinedSearchText(text) : null;
+    if (parsed) {
+      if (typeInput) typeInput.value = parsed.type || text;
+      if (locationInput) locationInput.value = parsed.location || locationInput.value || "";
+    } else if (text) {
+      if (typeInput) typeInput.value = text;
+    }
+  }
+
+  async function runMapScanNearMe() {
+    setSearchPillMode("idle");
+    setError("");
+    if (MAP_UI) {
+      setStatus("Getting your location…");
+      revealResults();
+    }
+    const ok = await enableInMyArea({ autoSearch: true });
+    if (ok && userCoords) flyToUserLocation(userCoords);
+  }
+
+  async function resolveStateLabelForScan() {
+    if (!userCoords) {
+      try {
+        await ensureUserLocation({ fresh: true, fly: false, quiet: true });
+      } catch (_) {
+        /* fall through to map center / defaults */
+      }
+    }
+    const coords =
+      (userCoords && Number.isFinite(userCoords.lat) && Number.isFinite(userCoords.lng)
+        ? userCoords
+        : null) ||
+      (lfMap
+        ? { lat: lfMap.getCenter().lat, lng: lfMap.getCenter().lng }
+        : null);
+    if (coords) {
+      const geo = await reverseGeocodeSearchContext(coords);
+      const state = geo?.state || stateDisplayName(geo?.region) || "";
+      if (state) return state;
+    }
+
+    const existing = String(locationInput?.value || "").trim();
+    if (existing && !isAreaLocationLabel(existing)) {
+      const m = existing.match(/,\s*([A-Za-z]{2})$/);
+      if (m) {
+        const named = stateDisplayName(m[1]);
+        if (named) return named;
+      }
+      const namedExisting = stateDisplayName(existing);
+      if (
+        namedExisting &&
+        Object.values(US_STATE_BY_CODE).some(
+          (n) => n.toLowerCase() === namedExisting.toLowerCase()
+        )
+      ) {
+        return namedExisting;
+      }
+    }
+    return "California";
+  }
+
+  async function runMapScanAll() {
+    // Statewide scan: every business in the state (not city / near-me radius).
+    inMyArea = false;
+    if (areaToggle) areaToggle.checked = false;
+    persistAreaPref(false);
+    syncAreaUi();
+    setSearchPillMode("idle");
+    setError("");
+    if (MAP_UI) {
+      setStatus("Finding your state…");
+      revealResults();
+    }
+
+    const stateLabel = await resolveStateLabelForScan();
+    if (locationInput) locationInput.value = stateLabel;
+    // Always reset niche so All never inherits "plumber", "dentist", etc.
+    if (typeInput) typeInput.value = "businesses";
+
+    if (MAP_UI) setStatus("Scanning all businesses in " + stateLabel + "…");
+    await findLeads();
+  }
+
+  function filterLoadedLeadsByQuery(raw) {
+    const q = String(raw || "").trim();
+    if (!q) return [];
+    const pool = allLeads.length ? allLeads : lastLeads;
+    if (!pool.length) return [];
+    const qLower = q.toLowerCase();
+    const tokens = tokensFrom(q);
+    return pool.filter((lead) => {
+      const blob = leadBlob(lead);
+      if (blob.includes(qLower)) return true;
+      return tokens.length > 0 && tokens.every((t) => blob.includes(t));
+    });
+  }
+
+  async function runMapSearchSubmit() {
+    const q = String(queryInput?.value || "").trim();
+    if (!q && !typeInput?.value?.trim() && !locationInput?.value?.trim()) {
+      setSearchPillMode("search");
+      queryInput?.focus();
+      return;
+    }
+
+    // Prefer filtering businesses already on screen / in memory (name search).
+    if (q) {
+      const localHits = filterLoadedLeadsByQuery(q);
+      if (localHits.length) {
+        setError("");
+        setStatus("");
+        revealResults();
+        const websiteFilter = getWebsiteFilter();
+        renderLeads(
+          rankLeadsForView(applyWebsiteFilter(localHits, websiteFilter)),
+          q
+        );
+        setSearchPillMode("idle");
+        return;
+      }
+    }
+
+    inMyArea = false;
+    if (areaToggle) areaToggle.checked = false;
+    persistAreaPref(false);
+    syncAreaUi();
+    applyFreeTextSearch(q);
+    if (!q && !typeInput?.value?.trim() && !locationInput?.value?.trim()) {
+      setSearchPillMode("search");
+      queryInput?.focus();
+      return;
+    }
+    await findLeads();
+    setSearchPillMode("idle");
+  }
+
+  function openStudioMenu() {
+    const shellToggle = document.getElementById("ms-menu-toggle");
+    if (shellToggle) {
+      shellToggle.click();
+      return;
+    }
+    document.body.classList.toggle("ms-nav-open");
+  }
+
+  function bindMapFinderUi() {
+    if (!MAP_UI) return;
+    initLeadMap();
+    initMobileResultsSheet();
+    setListCount(0);
+    hideResultsPanel();
+
+    menuToggleBtn?.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (searchPill?.dataset.mode === "search") setSearchPillMode("idle");
+      openStudioMenu();
+    });
+
+    searchToggle?.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const open = searchPill?.dataset.mode !== "search";
+      if (open) {
+        setSearchPillMode("search");
+        return;
+      }
+      // Second tap on the search icon submits (does not just close).
+      void runMapSearchSubmit();
+    });
+
+    locateBtn?.addEventListener("click", async () => {
+      setError("");
+      setStatus("Getting your location…");
+      try {
+        // Re-prompt every tap until the browser grants access.
+        await ensureUserLocation({ fresh: true, fly: true, quiet: false });
+        setStatus("");
+        setError("");
+      } catch (_) {
+        /* ensureUserLocation already surfaces the allow-location message */
+      }
+    });
+
+    scanNearBtn?.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      void runMapScanNearMe();
+    });
+
+    scanAllBtn?.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      void runMapScanAll();
+    });
+
+    queryInput?.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setSearchPillMode("idle");
+        return;
+      }
+      if (e.key === "Enter") {
+        e.preventDefault();
+        e.stopPropagation();
+        void runMapSearchSubmit();
+      }
+    });
+
+    // Click / tap outside the search pill returns to the business count.
+    document.addEventListener(
+      "pointerdown",
+      (e) => {
+        if (searchPill?.dataset.mode !== "search") return;
+        if (e.target.closest("#lf-search-pill")) return;
+        setSearchPillMode("idle");
+      },
+      true
+    );
+
+    locateBtn?.addEventListener(
+      "click",
+      () => {
+        if (searchPill?.dataset.mode === "search") setSearchPillMode("idle");
+      },
+      true
+    );
+
+    resultsEl?.addEventListener("click", (e) => {
+      const card = e.target.closest(".ms-lf-map-card[data-lead-id]");
+      if (!card) return;
+      if (e.target.closest(".ms-lf-slide")) return;
+      // Let phone / Maps / website links open normally.
+      if (e.target.closest("a[href]")) return;
+      selectLeadOnMap(card.getAttribute("data-lead-id") || "", { scrollCard: false });
+      const marker = lfMarkerById.get(card.getAttribute("data-lead-id") || "");
+      if (marker && lfMap) {
+        lfMap.panTo(marker.getLatLng(), { animate: true });
+      }
+    });
+
+    window.addEventListener("resize", scheduleMapInvalidate, { passive: true });
+  }
+
+  function scheduleMapIdlePreload() {
+    if (!MAP_UI || !isDbConnected()) return;
+    const run = () => {
+      if (leadsLoading || leadsReady) return;
+      void preloadAllLeads({ quiet: true });
+    };
+    if (typeof requestIdleCallback === "function") {
+      mapIdlePreloadTimer = requestIdleCallback(run, { timeout: 4000 });
+    } else {
+      mapIdlePreloadTimer = window.setTimeout(run, 1800);
+    }
   }
 
   function bootLeadsSearch() {
     if (booted || document.body?.dataset?.page !== "leads") return;
-    if (isDbConnected()) showLoadingCards();
+    if (isDbConnected() && !MAP_UI) showLoadingCards();
+    // Start Leaflet immediately — don't hold the map behind auth warmup.
+    if (MAP_UI) initLeadMap();
     const run = () => {
       if (booted) return;
       booted = true;
       try {
-        initDevNotice();
-        renderPopularTags();
-        bindSuggestField("type");
-        bindSuggestField("location");
+        bindMapFinderUi();
+        if (!MAP_UI) {
+          renderPopularTags();
+          bindSuggestField("type");
+          bindSuggestField("location");
+        }
         bindAreaToggle();
         syncListViewToggle();
         refreshGenerateSlideLockState();
         document.addEventListener("ms:generation-lock-changed", refreshGenerateSlideLockState);
-        void hydrateClaimedFromProjects().then((changed) => {
-          if (changed && lastLeads.length) refreshVisibleLeads();
-        });
-        void preloadAllLeads();
+        if (MAP_UI) {
+          showSearchPrompt();
+          // Ask for location as soon as Finder opens (browser permission prompt).
+          void promptMapLocationOnOpen();
+          // Warm cache after first paint so the map stays responsive on open.
+          scheduleMapIdlePreload();
+          void hydrateClaimedFromProjects();
+        } else {
+          void hydrateClaimedFromProjects().then((changed) => {
+            if (changed && lastLeads.length) refreshVisibleLeads();
+          });
+          void preloadAllLeads();
+        }
       } catch (e) {
         console.error(e);
         clearLoadingCards();
@@ -2808,6 +4313,7 @@
     const appended = e.detail?.appended;
     if (!Array.isArray(appended) || !appended.length) return;
     mergeScrapedIntoAllLeads(appended);
+    if (MAP_UI) return;
     if (!typeInput?.value?.trim() && !locationInput?.value?.trim() && !inMyArea) {
       renderLeads(allLeads, "All leads");
     }
@@ -2816,11 +4322,11 @@
   window.addEventListener("leads-cache-refreshed", (e) => {
     if (document.body?.dataset?.page !== "leads") return;
     if (!isDbConnected()) return;
-    if (shouldSkipBulkPaint()) return;
     const payload = e.detail;
     if (!payload?.leads?.length) return;
     allLeads = rankLeadList(payload.leads.slice());
     leadsReady = true;
+    if (MAP_UI || shouldSkipBulkPaint()) return;
     if (!typeInput?.value?.trim() && !locationInput?.value?.trim()) {
       renderLeads(allLeads, "All leads");
       setStatus("");

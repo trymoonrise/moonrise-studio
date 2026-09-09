@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Creator + Moonrise HQ contact snapshots for watermarked published sites.
  */
 
@@ -6,11 +6,11 @@ const HQ_CONTACT = {
   kind: "hq",
   name: "Moonrise",
   org: "Moonrise Studio",
-  subtitle: "Headquarters · trymoonrise.com",
+  subtitle: "Headquarters Â· trymoonrise.com",
   email: String(process.env.MOONRISE_SUPPORT_EMAIL || "trymoonrise@gmail.com").trim(),
   phone: String(process.env.MOONRISE_SUPPORT_PHONE || "+14013000957").trim(),
   url: String(process.env.PUBLIC_APP_URL || "https://trymoonrise.com").replace(/\/$/, ""),
-  discordUrl: "https://discord.gg/yFJajbBNj",
+  discordUrl: "https://discord.gg/gdbA3gEVY",
 };
 
 function digitsOnly(value) {
@@ -66,7 +66,7 @@ function buildCreatorContactSnapshot(profile) {
   return {
     kind: "creator",
     name,
-    subtitle: "Website creator · site changes & updates",
+    subtitle: "Website creator Â· site changes & updates",
     email: email || "",
     phone: phone || "",
     phoneDisplay: phoneDisplay || phone || "",
@@ -102,7 +102,7 @@ function readStoredCreatorContact(project) {
   return {
     kind: "creator",
     name: String(stored.name || "Your creator").trim() || "Your creator",
-    subtitle: String(stored.subtitle || "Website creator · site changes & updates").trim(),
+    subtitle: String(stored.subtitle || "Website creator Â· site changes & updates").trim(),
     email,
     phone,
     phoneDisplay:

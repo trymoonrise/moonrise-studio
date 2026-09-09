@@ -1,8 +1,28 @@
-# LeadFinder Cloud — optional hourly cron scraper only.
-# Live Business Finder search (Playwright) is local-dev only: npm run search:server
-# Do not deploy leadfinder-search on Render — Playwright exceeds practical memory limits.
+# LeadFinder Cloud
+# - Cron: hourly seed scraper → Discord / Supabase
+# - Web: 24/7 live Business Finder search API (Playwright)
 
 services:
+  - type: web
+    name: leadfinder-search
+    runtime: docker
+    rootDir: leadfinder-cloud
+    dockerfilePath: ./Dockerfile.search
+    plan: standard
+    region: oregon
+    healthCheckPath: /health
+    envVars:
+      - key: HEADLESS
+        value: "1"
+      - key: LEADFINDER_SEARCH_HOST
+        value: "0.0.0.0"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: LEADFINDER_SEARCH_SECRET
+        sync: false
+
   - type: cron
     name: leadfinder-cloud
     runtime: docker

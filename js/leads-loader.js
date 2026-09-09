@@ -1111,9 +1111,9 @@
       .map((row) => finalizeLead(rawRowToLead(row)))
       .filter((lead) => lead && (lead.formatValid !== false || lead.name || lead.mapsUrl))
       .filter((lead) => {
-        if (websiteFilter === "with") return !!lead.hasWebsite;
+        if (websiteFilter === "with") return !!lead.hasWebsite || lead.websiteStatus === "has";
         if (websiteFilter === "without") {
-          return !lead.hasWebsite && (lead.websiteStatus === "missing" || lead.websiteStatus === "unknown");
+          return !lead.hasWebsite && lead.websiteStatus === "missing";
         }
         return true;
       });

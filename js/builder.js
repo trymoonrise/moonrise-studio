@@ -116,6 +116,16 @@
     onboardStep: 1,
     mapsReady: false,
     mapsScraping: false,
+    builderMode: "google",
+    uploadFiles: [],
+    uploadBusy: false,
+    githubToken: "",
+    githubRepos: [],
+    githubConnected: false,
+    githubListing: false,
+    githubWizardStep: 1,
+    githubFolders: [],
+    githubFolderSuggested: "",
     business: {
       businessName: "",
       category: "",
@@ -194,7 +204,11 @@
 
   function redirectToEditor(extra) {
     const q = new URLSearchParams(location.search);
-    if (extra && typeof extra === "object") {
+    if (extra instanceof URLSearchParams) {
+      extra.forEach((v, k) => {
+        if (v != null && v !== "") q.set(k, String(v));
+      });
+    } else if (extra && typeof extra === "object") {
       Object.entries(extra).forEach(([k, v]) => {
         if (v != null && v !== "") q.set(k, String(v));
       });
@@ -1312,11 +1326,372 @@
     return isLooseLink(f.maps);
   }
 
+  function readGithubRepoSelection() {
+    return String(document.getElementById("bs-gh-repo")?.value || "").trim();
+  }
+
+  function readGithubToken() {
+    return String(document.getElementById("bs-gh-token")?.value || "").trim();
+  }
+
+  function isUploadPathReady() {
+    const step = Number(state.githubWizardStep) || 1;
+    if (step === 1) return !!readGithubToken();
+    if (step === 2) return !!state.githubConnected && !!readGithubRepoSelection();
+    return !!state.githubConnected && !!readGithubRepoSelection();
+  }
+
+  function renderGithubFolders(folders, suggested) {
+    const select = document.getElementById("bs-gh-path");
+    const hint = document.getElementById("bs-gh-path-hint");
+    if (!select) return;
+    const list = Array.isArray(folders) ? folders : [];
+    state.githubFolders = list;
+    state.githubFolderSuggested = suggested == null ? "" : String(suggested);
+    select.innerHTML = "";
+    if (!list.length) {
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "No HTML folders found";
+      select.appendChild(opt);
+      select.disabled = true;
+      if (hint) hint.textContent = "This repo has no .html files Moonrise can import.";
+      return;
+    }
+    list.forEach((folder) => {
+      const opt = document.createElement("option");
+      opt.value = folder.path || "";
+      const mark = folder.hasIndex ? " · index.html" : "";
+      opt.textContent = (folder.label || folder.path || "(repository root)") + mark;
+      select.appendChild(opt);
+    });
+    const preferred = state.githubFolderSuggested;
+    const hasPreferred = list.some((f) => String(f.path || "") === preferred);
+    select.value = hasPreferred ? preferred : list[0].path || "";
+    select.disabled = false;
+    if (hint) {
+      hint.textContent = select.value
+        ? "Importing from " + select.value + "/"
+        : "Importing from the repository root.";
+    }
+  }
+
+  async function loadGithubSiteFolders() {
+    const repo = readGithubRepoSelection();
+    const token = state.githubToken || readGithubToken();
+    const select = document.getElementById("bs-gh-path");
+    const hint = document.getElementById("bs-gh-path-hint");
+    if (!repo || !token) {
+      renderGithubFolders([], "");
+      return false;
+    }
+    if (select) {
+      select.disabled = true;
+      select.innerHTML = "<option value=\"\">Loading folders…</option>";
+    }
+    if (hint) hint.textContent = "Scanning repository for website folders…";
+    try {
+      const base = await pingWorker();
+      const headers = await authHeaders();
+      const res = await fetch(base + "/github/site-folders", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ token, repo }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Could not list site folders (" + res.status + ")");
+      renderGithubFolders(data.folders || [], data.suggested || "");
+      return true;
+    } catch (e) {
+      renderGithubFolders([{ path: "", label: "(repository root)", htmlCount: 0, hasIndex: false }], "");
+      if (hint) hint.textContent = e?.message || "Could not scan folders — importing from repo root.";
+      return false;
+    }
+  }
+
+  function setGithubWizardStep(step) {
+    const next = Math.max(1, Math.min(3, Number(step) || 1));
+    state.githubWizardStep = next;
+    const root = document.getElementById("bs-gh");
+    if (root) root.setAttribute("data-gh-step", String(next));
+
+    document.querySelectorAll("[data-gh-step-panel]").forEach((panel) => {
+      const on = Number(panel.getAttribute("data-gh-step-panel")) === next;
+      panel.hidden = !on;
+      panel.classList.toggle("is-active", on);
+    });
+    document.querySelectorAll("[data-gh-step-indicator]").forEach((el) => {
+      const n = Number(el.getAttribute("data-gh-step-indicator"));
+      el.classList.toggle("is-active", n === next);
+      el.classList.toggle("is-done", n < next);
+    });
+
+    const lead = document.getElementById("bs-path-upload-lead");
+    if (lead) {
+      lead.textContent =
+        next === 1
+          ? "Paste a GitHub token to connect your account."
+          : next === 2
+            ? "Select the repository that contains your website."
+            : "Choose the site folder, then open in Editor.";
+    }
+
+    const backBtn = document.getElementById("onboard-cancel");
+    if (backBtn && state.builderMode === "upload") {
+      backBtn.textContent = next > 1 ? "Back" : "Back";
+    }
+
+    closeGithubRepoMenu();
+    setOnboardError("");
+    updateOnboardContinue();
+    if (next === 3) void loadGithubSiteFolders();
+  }
+
+  function setGithubStatus(msg, kind) {
+    const el = document.getElementById("bs-gh-status");
+    if (!el) return;
+    const text = String(msg || "").trim();
+    el.hidden = !text;
+    el.textContent = text;
+    el.classList.toggle("is-error", kind === "error");
+    el.classList.toggle("is-ok", kind === "ok");
+  }
+
+  function setGithubRepoValue(value, labelText) {
+    const hidden = document.getElementById("bs-gh-repo");
+    const label = document.getElementById("bs-gh-repo-label-text");
+    const next = String(value || "").trim();
+    if (hidden) hidden.value = next;
+    if (label) {
+      label.textContent = next
+        ? labelText || next
+        : String(label.dataset.placeholder || "Select a repository…");
+      label.classList.toggle("is-placeholder", !next);
+    }
+    document.querySelectorAll(".ms-bs-gh-select-option").forEach((btn) => {
+      const on = btn.getAttribute("data-value") === next;
+      btn.classList.toggle("is-selected", on);
+      btn.setAttribute("aria-selected", on ? "true" : "false");
+    });
+  }
+
+  function closeGithubRepoMenu() {
+    const wrap = document.getElementById("bs-gh-select");
+    const trigger = document.getElementById("bs-gh-repo-trigger");
+    const menu = document.getElementById("bs-gh-repo-menu");
+    wrap?.classList.remove("is-open");
+    if (trigger) trigger.setAttribute("aria-expanded", "false");
+    if (menu) menu.hidden = true;
+  }
+
+  function openGithubRepoMenu() {
+    const wrap = document.getElementById("bs-gh-select");
+    const trigger = document.getElementById("bs-gh-repo-trigger");
+    const menu = document.getElementById("bs-gh-repo-menu");
+    if (!wrap || wrap.classList.contains("is-disabled") || trigger?.disabled) return;
+    wrap.classList.add("is-open");
+    if (trigger) trigger.setAttribute("aria-expanded", "true");
+    if (menu) menu.hidden = false;
+  }
+
+  function toggleGithubRepoMenu() {
+    const wrap = document.getElementById("bs-gh-select");
+    if (wrap?.classList.contains("is-open")) closeGithubRepoMenu();
+    else openGithubRepoMenu();
+  }
+
+  function onGithubRepoPicked(value, labelText) {
+    setGithubRepoValue(value, labelText);
+    closeGithubRepoMenu();
+    const hint = document.getElementById("bs-gh-repo-hint");
+    if (hint) {
+      hint.textContent = value
+        ? "Selected " + value
+        : "Choose the repo that contains your website HTML.";
+    }
+    const nameInput = document.getElementById("onb-upload-name");
+    if (nameInput && !String(nameInput.value || "").trim() && value) {
+      nameInput.placeholder = value.split("/").pop() || "Uploaded site";
+    }
+    updateOnboardContinue();
+  }
+
+  function renderGithubRepos(repos) {
+    const wrap = document.getElementById("bs-gh-select");
+    const trigger = document.getElementById("bs-gh-repo-trigger");
+    const menu = document.getElementById("bs-gh-repo-menu");
+    const label = document.getElementById("bs-gh-repo-label-text");
+    if (!menu || !trigger) return;
+    const list = Array.isArray(repos) ? repos : [];
+    state.githubRepos = list;
+    const placeholder =
+      list.length
+        ? "Select a repository…"
+        : state.githubConnected
+          ? "No repositories found"
+          : "Connect with a token first…";
+    if (label) label.dataset.placeholder = placeholder;
+
+    menu.innerHTML = "";
+    if (!list.length) {
+      const empty = document.createElement("p");
+      empty.className = "ms-bs-gh-select-empty";
+      empty.textContent = state.githubConnected
+        ? "No repositories found for this token."
+        : "Connect with a token first…";
+      menu.appendChild(empty);
+    } else {
+      list.forEach((repo) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "ms-bs-gh-select-option";
+        btn.setAttribute("role", "option");
+        btn.setAttribute("data-value", repo.fullName);
+        btn.setAttribute("aria-selected", "false");
+        const name = document.createElement("span");
+        name.className = "ms-bs-gh-select-option-name";
+        name.textContent = repo.fullName;
+        btn.appendChild(name);
+        if (repo.private) {
+          const badge = document.createElement("span");
+          badge.className = "ms-bs-gh-select-option-badge";
+          badge.textContent = "Private";
+          btn.appendChild(badge);
+        }
+        btn.addEventListener("click", () => {
+          onGithubRepoPicked(repo.fullName, repo.fullName);
+        });
+        menu.appendChild(btn);
+      });
+    }
+
+    const enabled = list.length > 0;
+    wrap?.classList.toggle("is-disabled", !enabled);
+    trigger.disabled = !enabled;
+    setGithubRepoValue("");
+    closeGithubRepoMenu();
+    updateOnboardContinue();
+  }
+
+  async function connectGithubRepos({ advance = true } = {}) {
+    const token = readGithubToken();
+    if (!token) {
+      setGithubStatus("Paste your GitHub token first.", "error");
+      updateOnboardContinue();
+      return false;
+    }
+    state.githubListing = true;
+    state.githubConnected = false;
+    state.githubToken = token;
+    setGithubStatus("Connecting…");
+    updateOnboardContinue();
+    renderGithubRepos([]);
+    try {
+      const base = await pingWorker();
+      const headers = await authHeaders();
+      const res = await fetch(base + "/github/repos", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ token }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Could not list GitHub repos (" + res.status + ")");
+      const repos = Array.isArray(data.repos) ? data.repos : [];
+      state.githubConnected = true;
+      renderGithubRepos(repos);
+      if (!repos.length) {
+        setGithubStatus("Connected, but no repositories were found for this token.", "error");
+        return false;
+      }
+      setGithubStatus("Connected.", "ok");
+      if (advance) setGithubWizardStep(2);
+      return true;
+    } catch (e) {
+      state.githubConnected = false;
+      state.githubToken = "";
+      renderGithubRepos([]);
+      setGithubStatus(e?.message || "Could not connect to GitHub.", "error");
+      return false;
+    } finally {
+      state.githubListing = false;
+      updateOnboardContinue();
+    }
+  }
+
+  async function importGithubSite() {
+    const repo = readGithubRepoSelection();
+    const token = state.githubToken || String(document.getElementById("bs-gh-token")?.value || "").trim();
+    if (!token) throw new Error("Paste your GitHub token and connect first.");
+    if (!repo) throw new Error("Select a GitHub repository to continue.");
+    const pathPrefix = sanitizeClientText(document.getElementById("bs-gh-path")?.value || "", 200);
+    const businessName =
+      sanitizeClientText(document.getElementById("onb-upload-name")?.value || "", 120) ||
+      repo.split("/").pop() ||
+      "Uploaded site";
+    const base = await pingWorker();
+    const headers = await authHeaders();
+    const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+    const timeoutMs = 150000;
+    const timer = controller
+      ? window.setTimeout(() => {
+          try {
+            controller.abort();
+          } catch (_) {
+            /* ignore */
+          }
+        }, timeoutMs)
+      : null;
+    let res;
+    try {
+      res = await fetch(base + "/github/import-site", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          token,
+          repo,
+          path: pathPrefix,
+          businessName,
+          watermark_enabled: true,
+        }),
+        signal: controller?.signal,
+      });
+    } catch (e) {
+      if (e?.name === "AbortError") {
+        throw new Error(
+          "Import timed out. Try a smaller site folder, or set Site folder to the HTML directory."
+        );
+      }
+      throw new Error(e?.message || "Could not reach import service.");
+    } finally {
+      if (timer) window.clearTimeout(timer);
+    }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(
+        data.error ||
+          (res.status === 504 || res.status === 502
+            ? "Import timed out on the server. Use Site folder if the site isn’t at the repo root."
+            : "Could not import from GitHub (" + res.status + ")")
+      );
+    }
+    const projectId = data.projectId || data.id;
+    if (!projectId) throw new Error("Import succeeded but no project id was returned.");
+    return projectId;
+  }
+
   function canContinueOnboard() {
+    if (state.uploadBusy || state.githubListing) return false;
+    if (state.builderMode === "upload") return isUploadPathReady();
     // Wait until Maps lookup finishes so Generate uses resolved details.
     if (state.mapsScraping) return false;
     const fields = readOnboardFields();
-    if (isMapsPathReady(fields) || isManualComplete(fields)) return true;
+    if (state.builderMode === "google") {
+      if (isMapsPathReady(fields)) return true;
+    } else if (state.builderMode === "manual") {
+      if (isManualComplete(fields)) return true;
+    } else if (isMapsPathReady(fields) || isManualComplete(fields)) {
+      return true;
+    }
     // Business Finder handoff may omit phone - still let them continue with the rest.
     if (
       state.leadId &&
@@ -1326,6 +1701,14 @@
       return true;
     }
     return false;
+  }
+
+  function onboardCtaLabel() {
+    if (state.builderMode !== "upload") return "Generate site";
+    const step = Number(state.githubWizardStep) || 1;
+    if (step === 1) return state.githubConnected ? "Continue" : "Connect";
+    if (step === 2) return "Continue";
+    return "Open in Editor";
   }
 
   const ONBOARD_GENERATE_LABEL = "Generate site";
@@ -1339,7 +1722,7 @@
       btn.disabled = true;
       btn.textContent = label || "Loading…";
     } else {
-      btn.textContent = ONBOARD_GENERATE_LABEL;
+      btn.textContent = onboardCtaLabel();
     }
   }
 
@@ -1347,18 +1730,284 @@
     const btn = document.getElementById("onboard-generate");
     if (!btn) return;
     // Keep Generate in a loading state while Maps lookup or /generate is in flight.
-    if (state.mapsScraping) {
+    if (state.uploadBusy) {
+      setOnboardGenerateLoading(
+        true,
+        state.builderMode === "upload" && (Number(state.githubWizardStep) || 1) < 3
+          ? "Connecting…"
+          : "Importing…"
+      );
+      return;
+    }
+    if (state.githubListing) {
+      setOnboardGenerateLoading(true, "Connecting…");
+      return;
+    }
+    if (state.builderMode !== "upload" && state.mapsScraping) {
       setOnboardGenerateLoading(true, "Looking up…");
       window.StudioShell?.setChannelGenerating?.(shellChannelId(), true, { cancellable: false });
       return;
     }
-    if (generateAbort || generateInFlight || genProgressActive) {
+    if (state.builderMode !== "upload" && (generateAbort || generateInFlight || genProgressActive)) {
       setOnboardGenerateLoading(true, "Generating…");
       syncBuilderChannelGenerating();
       return;
     }
     setOnboardGenerateLoading(false);
     btn.disabled = !canContinueOnboard();
+  }
+
+  function setBuilderMode(mode) {
+    const next = mode === "manual" || mode === "upload" ? mode : "google";
+    state.builderMode = next;
+    document.querySelectorAll("[data-builder-mode]").forEach((btn) => {
+      const on = btn.getAttribute("data-builder-mode") === next;
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    document.querySelectorAll("[data-builder-panel]").forEach((panel) => {
+      const on = panel.getAttribute("data-builder-panel") === next;
+      panel.hidden = !on;
+      panel.classList.toggle("is-active", on);
+      panel.setAttribute("aria-hidden", on ? "false" : "true");
+    });
+    if (next === "upload") setGithubWizardStep(state.githubWizardStep || 1);
+    else {
+      const backBtn = document.getElementById("onboard-cancel");
+      if (backBtn) backBtn.textContent = "Back";
+    }
+    setOnboardError("");
+    updateOnboardContinue();
+  }
+
+  function formatUploadBytes(n) {
+    const num = Number(n) || 0;
+    if (num < 1024) return num + " B";
+    if (num < 1024 * 1024) return (num / 1024).toFixed(num < 10 * 1024 ? 1 : 0) + " KB";
+    return (num / (1024 * 1024)).toFixed(1) + " MB";
+  }
+
+  function setUploadFiles(fileList) {
+    const files = Array.from(fileList || []).filter((f) => f && f.name);
+    state.uploadFiles = files;
+    const list = document.getElementById("bs-upload-list");
+    const meta = document.getElementById("bs-upload-meta");
+    const nameInput = document.getElementById("onb-upload-name");
+    if (!files.length) {
+      if (list) {
+        list.hidden = true;
+        list.innerHTML = "";
+      }
+      if (meta) {
+        meta.hidden = true;
+        meta.textContent = "";
+      }
+      updateOnboardContinue();
+      return;
+    }
+    const entry =
+      files.find((f) => /^index\.html?$/i.test(f.name.split(/[/\\]/).pop() || "")) ||
+      files.find((f) => /\.html?$/i.test(f.name));
+    if (list) {
+      list.hidden = false;
+      list.innerHTML = files
+        .slice(0, 40)
+        .map((f) => {
+          const base = f.webkitRelativePath || f.name;
+          const isEntry = entry && f === entry;
+          return (
+            '<li' +
+            (isEntry ? ' class="is-entry"' : "") +
+            "><span>" +
+            escHtmlLite(base) +
+            (isEntry ? " · entry" : "") +
+            '</span><span class="ms-bs-upload-file-size">' +
+            formatUploadBytes(f.size) +
+            "</span></li>"
+          );
+        })
+        .join("");
+      if (files.length > 40) {
+        list.innerHTML +=
+          "<li><span>+" + (files.length - 40) + " more files</span><span></span></li>";
+      }
+    }
+    if (meta) {
+      meta.hidden = false;
+      meta.textContent = entry
+        ? files.length + " file" + (files.length === 1 ? "" : "s") + " · entry " + (entry.webkitRelativePath || entry.name)
+        : "Add at least one .html file to continue.";
+    }
+    if (nameInput && !String(nameInput.value || "").trim() && entry) {
+      const stem = String(entry.name || "")
+        .replace(/\.html?$/i, "")
+        .replace(/[_-]+/g, " ")
+        .trim();
+      if (stem && stem.toLowerCase() !== "index") nameInput.placeholder = stem;
+    }
+    updateOnboardContinue();
+  }
+
+  function escHtmlLite(s) {
+    return String(s ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function normalizeAssetPath(p) {
+    return String(p || "")
+      .replace(/\\/g, "/")
+      .replace(/^\.\//, "")
+      .replace(/^\/+/, "");
+  }
+
+  function fileKey(file) {
+    return normalizeAssetPath(file.webkitRelativePath || file.name);
+  }
+
+  function readFileAsText(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = () => reject(new Error("Could not read " + (file.name || "file")));
+      reader.readAsText(file);
+    });
+  }
+
+  function readFileAsDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = () => reject(new Error("Could not read " + (file.name || "file")));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function guessMime(name) {
+    const lower = String(name || "").toLowerCase();
+    if (lower.endsWith(".png")) return "image/png";
+    if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) return "image/jpeg";
+    if (lower.endsWith(".webp")) return "image/webp";
+    if (lower.endsWith(".gif")) return "image/gif";
+    if (lower.endsWith(".svg")) return "image/svg+xml";
+    if (lower.endsWith(".ico")) return "image/x-icon";
+    if (lower.endsWith(".woff2")) return "font/woff2";
+    if (lower.endsWith(".woff")) return "font/woff";
+    if (lower.endsWith(".ttf")) return "font/ttf";
+    if (lower.endsWith(".otf")) return "font/otf";
+    return "";
+  }
+
+  async function assembleUploadedSite(files) {
+    const list = Array.from(files || []);
+    if (!list.length) throw new Error("Choose website files to upload.");
+    const byKey = new Map();
+    list.forEach((f) => byKey.set(fileKey(f), f));
+    const htmlFiles = list.filter((f) => /\.html?$/i.test(f.name));
+    if (!htmlFiles.length) throw new Error("Upload needs at least one .html file.");
+    const entry =
+      htmlFiles.find((f) => /^index\.html?$/i.test(f.name.split(/[/\\]/).pop() || "")) ||
+      htmlFiles[0];
+    const entryDir = normalizeAssetPath(fileKey(entry).replace(/[^/]+$/, ""));
+    let html = await readFileAsText(entry);
+    // Text assets can be larger; binary assets stay small so the single HTML payload fits.
+    const MAX_INLINE_TEXT = 700 * 1024;
+    const MAX_INLINE_IMAGE = 120 * 1024;
+    const MAX_INLINE_FONT = 48 * 1024;
+    const MAX_HTML = 5.5 * 1024 * 1024;
+
+    const resolveFile = (ref) => {
+      const raw = String(ref || "").trim();
+      if (!raw || /^(https?:|data:|blob:|mailto:|tel:|#|\/\/)/i.test(raw)) return null;
+      const clean = normalizeAssetPath(raw.split("?")[0].split("#")[0]);
+      if (!clean) return null;
+      const candidates = [
+        normalizeAssetPath(entryDir + clean),
+        clean,
+        normalizeAssetPath(clean.replace(/^\.\.\//, "")),
+      ];
+      for (const key of candidates) {
+        if (byKey.has(key)) return byKey.get(key);
+      }
+      const base = clean.split("/").pop();
+      if (!base) return null;
+      return list.find((f) => (f.webkitRelativePath || f.name).split(/[/\\]/).pop() === base) || null;
+    };
+
+    const linkRe = /<link\b[^>]*rel=["']stylesheet["'][^>]*>/gi;
+    const links = [...html.matchAll(linkRe)].map((m) => m[0]);
+    for (const tag of links) {
+      const href = (tag.match(/href=["']([^"']+)["']/i) || [])[1];
+      const file = resolveFile(href);
+      if (!file || file.size > MAX_INLINE_TEXT) continue;
+      try {
+        const css = await readFileAsText(file);
+        html = html.replace(tag, "<style>\n" + css + "\n</style>");
+      } catch (_) {
+        /* keep original link */
+      }
+    }
+
+    const scriptRe = /<script\b[^>]*src=["']([^"']+)["'][^>]*>\s*<\/script>/gi;
+    const scripts = [...html.matchAll(scriptRe)].map((m) => ({ full: m[0], src: m[1] }));
+    for (const item of scripts) {
+      const file = resolveFile(item.src);
+      if (!file || file.size > MAX_INLINE_TEXT) continue;
+      try {
+        const js = await readFileAsText(file);
+        html = html.replace(item.full, "<script>\n" + js + "\n</script>");
+      } catch (_) {
+        /* keep original */
+      }
+    }
+
+    const attrRe = /\b(src|href)=["']([^"']+)["']/gi;
+    const attrs = [...html.matchAll(attrRe)].map((m) => ({ full: m[0], attr: m[1], val: m[2] }));
+    for (const item of attrs) {
+      const pathOnly = item.val.split("?")[0];
+      const isFont = /\.(woff2?|ttf|otf)$/i.test(pathOnly);
+      const isImage = /\.(png|jpe?g|gif|webp|svg|ico)$/i.test(pathOnly);
+      if (!isFont && !isImage) continue;
+      const file = resolveFile(item.val);
+      const cap = isFont ? MAX_INLINE_FONT : MAX_INLINE_IMAGE;
+      if (!file || file.size > cap) continue;
+      try {
+        let dataUrl = await readFileAsDataUrl(file);
+        const mime = guessMime(file.name);
+        if (mime && dataUrl.startsWith("data:application/octet-stream")) {
+          dataUrl = dataUrl.replace("data:application/octet-stream", "data:" + mime);
+        }
+        html = html.replace(item.full, item.attr + '="' + dataUrl + '"');
+      } catch (_) {
+        /* keep original */
+      }
+    }
+
+    // If still oversized, drop largest inlined data URLs (images/fonts) until it fits.
+    if (html.length > MAX_HTML) {
+      const dataAttrRe = /\b(src|href)=["'](data:[^"']+)["']/gi;
+      const embedded = [...html.matchAll(dataAttrRe)]
+        .map((m) => ({ full: m[0], attr: m[1], data: m[2], len: m[2].length }))
+        .filter((m) => m.data.startsWith("data:image/") || m.data.startsWith("data:font/") || m.data.includes("font/"))
+        .sort((a, b) => b.len - a.len);
+      for (const item of embedded) {
+        if (html.length <= MAX_HTML) break;
+        html = html.replace(item.full, item.attr + '=""');
+      }
+    }
+
+    if (html.length > MAX_HTML) {
+      throw new Error(
+        "Assembled site is still too large (max about 5.5 MB). Try fewer/smaller images, or upload a leaner HTML build."
+      );
+    }
+    return { html, entryName: entry.webkitRelativePath || entry.name };
+  }
+
+  async function importUploadedSite() {
+    return importGithubSite();
   }
 
   function shouldExpandManualFields() {
@@ -2592,6 +3241,9 @@
     dropImageEl: null,
     previewObjectUrl: "",
     previewPainted: false,
+    uploadNavDoc: null,
+    uploadNavHandler: null,
+    previewPagePath: "",
   };
 
   function rgbToHex(color) {
@@ -2757,6 +3409,202 @@
     return !!doc.querySelector("h1, h2, nav, header, main, section, .hero, footer, .nav, p, a");
   }
 
+  function getUploadSiteFilesMap() {
+    const project = state.project || {};
+    const ctx =
+      project.business_context && typeof project.business_context === "object"
+        ? project.business_context
+        : {};
+    const isUpload =
+      project.template_id === "upload" ||
+      ctx.source === "upload" ||
+      !!ctx.siteFiles;
+    if (!isUpload) return null;
+    const files = ctx.siteFiles && typeof ctx.siteFiles === "object" ? ctx.siteFiles : null;
+    if (!files || !Object.keys(files).length) return null;
+    return { files, ctx };
+  }
+
+  function uploadEntryPath(ctx) {
+    return String(ctx?.uploadEntry || "index.html").replace(/^\/+/, "") || "index.html";
+  }
+
+  function isUploadEntryPath(path, ctx) {
+    const p = String(path || "")
+      .replace(/^\/+/, "")
+      .trim();
+    if (!p || /^index\.html?$/i.test(p)) return true;
+    return p === uploadEntryPath(ctx || state.project?.business_context);
+  }
+
+  function normalizeUploadHrefPath(href, ctx, files) {
+    let raw = String(href || "").trim();
+    if (!raw || /^(https?:|mailto:|tel:|javascript:|data:|blob:)/i.test(raw)) return "";
+    if (raw.startsWith("#")) return "";
+    try {
+      const base = "https://preview.local/";
+      const url = new URL(raw, base);
+      if (url.origin !== "https://preview.local") return "";
+      raw = decodeURIComponent(url.pathname || "");
+    } catch (_) {
+      raw = raw.split("#")[0].split("?")[0];
+    }
+    raw = String(raw || "")
+      .replace(/\\/g, "/")
+      .replace(/^\/+/, "");
+
+    const prefixes = [ctx?.githubPath, String(ctx?.githubRepo || "").split("/").pop()]
+      .map((p) => String(p || "").replace(/^\/+|\/+$/g, ""))
+      .filter(Boolean);
+    // Also strip leading folders that aren't themselves known pages.
+    if (files && typeof files === "object") {
+      for (const key of Object.keys(files)) {
+        const parts = String(key).split("/").filter(Boolean);
+        if (parts.length > 1) prefixes.push(parts.slice(0, -1).join("/"));
+      }
+    }
+    const uniquePrefixes = [...new Set(prefixes)].sort((a, b) => b.length - a.length);
+    for (const prefix of uniquePrefixes) {
+      if (raw === prefix || raw === prefix + "/") return "index.html";
+      if (raw.startsWith(prefix + "/")) raw = raw.slice(prefix.length + 1);
+    }
+    // Keep peeling unknown leading segments until a file match is possible.
+    if (files && typeof files === "object") {
+      let cur = raw;
+      while (cur.includes("/")) {
+        if (files[cur]) break;
+        const next = cur.replace(/^[^/]+\//, "");
+        if (!next || next === cur) break;
+        cur = next;
+      }
+      raw = cur;
+    }
+    if (!raw || raw.endsWith("/")) raw = (raw || "") + "index.html";
+    return raw.replace(/^\/+/, "");
+  }
+
+  function pickUploadFileHtml(files, ctx, key) {
+    if (!key || !files) return null;
+    if (isUploadEntryPath(key, ctx)) {
+      return { path: key, html: state.html || files[key] || "" };
+    }
+    return { path: key, html: files[key] || "" };
+  }
+
+  function resolveUploadPreviewHtml(href) {
+    const pack = getUploadSiteFilesMap();
+    if (!pack) return null;
+    const { files, ctx } = pack;
+    const path = normalizeUploadHrefPath(href, ctx, files);
+    if (!path) return null;
+    const candidates = [
+      path,
+      path.replace(/^\.\//, ""),
+      path.split("/").pop(),
+    ].filter(Boolean);
+    for (const key of candidates) {
+      if (files[key]) return pickUploadFileHtml(files, ctx, key);
+    }
+    const lower = path.toLowerCase();
+    const base = String(path.split("/").pop() || "").toLowerCase();
+    for (const [key, html] of Object.entries(files)) {
+      const keyLower = String(key).toLowerCase();
+      const keyBase = String(key).split("/").pop()?.toLowerCase() || "";
+      if (keyLower === lower || keyBase === lower || (base && keyBase === base)) {
+        return pickUploadFileHtml(files, ctx, key) || { path: key, html };
+      }
+    }
+    return null;
+  }
+
+  function currentUploadPreviewPath() {
+    const pack = getUploadSiteFilesMap();
+    const entry = uploadEntryPath(pack?.ctx);
+    return String(editState.previewPagePath || entry).replace(/^\/+/, "") || entry;
+  }
+
+  /** Persist the HTML currently shown in the preview to entry html or siteFiles. */
+  function commitPreviewHtmlToProject(rawHtml) {
+    const html = String(rawHtml || "").trim();
+    if (!html) return;
+    const pack = getUploadSiteFilesMap();
+    const path = currentUploadPreviewPath();
+    if (!pack || isUploadEntryPath(path, pack.ctx)) {
+      state.html = html;
+      editState.lastWrittenHtml = html;
+      return;
+    }
+    const ctx = { ...(state.project?.business_context || {}) };
+    const siteFiles = { ...(ctx.siteFiles || {}) };
+    siteFiles[path] = html;
+    // Keep index/entry mirrors in sync when those keys exist.
+    ctx.siteFiles = siteFiles;
+    state.project = { ...(state.project || {}), business_context: ctx };
+    editState.lastWrittenHtml = state.html;
+  }
+
+  function navigateUploadPreviewPage(resolved) {
+    if (!resolved?.html) return false;
+    // Save whatever page we are leaving before swapping.
+    if (state.mode === "edit" && editState.boundDoc) {
+      try {
+        commitPreviewHtmlToProject(serializePreviewHtml());
+      } catch (_) {
+        /* ignore */
+      }
+      detachEditMode();
+    }
+    editState.skipRewrite = true;
+    editState.previewPagePath = resolved.path;
+    writePreviewDocument(resolved.html);
+    // Keep rewrite gate tied to entry html so updatePreview doesn't thrash.
+    editState.lastWrittenHtml = state.html;
+    syncPreviewChromeUrl();
+    if (state.mode === "edit") {
+      const doc = getPreviewDoc();
+      if (doc) attachEditMode(doc);
+    }
+    return true;
+  }
+
+  function bindUploadSitePreviewNav(doc) {
+    if (!doc) return;
+    // document.open/write clears listeners but keeps the same Document object,
+    // so we must always re-attach (never skip on doc identity).
+    if (editState.uploadNavHandler && editState.uploadNavDoc) {
+      try {
+        editState.uploadNavDoc.removeEventListener("click", editState.uploadNavHandler, true);
+      } catch (_) {
+        /* ignore */
+      }
+    }
+    const handler = (e) => {
+      const a = e.target?.closest?.("a[href]");
+      if (!a) return;
+      const href = a.getAttribute("href");
+      if (!href || href.startsWith("#")) return;
+      if (/^(mailto:|tel:|javascript:)/i.test(href)) return;
+      if (/^https?:\/\//i.test(href) || href.startsWith("//")) return;
+      if (!getUploadSiteFilesMap()) return;
+      const resolved = resolveUploadPreviewHtml(href);
+      if (!resolved?.html) {
+        // Stop iframe from navigating to parent-origin 404 ("Cannot GET /...").
+        if (/\.html?(?:[?#]|$)/i.test(href) || href.startsWith("/") || !/^[a-z]+:/i.test(href)) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation?.();
+      navigateUploadPreviewPage(resolved);
+    };
+    editState.uploadNavHandler = handler;
+    editState.uploadNavDoc = doc;
+    doc.addEventListener("click", handler, true);
+  }
+
   function writePreviewDocument(html) {
     const frame = getPreviewFrame();
     if (!frame || !html) return null;
@@ -2770,6 +3618,8 @@
     applyPreviewViewportSize();
     const safeHtml = closeIncompleteHtml(ensureMobileFriendlyHtml(injectContactFormPreviewHtml(html)));
     revokePreviewObjectUrl();
+    // Force nav rebind after document.write wipes listeners.
+    editState.uploadNavDoc = null;
     try {
       if (frame.getAttribute("src")) frame.removeAttribute("src");
     } catch (_) {
@@ -2778,6 +3628,11 @@
 
     const finishPaint = () => {
       bindPreviewScrollBridge();
+      try {
+        bindUploadSitePreviewNav(frame.contentDocument);
+      } catch (_) {
+        /* ignore */
+      }
       frame.classList.remove("is-parked");
       applyPreviewViewportSize();
       let painted = false;
@@ -2811,6 +3666,7 @@
         doc.write(safeHtml);
         doc.close();
         paintedViaWrite = previewDocLooksPainted(doc);
+        bindUploadSitePreviewNav(doc);
       }
     } catch (_) {
       paintedViaWrite = false;
@@ -3728,8 +4584,7 @@
     if (!editState.selected) return;
     pushEditHistory();
     mutator(editState.selected);
-    state.html = serializePreviewHtml();
-    editState.lastWrittenHtml = state.html;
+    commitPreviewHtmlToProject(serializePreviewHtml());
     if (opts.silentToolbar) positionEditToolbar();
     else renderEditToolbar();
     scheduleEditAutosave();
@@ -3746,8 +4601,7 @@
       el.removeAttribute("spellcheck");
       el.removeEventListener("blur", finish);
       el.removeEventListener("keydown", onKey);
-      state.html = serializePreviewHtml();
-      editState.lastWrittenHtml = state.html;
+      commitPreviewHtmlToProject(serializePreviewHtml());
       scheduleEditAutosave();
       renderEditToolbar();
     };
@@ -4224,10 +5078,7 @@
   function flushEditHtmlToState() {
     if (state.mode !== "edit") return state.html;
     const next = serializePreviewHtml();
-    if (next) {
-      state.html = next;
-      editState.lastWrittenHtml = next;
-    }
+    if (next) commitPreviewHtmlToProject(next);
     return state.html;
   }
 
@@ -4296,6 +5147,25 @@
     if (state.project) state.project.html = clean;
   }
 
+  async function persistSiteFilesQuiet(siteFiles) {
+    if (!state.projectId || !siteFiles) return;
+    const user = await window.StudioAuth.getUser();
+    const ctx = {
+      ...(state.project?.business_context || {}),
+      siteFiles,
+    };
+    const { error } = await sb()
+      .from("projects")
+      .update({
+        business_context: ctx,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", state.projectId)
+      .eq("user_id", user.id);
+    if (error) throw error;
+    if (state.project) state.project.business_context = ctx;
+  }
+
   function scheduleEditAutosave() {
     if (!state.projectId) {
       setEditSaveStatus("unsaved");
@@ -4311,11 +5181,17 @@
 
   async function runEditAutosave(gen) {
     if (gen !== editState.saveGeneration) return;
-    const html = flushEditHtmlToState();
-    if (!state.projectId || !html) return;
+    flushEditHtmlToState();
+    if (!state.projectId || !state.html) return;
     setEditSaveStatus("saving");
     try {
-      await persistHtmlQuiet(html);
+      const pack = getUploadSiteFilesMap();
+      const path = currentUploadPreviewPath();
+      if (pack && !isUploadEntryPath(path, pack.ctx)) {
+        await persistSiteFilesQuiet(pack.files);
+      } else {
+        await persistHtmlQuiet(state.html);
+      }
       if (gen !== editState.saveGeneration) return;
       setEditSaveStatus("saved");
       setTimeout(() => {
@@ -4556,8 +5432,9 @@
   }
 
   function syncPublishLiveUi({ showBanner = false } = {}) {
-    const url = liveSiteUrl();
-    const isLive = !!url;
+    const publishedUrl = liveSiteUrl();
+    const url = publicSiteUrl() || publishedUrl;
+    const isLive = !!publishedUrl;
     const hasUpdates = isLive && hasUnpublishedChanges();
     const paid = isPaidProject(state.project);
     syncPreviewChromeUrl();
@@ -4597,6 +5474,12 @@
     }
     if (unpublishBtn) unpublishBtn.hidden = !isLive;
     if (settingsUnpublishBtn) settingsUnpublishBtn.hidden = !isLive;
+    const devUnlockBtn = document.getElementById("btn-dev-unlock-top");
+    if (devUnlockBtn) {
+      const showDevUnlock = isLive && !paid && !!state.projectId;
+      devUnlockBtn.hidden = !showDevUnlock;
+      devUnlockBtn.disabled = !showDevUnlock;
+    }
     if (deleteBtn) deleteBtn.hidden = !state.projectId || paid;
     if (settingsDeleteBtn) {
       settingsDeleteBtn.hidden = paid;
@@ -4885,6 +5768,8 @@
     state.html = ensureMobileFriendlyHtml(data.html || "");
     editState.lastWrittenHtml = "";
     editState.previewPainted = false;
+    editState.previewPagePath = "";
+    editState.uploadNavDoc = null;
     state.viewportCustomized.desktop = false;
     state.viewportWidths.desktop = null;
     state.viewportHeights.desktop = null;
@@ -4916,6 +5801,7 @@
     syncPromptActionUi();
     syncMvpAccessUi();
     syncSiteSettingsUi();
+    syncWatermarkWidgetUi();
     syncPaymentPolicyAgreeUi();
     updatePreview();
     schedulePreviewRepaint();
@@ -5610,6 +6496,76 @@
     return data;
   }
 
+  async function workerGet(path) {
+    const base = workerUrl();
+    if (!base) throw new Error("Worker URL is not configured.");
+    const headers = await authHeaders();
+    let res;
+    try {
+      res = await fetch(base + path, { method: "GET", headers });
+    } catch (e) {
+      if (e?.name === "TypeError" && /fetch/i.test(String(e.message || ""))) {
+        const err = new Error("Could not reach the server. Try again in a moment.");
+        err.code = "NETWORK";
+        throw err;
+      }
+      throw e;
+    }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "Request failed");
+    return data;
+  }
+
+  async function simulateDevUnlock() {
+    if (!state.projectId) {
+      setError("Open a project first.");
+      return;
+    }
+    if (!liveSiteUrl()) {
+      setError("Publish the site first, then simulate unlock.");
+      return;
+    }
+    if (isPaidProject(state.project)) {
+      window.StudioToast?.success?.("This site is already unlocked.");
+      return;
+    }
+    const ok = window.confirm(
+      "Simulate a successful purchase?\n\nThis removes the watermark and redeploys the clean site without charging Stripe."
+    );
+    if (!ok) return;
+    const btn = document.getElementById("btn-dev-unlock-top");
+    if (btn) btn.disabled = true;
+    try {
+      setStatus("Simulating paid unlock…");
+      const data = await workerPost("/dev-unlock-go-live", {
+        projectId: state.projectId,
+      });
+      await loadProject(state.projectId);
+      syncPublishLiveUi({ showBanner: true });
+      syncSiteSettingsUi();
+      const url = data?.url || liveSiteUrl() || "";
+      setStatus(
+        data?.alreadyPaid
+          ? "Already unlocked" + (url ? ": " + url : "")
+          : "Dev unlock complete" + (url ? ": " + url : "")
+      );
+      window.StudioToast?.success?.(
+        data?.redeployError
+          ? "Unlocked (redeploy had an issue — check status)"
+          : "Watermark removed — purchase simulated"
+      );
+    } catch (e) {
+      setError(
+        e.message ||
+          "Dev unlock failed. Sign in as an allowlisted developer email, or use the Stripe promo code."
+      );
+      setStatus("");
+    } finally {
+      if (btn) btn.disabled = false;
+      syncPublishLiveUi();
+    }
+  }
+
   async function unpublish() {
     if (!state.projectId) {
       setError("Open a project before unpublishing.");
@@ -5859,6 +6815,35 @@
     );
   }
 
+  function ownerPhone() {
+    const ctx = state.project?.business_context || {};
+    return String(
+      businessValue("phone") ||
+        ctx.phone ||
+        ctx.businessPhone ||
+        state.project?.phone ||
+        ""
+    ).trim();
+  }
+
+  function ownerTelHref(raw) {
+    const digits = String(raw || "").replace(/\D/g, "");
+    if (digits.length < 7) return "";
+    return "tel:+" + (digits.length === 10 ? "1" + digits : digits);
+  }
+
+  function contactOwner() {
+    const href = ownerTelHref(ownerPhone());
+    if (!href) {
+      window.StudioToast?.info?.(
+        "Add the owner's phone in Settings → Contact, then try again."
+      );
+      setSiteSettingsOpen(true, "contact");
+      return;
+    }
+    window.location.href = href;
+  }
+
   function qrBusinessDetails() {
     const ctx = state.project?.business_context || {};
     const category =
@@ -5894,10 +6879,11 @@
     if (metaEl) {
       metaEl.textContent = "";
       const rows = [];
-      if (details.phone) rows.push({ label: "Phone", value: details.phone });
-      if (details.address) rows.push({ label: "Address", value: details.address });
+      if (details.phone) rows.push({ kind: "phone", label: "Phone", value: details.phone });
+      if (details.address) rows.push({ kind: "address", label: "Address", value: details.address });
       rows.forEach((row) => {
         const li = document.createElement("li");
+        li.dataset.kind = row.kind;
         const label = document.createElement("span");
         label.className = "ms-lb-qr-meta-label";
         label.textContent = row.label;
@@ -5909,6 +6895,13 @@
         metaEl.appendChild(li);
       });
       metaEl.hidden = rows.length === 0;
+    }
+    const siteEl = document.getElementById("lb-qr-site");
+    if (siteEl) {
+      const host = String(details.siteLabel || "").trim();
+      siteEl.hidden = !host;
+      siteEl.textContent = host;
+      siteEl.href = details.url || "#";
     }
   }
 
@@ -5930,12 +6923,14 @@
     if (!card || card.dataset.tiltBound === "1") return;
     card.dataset.tiltBound = "1";
     card.style.transform = qrCardRestTransform();
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (window.matchMedia("(pointer: coarse)").matches) return;
     card.addEventListener("pointermove", (e) => {
       const rect = card.getBoundingClientRect();
       const x = (e.clientX - rect.left) / rect.width - 0.5;
       const y = (e.clientY - rect.top) / rect.height - 0.5;
       card.style.transform =
-        "rotateY(" + (x * 24).toFixed(2) + "deg) rotateX(" + (-y * 18).toFixed(2) + "deg)";
+        "rotateY(" + (x * 16).toFixed(2) + "deg) rotateX(" + (-y * 12).toFixed(2) + "deg)";
     });
     card.addEventListener("pointerleave", () => {
       card.style.transform = qrCardRestTransform();
@@ -5967,7 +6962,7 @@
     return QRCode;
   }
 
-  const QR_CANVAS_PX = 168;
+  const QR_CANVAS_PX = 192;
 
   async function renderQrToCanvas(canvas, url) {
     if (!canvas) throw new Error("QR canvas missing");
@@ -5999,97 +6994,135 @@
     return cy + lineHeight;
   }
 
-  function drawQrDownloadMetaRow(ctx, label, value, x, y, maxWidth) {
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = "700 16px DM Sans, system-ui, sans-serif";
-    ctx.fillText(String(label || "").toUpperCase(), x, y);
-    ctx.fillStyle = "#475569";
+  function drawQrDownloadMetaRow(ctx, value, x, y, maxWidth) {
+    ctx.fillStyle = "#e2e8f0";
     ctx.font = "500 22px DM Sans, system-ui, sans-serif";
-    return wrapText(ctx, value, x, y + 28, maxWidth, 32);
+    return wrapText(ctx, value, x, y, maxWidth, 30);
   }
 
   async function downloadQrBusinessCardPng() {
-    const url = liveSiteUrl();
+    const url = publicSiteUrl();
     const name = qrBusinessName();
     if (!url) {
       setError("Publish your website first before creating a QR business card.");
       return;
     }
     const canvas = document.createElement("canvas");
-    const w = 1200;
-    const h = 680;
+    const w = 1400;
+    const h = 800;
     canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const grad = ctx.createLinearGradient(0, 0, w, h);
-    grad.addColorStop(0, "#f8fafc");
-    grad.addColorStop(0.45, "#eef2ff");
-    grad.addColorStop(1, "#e0e7ff");
-    ctx.fillStyle = grad;
+    ctx.fillStyle = "#020617";
     ctx.fillRect(0, 0, w, h);
 
-    // Landscape card panel
-    const cardX = 60;
-    const cardY = 60;
-    const cardW = w - 120;
-    const cardH = h - 120;
+    const cardX = 48;
+    const cardY = 48;
+    const cardW = w - 96;
+    const cardH = h - 96;
+    const splitX = cardX + Math.round(cardW * 0.58);
+
     roundRect(ctx, cardX, cardY, cardW, cardH, 36);
+    ctx.save();
+    ctx.clip();
+
+    const navy = ctx.createLinearGradient(cardX, cardY, splitX, cardY + cardH);
+    navy.addColorStop(0, "#07101f");
+    navy.addColorStop(1, "#0b1730");
+    ctx.fillStyle = navy;
+    ctx.fillRect(cardX, cardY, splitX - cardX, cardH);
+
+    ctx.fillStyle = "#2563eb";
+    ctx.fillRect(cardX, cardY, 10, cardH);
+
+    const white = ctx.createRadialGradient(
+      splitX + (cardX + cardW - splitX) / 2,
+      cardY,
+      20,
+      splitX + (cardX + cardW - splitX) / 2,
+      cardY + cardH / 2,
+      cardH
+    );
+    white.addColorStop(0, "#ffffff");
+    white.addColorStop(1, "#f1f5f9");
+    ctx.fillStyle = white;
+    ctx.fillRect(splitX, cardY, cardX + cardW - splitX, cardH);
+    ctx.restore();
+
+    ctx.strokeStyle = "rgba(148, 163, 184, 0.22)";
+    ctx.lineWidth = 2;
+    roundRect(ctx, cardX, cardY, cardW, cardH, 36);
+    ctx.stroke();
+
+    const copyX = cardX + 56;
+    const copyMaxW = splitX - copyX - 36;
+    const details = qrBusinessDetails();
+
+    let textY = cardY + 72;
+    ctx.fillStyle = "#93c5fd";
+    ctx.font = "750 18px DM Sans, system-ui, sans-serif";
+    ctx.fillText("ON THE WEB", copyX, textY);
+
+    textY += 52;
+    ctx.fillStyle = "#f8fafc";
+    ctx.font = "800 48px Syne, DM Sans, system-ui, sans-serif";
+    textY = wrapText(ctx, name, copyX, textY, copyMaxW, 56);
+
+    if (details.category) {
+      textY += 6;
+      ctx.fillStyle = "#93c5fd";
+      ctx.font = "600 22px DM Sans, system-ui, sans-serif";
+      textY = wrapText(ctx, details.category, copyX, textY, copyMaxW, 30);
+    }
+
+    if (details.phone) {
+      textY += 18;
+      textY = drawQrDownloadMetaRow(ctx, details.phone, copyX, textY, copyMaxW);
+    }
+    if (details.address) {
+      textY += 10;
+      textY = drawQrDownloadMetaRow(ctx, details.address, copyX, textY, copyMaxW);
+    }
+
+    if (details.siteLabel) {
+      textY += 16;
+      ctx.font = "650 18px DM Sans, system-ui, sans-serif";
+      const pill = String(details.siteLabel);
+      const pillW = Math.min(copyMaxW, ctx.measureText(pill).width + 36);
+      roundRect(ctx, copyX, textY - 22, pillW, 36, 18);
+      ctx.fillStyle = "rgba(37, 99, 235, 0.28)";
+      ctx.fill();
+      ctx.fillStyle = "#dbeafe";
+      ctx.fillText(pill, copyX + 16, textY + 4);
+    }
+
+    ctx.fillStyle = "rgba(148, 163, 184, 0.72)";
+    ctx.font = "750 16px DM Sans, system-ui, sans-serif";
+    ctx.fillText("moonrise", copyX, cardY + cardH - 36);
+
+    const qrCanvas = document.createElement("canvas");
+    await renderQrToCanvas(qrCanvas, url);
+    const qrSize = 320;
+    const qrPad = 18;
+    const panelW = cardX + cardW - splitX;
+    const qrBoxW = qrSize + qrPad * 2;
+    const qrBoxX = splitX + (panelW - qrBoxW) / 2;
+    const qrBoxY = cardY + (cardH - qrBoxW - 48) / 2;
+    roundRect(ctx, qrBoxX, qrBoxY, qrBoxW, qrBoxW, 28);
     ctx.fillStyle = "#ffffff";
     ctx.fill();
     ctx.strokeStyle = "rgba(15, 23, 42, 0.08)";
     ctx.lineWidth = 2;
     ctx.stroke();
-
-    const copyX = cardX + 56;
-    const copyMaxW = cardW * 0.52;
-    const details = qrBusinessDetails();
-
-    let textY = cardY + 96;
-    ctx.fillStyle = "#0f172a";
-    ctx.font = "700 44px DM Sans, system-ui, sans-serif";
-    textY = wrapText(ctx, name, copyX, textY, copyMaxW, 54);
-
-    if (details.category) {
-      textY += 8;
-      ctx.fillStyle = "#64748b";
-      ctx.font = "600 24px DM Sans, system-ui, sans-serif";
-      textY = wrapText(ctx, details.category, copyX, textY, copyMaxW, 32);
-    }
-
-    if (details.phone) {
-      textY += 12;
-      textY = drawQrDownloadMetaRow(ctx, "Phone", details.phone, copyX, textY, copyMaxW);
-    }
-    if (details.address) {
-      textY += 8;
-      textY = drawQrDownloadMetaRow(ctx, "Address", details.address, copyX, textY, copyMaxW);
-    }
-
-    ctx.strokeStyle = "rgba(148, 163, 184, 0.35)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(copyX, cardY + cardH - 88);
-    ctx.lineTo(copyX + copyMaxW * 0.72, cardY + cardH - 88);
-    ctx.stroke();
-
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = "500 20px DM Sans, system-ui, sans-serif";
-    ctx.fillText("Scan with a phone camera", copyX, cardY + cardH - 56);
-
-    const qrCanvas = document.createElement("canvas");
-    await renderQrToCanvas(qrCanvas, url);
-    const qrSize = 300;
-    const qrPad = 22;
-    const qrBoxX = cardX + cardW - qrSize - qrPad - 56;
-    const qrBoxY = cardY + (cardH - qrSize - qrPad * 2) / 2;
-    roundRect(ctx, qrBoxX, qrBoxY, qrSize + qrPad * 2, qrSize + qrPad * 2, 24);
-    ctx.fillStyle = "#ffffff";
-    ctx.fill();
-    ctx.strokeStyle = "rgba(15, 23, 42, 0.1)";
-    ctx.stroke();
     ctx.drawImage(qrCanvas, qrBoxX + qrPad, qrBoxY + qrPad, qrSize, qrSize);
+
+    ctx.fillStyle = "#64748b";
+    ctx.font = "650 16px DM Sans, system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("SCAN TO OPEN THE SITE", splitX + panelW / 2, qrBoxY + qrBoxW + 36);
+    ctx.textAlign = "left";
 
     const a = document.createElement("a");
     a.href = canvas.toDataURL("image/png");
@@ -6114,7 +7147,7 @@
 
   async function openQrBusinessCard() {
     setError("");
-    const url = liveSiteUrl();
+    const url = publicSiteUrl();
     if (!url) {
       setError("Publish your website first before creating a QR business card.");
       return;
@@ -6235,6 +7268,26 @@
     return normalizeLiveSiteUrl(state.project?.vercel_url);
   }
 
+  /** Prefer verified custom domain for share/display links; fall back to Vercel URL. */
+  function verifiedCustomDomainUrl() {
+    const cfg = readCustomDomainConfig();
+    if (!cfg?.enabled || !cfg?.verified) return "";
+    const host = String(cfg.domain || cfg.hostname || "")
+      .trim()
+      .toLowerCase()
+      .replace(/^https?:\/\//i, "")
+      .replace(/\/.*$/, "")
+      .replace(/\.$/, "");
+    if (!host || !/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/i.test(host)) {
+      return "";
+    }
+    return "https://" + host;
+  }
+
+  function publicSiteUrl() {
+    return verifiedCustomDomainUrl() || liveSiteUrl();
+  }
+
   /** Must match worker publishContentHash for publish/update detection. */
   function publishContentHash(html) {
     const str = String(html || "");
@@ -6257,8 +7310,7 @@
 
   function publishSettingsFingerprint() {
     const cfg = readContactFormConfig();
-    const ctx = state.project?.business_context || {};
-    const domain = ctx.customDomain && typeof ctx.customDomain === "object" ? ctx.customDomain : {};
+    const domain = readCustomDomainConfig();
     return publishContentHash(
       JSON.stringify({
         contactForm: {
@@ -6433,13 +7485,13 @@
   const PREVIEW_URL_UNPUBLISHED = "Publish to see your URL";
 
   function previewSiteUrl() {
-    const live = liveSiteUrl();
+    const live = publicSiteUrl();
     if (!live) return "";
     return /^https?:\/\//i.test(live) ? live : "https://" + live.replace(/^\/\//, "");
   }
 
   function previewChromeUrlLabel() {
-    const live = liveSiteUrl();
+    const live = publicSiteUrl();
     if (!live) return PREVIEW_URL_UNPUBLISHED;
     try {
       return new URL(live.startsWith("http") ? live : "https://" + live).hostname;
@@ -6451,14 +7503,14 @@
   function syncPreviewChromeUrl() {
     const el = document.getElementById("lb-preview-chrome-url");
     const copyBtn = document.getElementById("lb-preview-chrome-copy");
-    const live = liveSiteUrl();
+    const live = publicSiteUrl();
     const label = previewChromeUrlLabel();
     if (el) {
       el.textContent = label;
-      el.classList.toggle("is-unpublished", !live);
+      el.classList.toggle("is-unpublished", !liveSiteUrl());
       el.title = live ? previewSiteUrl() : "Publish your site to get a live link";
     }
-    if (copyBtn) copyBtn.disabled = !live;
+    if (copyBtn) copyBtn.disabled = !liveSiteUrl();
   }
 
   function bindPreviewChromeActions() {
@@ -6503,7 +7555,7 @@
     if (accentEl) accentEl.value = accent;
     if (accentHex) accentHex.value = accent;
 
-    const url = liveSiteUrl();
+    const url = publicSiteUrl() || liveSiteUrl();
     const liveUrlEl = document.getElementById("lb-set-live-url");
     const domainRow = document.getElementById("lb-set-domain-row");
     const domainNote = document.getElementById("lb-set-domain-note");
@@ -6517,11 +7569,12 @@
     const openBtn = document.getElementById("lb-set-open-link");
     const publishBtn = document.getElementById("lb-set-publish");
 
-    const customDomain = String(ctx.customDomain || "");
+    const customDomainCfg = readCustomDomainConfig();
+    const customDomain = customDomainCfg.domain || "";
     if (domainInput) domainInput.value = customDomain;
     if (domainWidgetInput) domainWidgetInput.value = customDomain;
 
-    if (url) {
+    if (liveSiteUrl()) {
       if (liveUrlEl) {
         liveUrlEl.hidden = false;
         liveUrlEl.textContent = url;
@@ -6529,7 +7582,11 @@
       if (domainRow) domainRow.hidden = false;
       if (domainNote) domainNote.hidden = true;
       if (shareUrl) shareUrl.value = url;
-      if (shareHint) shareHint.textContent = "Anyone with this link can view your live site.";
+      if (shareHint) {
+        shareHint.textContent = customDomainCfg.verified
+          ? "Anyone with this custom domain can view your live site."
+          : "Anyone with this link can view your live site.";
+      }
       if (openBtn) openBtn.disabled = false;
     } else {
       if (liveUrlEl) {
@@ -6552,20 +7609,394 @@
 
     if (publishBtn) {
       publishBtn.textContent = settingsPublishLabel();
-      publishBtn.disabled = !canPublishSite() || (!!url && !hasUnpublishedChanges());
+      publishBtn.disabled = !canPublishSite() || (!!liveSiteUrl() && !hasUnpublishedChanges());
     }
     syncContactFormWidgetUi();
+    syncWatermarkWidgetUi();
     syncCustomDomainWidgetUi();
+    syncPublishLiveUi();
     syncLbToolsPanelLayout();
   }
 
   function readCustomDomainConfig() {
     const ctx = state.project?.business_context || {};
-    const domain = String(ctx.customDomain || "").trim();
+    const raw = ctx.customDomain;
+    let hostname = "";
+    let status = "";
+    let verified = false;
+    let dns = null;
+    let error = "";
+    let verification = [];
+    let pendingReason = "";
+    let diagnosis = null;
+    if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+      hostname = String(raw.hostname || raw.domain || "").trim();
+      status = String(raw.status || "").trim();
+      verified = raw.verified === true;
+      dns = raw.dns && typeof raw.dns === "object" ? raw.dns : null;
+      error = String(raw.error || "").trim();
+      verification = Array.isArray(raw.verification) ? raw.verification : [];
+      pendingReason = String(raw.pendingReason || "").trim();
+      diagnosis = raw.diagnosis && typeof raw.diagnosis === "object" ? raw.diagnosis : null;
+    } else {
+      hostname = String(raw || "").trim();
+    }
     const enabled =
       ctx.customDomainEnabled === true ||
-      (ctx.customDomainEnabled !== false && !!domain);
-    return { enabled, domain };
+      (ctx.customDomainEnabled !== false && !!hostname);
+    let provider = String(ctx.customDomainProvider || "").trim().toLowerCase();
+    if (!provider && raw && typeof raw === "object") {
+      provider = String(raw.provider || "").trim().toLowerCase();
+    }
+    return {
+      enabled,
+      domain: hostname,
+      hostname,
+      status,
+      verified,
+      dns,
+      error,
+      verification,
+      pendingReason,
+      diagnosis,
+      provider,
+    };
+  }
+
+  function customDomainHintText(cfg, isLive) {
+    if (!isLive) return "Publish your site first, then connect your domain.";
+    const provider = cfg?.provider || selectedDomainProvider();
+    if (!provider) return "Select where your domain is managed, then enter the domain.";
+    if (!cfg?.domain) return "Enter the domain you want to connect (e.g. www.yourbusiness.com).";
+    if (cfg.error) return cfg.error;
+    if (cfg.verified) return "Connected and verified. Your domain should open this site.";
+    if (cfg.pendingReason) return cfg.pendingReason;
+    const label = DOMAIN_PROVIDERS[provider]?.label || "your DNS host";
+    return "Domain added. Finish the " + label + " steps below, then check status.";
+  }
+
+  const DOMAIN_PROVIDERS = {
+    squarespace: {
+      label: "Squarespace",
+      helpUrl: "https://account.squarespace.com/domains",
+      guideTitle: "Squarespace",
+      steps: [
+        "Open <strong>DNS Settings</strong> → delete old A and www records.",
+        "Add the 2 records below, then click <strong>Check status</strong>.",
+      ],
+    },
+    godaddy: {
+      label: "GoDaddy",
+      helpUrl: "https://dcc.godaddy.com/control/portfolio",
+      guideTitle: "GoDaddy",
+      steps: [
+        "Open <strong>DNS</strong> → remove old A / www records.",
+        "Add the 2 records below, then click <strong>Check status</strong>.",
+      ],
+    },
+    namecheap: {
+      label: "Namecheap",
+      helpUrl: "https://ap.www.namecheap.com/domains/list/",
+      guideTitle: "Namecheap",
+      steps: [
+        "Open <strong>Advanced DNS</strong> → remove old A / www records.",
+        "Add the 2 records below, then click <strong>Check status</strong>.",
+      ],
+    },
+    cloudflare: {
+      label: "Cloudflare",
+      helpUrl: "https://dash.cloudflare.com/",
+      guideTitle: "Cloudflare",
+      steps: [
+        "Open <strong>DNS</strong> → remove old A / www records (Proxy off).",
+        "Add the 2 records below, then click <strong>Check status</strong>.",
+      ],
+    },
+    google: {
+      label: "Google Domains",
+      helpUrl: "https://domains.google.com/",
+      guideTitle: "Google Domains",
+      steps: [
+        "Open <strong>DNS</strong> → remove old A / www records.",
+        "Add the 2 records below, then click <strong>Check status</strong>.",
+      ],
+    },
+    bluehost: {
+      label: "Bluehost",
+      helpUrl: "https://my.bluehost.com/",
+      guideTitle: "Bluehost",
+      steps: [
+        "Open <strong>DNS</strong> → remove old A / www records.",
+        "Add the 2 records below, then click <strong>Check status</strong>.",
+      ],
+    },
+    hover: {
+      label: "Hover",
+      helpUrl: "https://www.hover.com/control_panel",
+      guideTitle: "Hover",
+      steps: [
+        "Open <strong>DNS</strong> → remove old A / www records.",
+        "Add the 2 records below, then click <strong>Check status</strong>.",
+      ],
+    },
+    porkbun: {
+      label: "Porkbun",
+      helpUrl: "https://porkbun.com/account/domainsSpeedy",
+      guideTitle: "Porkbun",
+      steps: [
+        "Open <strong>DNS</strong> → remove old A / www records.",
+        "Add the 2 records below, then click <strong>Check status</strong>.",
+      ],
+    },
+    other: {
+      label: "Other",
+      helpUrl: "",
+      guideTitle: "Your DNS host",
+      steps: [
+        "Open DNS settings → remove old A / www records.",
+        "Add the 2 records below, then click <strong>Check status</strong>.",
+      ],
+    },
+  };
+
+  function selectedDomainProvider() {
+    return String(document.getElementById("lb-custom-domain-provider")?.value || "")
+      .trim()
+      .toLowerCase();
+  }
+
+  const DOMAIN_PROVIDER_PLACEHOLDER = "Select where your domain is managed…";
+
+  function syncDomainProviderSelectUi(value) {
+    const select = document.getElementById("lb-custom-domain-provider");
+    const trigger = document.getElementById("lb-custom-domain-provider-trigger");
+    const valueEl = document.getElementById("lb-custom-domain-provider-value");
+    const menu = document.getElementById("lb-custom-domain-provider-menu");
+    const next = String(value || "")
+      .trim()
+      .toLowerCase();
+    if (select && select.value !== next) select.value = next;
+    let label = DOMAIN_PROVIDER_PLACEHOLDER;
+    if (menu) {
+      menu.querySelectorAll('[role="option"]').forEach((opt) => {
+        const selected = String(opt.getAttribute("data-value") || "") === next;
+        opt.setAttribute("aria-selected", selected ? "true" : "false");
+        opt.classList.toggle("is-active", false);
+        if (selected) label = String(opt.textContent || "").trim() || label;
+      });
+    } else if (next && DOMAIN_PROVIDERS[next]?.label) {
+      label = DOMAIN_PROVIDERS[next].label;
+    }
+    if (valueEl) {
+      valueEl.textContent = label;
+      valueEl.classList.toggle("is-placeholder", !next);
+    }
+    if (trigger) trigger.setAttribute("aria-expanded", "false");
+    document.getElementById("lb-custom-domain-select")?.classList.remove("is-open");
+    if (menu) menu.hidden = true;
+  }
+
+  function setDomainProviderSelectOpen(open) {
+    const root = document.getElementById("lb-custom-domain-select");
+    const trigger = document.getElementById("lb-custom-domain-provider-trigger");
+    const menu = document.getElementById("lb-custom-domain-provider-menu");
+    if (!root || !trigger || !menu) return;
+    root.classList.toggle("is-open", !!open);
+    trigger.setAttribute("aria-expanded", open ? "true" : "false");
+    menu.hidden = !open;
+    if (open) {
+      const selected =
+        menu.querySelector('[role="option"][aria-selected="true"]') ||
+        menu.querySelector('[role="option"]');
+      menu.querySelectorAll('[role="option"]').forEach((opt) => opt.classList.remove("is-active"));
+      if (selected) {
+        selected.classList.add("is-active");
+        selected.focus({ preventScroll: true });
+      }
+    }
+  }
+
+  function chooseDomainProvider(value, { emitChange = true } = {}) {
+    const select = document.getElementById("lb-custom-domain-provider");
+    const next = String(value || "")
+      .trim()
+      .toLowerCase();
+    if (select) select.value = next;
+    syncDomainProviderSelectUi(next);
+    setDomainProviderSelectOpen(false);
+    if (emitChange && select) {
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+  }
+
+  function escapeDomainHtml(value) {
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function domainDnsRows(cfg) {
+    const dns = cfg?.dns && typeof cfg.dns === "object" ? cfg.dns : null;
+    if (!dns) return [];
+    const rows = [];
+    if (dns.type && dns.value) {
+      rows.push({
+        type: String(dns.type).toUpperCase(),
+        name: String(dns.name || "@"),
+        value: String(dns.value),
+      });
+    }
+    if (dns.wwwCname) {
+      rows.push({
+        type: "CNAME",
+        name: "www",
+        value: String(dns.wwwCname),
+      });
+    }
+    const verification = Array.isArray(cfg?.verification) ? cfg.verification : [];
+    for (const item of verification) {
+      const type = String(item?.type || "TXT").toUpperCase();
+      const value = String(item?.value || "").trim();
+      if (!value) continue;
+      const name = String(item?.domain || item?.name || "_vercel").trim() || "_vercel";
+      rows.push({ type, name, value, verify: true });
+    }
+    return rows;
+  }
+
+  function previewDnsForHostname(hostname) {
+    const host = String(hostname || "")
+      .trim()
+      .toLowerCase()
+      .replace(/^https?:\/\//i, "")
+      .replace(/\/.*$/, "")
+      .replace(/\.$/, "");
+    if (!host || !/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/i.test(host)) {
+      return null;
+    }
+    const labels = host.split(".").filter(Boolean);
+    const isApex = labels.length === 2;
+    if (isApex) {
+      return {
+        type: "A",
+        name: "@",
+        value: "76.76.21.21",
+        wwwCname: "cname.vercel-dns.com",
+        tip:
+          "Point " +
+          host +
+          " with an A record → 76.76.21.21. Optional: CNAME www → cname.vercel-dns.com",
+      };
+    }
+    return {
+      type: "CNAME",
+      name: labels.slice(0, -2).join(".") || labels[0] || "www",
+      value: "cname.vercel-dns.com",
+      tip: "Point " + host + " with a CNAME → cname.vercel-dns.com",
+    };
+  }
+
+  function setDomainWidgetFeedback(msg, kind) {
+    const hint = document.getElementById("lb-custom-domain-hint");
+    if (!hint) return;
+    hint.textContent = msg || "";
+    hint.classList.toggle("is-error", kind === "error");
+    hint.classList.toggle("is-ok", kind === "ok");
+  }
+
+  function renderDomainProviderSteps(providerId) {
+    const guide = document.getElementById("lb-custom-domain-guide");
+    const stepsEl = document.getElementById("lb-custom-domain-steps");
+    const titleEl = document.getElementById("lb-custom-domain-guide-title");
+    if (!stepsEl) return;
+    const provider = DOMAIN_PROVIDERS[providerId];
+    if (!provider) {
+      if (guide) guide.hidden = true;
+      stepsEl.innerHTML = "";
+      return;
+    }
+    if (titleEl) titleEl.textContent = provider.guideTitle || ("In " + provider.label);
+    const openLink = provider.helpUrl
+      ? '<li class="ms-lb-domain-step-link"><a href="' +
+        escapeDomainHtml(provider.helpUrl) +
+        '" target="_blank" rel="noopener">Open ' +
+        escapeDomainHtml(provider.label) +
+        "</a></li>"
+      : "";
+    stepsEl.innerHTML =
+      openLink + provider.steps.map((step, i) => '<li><span class="ms-lb-domain-step-num">' + (i + 1) + "</span><span>" + step + "</span></li>").join("");
+    if (guide) guide.hidden = false;
+  }
+
+  function renderCustomDomainDns(cfg) {
+    const wrap = document.getElementById("lb-custom-domain-dns");
+    const list = document.getElementById("lb-custom-domain-dns-list");
+    const tip = document.getElementById("lb-custom-domain-dns-tip");
+    const checkBtn = document.getElementById("lb-custom-domain-check");
+    const provider = cfg?.provider || selectedDomainProvider();
+    const inputHost = String(document.getElementById("lb-custom-domain")?.value || "").trim();
+    const effective = {
+      ...(cfg || {}),
+      domain: cfg?.domain || inputHost,
+      dns: cfg?.dns || previewDnsForHostname(cfg?.domain || inputHost),
+      provider,
+    };
+    const rows = domainDnsRows(effective);
+    const show = !!(provider && effective.domain && !effective.verified && rows.length);
+    if (wrap) wrap.hidden = !show;
+    if (checkBtn) checkBtn.hidden = !(effective.domain && effective.enabled);
+    renderDomainProviderSteps(provider);
+    if (!list) return;
+    if (!show) {
+      list.innerHTML = "";
+      if (tip) {
+        tip.hidden = true;
+        tip.textContent = "";
+      }
+      return;
+    }
+    const titleEl = wrap?.querySelector(".ms-lb-domain-dns-title");
+    if (titleEl) {
+      titleEl.textContent =
+        rows.length === 1 ? "Add this record" : "Add these " + rows.length + " records";
+    }
+    list.innerHTML = rows
+      .map((row) => {
+        const type = escapeDomainHtml(row.type);
+        const name = escapeDomainHtml(row.name);
+        const value = escapeDomainHtml(row.value);
+        return (
+          '<div class="ms-lb-domain-dns-row">' +
+          '<span class="ms-lb-domain-dns-type">' +
+          type +
+          "</span>" +
+          '<span class="ms-lb-domain-dns-name">' +
+          name +
+          "</span>" +
+          '<button type="button" class="ms-lb-domain-dns-data" data-copy="' +
+          value +
+          '" title="Copy">' +
+          value +
+          "</button>" +
+          '<button type="button" class="ms-lb-domain-dns-copy" data-copy="' +
+          value +
+          '">Copy</button>' +
+          "</div>"
+        );
+      })
+      .join("");
+    if (tip) {
+      if (effective.pendingReason) {
+        tip.hidden = false;
+        tip.textContent = effective.pendingReason;
+      } else {
+        tip.hidden = true;
+        tip.textContent = "";
+      }
+    }
   }
 
   function scrollSideControlsToWidget(widget) {
@@ -6611,21 +8042,32 @@
     const domainWidgetInput = document.getElementById("lb-custom-domain");
     const domainWidgetHint = document.getElementById("lb-custom-domain-hint");
     const domainWidgetSummary = document.getElementById("lb-custom-domain-summary");
+    const providerEl = document.getElementById("lb-custom-domain-provider");
     const isLive = !!liveSiteUrl();
 
     setCustomDomainExpanded(cfg.enabled, { animate: false });
 
+    if (providerEl && cfg.provider) {
+      providerEl.value = cfg.provider;
+      syncDomainProviderSelectUi(cfg.provider);
+    } else {
+      syncDomainProviderSelectUi(providerEl?.value || "");
+    }
     if (domainWidgetInput) domainWidgetInput.value = cfg.domain;
     if (domainWidgetSummary) {
-      domainWidgetSummary.textContent = cfg.domain || "Connect your own domain";
+      const providerLabel = DOMAIN_PROVIDERS[cfg.provider]?.label;
+      domainWidgetSummary.textContent = cfg.domain
+        ? cfg.verified
+          ? cfg.domain + " · live"
+          : cfg.domain + (providerLabel ? " · " + providerLabel : " · pending DNS")
+        : "Connect your own domain";
     }
     if (domainWidgetHint) {
-      domainWidgetHint.textContent = !isLive
-        ? "Publish your site first, then connect your domain."
-        : cfg.domain
-          ? "Saved. Point your DNS records to the published Vercel site."
-          : "Enter the domain you want to connect.";
+      domainWidgetHint.textContent = customDomainHintText(cfg, isLive);
+      domainWidgetHint.classList.toggle("is-error", !!cfg.error);
+      domainWidgetHint.classList.toggle("is-ok", !!(cfg.verified && cfg.domain));
     }
+    renderCustomDomainDns(cfg);
   }
 
   function setCustomDomainExpanded(expanded, { animate = true } = {}) {
@@ -6705,6 +8147,7 @@
     const endpointEl = document.getElementById("lb-contact-form-endpoint");
     const autoFields = document.getElementById("lb-contact-form-auto-fields");
     const customFields = document.getElementById("lb-contact-form-custom-fields");
+    const testBtn = document.getElementById("lb-contact-form-test");
 
     setContactFormExpanded(cfg.enabled, { animate: false });
 
@@ -6720,6 +8163,22 @@
     });
     if (autoFields) autoFields.hidden = cfg.mode !== "auto";
     if (customFields) customFields.hidden = cfg.mode !== "custom";
+    if (testBtn) {
+      testBtn.hidden = !(
+        cfg.enabled &&
+        cfg.mode === "auto" &&
+        !!String(cfg.notificationEmail || "").trim() &&
+        !!state.projectId
+      );
+    }
+  }
+
+  function setContactFormFeedback(msg, kind) {
+    const hint = document.getElementById("lb-contact-form-hint");
+    if (!hint) return;
+    hint.textContent = msg || "";
+    hint.classList.toggle("is-error", kind === "error");
+    hint.classList.toggle("is-ok", kind === "ok");
   }
 
   function setContactFormExpanded(expanded, { animate = true } = {}) {
@@ -6743,11 +8202,23 @@
     const customFields = document.getElementById("lb-contact-form-custom-fields");
     if (autoFields) autoFields.hidden = next !== "auto";
     if (customFields) customFields.hidden = next !== "custom";
+    const testBtn = document.getElementById("lb-contact-form-test");
+    const cfg = readContactFormConfig();
+    if (testBtn) {
+      testBtn.hidden = !(
+        next === "auto" &&
+        cfg.enabled &&
+        !!String(document.getElementById("lb-contact-form-email")?.value || cfg.notificationEmail || "").trim() &&
+        !!state.projectId
+      );
+    }
   }
 
   async function saveContactFormFromSettings() {
     setSiteSettingsError("");
     setSiteSettingsStatus("");
+    setContactFormFeedback("");
+    const saveBtn = document.getElementById("lb-contact-form-save");
     const enabled = !!document.getElementById("lb-contact-form-enabled")?.checked;
     const modeBtn = document.querySelector("[data-form-mode].is-active");
     const mode = modeBtn?.getAttribute("data-form-mode") === "custom" ? "custom" : "auto";
@@ -6762,6 +8233,7 @@
 
     if (enabled && mode === "auto") {
       if (!notificationEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(notificationEmail)) {
+        setContactFormFeedback("Enter a valid notification email.", "error");
         setSiteSettingsError("Enter a valid notification email.");
         return;
       }
@@ -6769,6 +8241,7 @@
     if (enabled && mode === "custom") {
       const endpointError = validateCustomContactEndpoint(endpointUrl);
       if (endpointError) {
+        setContactFormFeedback(endpointError, "error");
         setSiteSettingsError(endpointError);
         return;
       }
@@ -6791,29 +8264,108 @@
     if (!state.projectId) {
       state.project = { ...(state.project || {}), business_context: ctx };
       syncContactFormWidgetUi();
-      setSiteSettingsStatus("Contact form settings saved locally. Publish to activate.");
+      syncWatermarkWidgetUi();
+      setContactFormFeedback("Saved locally. Publish to activate on the live site.");
       return;
     }
 
     try {
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Saving…";
+      }
       await persistProjectPatch({ business_context: ctx });
       syncContactFormWidgetUi();
+      syncWatermarkWidgetUi();
       syncPublishLiveUi();
       syncSiteSettingsUi();
       if (state.html && state.mode === "preview") {
         writePreviewDocument(state.html);
       }
+
       const live = liveSiteUrl();
-      if (live) {
-        setSiteSettingsStatus(
-          "Contact form saved. Click Update (top bar) to apply on the live site."
+      if (live && enabled) {
+        setContactFormFeedback("Applying on your live site…");
+        if (saveBtn) saveBtn.textContent = "Updating live site…";
+        await publish();
+        setContactFormFeedback(
+          "Live. Use Send test email, or submit the form on your live site.",
+          "ok"
         );
-        window.StudioToast?.success?.("Contact form saved — click Update to apply on your live URL.");
+        window.StudioToast?.success?.("Contact form is live");
+      } else if (live && !enabled) {
+        setContactFormFeedback("Saved. Click Update in the top bar to remove it from the live site.");
+        window.StudioToast?.success?.("Contact form saved — click Update to apply");
       } else {
-        setSiteSettingsStatus("Contact form settings saved. Publish to activate on the live site.");
+        setContactFormFeedback("Saved. Publish your site to activate the form.", "ok");
+        window.StudioToast?.success?.("Contact form saved");
       }
     } catch (e) {
+      setContactFormFeedback(e.message || "Could not save contact form settings", "error");
       setSiteSettingsError(e.message || "Could not save contact form settings");
+    } finally {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Save & apply";
+      }
+    }
+  }
+
+  async function sendContactFormTestEmail() {
+    const cfg = readContactFormConfig();
+    const email =
+      String(document.getElementById("lb-contact-form-email")?.value || cfg.notificationEmail || "").trim();
+    const testBtn = document.getElementById("lb-contact-form-test");
+    if (!state.projectId) {
+      setContactFormFeedback("Generate and publish a site first.", "error");
+      return;
+    }
+    if (!cfg.enabled || cfg.mode !== "auto") {
+      setContactFormFeedback("Turn on Auto mode and save first.", "error");
+      return;
+    }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setContactFormFeedback("Enter a valid notification email first.", "error");
+      return;
+    }
+    try {
+      if (testBtn) {
+        testBtn.disabled = true;
+        testBtn.textContent = "Sending…";
+      }
+      setContactFormFeedback("Sending test email to " + email + "…");
+      // Ensure latest email is persisted before the public submit reads it.
+      if (email !== cfg.notificationEmail) {
+        await persistProjectPatch({
+          business_context: {
+            ...(state.project?.business_context || {}),
+            contactForm: { ...cfg, enabled: true, mode: "auto", notificationEmail: email },
+          },
+        });
+      }
+      const base = workerUrl();
+      const res = await fetch(base + "/contact-submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          projectId: state.projectId,
+          name: "Moonrise test",
+          phone: "",
+          message: "This is a test message from Moonrise Studio. If you got this, the contact form email is working.",
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Test email failed");
+      setContactFormFeedback("Test sent to " + email + ". Check inbox and spam.", "ok");
+      window.StudioToast?.success?.("Test email sent");
+    } catch (e) {
+      setContactFormFeedback(e.message || "Could not send test email", "error");
+      window.StudioToast?.error?.(e.message || "Could not send test email");
+    } finally {
+      if (testBtn) {
+        testBtn.disabled = false;
+        testBtn.textContent = "Send test email";
+      }
     }
   }
 
@@ -6829,6 +8381,106 @@
     document.getElementById("lb-contact-form-save")?.addEventListener("click", () => {
       void saveContactFormFromSettings();
     });
+    document.getElementById("lb-contact-form-test")?.addEventListener("click", () => {
+      void sendContactFormTestEmail();
+    });
+  }
+
+  function isUploadSourcedProject(project) {
+    if (!project) return false;
+    const ctx = project.business_context;
+    if (ctx && typeof ctx === "object" && String(ctx.source || "").toLowerCase() === "upload") {
+      return true;
+    }
+    if (String(project.template_id || "").toLowerCase() === "upload") return true;
+    return false;
+  }
+
+  function setWatermarkExpanded(expanded, { animate = true } = {}) {
+    setLbWidgetExpanded(
+      document.getElementById("lb-watermark-widget"),
+      document.getElementById("lb-watermark-body"),
+      document.getElementById("lb-watermark-enabled"),
+      expanded,
+      { animate }
+    );
+  }
+
+  function syncWatermarkWidgetUi() {
+    const widget = document.getElementById("lb-watermark-widget");
+    if (!widget) return;
+    const show = isUploadSourcedProject(state.project);
+    if (show) widget.removeAttribute("hidden");
+    else widget.setAttribute("hidden", "");
+    widget.hidden = !show;
+    if (!show) {
+      setWatermarkExpanded(false, { animate: false });
+      return;
+    }
+    const on = state.project?.watermark_enabled !== false;
+    setWatermarkExpanded(on, { animate: false });
+    const summary = document.getElementById("lb-watermark-summary");
+    const hint = document.getElementById("lb-watermark-hint");
+    if (summary) summary.textContent = on ? "On for live site" : "Off for this upload";
+    if (hint) {
+      hint.textContent = on
+        ? "Shows on the live site until go-live is paid. Save & apply, then publish to update."
+        : "Watermark off — publish will skip the Moonrise paywall badge.";
+    }
+  }
+
+  function setWatermarkFeedback(msg, kind) {
+    const el = document.getElementById("lb-watermark-feedback");
+    if (!el) return;
+    el.textContent = msg || "";
+    el.classList.toggle("is-error", kind === "error");
+    el.classList.toggle("is-ok", kind === "ok");
+  }
+
+  async function saveWatermarkFromSettings() {
+    setWatermarkFeedback("");
+    if (!isUploadSourcedProject(state.project)) {
+      setWatermarkFeedback("Watermark settings are only for uploaded sites.", "error");
+      return;
+    }
+    const enabled = !!document.getElementById("lb-watermark-enabled")?.checked;
+    const saveBtn = document.getElementById("lb-watermark-save");
+    if (saveBtn) saveBtn.disabled = true;
+    try {
+      const ctx = {
+        ...(state.project?.business_context || {}),
+        source: "upload",
+        showWatermark: enabled,
+      };
+      await persistProjectPatch({
+        watermark_enabled: enabled,
+        business_context: ctx,
+      });
+      syncWatermarkWidgetUi();
+      refreshWatermark();
+      setWatermarkFeedback(enabled ? "Watermark enabled." : "Watermark turned off.", "ok");
+      window.StudioToast?.success?.(enabled ? "Watermark on" : "Watermark off");
+    } catch (e) {
+      setWatermarkFeedback(e?.message || "Could not save watermark setting.", "error");
+      window.StudioToast?.error?.(e?.message || "Could not save watermark setting.");
+    } finally {
+      if (saveBtn) saveBtn.disabled = false;
+    }
+  }
+
+  function bindWatermarkWidget() {
+    document.getElementById("lb-watermark-enabled")?.addEventListener("change", (e) => {
+      setWatermarkExpanded(!!e.target.checked);
+      const hint = document.getElementById("lb-watermark-hint");
+      if (hint) {
+        hint.textContent = e.target.checked
+          ? "Shows on the live site until go-live is paid."
+          : "Watermark off — publish will skip the Moonrise paywall badge.";
+      }
+    });
+    document.getElementById("lb-watermark-save")?.addEventListener("click", () => {
+      void saveWatermarkFromSettings();
+    });
   }
 
   function bindCustomDomainWidget() {
@@ -6837,21 +8489,117 @@
       setCustomDomainExpanded(on);
       if (!on && readCustomDomainConfig().enabled) {
         void saveDomainFromSettings("lb-custom-domain");
+      } else if (on) {
+        renderCustomDomainDns({
+          ...readCustomDomainConfig(),
+          enabled: true,
+          provider: selectedDomainProvider(),
+        });
       }
+    });
+
+    const providerTrigger = document.getElementById("lb-custom-domain-provider-trigger");
+    const providerMenu = document.getElementById("lb-custom-domain-provider-menu");
+    const providerRoot = document.getElementById("lb-custom-domain-select");
+    syncDomainProviderSelectUi(selectedDomainProvider());
+
+    providerTrigger?.addEventListener("click", (e) => {
+      e.preventDefault();
+      setDomainProviderSelectOpen(!providerRoot?.classList.contains("is-open"));
+    });
+    providerTrigger?.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        setDomainProviderSelectOpen(true);
+      } else if (e.key === "Escape") {
+        setDomainProviderSelectOpen(false);
+      }
+    });
+    providerMenu?.addEventListener("click", (e) => {
+      const opt = e.target.closest('[role="option"]');
+      if (!opt) return;
+      chooseDomainProvider(opt.getAttribute("data-value") || "");
+    });
+    providerMenu?.addEventListener("keydown", (e) => {
+      const opts = [...(providerMenu.querySelectorAll('[role="option"]') || [])];
+      const active = providerMenu.querySelector('[role="option"].is-active') || opts[0];
+      const idx = Math.max(0, opts.indexOf(active));
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setDomainProviderSelectOpen(false);
+        providerTrigger?.focus();
+        return;
+      }
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        const nextIdx =
+          e.key === "ArrowDown" ? Math.min(opts.length - 1, idx + 1) : Math.max(0, idx - 1);
+        opts.forEach((o) => o.classList.remove("is-active"));
+        const next = opts[nextIdx];
+        if (next) {
+          next.classList.add("is-active");
+          next.focus({ preventScroll: true });
+        }
+        return;
+      }
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        if (active) chooseDomainProvider(active.getAttribute("data-value") || "");
+        providerTrigger?.focus();
+      }
+    });
+    document.addEventListener("pointerdown", (e) => {
+      if (!providerRoot?.classList.contains("is-open")) return;
+      if (providerRoot.contains(e.target)) return;
+      setDomainProviderSelectOpen(false);
+    });
+
+    document.getElementById("lb-custom-domain-provider")?.addEventListener("change", () => {
+      syncDomainProviderSelectUi(selectedDomainProvider());
+      const cfg = {
+        ...readCustomDomainConfig(),
+        provider: selectedDomainProvider(),
+        domain:
+          readCustomDomainConfig().domain ||
+          String(document.getElementById("lb-custom-domain")?.value || "").trim(),
+      };
+      setDomainWidgetFeedback(customDomainHintText(cfg, !!liveSiteUrl()));
+      renderCustomDomainDns(cfg);
+    });
+    document.getElementById("lb-custom-domain")?.addEventListener("input", () => {
+      const cfg = {
+        ...readCustomDomainConfig(),
+        provider: selectedDomainProvider(),
+        domain: String(document.getElementById("lb-custom-domain")?.value || "").trim(),
+        verified: false,
+        dns: null,
+      };
+      renderCustomDomainDns(cfg);
     });
     document.getElementById("lb-custom-domain-save")?.addEventListener("click", () => {
       void saveDomainFromSettings("lb-custom-domain");
     });
+    document.getElementById("lb-custom-domain-check")?.addEventListener("click", () => {
+      void refreshCustomDomainStatus();
+    });
+    document.getElementById("lb-custom-domain-dns")?.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-copy]");
+      if (!btn) return;
+      const value = btn.getAttribute("data-copy") || "";
+      void copyText(value)
+        .then(() => window.StudioToast?.success?.("Copied"))
+        .catch((err) => window.StudioToast?.error?.(err.message || "Could not copy"));
+    });
   }
 
-  function setSiteSettingsOpen(open) {
+  function setSiteSettingsOpen(open, tab) {
     const el = document.getElementById("builder-site-settings");
     const settingsBtn = document.getElementById("btn-builder-settings");
     if (!el) return;
     if (open && ensureOnboardSurvey()) return;
     if (open) {
       syncSiteSettingsUi();
-      showSettingsTab("domain");
+      showSettingsTab(tab || "domain");
       setSiteSettingsError("");
       setSiteSettingsStatus("");
     }
@@ -6992,6 +8740,51 @@
     }
   }
 
+  async function refreshCustomDomainStatus() {
+    if (!state.projectId) {
+      setDomainWidgetFeedback("Generate and publish a site first.", "error");
+      return;
+    }
+    const checkBtn = document.getElementById("lb-custom-domain-check");
+    try {
+      if (checkBtn) {
+        checkBtn.disabled = true;
+        checkBtn.textContent = "Checking…";
+      }
+      setDomainWidgetFeedback("Checking domain status on Vercel…");
+      const data = await workerGet(
+        "/domain?projectId=" + encodeURIComponent(state.projectId) + "&verify=1"
+      );
+      await loadProject(state.projectId);
+      syncSiteSettingsUi();
+      const domain = data?.domain || readCustomDomainConfig();
+      if (domain?.verified) {
+        setDomainWidgetFeedback("Connected and verified. Your domain should open this site.", "ok");
+        window.StudioToast?.success?.("Domain verified");
+      } else {
+        const reason =
+          data?.pendingReason ||
+          domain?.pendingReason ||
+          data?.diagnosis?.message ||
+          domain?.diagnosis?.message ||
+          domain?.dns?.tip ||
+          "DNS not updated yet. Delete old A/www records, add the cards below, wait 2–5 minutes, then check again.";
+        setDomainWidgetFeedback(reason, data?.diagnosis?.ok === false || domain?.diagnosis?.ok === false ? "error" : "");
+        window.StudioToast?.info?.(
+          data?.diagnosis?.ok ? "DNS looks right — wait a minute" : "DNS needs an update"
+        );
+      }
+    } catch (e) {
+      setDomainWidgetFeedback(e.message || "Could not check domain", "error");
+      window.StudioToast?.error?.(e.message || "Could not check domain");
+    } finally {
+      if (checkBtn) {
+        checkBtn.disabled = false;
+        checkBtn.textContent = "Check status";
+      }
+    }
+  }
+
   async function saveDomainFromSettings(inputId = "lb-set-domain") {
     setSiteSettingsError("");
     setSiteSettingsStatus("");
@@ -6999,54 +8792,117 @@
     const enabled = fromWidget
       ? !!document.getElementById("lb-custom-domain-enabled")?.checked
       : true;
+    const saveBtn = fromWidget
+      ? document.getElementById("lb-custom-domain-save")
+      : document.getElementById("lb-set-domain-save");
+
+    if (!state.projectId) {
+      const msg = "Generate and publish a site first.";
+      setSiteSettingsError(msg);
+      if (fromWidget) setDomainWidgetFeedback(msg, "error");
+      return;
+    }
 
     if (fromWidget && !enabled) {
-      const ctx = {
-        ...(state.project?.business_context || {}),
-        customDomain: "",
-        customDomainEnabled: false,
-      };
-      if (!state.projectId) {
-        state.project = { ...(state.project || {}), business_context: ctx };
-        syncCustomDomainWidgetUi();
-        syncSiteSettingsUi();
-        setSiteSettingsStatus("Custom domain disabled.");
-        return;
-      }
       try {
-        await persistProjectPatch({ business_context: ctx });
-        syncSiteSettingsUi();
-        setSiteSettingsStatus("Custom domain disabled.");
+        if (saveBtn) {
+          saveBtn.disabled = true;
+          saveBtn.textContent = "Disconnecting…";
+        }
+        const data = await workerPost("/domain", {
+          projectId: state.projectId,
+          enabled: false,
+        });
+        if (data?.ok !== false) {
+          await loadProject(state.projectId);
+          syncSiteSettingsUi();
+          setSiteSettingsStatus(data?.message || "Custom domain disabled.");
+          setDomainWidgetFeedback("Custom domain disconnected.");
+          window.StudioToast?.success?.("Custom domain disconnected");
+        }
       } catch (e) {
-        setSiteSettingsError(e.message || "Could not save domain");
+        setSiteSettingsError(e.message || "Could not disconnect domain");
+        setDomainWidgetFeedback(e.message || "Could not disconnect domain", "error");
+      } finally {
+        if (saveBtn) {
+          saveBtn.disabled = !liveSiteUrl();
+          saveBtn.textContent = "Save Domain";
+        }
       }
       return;
     }
 
     if (!liveSiteUrl()) {
-      setSiteSettingsError("Publish your site first to connect a domain.");
+      const msg = "Publish your site first to connect a domain.";
+      setSiteSettingsError(msg);
+      if (fromWidget) setDomainWidgetFeedback(msg, "error");
+      window.StudioToast?.error?.(msg);
+      return;
+    }
+    const provider = fromWidget
+      ? selectedDomainProvider()
+      : String(readCustomDomainConfig().provider || "other");
+    if (fromWidget && !provider) {
+      const msg = "Select where your domain is managed (e.g. Squarespace).";
+      setSiteSettingsError(msg);
+      setDomainWidgetFeedback(msg, "error");
+      window.StudioToast?.error?.(msg);
       return;
     }
     const domain = sanitizeClientText(document.getElementById(inputId)?.value || "", 120)
       .replace(/^https?:\/\//i, "")
       .replace(/\/.*$/, "")
+      .replace(/\.$/, "")
       .toLowerCase();
-    if (!domain || !/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(domain)) {
-      setSiteSettingsError("Enter a valid domain like www.yourbusiness.com");
+    if (!domain || !/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/i.test(domain)) {
+      const msg = "Enter a valid domain like www.yourbusiness.com";
+      setSiteSettingsError(msg);
+      if (fromWidget) setDomainWidgetFeedback(msg, "error");
       return;
     }
-    const ctx = {
-      ...(state.project?.business_context || {}),
-      customDomain: domain,
-      customDomainEnabled: true,
-    };
     try {
-      await persistProjectPatch({ business_context: ctx });
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Connecting…";
+      }
+      setSiteSettingsStatus("Connecting domain on Vercel…");
+      if (fromWidget) setDomainWidgetFeedback("Connecting domain on Vercel…");
+      const data = await workerPost("/domain", {
+        projectId: state.projectId,
+        domain,
+        provider,
+        enabled: true,
+      });
+      await loadProject(state.projectId);
       syncSiteSettingsUi();
-      setSiteSettingsStatus("Domain saved. Point DNS to your Vercel deployment next.");
-      setStatus("Custom domain saved.");
+      const providerLabel = DOMAIN_PROVIDERS[provider]?.label || "your DNS host";
+      const tip = data?.dns?.tip || data?.domain?.dns?.tip || "";
+      const statusMsg = data?.verified
+        ? "Connected and verified. Your domain should open this site."
+        : data?.message ||
+          tip ||
+          "Domain added. Finish the " + providerLabel + " DNS steps, then check status.";
+      setSiteSettingsStatus(statusMsg);
+      if (fromWidget) {
+        setDomainWidgetFeedback(statusMsg, data?.verified ? "ok" : "");
+      }
+      window.StudioToast?.success?.(
+        data?.verified
+          ? "Domain connected and verified"
+          : "Domain added — follow the " + providerLabel + " steps"
+      );
+      setStatus("Custom domain connected.");
     } catch (e) {
       setSiteSettingsError(e.message || "Could not save domain");
+      if (fromWidget) setDomainWidgetFeedback(e.message || "Could not save domain", "error");
+    } finally {
+      if (saveBtn) {
+        const on = fromWidget
+          ? !!document.getElementById("lb-custom-domain-enabled")?.checked
+          : true;
+        saveBtn.disabled = fromWidget ? !liveSiteUrl() || !on : !liveSiteUrl();
+        saveBtn.textContent = fromWidget ? "Save Domain" : "Save";
+      }
     }
   }
 
@@ -7106,6 +8962,7 @@
       void saveContactFromSettings();
     });
     bindContactFormWidget();
+    bindWatermarkWidget();
     bindCustomDomainWidget();
     document.getElementById("lb-set-accent")?.addEventListener("input", (e) => {
       const hex = document.getElementById("lb-set-accent-hex");
@@ -7118,14 +8975,14 @@
     });
     document.getElementById("lb-set-copy-link")?.addEventListener("click", async () => {
       try {
-        await copyText(document.getElementById("lb-set-share-url")?.value || liveSiteUrl());
+        await copyText(document.getElementById("lb-set-share-url")?.value || publicSiteUrl());
         setSiteSettingsStatus("Link copied.");
       } catch (e) {
         setSiteSettingsError(e.message || "Could not copy");
       }
     });
     document.getElementById("lb-set-open-link")?.addEventListener("click", () => {
-      const url = liveSiteUrl();
+      const url = publicSiteUrl();
       if (url) window.open(url, "_blank", "noopener,noreferrer");
     });
     document.getElementById("lb-set-copy-pitch")?.addEventListener("click", async () => {
@@ -7161,26 +9018,130 @@
   function bindOnboard() {
     let mapsTimer = null;
 
+    document.querySelectorAll("[data-builder-mode]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        setBuilderMode(btn.getAttribute("data-builder-mode"));
+      });
+    });
+
+    document.getElementById("bs-gh-token")?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        document.getElementById("onboard-generate")?.click();
+      }
+    });
+    document.getElementById("bs-gh-token")?.addEventListener("input", () => {
+      if (state.githubConnected) {
+        state.githubConnected = false;
+        state.githubToken = "";
+        renderGithubRepos([]);
+        setGithubStatus("Token changed — connect again.");
+        setGithubWizardStep(1);
+      }
+      updateOnboardContinue();
+    });
+    document.getElementById("bs-gh-repo-trigger")?.addEventListener("click", () => {
+      toggleGithubRepoMenu();
+    });
+    document.addEventListener("click", (e) => {
+      const wrap = document.getElementById("bs-gh-select");
+      if (!wrap || !wrap.classList.contains("is-open")) return;
+      if (e.target?.closest?.("#bs-gh-select")) return;
+      closeGithubRepoMenu();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeGithubRepoMenu();
+    });
+    document.getElementById("bs-gh-path")?.addEventListener("change", () => {
+      const select = document.getElementById("bs-gh-path");
+      const hint = document.getElementById("bs-gh-path-hint");
+      if (hint && select) {
+        hint.textContent = select.value
+          ? "Importing from " + select.value + "/"
+          : "Importing from the repository root.";
+      }
+      updateOnboardContinue();
+    });
+
     document.getElementById("onboard-cancel")?.addEventListener("click", () => {
+      if (state.builderMode === "upload" && (Number(state.githubWizardStep) || 1) > 1) {
+        setGithubWizardStep((Number(state.githubWizardStep) || 1) - 1);
+        return;
+      }
       leaveBuilder();
     });
 
     document.getElementById("onboard-generate")?.addEventListener("click", () => {
-      setOnboardError("");
-      if (!canContinueOnboard()) {
-        setOnboardError("Paste a link or fill every manual field.");
-        updateOnboardContinue();
-        return;
-      }
-      const err = validateOnboardDetails();
-      if (err) {
-        setOnboardError(err);
-        updateOnboardContinue();
-        return;
-      }
-      captureOnboardDetails();
-      persistIntakeForEditorHandoff();
-      redirectToEditor(new URLSearchParams({ from_builder: "1", auto_generate: "1" }));
+      void (async () => {
+        setOnboardError("");
+        if (state.builderMode === "upload") {
+          const step = Number(state.githubWizardStep) || 1;
+          if (step === 1) {
+            if (!readGithubToken()) {
+              setOnboardError("Paste a GitHub token to continue.");
+              updateOnboardContinue();
+              return;
+            }
+            if (state.githubConnected && state.githubRepos.length) {
+              setGithubWizardStep(2);
+              return;
+            }
+            state.uploadBusy = true;
+            updateOnboardContinue();
+            try {
+              const ok = await connectGithubRepos({ advance: true });
+              if (!ok) setOnboardError(document.getElementById("bs-gh-status")?.textContent || "Could not connect.");
+            } finally {
+              state.uploadBusy = false;
+              updateOnboardContinue();
+            }
+            return;
+          }
+          if (step === 2) {
+            if (!readGithubRepoSelection()) {
+              setOnboardError("Select a GitHub repository that contains your website.");
+              updateOnboardContinue();
+              return;
+            }
+            setGithubWizardStep(3);
+            return;
+          }
+          if (!canContinueOnboard()) {
+            setOnboardError("Select a GitHub repository that contains your website.");
+            updateOnboardContinue();
+            return;
+          }
+          state.uploadBusy = true;
+          updateOnboardContinue();
+          try {
+            const projectId = await importUploadedSite();
+            redirectToEditor({ project_id: String(projectId) });
+          } catch (e) {
+            setOnboardError(e?.message || "Could not import site.");
+            state.uploadBusy = false;
+            updateOnboardContinue();
+          }
+          return;
+        }
+
+        if (!canContinueOnboard()) {
+          setOnboardError(
+            state.builderMode === "manual" ? "Fill every manual field." : "Paste a link to continue."
+          );
+          updateOnboardContinue();
+          return;
+        }
+
+        const err = validateOnboardDetails();
+        if (err) {
+          setOnboardError(err);
+          updateOnboardContinue();
+          return;
+        }
+        captureOnboardDetails();
+        persistIntakeForEditorHandoff();
+        redirectToEditor({ from_builder: "1", auto_generate: "1" });
+      })();
     });
 
     document.getElementById("onb-maps")?.addEventListener("input", () => {
@@ -7467,6 +9428,7 @@
     document.getElementById("btn-qr-code")?.addEventListener("click", () => {
       void openQrBusinessCard();
     });
+    document.getElementById("btn-contact-owner")?.addEventListener("click", contactOwner);
     document.getElementById("btn-publish-top")?.addEventListener("click", publish);
     document.getElementById("lb-payment-policy-agree")?.addEventListener("change", () => {
       setPublishEnabled();
@@ -7477,6 +9439,9 @@
       void redesignSite();
     });
     document.getElementById("btn-unpublish-top")?.addEventListener("click", unpublish);
+    document.getElementById("btn-dev-unlock-top")?.addEventListener("click", () => {
+      void simulateDevUnlock();
+    });
     document.getElementById("btn-delete-top")?.addEventListener("click", () => {
       void deleteProject();
     });
@@ -7493,6 +9458,7 @@
 
   async function bootBuilderForm() {
     bindOnboard();
+    setBuilderMode("google");
     document.addEventListener("ms:credits-changed", (e) => {
       applySubscriptionFromBalance(e.detail);
     });
@@ -7516,6 +9482,7 @@
 
     clearBuilderForNextVisit();
     showOnboardStep(1);
+    setBuilderMode(state.builderMode || "google");
     updateOnboardContinue();
 
     requestAnimationFrame(() => {

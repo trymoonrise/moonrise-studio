@@ -1,0 +1,1960 @@
+/* Map-based Business Finder — large mockup-matched UI */
+
+.ms-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+#page-body.ms-lf-page.ms-lf-page--map {
+  --lf-blue: #3b82f6;
+  --lf-blue-deep: #2563eb;
+  --lf-blue-soft: #dbeafe;
+  --lf-ink: #0f172a;
+  --lf-muted: #7c8ba0;
+  --lf-chrome-grey: #d5dde8;
+  /* Sign-in style primary actions */
+  --lf-btn-radius: 12px;
+  --lf-btn-bg:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 38%),
+    linear-gradient(180deg, #5b93f7 0%, #3b78ef 52%, #2563eb 100%);
+  --lf-btn-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.28) inset,
+    0 6px 14px rgba(37, 99, 235, 0.26),
+    0 2px 5px rgba(15, 23, 42, 0.1);
+  --lf-btn-shadow-hover:
+    0 1px 0 rgba(255, 255, 255, 0.32) inset,
+    0 8px 18px rgba(37, 99, 235, 0.3),
+    0 3px 6px rgba(15, 23, 42, 0.12);
+  --lf-pill-h: 3.25rem;
+  --lf-action-h: 3rem;
+  --lf-radius-sheet: 28px;
+  --lf-map-pad: 1.35rem;
+  --lf-chrome-x: 1rem;
+  --lf-chrome-w: min(22rem, calc(100% - (var(--lf-map-pad) * 2)));
+  --lf-actions-clearance: 6.5rem;
+  --ms-content-scale: 1;
+  zoom: 1;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: min(var(--ms-channel-w), calc(100% - var(--ms-sidebar-w) - 2rem));
+  height: 100dvh;
+  max-height: 100dvh;
+  min-height: 0;
+  padding-top: 1.75rem;
+  padding-bottom: 1.5rem;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  gap: 1rem;
+  overflow: hidden;
+  font-family: "DM Sans", system-ui, sans-serif;
+}
+
+.ms-lf-map-head.ms-page-head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  margin: 0;
+  margin-bottom: 0;
+  padding: 0 0 0.15rem;
+  flex-shrink: 0;
+  min-height: 0;
+  text-align: center;
+}
+
+.ms-lf-map-head .ms-page-head-copy {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+.ms-lf-map-head .ms-page-head-copy h1 {
+  margin: 0;
+  text-align: center;
+  width: 100%;
+  font-size: clamp(2rem, 2.6vw, 2.7rem);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.12;
+  color: #0f172a;
+}
+
+.ms-lf-map-stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  background: #0b1220;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  contain: layout style;
+}
+
+.ms-lf-map {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  contain: strict;
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+
+.ms-lf-map-stage:not(.is-map-loading) .ms-lf-map {
+  opacity: 1;
+}
+
+.ms-lf-map-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 1.15rem;
+  background: #0b1220;
+  transition: opacity 0.35s ease, visibility 0.35s ease;
+}
+
+.ms-lf-map-stage:not(.is-map-loading) .ms-lf-map-loader {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.ms-lf-map-loader-orb {
+  position: relative;
+  width: 2.65rem;
+  height: 2.65rem;
+}
+
+.ms-lf-map-loader-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(148, 163, 184, 0.18);
+  border-top-color: #60a5fa;
+  animation: ms-lf-map-spin 0.75s linear infinite;
+}
+
+.ms-lf-map-loader-label {
+  margin: 0;
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+@keyframes ms-lf-map-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ms-lf-map-loader-ring {
+    animation: none;
+    border-color: rgba(96, 165, 250, 0.45);
+  }
+
+  .ms-lf-map {
+    transition: none;
+  }
+
+  .ms-lf-map-loader {
+    transition: none;
+  }
+}
+
+.ms-lf-map-overlays {
+  position: absolute;
+  inset: 0;
+  z-index: 500;
+  pointer-events: none;
+}
+
+.ms-lf-map-overlays > * {
+  pointer-events: auto;
+}
+
+.ms-lf-map-top {
+  position: absolute;
+  top: var(--lf-map-pad);
+  left: var(--lf-map-pad);
+  right: auto;
+  transform: none;
+  display: grid;
+  justify-items: stretch;
+  justify-content: start;
+  gap: 0.55rem;
+  width: var(--lf-chrome-w);
+  z-index: 3;
+}
+
+.ms-lf-map-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: stretch;
+  gap: 0.45rem;
+  width: 100%;
+}
+
+.ms-lf-map-search {
+  margin: 0;
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+  display: block;
+}
+
+/* Grey pill shell — white action chips sit on top */
+.ms-lf-map-pill {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: var(--lf-pill-h);
+  padding: 0.34rem;
+  border-radius: 999px;
+  background: var(--lf-chrome-grey, #d5dde8);
+  border: 0;
+  box-shadow:
+    0 8px 22px rgba(15, 23, 42, 0.14),
+    0 1px 4px rgba(15, 23, 42, 0.06);
+}
+
+.ms-lf-map-pill-tray {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
+  min-height: calc(var(--lf-pill-h) - 0.68rem);
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+.ms-lf-map-chip {
+  appearance: none;
+  border: 0;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.7rem;
+  height: 2.7rem;
+  border-radius: 999px;
+  background: #fff;
+  color: #334155;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.ms-lf-map-chip svg {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.ms-lf-map-chip:hover {
+  color: var(--lf-blue-deep);
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.14);
+}
+
+.ms-lf-map-chip:active {
+  transform: scale(0.96);
+}
+
+.ms-lf-map-menu {
+  order: 1;
+  color: #3d4a5c;
+}
+
+.ms-lf-map-search-btn {
+  order: 2;
+  color: #3d4a5c;
+}
+
+.ms-lf-map-chip--count,
+.ms-lf-map-pill-body {
+  order: 3;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  flex: 0 0 auto;
+  width: fit-content;
+  max-width: calc(100% - 7.5rem);
+  min-width: 0;
+  height: 2.7rem;
+  padding: 0 0.85rem;
+  border-radius: 999px;
+  display: grid;
+  align-items: center;
+  justify-items: center;
+  cursor: default;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.ms-lf-map-chip--count:hover,
+.ms-lf-map-pill-body:hover {
+  color: inherit;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.ms-lf-map-chip--count:active,
+.ms-lf-map-pill-body:active {
+  transform: translateX(-50%);
+}
+
+.ms-lf-map-locate {
+  order: 4;
+  margin-left: auto;
+  color: #3d4a5c;
+}
+
+.ms-lf-map-locate.is-location-blocked {
+  color: #2563eb;
+  background: #fff;
+  box-shadow: inset 0 0 0 1.5px #93c5fd;
+}
+
+/* Back-compat for older icon class references */
+.ms-lf-map-pill-icon {
+  width: 2.65rem;
+  height: 2.65rem;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: #fff;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.ms-lf-map-pill-icon svg {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.ms-lf-map-count {
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: #526178;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+.ms-lf-map-search-field {
+  display: none;
+  margin: 0;
+  width: 100%;
+}
+
+.ms-lf-map-search-field input {
+  width: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--lf-ink);
+  padding: 0.15rem 0;
+}
+
+.ms-lf-map-search-field input::placeholder {
+  color: #94a3b8;
+  font-weight: 550;
+}
+
+.ms-lf-map-pill[data-mode="search"] .ms-lf-map-menu {
+  display: none;
+}
+
+.ms-lf-map-pill[data-mode="search"] .ms-lf-map-count {
+  display: none;
+}
+
+.ms-lf-map-pill[data-mode="search"] .ms-lf-map-search-field {
+  display: block;
+}
+
+.ms-lf-map-pill[data-mode="search"] .ms-lf-map-search-btn {
+  order: 1;
+  color: var(--lf-blue-deep);
+  background: #fff;
+  box-shadow: inset 0 0 0 1.5px #93c5fd;
+}
+
+.ms-lf-map-pill[data-mode="search"] .ms-lf-map-pill-body {
+  order: 2;
+  position: static;
+  left: auto;
+  transform: none;
+  flex: 1 1 auto;
+  width: auto;
+  max-width: none;
+  padding: 0 0.9rem;
+}
+
+.ms-lf-map-pill[data-mode="search"] .ms-lf-map-pill-body:active {
+  transform: none;
+}
+
+.ms-lf-map-pill[data-mode="search"] .ms-lf-map-locate {
+  display: none !important;
+}
+
+.ms-lf-map-filters {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: stretch;
+  gap: 0.18rem;
+  padding: 0.3rem;
+  border-radius: 999px;
+  background: var(--lf-chrome-grey, #d5dde8);
+  border: 0;
+  box-shadow:
+    0 8px 20px rgba(15, 23, 42, 0.1),
+    0 1px 4px rgba(15, 23, 42, 0.05);
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+  justify-self: stretch;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.ms-lf-map-filter-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #7c8ba0;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  flex: 1 1 0;
+  padding: 0.48rem 0.7rem;
+  line-height: 1.2;
+  border-radius: 999px;
+  text-align: center;
+  cursor: pointer;
+  white-space: nowrap;
+  position: relative;
+  z-index: 1;
+  transition: color 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ms-lf-map-filter-btn:hover {
+  color: #526178;
+}
+
+.ms-lf-map-filter-btn.is-active,
+.ms-lf-map-filter-btn[aria-pressed="true"] {
+  background: #fff;
+  color: #2563eb;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+}
+
+/* Sliding filter highlight (segment-switch.js) */
+.ms-lf-map-filters.seg-switch > .seg-switch-indicator {
+  background: #fff;
+  border: 0;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+}
+
+.ms-lf-map-filters.seg-switch > .ms-lf-map-filter-btn {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.ms-lf-map-filters.seg-switch.is-ready > .ms-lf-map-filter-btn.is-active,
+.ms-lf-map-filters.seg-switch.is-ready > .ms-lf-map-filter-btn[aria-pressed="true"] {
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #2563eb;
+}
+
+.ms-lf-map-panel {
+  position: absolute;
+  left: var(--lf-map-pad);
+  /* Stretch between filters and Scan Near Me so the list gets a real height and can scroll. */
+  top: calc(var(--lf-map-pad) + var(--lf-pill-h) + 4.35rem);
+  bottom: calc(var(--lf-actions-clearance) + 0.65rem);
+  width: var(--lf-chrome-w);
+  max-height: none;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.7rem 0.75rem 0.8rem;
+  border-radius: 16px;
+  background: #fff;
+  border: 0;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.16);
+  z-index: 2;
+  color: #0f172a;
+  overflow: hidden;
+  overscroll-behavior: contain;
+  pointer-events: auto;
+  /* Ease up into frame on first reveal */
+  transform: translate3d(0, 112%, 0);
+  transition:
+    transform 0.48s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, height;
+}
+
+.ms-lf-map-panel.is-sheet-open {
+  transform: translate3d(0, 0, 0);
+}
+
+.ms-lf-map-panel-handle {
+  display: none;
+  width: 2.6rem;
+  height: 0.28rem;
+  margin: 0.15rem auto 0.35rem;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.ms-lf-map-panel[hidden] {
+  display: none !important;
+}
+
+.ms-lf-map-panel .ms-lf-status,
+.ms-lf-map-panel .ms-error {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.ms-lf-map-results {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 100%;
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  /* Flex column (not grid): overflow:hidden cards used to shrink to hairline rows. */
+  display: flex !important;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  align-content: flex-start;
+  justify-content: flex-start;
+  gap: 0.55rem;
+  padding: 0.1rem 0.25rem 0.25rem 0.05rem;
+  -webkit-overflow-scrolling: touch;
+  color: #0f172a;
+  scrollbar-gutter: stable;
+  grid-template-columns: none !important;
+}
+
+.ms-lf-map-results .ms-dash-empty {
+  padding: 1.4rem 0.75rem;
+  text-align: center;
+  font-size: 0.95rem;
+  color: #64748b;
+}
+
+.ms-lf-map-card {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  overflow: visible;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  min-width: 0;
+  min-height: min-content;
+  width: 100%;
+  color: #0f172a;
+  -webkit-text-fill-color: currentColor;
+}
+
+.ms-lf-map-card.is-selected {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.16);
+}
+
+.ms-lf-map-card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.75rem 0.25rem;
+  flex: 0 0 auto;
+}
+
+.ms-lf-map-card .ms-lf-pro-avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #fff;
+  -webkit-text-fill-color: #fff;
+  flex-shrink: 0;
+}
+
+.ms-lf-map-card-titles {
+  flex: 1;
+  min-width: 0;
+}
+
+.ms-lf-map-card-titles h3 {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ms-lf-map-card-titles p {
+  margin: 0.1rem 0 0;
+  font-size: 0.78rem;
+  font-weight: 550;
+  line-height: 1.25;
+  color: #64748b !important;
+  -webkit-text-fill-color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ms-lf-map-card-distance {
+  color: #2563eb !important;
+  -webkit-text-fill-color: #2563eb;
+  font-weight: 700;
+}
+
+.ms-lf-map-card-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  padding: 0.1rem 0.75rem 0.35rem;
+  flex: 0 0 auto;
+}
+
+.ms-lf-map-card-details .ms-lf-pro-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  text-decoration: none;
+  color: inherit;
+}
+
+.ms-lf-map-card-details .ms-lf-pro-row-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.12rem;
+  color: #94a3b8;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+}
+
+.ms-lf-map-card-details .ms-lf-pro-row-icon .ms-lf-pro-ico,
+.ms-lf-map-card-details .ms-lf-pro-row-icon svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.ms-lf-map-card-details .ms-lf-pro-row-text {
+  min-width: 0;
+  flex: 1;
+  font-size: 0.82rem;
+  line-height: 1.3;
+  font-weight: 550;
+  color: #334155 !important;
+  -webkit-text-fill-color: #334155;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ms-lf-map-card-details .ms-lf-pro-row--pair {
+  align-items: center;
+}
+
+.ms-lf-map-card-details .ms-lf-pro-row-pair-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 0.35rem 0.55rem;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+}
+
+.ms-lf-map-card-details .ms-lf-pro-row-main,
+.ms-lf-map-card-details .ms-lf-pro-row-aside {
+  min-width: 0;
+  font-size: 0.82rem;
+  line-height: 1.3;
+  font-weight: 550;
+  color: #334155 !important;
+  -webkit-text-fill-color: #334155;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.ms-lf-map-card-details .ms-lf-pro-row-aside {
+  text-align: right;
+  color: #64748b !important;
+  -webkit-text-fill-color: #64748b;
+}
+
+.ms-lf-map-card-details .ms-lf-pro-row-main.is-empty,
+.ms-lf-map-card-details .ms-lf-pro-row-aside.is-empty {
+  color: #94a3b8 !important;
+  -webkit-text-fill-color: #94a3b8;
+  font-weight: 500;
+}
+
+.ms-lf-map-card-details .ms-lf-pro-row-main.is-link,
+.ms-lf-map-card-details .ms-lf-pro-row-aside.is-link {
+  color: #1d4ed8 !important;
+  -webkit-text-fill-color: #1d4ed8;
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
+  text-decoration: none;
+}
+
+.ms-lf-map-card-details .ms-lf-pro-row.is-link .ms-lf-pro-row-text {
+  color: #1d4ed8 !important;
+  -webkit-text-fill-color: #1d4ed8;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.ms-lf-map-card-details .ms-lf-pro-row-main.is-has-site,
+.ms-lf-map-card-details .ms-lf-pro-has-site {
+  color: #2563eb !important;
+  -webkit-text-fill-color: #2563eb;
+  font-weight: 650;
+}
+
+.ms-lf-map-card-details .ms-lf-pro-row-main.is-no-site,
+.ms-lf-map-card-details .ms-lf-pro-no-site {
+  color: #dc2626 !important;
+  -webkit-text-fill-color: #dc2626;
+  font-weight: 650;
+}
+
+.ms-lf-map-card-details .ms-lf-pro-site-check {
+  color: #94a3b8 !important;
+  -webkit-text-fill-color: #94a3b8;
+  font-weight: 600;
+}
+
+.ms-lf-map-card-details .ms-lf-pro-row-aside.is-open {
+  color: #15803d !important;
+  -webkit-text-fill-color: #15803d;
+  font-weight: 650;
+}
+
+.ms-lf-map-card-details .ms-lf-pro-row-aside.is-closed {
+  color: #b91c1c !important;
+  -webkit-text-fill-color: #b91c1c;
+  font-weight: 650;
+}
+
+.ms-lf-map-card-details .ms-lf-pro-row.is-open .ms-lf-pro-row-text {
+  color: #15803d !important;
+  -webkit-text-fill-color: #15803d;
+}
+
+.ms-lf-map-card-details .ms-lf-pro-row.is-closed .ms-lf-pro-row-text {
+  color: #b91c1c !important;
+  -webkit-text-fill-color: #b91c1c;
+}
+
+.ms-lf-map-card .ms-lf-pro-foot {
+  padding: 0.2rem 0.65rem 0.55rem;
+  border-top: 0;
+  background: transparent;
+  border-radius: 0;
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 6;
+  overflow: visible;
+  pointer-events: auto;
+}
+
+/* Blue emphasized slide-to-generate (matches Sign in / Scan nearby) */
+.ms-lf-map-card .ms-lf-slide {
+  --ms-lf-slide-thumb: 36px;
+  --ms-lf-slide-pad: 6px;
+  --ms-lf-slide-radius: var(--lf-btn-radius, 12px);
+  --ms-lf-slide-thumb-radius: 10px;
+  position: relative;
+  z-index: 6;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.ms-lf-map-card .ms-lf-slide-track {
+  min-height: calc(var(--ms-lf-slide-thumb) + var(--ms-lf-slide-pad) * 2) !important;
+  height: calc(var(--ms-lf-slide-thumb) + var(--ms-lf-slide-pad) * 2) !important;
+  border-radius: var(--ms-lf-slide-radius) !important;
+  background: var(--lf-btn-bg) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: var(--lf-btn-shadow) !important;
+  cursor: grab;
+  touch-action: none !important;
+}
+
+.ms-lf-map-card .ms-lf-slide-fill {
+  border-radius: var(--ms-lf-slide-radius) 0 0 var(--ms-lf-slide-radius) !important;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.28),
+    rgba(255, 255, 255, 0.08)
+  ) !important;
+  opacity: 0.85;
+}
+
+.ms-lf-map-card .ms-lf-slide.is-dragging .ms-lf-slide-fill,
+.ms-lf-map-card .ms-lf-slide.is-completing .ms-lf-slide-fill,
+.ms-lf-map-card .ms-lf-slide.is-returning .ms-lf-slide-fill {
+  opacity: 1;
+}
+
+.ms-lf-map-card .ms-lf-slide-thumb {
+  border-radius: var(--ms-lf-slide-thumb-radius, 10px) !important;
+  background: #fff !important;
+  color: #2563eb !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 3px 10px rgba(15, 23, 42, 0.2) !important;
+  touch-action: none !important;
+}
+
+.ms-lf-map-card .ms-lf-slide-thumb .ms-lf-pro-ico,
+.ms-lf-map-card .ms-lf-slide-thumb svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.ms-lf-map-card .ms-lf-slide-label {
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: rgba(255, 255, 255, 0.96) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.96);
+  justify-content: center;
+  align-items: center;
+  padding-left: calc(var(--ms-lf-slide-pad) + var(--ms-lf-slide-thumb) + 0.55rem);
+  padding-right: 0.9rem;
+  text-shadow: 0 1px 2px rgba(15, 23, 42, 0.16);
+}
+
+.ms-lf-map-card .ms-lf-slide.is-dragging .ms-lf-slide-label,
+.ms-lf-map-card .ms-lf-slide.is-completing .ms-lf-slide-label {
+  opacity: 0.45;
+}
+
+.ms-lf-more-wrap {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  padding: 0.35rem 0 0.15rem;
+}
+
+.ms-lf-map-skel {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid #eef2f7;
+  border-radius: 18px;
+  background: #fff;
+}
+
+.ms-lf-map-skel-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.ms-lf-map-skel-avatar,
+.ms-lf-map-skel-line,
+.ms-lf-map-skel-slide {
+  background: linear-gradient(90deg, #e2e8f0 0%, #f1f5f9 50%, #e2e8f0 100%);
+  background-size: 200% 100%;
+  animation: ms-lf-map-shimmer 1.25s ease-in-out infinite;
+  border-radius: 10px;
+}
+
+.ms-lf-map-skel-avatar {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.ms-lf-map-skel-lines {
+  flex: 1;
+  display: grid;
+  gap: 0.45rem;
+  padding-top: 0.15rem;
+}
+
+.ms-lf-map-skel-line {
+  height: 0.7rem;
+}
+
+.ms-lf-map-skel-line--short {
+  width: 48%;
+}
+
+.ms-lf-map-skel-line--med {
+  width: 72%;
+}
+
+.ms-lf-map-skel-line--tiny {
+  width: 36%;
+}
+
+.ms-lf-map-skel-slide {
+  height: 3rem;
+  border-radius: 999px;
+  position: relative;
+}
+
+.ms-lf-map-skel-slide::after {
+  content: "";
+  position: absolute;
+  right: 0.35rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2.3rem;
+  height: 2.3rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+}
+
+@keyframes ms-lf-map-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ms-lf-map-skel-avatar,
+  .ms-lf-map-skel-line,
+  .ms-lf-map-skel-slide,
+  .ms-lf-map-card,
+  .ms-lf-map-scan,
+  .ms-lf-map-all,
+  .ms-lf-map-pin,
+  .ms-lf-map-panel {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .ms-lf-map-panel {
+    transform: none !important;
+  }
+}
+
+.ms-lf-map-actions {
+  position: absolute;
+  left: var(--lf-map-pad);
+  right: auto;
+  bottom: var(--lf-map-pad);
+  transform: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+  padding: 0;
+  width: auto;
+  min-width: 17.5rem;
+  box-sizing: border-box;
+  border-radius: 16px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  z-index: 5;
+  /* Shell must not steal clicks from cards under the dock padding. */
+  pointer-events: none;
+}
+
+.ms-lf-map-actions-tray {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.45rem;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow:
+    0 12px 28px rgba(15, 23, 42, 0.16),
+    0 2px 6px rgba(15, 23, 42, 0.06);
+  box-sizing: border-box;
+  pointer-events: auto;
+}
+
+.ms-lf-map-scan {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: var(--lf-btn-radius, 12px);
+  min-height: var(--lf-action-h);
+  flex: 1;
+  padding: 0 1.15rem;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--lf-btn-bg);
+  color: #fff;
+  font: inherit;
+  font-size: 1.02rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  cursor: pointer;
+  box-shadow: var(--lf-btn-shadow);
+  white-space: nowrap;
+  transition:
+    transform 0.32s cubic-bezier(0.33, 1, 0.32, 1),
+    box-shadow 0.32s cubic-bezier(0.33, 1, 0.32, 1),
+    filter 0.28s ease,
+    background 0.28s ease;
+}
+
+.ms-lf-map-scan:hover:not(:disabled) {
+  filter: brightness(1.03);
+  transform: translateY(-0.5px);
+  box-shadow: var(--lf-btn-shadow-hover);
+}
+
+.ms-lf-map-scan:disabled,
+.ms-lf-map-all:disabled {
+  opacity: 0.72;
+  cursor: wait;
+}
+
+.ms-lf-map-scan.is-loading,
+.ms-lf-map-all.is-loading {
+  cursor: wait;
+  pointer-events: none;
+  opacity: 1;
+  filter: none;
+}
+
+.ms-lf-map-scan.is-loading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+}
+
+.ms-lf-map-scan-spin {
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  flex-shrink: 0;
+  animation: ms-lf-map-scan-spin 0.7s linear infinite;
+}
+
+.ms-lf-map-scan-label {
+  line-height: 1;
+}
+
+.ms-lf-map-all.is-loading {
+  display: grid;
+  place-items: center;
+}
+
+@keyframes ms-lf-map-scan-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ms-lf-map-scan-spin {
+    animation: none;
+    border-top-color: rgba(255, 255, 255, 0.85);
+  }
+}
+
+.ms-lf-map-all {
+  appearance: none;
+  width: var(--lf-action-h);
+  height: var(--lf-action-h);
+  min-width: var(--lf-action-h);
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: var(--lf-btn-radius, 12px);
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--lf-btn-bg);
+  color: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--lf-btn-shadow);
+  flex-shrink: 0;
+  transition:
+    transform 0.32s cubic-bezier(0.33, 1, 0.32, 1),
+    box-shadow 0.32s cubic-bezier(0.33, 1, 0.32, 1),
+    filter 0.28s ease,
+    background 0.28s ease;
+}
+
+.ms-lf-map-all:hover:not(:disabled) {
+  filter: brightness(1.03);
+  transform: translateY(-0.5px);
+  box-shadow: var(--lf-btn-shadow-hover);
+}
+
+.ms-lf-map-marker {
+  background: transparent !important;
+  border: 0 !important;
+}
+
+.ms-lf-map-pin {
+  width: 28px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 3px 6px rgba(15, 23, 42, 0.45));
+  transform-origin: 50% 100%;
+  transition: transform 0.18s ease;
+}
+
+.ms-lf-map-pin-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+.ms-lf-map-pin-body {
+  fill: #e11d48;
+  stroke: #fff;
+  stroke-width: 1.75;
+}
+
+.ms-lf-map-pin-dot {
+  fill: #fff;
+}
+
+.ms-lf-map-pin.is-selected {
+  width: 32px;
+  height: 40px;
+  transform: translateY(-2px) scale(1.06);
+}
+
+.ms-lf-map-pin.is-selected .ms-lf-map-pin-body {
+  fill: #be123c;
+}
+
+.leaflet-control-attribution {
+  font-size: 9px !important;
+  background: rgba(15, 23, 42, 0.55) !important;
+  color: #cbd5e1 !important;
+}
+
+.leaflet-control-attribution a {
+  color: #93c5fd !important;
+}
+
+.leaflet-control-zoom {
+  border: 0 !important;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18) !important;
+  border-radius: 14px !important;
+  overflow: hidden;
+}
+
+.leaflet-control-zoom a {
+  width: 2rem !important;
+  height: 2rem !important;
+  line-height: 2rem !important;
+  font-size: 1rem !important;
+  color: #334155 !important;
+}
+
+/* Map Finder list must never use the multi-column lead grid (it squishes cards). */
+body[data-page="leads"] #lf-results.ms-lf-map-results,
+body[data-page="leads"] .ms-lf-map-results.ms-lead-list {
+  display: flex !important;
+  flex-direction: column !important;
+  grid-template-columns: none !important;
+  align-content: flex-start !important;
+}
+
+body[data-page="leads"] .ms-menu-toggle,
+body[data-page="leads"] .ms-hard-refresh,
+body[data-page="leads"] #ms-hard-refresh,
+#lf-refresh,
+#lf-refresh-map,
+.ms-lf-map-refresh {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Mobile mockup (matches phone design): centered chrome, menu + search + locate */
+@media (max-width: 900px) {
+  #page-body.ms-lf-page.ms-lf-page--map {
+    --lf-pill-h: 3.85rem;
+    --lf-action-h: 3.25rem;
+    --lf-radius-sheet: 32px;
+    /* Shared left/right edge for search, filters, cards, and Scan tray */
+    --lf-chrome-x: 1rem;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    min-height: 100dvh;
+    height: 100dvh;
+    max-height: 100dvh;
+    padding: 0 !important;
+    gap: 0;
+    overflow: hidden;
+    zoom: 1;
+  }
+
+  .ms-lf-map-head.ms-page-head {
+    display: none !important;
+  }
+
+  .ms-lf-map-stage {
+    min-height: 0;
+    height: 100%;
+    border-radius: 0;
+    border: 0;
+    box-shadow: none;
+  }
+
+  /* Full-bleed top chrome: padding sets the shared x-edge (same as cards / Scan). */
+  .ms-lf-map-top {
+    top: max(0.7rem, env(safe-area-inset-top, 0px)) !important;
+    left: 0 !important;
+    right: 0 !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    padding: 0 var(--lf-chrome-x) !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    gap: 0.6rem !important;
+    z-index: 6;
+  }
+
+  .ms-lf-map-top-row {
+    gap: 0 !important;
+    width: 100% !important;
+    display: flex !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+  }
+
+  .ms-lf-map-search {
+    width: 100% !important;
+    max-width: none !important;
+    flex: 1 1 auto !important;
+    display: block !important;
+  }
+
+  .ms-lf-map-pill {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: var(--lf-pill-h);
+    padding: 0.34rem;
+    border-radius: 999px;
+    box-sizing: border-box !important;
+    box-shadow:
+      0 12px 32px rgba(15, 23, 42, 0.16),
+      0 2px 8px rgba(15, 23, 42, 0.06);
+  }
+
+  .ms-lf-map-pill-tray {
+    min-height: calc(var(--lf-pill-h) - 0.68rem);
+    padding: 0;
+    gap: 0.45rem;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  /* Mobile order: menu | search | count | locate */
+  .ms-lf-map-menu {
+    display: grid !important;
+    order: 1;
+  }
+
+  .ms-lf-map-search-btn {
+    order: 2;
+  }
+
+  .ms-lf-map-pill-body {
+    order: 3;
+  }
+
+  .ms-lf-map-locate {
+    display: grid !important;
+    order: 4;
+    margin-left: auto;
+  }
+
+  .ms-lf-map-chip:not(.ms-lf-map-chip--count):not(.ms-lf-map-pill-body),
+  .ms-lf-map-pill-icon {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .ms-lf-map-chip--count,
+  .ms-lf-map-pill-body {
+    flex: 0 0 auto;
+    width: fit-content;
+    max-width: calc(100% - 7.5rem);
+    height: 3rem;
+    padding: 0 0.9rem;
+  }
+
+  .ms-lf-map-chip svg,
+  .ms-lf-map-pill-icon svg {
+    width: 1.28rem;
+    height: 1.28rem;
+    stroke-width: 2.35;
+  }
+
+  .ms-lf-map-count {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #526178;
+    letter-spacing: -0.03em;
+  }
+
+  .ms-lf-map-search-field input {
+    font-size: 1.05rem;
+  }
+
+  .ms-lf-map-filters {
+    display: flex !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    align-self: stretch !important;
+    justify-content: stretch !important;
+    box-sizing: border-box !important;
+    padding: 0.3rem;
+    gap: 0.18rem;
+    border-radius: 999px;
+    background: var(--lf-chrome-grey, #d5dde8);
+    box-shadow:
+      0 10px 26px rgba(15, 23, 42, 0.12),
+      0 2px 6px rgba(15, 23, 42, 0.05);
+  }
+
+  .ms-lf-map-filter-btn {
+    flex: 1 1 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    padding: 0.5rem 0.65rem;
+    line-height: 1.2;
+    color: #7c8ba0;
+    text-align: center;
+  }
+
+  .ms-lf-map-filter-btn.is-active,
+  .ms-lf-map-filter-btn[aria-pressed="true"] {
+    color: #2563eb;
+  }
+
+  .ms-lf-map-panel {
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    /*
+     * Anchor to the stage floor and pad for the Scan dock. White sheet runs
+     * under the dock so the dark map can never peek through as a seam.
+     */
+    bottom: 0 !important;
+    width: auto !important;
+    height: calc(var(--lf-sheet-h, 36dvh) + var(--lf-sheet-dock, 7.75rem));
+    max-height: calc(var(--lf-sheet-max, 48dvh) + var(--lf-sheet-dock, 7.75rem));
+    min-height: calc(8.5rem + var(--lf-sheet-dock, 7.75rem));
+    border-radius: var(--lf-radius-sheet) var(--lf-radius-sheet) 0 0;
+    border: 0;
+    padding: 0 var(--lf-chrome-x) var(--lf-sheet-dock, 7.75rem);
+    box-shadow: 0 -16px 48px rgba(15, 23, 42, 0.22);
+    overflow: hidden;
+    transition:
+      transform 0.48s cubic-bezier(0.22, 1, 0.36, 1),
+      height 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform, height;
+    z-index: 2;
+    pointer-events: auto;
+  }
+
+  .ms-lf-map-panel.is-sheet-dragging {
+    transition: height 0s linear;
+    user-select: none;
+  }
+
+  .ms-lf-map-panel-handle {
+    display: block;
+    flex: 0 0 auto;
+    width: 100%;
+    height: auto;
+    margin: 0;
+    padding: 0.7rem 0 0.45rem;
+    border-radius: 0;
+    background: transparent;
+    cursor: grab;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .ms-lf-map-panel-handle::after {
+    content: "";
+    display: block;
+    width: 2.75rem;
+    height: 0.3rem;
+    margin: 0 auto;
+    border-radius: 999px;
+    background: #cbd5e1;
+  }
+
+  .ms-lf-map-panel.is-sheet-dragging .ms-lf-map-panel-handle {
+    cursor: grabbing;
+  }
+
+  .ms-lf-map-panel.is-sheet-dragging .ms-lf-map-panel-handle::after {
+    background: #94a3b8;
+  }
+
+  .ms-lf-map-results {
+    gap: 0.5rem;
+    overflow-y: auto;
+    min-height: 0;
+    flex: 1 1 auto;
+    max-height: none;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .ms-lf-map-card {
+    border-radius: 12px;
+  }
+
+  .ms-lf-map-card-head {
+    padding: 0.6rem 0.7rem 0.2rem;
+  }
+
+  .ms-lf-map-card .ms-lf-pro-avatar {
+    width: 2.2rem;
+    height: 2.2rem;
+  }
+
+  .ms-lf-map-card-titles h3 {
+    font-size: 0.95rem;
+  }
+
+  .ms-lf-map-card .ms-lf-slide-track {
+    min-height: calc(var(--ms-lf-slide-thumb) + var(--ms-lf-slide-pad) * 2) !important;
+    height: calc(var(--ms-lf-slide-thumb) + var(--ms-lf-slide-pad) * 2) !important;
+  }
+
+  /*
+   * Bottom dock (mockup): full-bleed white sheet with top radius only,
+   * grey inset tray, wide Scan Near Me + circular All.
+   */
+  .ms-lf-map-actions {
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    transform: none !important;
+    width: auto !important;
+    min-width: 0;
+    max-width: none;
+    justify-content: stretch !important;
+    align-items: stretch;
+    /* Rounded top; results sheet white continues underneath so map never peeks. */
+    border-radius: 28px 28px 0 0;
+    padding: 0.75rem var(--lf-chrome-x) calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    background: #fff;
+    box-shadow: 0 -8px 28px rgba(15, 23, 42, 0.12);
+    z-index: 5;
+  }
+
+  .ms-lf-map-actions-tray {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.55rem;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0.48rem;
+    border-radius: 18px;
+    background: var(--lf-chrome-grey, #d5dde8);
+    box-shadow: none;
+  }
+
+  .ms-lf-map-scan {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: var(--lf-action-h);
+    font-size: 1.05rem;
+    font-weight: 700;
+    padding: 0 1.1rem;
+    border-radius: var(--lf-btn-radius, 12px);
+  }
+
+  .ms-lf-map-all {
+    flex: 0 0 auto;
+    width: var(--lf-action-h);
+    height: var(--lf-action-h);
+    border-radius: var(--lf-btn-radius, 12px);
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+
+  .leaflet-control-zoom {
+    display: none !important;
+  }
+
+  .leaflet-control-attribution {
+    display: none !important;
+  }
+
+  .leaflet-bottom.leaflet-right {
+    bottom: 7.5rem !important;
+    right: 0.85rem !important;
+  }
+
+  .ms-lf-map-stage:has(#lf-results-panel:not([hidden])) .leaflet-bottom.leaflet-right {
+    bottom: calc(var(--lf-sheet-dock, 7.75rem) + var(--lf-sheet-h, 36dvh) + 0.4rem) !important;
+  }
+}
+
+/* PC: left-aligned chrome (search left of count, no hamburger) */
+@media (min-width: 901px) {
+  #page-body.ms-lf-page.ms-lf-page--map {
+    --lf-pill-h: 4.35rem;
+    --lf-action-h: 3.4rem;
+    --lf-map-pad: 1.65rem;
+    --lf-chrome-w: min(26.5rem, calc(100% - (var(--lf-map-pad) * 2)));
+    /* Fallback only — JS syncSheetLayoutVars() measures the Scan dock. */
+    --lf-actions-clearance: 6.15rem;
+    --lf-radius-sheet: 32px;
+    padding-top: 2rem;
+    padding-bottom: 1.75rem;
+    padding-left: 2.25rem;
+    padding-right: 2.25rem;
+    gap: 1.15rem;
+  }
+
+  .ms-lf-map-menu {
+    display: none;
+  }
+
+  .ms-lf-map-search-btn {
+    order: 1;
+  }
+
+  .ms-lf-map-pill-body {
+    order: 2;
+  }
+
+  .ms-lf-map-locate {
+    order: 3;
+    display: grid;
+    margin-left: auto;
+  }
+
+  .ms-lf-map-top {
+    top: var(--lf-map-pad) !important;
+    left: var(--lf-map-pad) !important;
+    right: auto !important;
+    transform: none !important;
+    width: var(--lf-chrome-w) !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.85rem !important;
+  }
+
+  .ms-lf-map-top-row {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: stretch !important;
+  }
+
+  .ms-lf-map-search {
+    width: 100% !important;
+    display: block !important;
+  }
+
+  .ms-lf-map-pill {
+    width: 100% !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+    padding: 0.38rem;
+    border-radius: 999px;
+  }
+
+  .ms-lf-map-pill-tray {
+    padding: 0;
+    gap: 0.5rem;
+    border-radius: 0;
+    background: transparent;
+    min-height: calc(var(--lf-pill-h) - 0.76rem);
+  }
+
+  .ms-lf-map-chip:not(.ms-lf-map-chip--count):not(.ms-lf-map-pill-body),
+  .ms-lf-map-pill-icon {
+    width: 3.35rem;
+    height: 3.35rem;
+  }
+
+  .ms-lf-map-chip--count,
+  .ms-lf-map-pill-body {
+    flex: 0 0 auto;
+    width: fit-content;
+    max-width: calc(100% - 8rem);
+    height: 3.35rem;
+    padding: 0 1rem;
+  }
+
+  .ms-lf-map-chip svg,
+  .ms-lf-map-pill-icon svg {
+    width: 1.35rem;
+    height: 1.35rem;
+  }
+
+  .ms-lf-map-count {
+    font-size: 1.2rem;
+  }
+
+  .ms-lf-map-search-field input {
+    font-size: 1.15rem;
+  }
+
+  .ms-lf-map-filter-btn {
+    flex: 1 1 0;
+    font-size: 1.05rem;
+    padding: 0.55rem 1rem;
+    line-height: 1.2;
+    text-align: center;
+  }
+
+  .ms-lf-map-filters {
+    display: flex !important;
+    justify-self: stretch !important;
+    justify-content: stretch !important;
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0.32rem;
+    gap: 0.18rem;
+    background: var(--lf-chrome-grey, #d5dde8);
+  }
+
+  .ms-lf-map-actions {
+    left: var(--lf-map-pad) !important;
+    right: auto !important;
+    bottom: 0 !important;
+    transform: none !important;
+    width: var(--lf-chrome-w) !important;
+    min-width: 0;
+    max-width: none;
+    justify-content: stretch !important;
+    align-items: stretch;
+    border-radius: 32px 32px 0 0;
+    padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    background: #fff;
+    box-shadow: 0 -10px 32px rgba(15, 23, 42, 0.12);
+    z-index: 5;
+  }
+
+  .ms-lf-map-actions-tray {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    margin: 0;
+    padding: 0.5rem;
+    gap: 0.55rem;
+    border-radius: 18px;
+    background: var(--lf-chrome-grey, #d5dde8);
+    box-shadow: none;
+  }
+
+  .ms-lf-map-scan {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: var(--lf-action-h);
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 0 1.2rem;
+    border-radius: var(--lf-btn-radius, 12px);
+  }
+
+  .ms-lf-map-all {
+    flex: 0 0 auto;
+    width: var(--lf-action-h);
+    height: var(--lf-action-h);
+    border-radius: var(--lf-btn-radius, 12px);
+    font-size: 0.98rem;
+    font-weight: 700;
+  }
+
+  /*
+   * PC results sheet — same language as mobile:
+   * floor-anchored white sheet with dock padding; height driven by --lf-sheet-h (draggable).
+   */
+  .ms-lf-map-panel {
+    left: var(--lf-map-pad);
+    right: auto;
+    top: auto;
+    bottom: 0;
+    width: var(--lf-chrome-w);
+    height: calc(var(--lf-sheet-h, 42vh) + var(--lf-sheet-dock, var(--lf-actions-clearance)));
+    max-height: calc(var(--lf-sheet-max, 58vh) + var(--lf-sheet-dock, var(--lf-actions-clearance)));
+    min-height: calc(12rem + var(--lf-sheet-dock, var(--lf-actions-clearance)));
+    border-radius: 32px 32px 0 0;
+    padding: 0 1rem var(--lf-sheet-dock, var(--lf-actions-clearance));
+    gap: 0.35rem;
+    box-shadow: 0 -16px 48px rgba(15, 23, 42, 0.18);
+    transition:
+      transform 0.48s cubic-bezier(0.22, 1, 0.36, 1),
+      height 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform, height;
+  }
+
+  .ms-lf-map-panel.is-sheet-dragging {
+    transition: height 0s linear;
+    user-select: none;
+  }
+
+  .ms-lf-map-panel-handle {
+    display: block;
+    flex: 0 0 auto;
+    width: 100%;
+    height: auto;
+    margin: 0;
+    padding: 0.75rem 0 0.45rem;
+    border-radius: 0;
+    background: transparent;
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .ms-lf-map-panel.is-sheet-dragging .ms-lf-map-panel-handle {
+    cursor: grabbing;
+  }
+
+  .ms-lf-map-panel-handle::after {
+    content: "";
+    display: block;
+    width: 2.75rem;
+    height: 0.3rem;
+    margin: 0 auto;
+    border-radius: 999px;
+    background: #cbd5e1;
+  }
+
+  .ms-lf-map-panel.is-sheet-dragging .ms-lf-map-panel-handle::after {
+    background: #94a3b8;
+  }
+
+  .ms-lf-map-results {
+    gap: 0.55rem;
+    padding: 0.05rem 0.15rem 0.35rem 0.05rem;
+  }
+
+  .ms-lf-map-results .ms-dash-empty {
+    padding: 1.6rem 1rem;
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+
+  .ms-lf-map-card {
+    border-radius: 14px;
+    border-color: #e2e8f0;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+
+  .ms-lf-map-card-head {
+    gap: 0.7rem;
+    padding: 0.75rem 0.85rem 0.3rem;
+  }
+
+  .ms-lf-map-card .ms-lf-pro-avatar {
+    width: 2.55rem;
+    height: 2.55rem;
+    font-size: 0.78rem;
+  }
+
+  .ms-lf-map-card-titles h3 {
+    font-size: 1.08rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  .ms-lf-map-card-titles p {
+    font-size: 0.86rem;
+    font-weight: 550;
+    color: #64748b !important;
+    -webkit-text-fill-color: #64748b;
+  }
+
+  .ms-lf-map-card-details {
+    padding: 0.15rem 0.85rem 0.4rem;
+    gap: 0.34rem;
+  }
+
+  .ms-lf-map-card-details .ms-lf-pro-row-text,
+  .ms-lf-map-card-details .ms-lf-pro-row-main,
+  .ms-lf-map-card-details .ms-lf-pro-row-aside {
+    font-size: 0.9rem;
+  }
+
+  .ms-lf-map-card-details .ms-lf-pro-row-icon {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+
+  .ms-lf-map-card-details .ms-lf-pro-row-icon .ms-lf-pro-ico,
+  .ms-lf-map-card-details .ms-lf-pro-row-icon svg {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+
+  .ms-lf-map-card .ms-lf-pro-foot {
+    padding: 0.25rem 0.8rem 0.7rem;
+  }
+
+  .ms-lf-map-card .ms-lf-slide {
+    --ms-lf-slide-thumb: 40px;
+    --ms-lf-slide-pad: 6px;
+    --ms-lf-slide-radius: var(--lf-btn-radius, 12px);
+    --ms-lf-slide-thumb-radius: 11px;
+  }
+
+  .ms-lf-map-card .ms-lf-slide-track {
+    min-height: calc(var(--ms-lf-slide-thumb) + var(--ms-lf-slide-pad) * 2) !important;
+    height: calc(var(--ms-lf-slide-thumb) + var(--ms-lf-slide-pad) * 2) !important;
+    border-radius: var(--ms-lf-slide-radius) !important;
+    background: var(--lf-btn-bg) !important;
+    box-shadow: var(--lf-btn-shadow) !important;
+  }
+
+  .ms-lf-map-card .ms-lf-slide-thumb {
+    border-radius: var(--ms-lf-slide-thumb-radius, 11px) !important;
+  }
+
+  .ms-lf-map-card .ms-lf-slide-label {
+    font-size: 1rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.96) !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.96);
+  }
+
+  .ms-lf-map-panel .ms-lf-status,
+  .ms-lf-map-panel .ms-error {
+    font-size: 0.95rem;
+    padding: 0 0.15rem;
+  }
+
+  #lf-load-more {
+    min-height: 3rem;
+    font-size: 1.05rem;
+    padding: 0.7rem 1.35rem;
+  }
+
+  .leaflet-control-zoom {
+    display: none !important;
+  }
+
+  .ms-lf-map-stage:has(#lf-results-panel:not([hidden])) .leaflet-bottom.leaflet-right {
+    bottom: calc(var(--lf-actions-clearance) + min(58vh, 28rem) + 0.5rem) !important;
+  }
+}
+
+/* Force search + filter bars to the same x-edge as result cards (mobile). */
+@media (max-width: 900px) {
+  body[data-page="leads"] #page-body.ms-lf-page--map .ms-lf-map-top {
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  body[data-page="leads"] #page-body.ms-lf-page--map .ms-lf-map-top-row,
+  body[data-page="leads"] #page-body.ms-lf-page--map .ms-lf-map-search,
+  body[data-page="leads"] #page-body.ms-lf-page--map .ms-lf-map-pill,
+  body[data-page="leads"] #page-body.ms-lf-page--map .ms-lf-map-filters {
+    width: 100% !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+  }
+
+  body[data-page="leads"] #page-body.ms-lf-page--map .ms-lf-map-filters {
+    display: flex !important;
+  }
+
+  body[data-page="leads"] #page-body.ms-lf-page--map .ms-lf-map-filter-btn {
+    flex: 1 1 0 !important;
+  }
+}

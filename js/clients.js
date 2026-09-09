@@ -1,10 +1,11 @@
 /**
- * My clients - businesses that paid to remove the watermark.
- * Creators see their own paid clients. @moonrise sees all accumulated clients.
+ * My clients - paid go-live businesses + manual entries.
+ * Creators see their own clients. @moonrise sees all accumulated clients.
+ * Remove hides project-linked rows from this view (site stays live).
  */
 (function () {
   const QUERY_MS = 10000;
-  const CLIENTS_CACHE_KEY = "ms_clients_cache_v2";
+  const CLIENTS_CACHE_KEY = "ms_clients_cache_v3";
   const PROJECT_SELECT =
     "id, user_id, business_name, status, watermark_enabled, price_cents, vercel_url, business_context, updated_at, created_at";
 
@@ -12,6 +13,7 @@
   let searchQuery = "";
   let started = false;
   let isOwnerView = false;
+  let removeTarget = null;
 
   const $ = (id) => document.getElementById(id);
   const esc = (s) =>
@@ -53,6 +55,16 @@
     return "$" + (n / 100).toLocaleString("en-US", { maximumFractionDigits: 0 });
   }
 
+  function parseMoneyToCents(raw) {
+    const t = String(raw || "")
+      .trim()
+      .replace(/[$,\s]/g, "");
+    if (!t) return null;
+    const n = Number(t);
+    if (!Number.isFinite(n) || n < 0) return NaN;
+    return Math.round(n * 100);
+  }
+
   function formatDate(iso) {
     if (!iso) return "";
     const d = new Date(iso);
@@ -67,6 +79,7 @@
   }
 
   function statusLabel(row) {
+    if (row.source === "manual") return "Manual";
     if (!row.has_paid) return "Unpaid";
     if (row.watermark_enabled === false) {
       return row.vercel_url ? "Live" : "Paid";
@@ -75,6 +88,7 @@
   }
 
   function statusTone(row) {
+    if (row.source === "manual") return "neutral";
     if (!row.has_paid) return "warn";
     if (row.watermark_enabled === false) return "ok";
     return "warn";
@@ -124,6 +138,10 @@
           : null;
     return {
       id: project.id,
+      list_key: "project:" + project.id,
+      source: "project",
+      project_id: project.id,
+      manual_id: null,
       user_id: project.user_id || "",
       creator_handle: creatorHandle || "",
       business_name: project.business_name || "Untitled business",
@@ -134,6 +152,28 @@
       status: project.status,
       watermark_enabled: project.watermark_enabled,
       vercel_url: project.vercel_url || "",
+      has_paid: true,
+    };
+  }
+
+  function mapManual(row, creatorHandle) {
+    if (!row) return null;
+    return {
+      id: row.id,
+      list_key: "manual:" + row.id,
+      source: "manual",
+      project_id: null,
+      manual_id: row.id,
+      user_id: row.user_id || "",
+      creator_handle: creatorHandle || "",
+      business_name: row.business_name || "Untitled business",
+      phone: String(row.phone || "").trim(),
+      website: String(row.website || "").trim(),
+      price_cents: Number.isFinite(Number(row.price_cents)) ? Number(row.price_cents) : null,
+      paid_at: row.paid_at || row.created_at || null,
+      status: "manual",
+      watermark_enabled: null,
+      vercel_url: String(row.website || "").trim(),
       has_paid: true,
     };
   }
@@ -191,8 +231,8 @@
       empty.querySelector(".ms-clients-empty-desc").textContent = searching
         ? "Try another business name or site."
         : isOwnerView
-          ? "Paid go-live checkouts across Moonrise will show up here."
-          : "When a business pays to remove the watermark on a live site, they show up here.";
+          ? "Paid go-live checkouts across Moonrise will show up here. You can also add a client manually."
+          : "When a business pays to remove the watermark on a live site, they show up here. You can also add a client manually.";
       empty.hidden = false;
       return;
     }
@@ -200,7 +240,7 @@
     empty.hidden = true;
     body.innerHTML = rows
       .map((row) => {
-        const id = esc(row.id);
+        const key = esc(row.list_key);
         const phone = String(row.phone || "").trim();
         const tel = telHref(phone);
         const phoneCell = phone
@@ -228,9 +268,15 @@
               : emptyCell()) +
             "</td>"
           : "";
+        const openBtn =
+          row.source === "project" && row.project_id
+            ? '<a class="ms-clients-row-btn" href="editor.html?project_id=' +
+              encodeURIComponent(row.project_id) +
+              '">Open</a>'
+            : "";
         return (
-          '<tr data-client-id="' +
-          id +
+          '<tr data-client-key="' +
+          key +
           '"><th scope="row" class="ms-clients-business">' +
           esc(row.business_name || "-") +
           "</th>" +
@@ -246,9 +292,10 @@
           "</td><td>" +
           statusBadge(row) +
           '</td><td class="ms-clients-actions-cell"><div class="ms-clients-row-actions">' +
-          '<a class="ms-clients-row-btn" href="editor.html?project_id=' +
-          encodeURIComponent(row.id) +
-          '">Open</a></div></td></tr>'
+          openBtn +
+          '<button type="button" class="ms-clients-row-btn ms-clients-row-btn--danger ms-clients-remove" data-client-key="' +
+          key +
+          '">Remove</button></div></td></tr>'
         );
       })
       .join("");
@@ -388,15 +435,64 @@
         });
       }
 
+      const [{ data: hides, error: hideError }, { data: manuals, error: manualError }] =
+        await Promise.all([
+          withTimeout(
+            sb.from("client_hides").select("project_id").eq("user_id", user.id),
+            QUERY_MS,
+            "Loading hidden clients"
+          ),
+          withTimeout(
+            isOwnerView
+              ? sb
+                  .from("manual_clients")
+                  .select(
+                    "id, user_id, business_name, phone, website, price_cents, paid_at, created_at"
+                  )
+                  .order("paid_at", { ascending: false, nullsFirst: false })
+              : sb
+                  .from("manual_clients")
+                  .select(
+                    "id, user_id, business_name, phone, website, price_cents, paid_at, created_at"
+                  )
+                  .eq("user_id", user.id)
+                  .order("paid_at", { ascending: false, nullsFirst: false }),
+            QUERY_MS,
+            "Loading manual clients"
+          ),
+        ]);
+
+      if (hideError) {
+        if (/relation .*client_hides.* does not exist|Could not find the table/i.test(hideError.message || "")) {
+          console.warn("client_hides missing", hideError);
+        } else {
+          throw hideError;
+        }
+      }
+      if (manualError) {
+        if (/relation .*manual_clients.* does not exist|Could not find the table/i.test(manualError.message || "")) {
+          console.warn("manual_clients missing", manualError);
+        } else {
+          throw manualError;
+        }
+      }
+
+      const hiddenIds = new Set(
+        (Array.isArray(hides) ? hides : [])
+          .map((h) => String(h.project_id || ""))
+          .filter(Boolean)
+      );
+
       const creatorMap = isOwnerView
-        ? await loadCreatorHandles(
-            sb,
-            [...projectsById.values()].map((p) => p.user_id)
-          )
+        ? await loadCreatorHandles(sb, [
+            ...[...projectsById.values()].map((p) => p.user_id),
+            ...(Array.isArray(manuals) ? manuals : []).map((m) => m.user_id),
+          ])
         : new Map();
 
-      clients = [...projectsById.values()]
+      const projectRows = [...projectsById.values()]
         .filter((project) => isPaidProjectRow(project) || paymentByProject.has(String(project.id)))
+        .filter((project) => !hiddenIds.has(String(project.id)))
         .map((project) =>
           mapProject(
             project,
@@ -404,8 +500,15 @@
             creatorMap.get(String(project.user_id || "")) || ""
           )
         )
-        .filter(Boolean)
-        .sort((a, b) => String(b.paid_at || "").localeCompare(String(a.paid_at || "")));
+        .filter(Boolean);
+
+      const manualRows = (Array.isArray(manuals) ? manuals : [])
+        .map((row) => mapManual(row, creatorMap.get(String(row.user_id || "")) || ""))
+        .filter(Boolean);
+
+      clients = [...projectRows, ...manualRows].sort((a, b) =>
+        String(b.paid_at || "").localeCompare(String(a.paid_at || ""))
+      );
 
       renderClients();
       writeClientsCache(user.id);
@@ -465,6 +568,208 @@
     URL.revokeObjectURL(a.href);
   }
 
+  function openAddDialog() {
+    const dialog = $("ms-clients-add-dialog");
+    const form = $("ms-clients-add-form");
+    const err = $("ms-clients-add-error");
+    if (!dialog || !form) return;
+    form.reset();
+    if (err) {
+      err.hidden = true;
+      err.textContent = "";
+    }
+    const date = $("ms-clients-add-date");
+    if (date && !date.value) {
+      date.value = new Date().toISOString().slice(0, 10);
+    }
+    dialog.showModal();
+    $("ms-clients-add-name")?.focus();
+  }
+
+  function closeAddDialog() {
+    $("ms-clients-add-dialog")?.close();
+  }
+
+  async function submitAddClient(e) {
+    e?.preventDefault?.();
+    const sb = getSb();
+    const err = $("ms-clients-add-error");
+    const submit = $("ms-clients-add-submit");
+    if (!sb) {
+      if (err) {
+        err.hidden = false;
+        err.textContent = "Supabase is not connected.";
+      }
+      return;
+    }
+
+    const name = String($("ms-clients-add-name")?.value || "").trim();
+    const phone = String($("ms-clients-add-phone")?.value || "").trim();
+    const website = String($("ms-clients-add-website")?.value || "").trim();
+    const paidRaw = String($("ms-clients-add-paid")?.value || "").trim();
+    const dateRaw = String($("ms-clients-add-date")?.value || "").trim();
+    const cents = parseMoneyToCents(paidRaw);
+
+    if (!name) {
+      if (err) {
+        err.hidden = false;
+        err.textContent = "Business name is required.";
+      }
+      $("ms-clients-add-name")?.focus();
+      return;
+    }
+    if (Number.isNaN(cents)) {
+      if (err) {
+        err.hidden = false;
+        err.textContent = "Enter a valid paid amount, or leave it blank.";
+      }
+      $("ms-clients-add-paid")?.focus();
+      return;
+    }
+
+    const user = await window.StudioAuth?.getUser?.();
+    if (!user?.id) {
+      if (err) {
+        err.hidden = false;
+        err.textContent = "Sign in to add a client.";
+      }
+      return;
+    }
+
+    const payload = {
+      user_id: user.id,
+      business_name: name,
+      phone: phone || null,
+      website: website || null,
+      price_cents: cents,
+      paid_at: dateRaw ? new Date(dateRaw + "T12:00:00").toISOString() : new Date().toISOString(),
+    };
+
+    if (submit) submit.disabled = true;
+    if (err) {
+      err.hidden = true;
+      err.textContent = "";
+    }
+
+    try {
+      const { data, error } = await withTimeout(
+        sb.from("manual_clients").insert(payload).select("*").single(),
+        QUERY_MS,
+        "Saving client"
+      );
+      if (error) throw error;
+      const row = mapManual(data, "");
+      if (row) {
+        clients = [row, ...clients.filter((c) => c.list_key !== row.list_key)].sort((a, b) =>
+          String(b.paid_at || "").localeCompare(String(a.paid_at || ""))
+        );
+        renderClients();
+        writeClientsCache(user.id);
+      }
+      closeAddDialog();
+      window.StudioToast?.success?.("Client added.");
+    } catch (ex) {
+      if (err) {
+        err.hidden = false;
+        err.textContent = ex?.message || "Could not save client.";
+      } else {
+        window.StudioToast?.error?.(ex?.message || "Could not save client.");
+      }
+    } finally {
+      if (submit) submit.disabled = false;
+    }
+  }
+
+  function openRemoveDialog(row) {
+    const dialog = $("ms-clients-remove-dialog");
+    const message = $("ms-clients-remove-message");
+    const error = $("ms-clients-remove-error");
+    if (!dialog || !row) return;
+    removeTarget = row;
+    if (error) {
+      error.hidden = true;
+      error.textContent = "";
+    }
+    if (message) {
+      const name = row.business_name || "this client";
+      message.textContent =
+        row.source === "manual"
+          ? 'Remove "' + name + '" from your list? This deletes the manual entry.'
+          : 'Remove "' + name + '" from your clients list? The live site stays online.';
+    }
+    dialog.showModal();
+    $("ms-clients-remove-submit")?.focus();
+  }
+
+  function closeRemoveDialog() {
+    removeTarget = null;
+    $("ms-clients-remove-dialog")?.close();
+  }
+
+  async function confirmRemoveClient() {
+    const sb = getSb();
+    const error = $("ms-clients-remove-error");
+    const submit = $("ms-clients-remove-submit");
+    const row = removeTarget;
+    if (!row) return;
+    if (!sb) {
+      if (error) {
+        error.hidden = false;
+        error.textContent = "Supabase is not connected.";
+      }
+      return;
+    }
+
+    const user = await window.StudioAuth?.getUser?.();
+    if (!user?.id) {
+      if (error) {
+        error.hidden = false;
+        error.textContent = "Sign in to remove a client.";
+      }
+      return;
+    }
+
+    if (submit) submit.disabled = true;
+    if (error) {
+      error.hidden = true;
+      error.textContent = "";
+    }
+
+    try {
+      if (row.source === "manual") {
+        let del = sb.from("manual_clients").delete().eq("id", row.manual_id);
+        if (!isOwnerView) del = del.eq("user_id", user.id);
+        const { error: delError } = await withTimeout(del, QUERY_MS, "Removing client");
+        if (delError) throw delError;
+      } else {
+        const { error: hideError } = await withTimeout(
+          sb.from("client_hides").upsert(
+            { user_id: user.id, project_id: row.project_id },
+            { onConflict: "user_id,project_id" }
+          ),
+          QUERY_MS,
+          "Hiding client"
+        );
+        if (hideError) throw hideError;
+      }
+
+      clients = clients.filter((c) => c.list_key !== row.list_key);
+      renderClients();
+      writeClientsCache(user.id);
+      closeRemoveDialog();
+      window.StudioToast?.success?.("Client removed.");
+    } catch (ex) {
+      if (error) {
+        error.hidden = false;
+        error.textContent = ex?.message || "Could not remove client.";
+      } else {
+        window.StudioToast?.error?.(ex?.message || "Could not remove client.");
+      }
+    } finally {
+      if (submit) submit.disabled = false;
+    }
+  }
+
   function bindUi() {
     const search = $("ms-clients-search");
     const clear = $("ms-clients-search-clear");
@@ -481,6 +786,34 @@
       search?.focus();
     });
     $("ms-clients-download-csv")?.addEventListener("click", downloadCsv);
+    $("ms-clients-add")?.addEventListener("click", openAddDialog);
+    $("ms-clients-add-cancel")?.addEventListener("click", closeAddDialog);
+    $("ms-clients-add-form")?.addEventListener("submit", (e) => void submitAddClient(e));
+    $("ms-clients-add-dialog")?.addEventListener("cancel", (e) => {
+      e.preventDefault();
+      closeAddDialog();
+    });
+    $("ms-clients-add-dialog")?.addEventListener("click", (e) => {
+      if (e.target === $("ms-clients-add-dialog")) closeAddDialog();
+    });
+
+    $("ms-clients-body")?.addEventListener("click", (e) => {
+      const btn = e.target.closest(".ms-clients-remove");
+      if (!btn) return;
+      e.preventDefault();
+      const key = btn.getAttribute("data-client-key");
+      const row = clients.find((c) => c.list_key === key);
+      if (row) openRemoveDialog(row);
+    });
+    $("ms-clients-remove-cancel")?.addEventListener("click", closeRemoveDialog);
+    $("ms-clients-remove-submit")?.addEventListener("click", () => void confirmRemoveClient());
+    $("ms-clients-remove-dialog")?.addEventListener("cancel", (e) => {
+      e.preventDefault();
+      closeRemoveDialog();
+    });
+    $("ms-clients-remove-dialog")?.addEventListener("click", (e) => {
+      if (e.target === $("ms-clients-remove-dialog")) closeRemoveDialog();
+    });
   }
 
   async function boot() {

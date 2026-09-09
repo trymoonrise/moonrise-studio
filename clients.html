@@ -1,14 +1,14 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="js/auth-gate-head.js?v=20260721-perf"></script>
+  <script src="js/auth-gate-head.js?v=20260909-login3"></script>
   <title>My Clients · Moonrise Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css?v=20260719-no-admin-tag">
+  <link rel="stylesheet" href="css/studio.css?v=20260812-clients-crud">
   <link rel="stylesheet" href="css/studio-motion.css?v=20260719-perf">
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -28,6 +28,7 @@
           <span class="ms-clients-count" id="ms-clients-count" aria-live="polite"></span>
         </div>
         <div class="ms-clients-toolbar">
+          <button type="button" class="ms-btn ms-clients-add-btn" id="ms-clients-add">Add client</button>
           <button type="button" class="ms-btn ms-btn-secondary ms-clients-export-btn" id="ms-clients-download-csv">Export CSV</button>
         </div>
       </header>
@@ -79,15 +80,69 @@
     </section>
   </div>
 
-  <script defer src="js/config.js?v=20260721-perf"></script>
+  <dialog class="ms-clients-dialog" id="ms-clients-add-dialog" aria-labelledby="ms-clients-add-title">
+    <div class="ms-clients-dialog-panel">
+      <header class="ms-clients-dialog-head">
+        <h2 class="ms-clients-dialog-title" id="ms-clients-add-title">Add client</h2>
+        <p class="ms-clients-dialog-lead">Log a client manually for your records. Paid go-live sales still appear automatically.</p>
+      </header>
+      <form class="ms-clients-form" id="ms-clients-add-form">
+        <div class="ms-clients-form-body">
+          <div class="ms-clients-form-grid">
+            <label class="ms-clients-field ms-clients-field--wide">
+              <span class="ms-clients-field-label">Business name</span>
+              <input class="ms-clients-input" id="ms-clients-add-name" name="business_name" type="text" required maxlength="120" autocomplete="organization" placeholder="Business name" />
+            </label>
+            <label class="ms-clients-field">
+              <span class="ms-clients-field-label">Phone</span>
+              <input class="ms-clients-input" id="ms-clients-add-phone" name="phone" type="tel" maxlength="40" autocomplete="tel" placeholder="Optional" />
+            </label>
+            <label class="ms-clients-field">
+              <span class="ms-clients-field-label">Amount paid</span>
+              <input class="ms-clients-input" id="ms-clients-add-paid" name="paid" type="text" inputmode="decimal" maxlength="12" placeholder="$0" />
+            </label>
+            <label class="ms-clients-field ms-clients-field--wide">
+              <span class="ms-clients-field-label">Live site</span>
+              <input class="ms-clients-input" id="ms-clients-add-website" name="website" type="url" maxlength="240" placeholder="https://…" />
+            </label>
+            <label class="ms-clients-field ms-clients-field--wide">
+              <span class="ms-clients-field-label">Date</span>
+              <input class="ms-clients-input" id="ms-clients-add-date" name="paid_at" type="date" />
+            </label>
+          </div>
+          <p class="ms-clients-form-status" id="ms-clients-add-error" hidden role="alert"></p>
+        </div>
+        <div class="ms-clients-dialog-actions ms-clients-form-actions">
+          <button type="button" class="ms-clients-dialog-back" id="ms-clients-add-cancel">Cancel</button>
+          <button type="submit" class="ms-btn ms-clients-dialog-next" id="ms-clients-add-submit">Save client</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog class="ms-clients-dialog" id="ms-clients-remove-dialog" aria-labelledby="ms-clients-remove-title">
+    <div class="ms-clients-dialog-panel ms-clients-dialog-panel--compact">
+      <header class="ms-clients-dialog-head">
+        <h2 class="ms-clients-dialog-title" id="ms-clients-remove-title">Remove client?</h2>
+      </header>
+      <p class="ms-clients-dialog-warning" id="ms-clients-remove-message" aria-live="polite"></p>
+      <p class="ms-clients-dialog-error" id="ms-clients-remove-error" hidden role="alert"></p>
+      <div class="ms-clients-dialog-actions">
+        <button type="button" class="ms-clients-dialog-back" id="ms-clients-remove-cancel">Keep client</button>
+        <button type="button" class="ms-btn ms-btn-danger ms-clients-dialog-next" id="ms-clients-remove-submit">Remove</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script defer src="js/config.js?v=20260909-discord"></script>
   <script defer src="js/site-branding.js"></script>
-  <script defer src="js/supabase-client.js"></script>
-  <script defer src="js/auth.js"></script>
+  <script defer src="js/supabase-client.js?v=20260909-login3"></script>
+  <script defer src="js/auth.js?v=20260909-login3"></script>
   <script defer src="js/segment-switch.js"></script>
   <script defer src="js/ui-motion.js?v=20260719-onb-motion"></script>
   <script defer src="js/toast.js"></script>
   <script defer src="js/income.js?v=20260718-income"></script>
-  <script defer src="js/app.js?v=20260721-perf"></script>
-  <script defer src="js/clients.js?v=20260719-owner-all"></script>
+  <script defer src="js/app.js?v=20260907-remember"></script>
+  <script defer src="js/clients.js?v=20260909-clients-fix"></script>
 </body>
 </html>

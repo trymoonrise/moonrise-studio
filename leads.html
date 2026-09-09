@@ -1,115 +1,193 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="js/auth-gate-head.js?v=20260721-perf"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <script src="js/auth-gate-head.js?v=20260909-login3"></script>
   <title>Business Finder · Moonrise Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css?v=20260719-perf">
+  <link rel="preconnect" href="https://server.arcgisonline.com" crossorigin>
+  <link rel="dns-prefetch" href="https://server.arcgisonline.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="css/studio.css?v=20260811-scan-ms-btn">
   <link rel="stylesheet" href="css/studio-motion.css?v=20260719-perf">
-  <link rel="stylesheet" href="css/ms-lf-slide.css?v=20260721-slide-physics">
+  <link rel="stylesheet" href="css/ms-lf-slide.css?v=20260812-slide-full">
+  <link rel="stylesheet" href="css/leads-map.css?v=20260815-hide-locate-search">
+  <style id="lf-map-bar-width-fix">
+    /* Inline so PWA cache cannot leave search/filter bars narrow */
+    @media (max-width: 900px) {
+      body[data-page="leads"] .ms-lf-map-top {
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        transform: none !important;
+        padding-left: 0.85rem !important;
+        padding-right: 0.85rem !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 0.55rem !important;
+      }
+      body[data-page="leads"] .ms-lf-map-top-row,
+      body[data-page="leads"] .ms-lf-map-search,
+      body[data-page="leads"] #lf-form.ms-lf-map-search,
+      body[data-page="leads"] #lf-search-pill.ms-lf-map-pill,
+      body[data-page="leads"] .ms-lf-map-pill,
+      body[data-page="leads"] #lf-website-filter.ms-lf-map-filters,
+      body[data-page="leads"] .ms-lf-map-filters {
+        width: 100% !important;
+        max-width: none !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+      }
+      body[data-page="leads"] .ms-lf-map-filters {
+        display: flex !important;
+        justify-content: stretch !important;
+      }
+      body[data-page="leads"] .ms-lf-map-filter-btn {
+        flex: 1 1 0 !important;
+        text-align: center !important;
+      }
+      body[data-page="leads"] .ms-lf-map-actions {
+        left: 0 !important;
+        right: 0 !important;
+        width: auto !important;
+        padding-left: 0.85rem !important;
+        padding-right: 0.85rem !important;
+        box-sizing: border-box !important;
+      }
+      body[data-page="leads"] .ms-lf-map-actions-tray {
+        width: 100% !important;
+        max-width: none !important;
+      }
+    }
+  </style>
 </head>
 <body data-page="leads">
   <div id="shell"></div>
-  <div id="page-body" class="ms-lf-page">
-    <header class="ms-page-head">
+  <div id="page-body" class="ms-lf-page ms-lf-page--map">
+    <header class="ms-page-head ms-lf-map-head">
       <div class="ms-page-head-copy">
         <h1>Business Finder</h1>
       </div>
     </header>
 
-    <form class="ms-lf-search" id="lf-form">
-      <div class="ms-lf-field">
-        <label for="lf-type">Business type</label>
-        <div class="ms-lf-suggest-wrap" id="lf-type-wrap" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-owns="lf-type-suggest">
-          <div class="ms-lf-input">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-            <input id="lf-type" name="type" type="text" placeholder="e.g. Barbershop, Dentist, Gym…" autocomplete="off" aria-autocomplete="list" aria-controls="lf-type-suggest">
-            <button type="button" class="ms-lf-clear" id="lf-type-clear" hidden aria-label="Clear business type">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-            </button>
+    <div class="ms-lf-map-stage is-map-loading" id="lf-map-stage">
+      <div id="lf-map" class="ms-lf-map" role="application" aria-label="Business map"></div>
+      <div class="ms-lf-map-loader" id="lf-map-loader" role="status" aria-live="polite" aria-busy="true">
+        <div class="ms-lf-map-loader-orb" aria-hidden="true">
+          <span class="ms-lf-map-loader-ring"></span>
+        </div>
+        <p class="ms-lf-map-loader-label">Loading map</p>
+      </div>
+      <script>
+        // Failsafe: never leave Finder stuck on the loader if map JS fails to boot.
+        (function () {
+          window.setTimeout(function () {
+            var stage = document.getElementById("lf-map-stage");
+            if (stage && stage.classList.contains("is-map-loading")) {
+              stage.classList.remove("is-map-loading");
+              var loader = document.getElementById("lf-map-loader");
+              if (loader) loader.setAttribute("aria-busy", "false");
+            }
+          }, 3500);
+        })();
+      </script>
+
+      <div class="ms-lf-map-overlays">
+        <div class="ms-lf-map-top">
+          <div class="ms-lf-map-top-row">
+            <form class="ms-lf-map-search" id="lf-form" autocomplete="off" action="#">
+              <div class="ms-lf-map-pill" id="lf-search-pill" data-mode="idle">
+                <div class="ms-lf-map-pill-tray">
+                  <button type="button" class="ms-lf-map-chip ms-lf-map-menu" id="lf-menu-toggle" aria-label="Open menu" title="Menu">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+                  </button>
+                  <button type="button" class="ms-lf-map-chip ms-lf-map-search-btn" id="lf-search-toggle" aria-label="Search for a business" title="Search">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+                  </button>
+                  <div class="ms-lf-map-chip ms-lf-map-chip--count ms-lf-map-pill-body">
+                    <span class="ms-lf-map-count" id="lf-list-count" aria-live="polite">0 Businesses</span>
+                    <label class="ms-lf-map-search-field" for="lf-query">
+                      <span class="ms-sr-only">Search for a business</span>
+                      <input
+                        id="lf-query"
+                        name="query"
+                        type="search"
+                        placeholder="Search for a business"
+                        autocomplete="off"
+                        enterkeyhint="search"
+                      >
+                    </label>
+                  </div>
+                  <button type="button" class="ms-lf-map-chip ms-lf-map-locate" id="lf-locate" aria-label="Center on my location" title="My location">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 4.5 19.5 12 15.5 19.5 19.5 12 2z"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <input type="hidden" id="lf-type" name="type" value="">
+              <input type="hidden" id="lf-location" name="location" value="">
+              <input type="checkbox" id="lf-area-toggle" hidden tabindex="-1" aria-hidden="true">
+            </form>
           </div>
-          <ul id="lf-type-suggest" class="ms-lf-suggest" role="listbox" hidden></ul>
+
+          <div class="ms-lf-map-filters" id="lf-website-filter" role="group" aria-label="Website filter">
+            <button type="button" class="ms-lf-map-filter-btn" data-website="all">All</button>
+            <button type="button" class="ms-lf-map-filter-btn is-active" data-website="without" aria-pressed="true">No Website</button>
+            <button type="button" class="ms-lf-map-filter-btn" data-website="with">Website</button>
+          </div>
+        </div>
+
+        <aside class="ms-lf-map-panel" id="lf-results-panel" hidden aria-label="Business results">
+          <div
+            class="ms-lf-map-panel-handle"
+            id="lf-sheet-handle"
+            role="slider"
+            tabindex="0"
+            aria-label="Resize results sheet"
+            aria-orientation="vertical"
+            aria-valuemin="0"
+            aria-valuemax="2"
+            aria-valuenow="1"
+          ></div>
+          <p class="ms-muted ms-lf-status" id="lf-status" hidden></p>
+          <p class="ms-error" id="lf-error" hidden></p>
+          <div class="ms-lead-list ms-lf-map-results" id="lf-results"></div>
+        </aside>
+
+        <div class="ms-lf-map-actions">
+          <div class="ms-lf-map-actions-tray">
+            <button type="button" class="ms-btn ms-lf-map-scan" id="lf-scan-near">Scan nearby</button>
+            <button type="button" class="ms-btn ms-lf-map-all" id="lf-scan-all" aria-label="Scan all businesses in the state" title="All businesses in the state">All</button>
+          </div>
         </div>
       </div>
-      <div class="ms-lf-field">
-        <label for="lf-location">Location</label>
-        <div class="ms-lf-suggest-wrap" id="lf-location-wrap" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-owns="lf-location-suggest">
-          <div class="ms-lf-input">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            <input id="lf-location" name="location" type="text" placeholder="City, state, or ZIP" autocomplete="off" aria-autocomplete="list" aria-controls="lf-location-suggest">
-            <button type="button" class="ms-lf-clear" id="lf-location-clear" hidden aria-label="Clear location">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-            </button>
-          </div>
-          <ul id="lf-location-suggest" class="ms-lf-suggest" role="listbox" hidden></ul>
-        </div>
-      </div>
-      <button type="submit" class="ms-lf-find" id="lf-find">Find businesses →</button>
-
-      <div class="ms-lf-filters-row">
-        <div class="ms-lf-list-filter" role="group" aria-label="List">
-          <span class="ms-lf-website-filter-label">List</span>
-          <div class="ms-lf-website-seg" id="lf-list-view">
-            <button type="button" class="ms-lf-website-btn lf-toggle-btn is-active active" data-list-view="default" aria-pressed="true">Available</button>
-            <button type="button" class="ms-lf-website-btn lf-toggle-btn" data-list-view="saved" aria-pressed="false">Quick Save</button>
-          </div>
-        </div>
-        <div class="ms-lf-website-filter" role="group" aria-label="Website filter">
-          <span class="ms-lf-website-filter-label">Website</span>
-          <div class="ms-lf-website-seg" id="lf-website-filter">
-            <button type="button" class="ms-lf-website-btn" data-website="all">All</button>
-            <button type="button" class="ms-lf-website-btn is-active" data-website="without">No website</button>
-            <button type="button" class="ms-lf-website-btn" data-website="with">Has website</button>
-          </div>
-        </div>
-        <div class="ms-lf-filters-meta">
-          <label class="ms-lf-area-toggle" id="lf-area-wrap" title="Search within 5 miles of you">
-            <input type="checkbox" id="lf-area-toggle">
-            <span class="ms-lf-area-toggle-track" aria-hidden="true"></span>
-            <span class="ms-lf-area-toggle-label">Near me</span>
-          </label>
-          <span class="ms-lf-list-count" id="lf-list-count" hidden></span>
-        </div>
-      </div>
-    </form>
-
-    <div class="ms-lf-popular">
-      <span>Popular</span>
-      <div class="ms-lf-tags" id="lf-tags" role="group" aria-label="Popular categories"></div>
-    </div>
-
-    <div class="ms-lf-list-section">
-      <p class="ms-muted ms-lf-status" id="lf-status" hidden></p>
-      <p class="ms-error" id="lf-error" hidden></p>
-      <div class="ms-lead-list" id="lf-results" hidden></div>
     </div>
   </div>
 
-  <div class="ms-lf-dev-notice" id="lf-dev-notice" role="status" tabindex="0" aria-live="polite">
-    Business Finder is under development — bear with us!
-  </div>
-
+  <script defer src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script defer src="js/config.js?v=20260721-perf"></script>
+  <script defer src="js/config.js?v=20260909-discord"></script>
   <script defer src="js/site-branding.js"></script>
-  <script defer src="js/supabase-client.js"></script>
-  <script defer src="js/auth.js"></script>
-  <script defer src="js/lead-csv-format.js?v=20260719-supabase-website"></script>
+  <script defer src="js/supabase-client.js?v=20260909-login3"></script>
+  <script defer src="js/auth.js?v=20260909-login3"></script>
+  <script defer src="js/lead-csv-format.js?v=20260811-website-recheck"></script>
   <script defer src="js/lead-display.js?v=20260718-swipe-site"></script>
-  <script defer src="js/lead-website-enrich.js?v=20260718-lf-stable"></script>
-  <script defer src="js/leads-loader.js?v=20260719-leads-count"></script>
+  <script defer src="js/lead-website-enrich.js?v=20260811-website-recheck"></script>
+  <script defer src="js/leads-loader.js?v=20260811-website-strict"></script>
   <script defer src="js/leads-prospect-rank.js"></script>
-  <script defer src="js/segment-switch.js"></script>
-  <script defer src="js/ui-motion.js?v=20260719-perf"></script>
+  <script defer src="js/segment-switch.js?v=20260811-finder-ui"></script>
+  <script defer src="js/ui-motion.js?v=20260811-scan-ms-btn"></script>
   <script defer src="js/toast.js"></script>
   <script defer src="js/income.js?v=20260718-income"></script>
-  <script defer src="js/app.js?v=20260721-perf"></script>
-  <script defer src="js/ms-lf-slide.js?v=20260721-slide-physics"></script>
-  <script defer src="js/leads-search.js?v=20260721-slide-physics"></script>
+  <script defer src="js/app.js?v=20260907-remember"></script>
+  <script defer src="js/ms-lf-slide.js?v=20260812-slide-full"></script>
+  <script defer src="js/leads-search.js?v=20260909-esri-dark"></script>
 </body>
 </html>

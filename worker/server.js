@@ -10,28 +10,37 @@
 const path = require("path");
 const fs = require("fs");
 const crypto = require("crypto");
+const dns = require("dns").promises;
 
-/** Load worker/.env, filling blank values that would otherwise block Supabase. */
+/** Load worker/.env, then fill blanks from repo vault accesstokens.env (gitignored). */
 function loadWorkerEnv() {
   const dotenv = require("dotenv");
   const envPath = path.join(__dirname, ".env");
-  dotenv.config({ path: envPath });
-
-  // If a parent shell exported empty SUPABASE_* values, dotenv won't override them.
-  // Re-read the file and fill only blank keys.
-  if (!fs.existsSync(envPath)) return;
-  const parsed = dotenv.parse(fs.readFileSync(envPath));
-  for (const [key, value] of Object.entries(parsed)) {
-    if (process.env[key] == null || String(process.env[key]).trim() === "") {
-      process.env[key] = value;
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+    // If a parent shell exported empty values, dotenv won't override them.
+    // Re-read the file and fill only blank keys.
+    const parsed = dotenv.parse(fs.readFileSync(envPath));
+    for (const [key, value] of Object.entries(parsed)) {
+      if (process.env[key] == null || String(process.env[key]).trim() === "") {
+        process.env[key] = value;
+      }
     }
   }
 
-  // Optional local vault (gitignored) for dev tokens — never committed.
+  // Shared secrets vault at repo root (Moonrise/accesstokens.env).
+  // Used for local/dev: Stripe, Vercel domains, unlock allowlist, etc.
+  // Never overrides keys already set (worker/.env or host env wins).
   const vaultPath = path.join(__dirname, "..", "..", "accesstokens.env");
-  if (fs.existsSync(vaultPath) && !String(process.env.GITHUB_TOKEN || "").trim()) {
-    const vault = dotenv.parse(fs.readFileSync(vaultPath));
-    if (vault.GITHUB_TOKEN) process.env.GITHUB_TOKEN = vault.GITHUB_TOKEN;
+  if (!fs.existsSync(vaultPath)) return;
+  const vault = dotenv.parse(fs.readFileSync(vaultPath));
+  for (const [key, value] of Object.entries(vault)) {
+    if (!key || value == null) continue;
+    const trimmed = String(value).trim();
+    if (!trimmed) continue;
+    if (process.env[key] == null || String(process.env[key]).trim() === "") {
+      process.env[key] = trimmed;
+    }
   }
 }
 loadWorkerEnv();
@@ -143,6 +152,7 @@ const {
   getStructurePresetRoles,
 } = require("./business-structures");
 const githubPresets = require("./github-presets");
+const githubImport = require("./github-import");
 
 // Warm GitHub preset manifest cache at startup (non-blocking).
 githubPresets.ensureManifest().catch((e) => {
@@ -285,10 +295,33 @@ function stripeClient() {
   return new Stripe(process.env.STRIPE_SECRET_KEY);
 }
 
+/** True when STRIPE_SECRET_KEY is a Stripe test key (sk_test_ / rk_test_). */
+function isStripeTestMode() {
+  const key = String(process.env.STRIPE_SECRET_KEY || "");
+  return /_test_/.test(key) || key.startsWith("sk_test") || key.startsWith("rk_test");
+}
+
+/**
+ * Optional go-live discount:
+ * - STRIPE_GO_LIVE_COUPON_ID=coupon_… → auto-apply that Stripe coupon
+ * - otherwise allow promo codes at Checkout (unless STRIPE_GO_LIVE_ALLOW_PROMO=0)
+ * Create a 100% off coupon/promo in Stripe Dashboard for free unlock testing.
+ */
+function goLiveCheckoutPromoOptions() {
+  const couponId = String(process.env.STRIPE_GO_LIVE_COUPON_ID || "").trim();
+  if (couponId) {
+    return { discounts: [{ coupon: couponId }] };
+  }
+  if (String(process.env.STRIPE_GO_LIVE_ALLOW_PROMO || "1").trim() === "0") {
+    return {};
+  }
+  return { allow_promotion_codes: true };
+}
+
 /** Monthly hosting & maintenance billed with every go-live checkout. */
 const HOSTING_MONTHLY_CENTS = Math.max(
   0,
-  Number(process.env.STRIPE_HOSTING_MONTHLY_CENTS || 400)
+  Number(process.env.STRIPE_HOSTING_MONTHLY_CENTS || 2000)
 );
 
 function hostingMaintenanceLineItem() {
@@ -358,6 +391,7 @@ function createGoLiveCheckoutSession(stripe, opts) {
     success_url: successUrl,
     cancel_url: cancelUrl,
     customer_email: customerEmail || undefined,
+    ...goLiveCheckoutPromoOptions(),
     metadata: {
       projectId,
       userId,
@@ -383,22 +417,71 @@ function buyerEmailFromSession(session) {
   return email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : "";
 }
 
+function stripeId(value) {
+  if (!value) return "";
+  if (typeof value === "string") return value;
+  return String(value.id || "").trim();
+}
+
+/** Re-fetch checkout with invoice/subscription expanded (subscription mode often omits invoice on the event payload). */
+async function hydrateGoLiveCheckoutSession(stripe, session) {
+  const id = stripeId(session);
+  if (!stripe || !id.startsWith("cs_")) return session;
+  try {
+    return await stripe.checkout.sessions.retrieve(id, {
+      expand: ["invoice", "subscription", "subscription.latest_invoice", "customer"],
+    });
+  } catch (e) {
+    console.warn("hydrateGoLiveCheckoutSession:", e.message || e);
+    return session;
+  }
+}
+
 /** Pull Stripe invoice PDF (base64) for email attachment. */
 async function loadGoLiveInvoicePdf(stripe, session) {
   let amountCents =
     session?.amount_total != null ? Number(session.amount_total) : null;
   let pdfBase64 = null;
-  const invoiceId =
-    typeof session?.invoice === "string"
-      ? session.invoice
-      : session?.invoice?.id || null;
-  if (!stripe || !invoiceId) {
-    return { amountCents, pdfBase64 };
-  }
+  let invoice =
+    session?.invoice && typeof session.invoice === "object" ? session.invoice : null;
+  let invoiceId = stripeId(session?.invoice) || stripeId(invoice);
+
   try {
-    const invoice = await stripe.invoices.retrieve(invoiceId);
-    if (invoice.amount_paid != null) amountCents = Number(invoice.amount_paid);
-    if (invoice.invoice_pdf) {
+    if (!invoiceId && session?.subscription) {
+      const subObj =
+        typeof session.subscription === "object" && session.subscription
+          ? session.subscription
+          : null;
+      const latest = subObj?.latest_invoice;
+      if (latest && typeof latest === "object") {
+        invoice = latest;
+        invoiceId = stripeId(latest);
+      } else if (typeof latest === "string") {
+        invoiceId = latest;
+      } else if (stripe) {
+        const subId = stripeId(session.subscription);
+        if (subId) {
+          const sub = await stripe.subscriptions.retrieve(subId, {
+            expand: ["latest_invoice"],
+          });
+          if (sub.latest_invoice && typeof sub.latest_invoice === "object") {
+            invoice = sub.latest_invoice;
+            invoiceId = stripeId(sub.latest_invoice);
+          } else {
+            invoiceId = stripeId(sub.latest_invoice);
+          }
+        }
+      }
+    }
+
+    if (invoiceId && stripe && (!invoice || !invoice.invoice_pdf)) {
+      invoice = await stripe.invoices.retrieve(invoiceId);
+    }
+
+    if (invoice?.amount_paid != null) amountCents = Number(invoice.amount_paid);
+    else if (invoice?.total != null && amountCents == null) amountCents = Number(invoice.total);
+
+    if (invoice?.invoice_pdf) {
       const pdfRes = await fetch(invoice.invoice_pdf);
       if (pdfRes.ok) {
         pdfBase64 = Buffer.from(await pdfRes.arrayBuffer()).toString("base64");
@@ -407,7 +490,96 @@ async function loadGoLiveInvoicePdf(stripe, session) {
   } catch (e) {
     console.warn("Could not load invoice PDF:", e.message);
   }
-  return { amountCents, pdfBase64 };
+  return { amountCents, pdfBase64, invoiceId };
+}
+
+function hostingBillingPageUrl(projectId) {
+  const id = String(projectId || "").trim();
+  if (!id) return `${PUBLIC_APP_URL}/hosting-billing.html`;
+  return `${PUBLIC_APP_URL}/hosting-billing.html?project=${encodeURIComponent(id)}`;
+}
+
+/** Email hosting renewal invoices to the business-owner buyer. */
+async function emailSiteHostingInvoice(stripe, invoice, sub) {
+  const projectId = String(sub?.metadata?.projectId || "").trim();
+  if (!projectId || !invoice?.id) return;
+
+  const supabase = db();
+  const { data: project } = await supabase
+    .from("projects")
+    .select("id,business_name,vercel_url,business_context")
+    .eq("id", projectId)
+    .maybeSingle();
+  if (!project) return;
+
+  const ctx =
+    project.business_context && typeof project.business_context === "object"
+      ? project.business_context
+      : {};
+  const already = String(ctx.lastHostingInvoiceEmailId || "");
+  if (already === invoice.id) return;
+
+  let email = String(ctx.hostingBuyerEmail || ctx.purchaseInvoiceEmailTo || "")
+    .trim()
+    .toLowerCase();
+  if (!email) {
+    const customerId = stripeId(sub.customer) || stripeId(invoice.customer);
+    if (customerId && stripe) {
+      const customer = await stripe.customers.retrieve(customerId);
+      email = String(customer?.email || "")
+        .trim()
+        .toLowerCase();
+    }
+  }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    console.warn("Hosting invoice email skipped: no buyer email", projectId, invoice.id);
+    return;
+  }
+
+  let pdfBase64 = null;
+  let fullInvoice = invoice;
+  try {
+    if (!invoice.invoice_pdf && stripe) {
+      fullInvoice = await stripe.invoices.retrieve(invoice.id);
+    }
+    if (fullInvoice.invoice_pdf) {
+      const pdfRes = await fetch(fullInvoice.invoice_pdf);
+      if (pdfRes.ok) {
+        pdfBase64 = Buffer.from(await pdfRes.arrayBuffer()).toString("base64");
+      }
+    }
+  } catch (e) {
+    console.warn("Hosting invoice PDF load failed:", e.message);
+  }
+
+  const amountCents = Number(fullInvoice.amount_paid || fullInvoice.total || HOSTING_MONTHLY_CENTS);
+  const safeName = String(project.business_name || "hosting")
+    .replace(/[^a-z0-9]+/gi, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 40);
+
+  await sendPurchaseInvoiceEmail({
+    to: email,
+    businessName: project.business_name || "",
+    amountCents,
+    siteUrl: project.vercel_url || null,
+    pdfBase64,
+    pdfFilename: `${safeName || "hosting"}-invoice.pdf`,
+    manageBillingUrl: hostingBillingPageUrl(projectId),
+    hostingMonthlyCents: HOSTING_MONTHLY_CENTS,
+  });
+
+  await supabase
+    .from("projects")
+    .update({
+      business_context: {
+        ...ctx,
+        lastHostingInvoiceEmailId: invoice.id,
+        lastHostingInvoiceEmailAt: new Date().toISOString(),
+        hostingBuyerEmail: email,
+      },
+    })
+    .eq("id", projectId);
 }
 
 /**
@@ -416,6 +588,9 @@ async function loadGoLiveInvoicePdf(stripe, session) {
  */
 async function unlockGoLiveAfterPayment(supabase, { projectId, session, userId }) {
   if (!projectId) throw new Error("projectId required");
+
+  const stripe = stripeClient();
+  session = await hydrateGoLiveCheckoutSession(stripe, session);
 
   const { data: existingProject, error: loadErr } = await supabase
     .from("projects")
@@ -426,10 +601,9 @@ async function unlockGoLiveAfterPayment(supabase, { projectId, session, userId }
   if (!existingProject) throw new Error("Project not found");
 
   const ownerId = userId || existingProject.user_id || null;
-  const subId =
-    typeof session?.subscription === "string"
-      ? session.subscription
-      : session?.subscription?.id || null;
+  const subId = stripeId(session?.subscription);
+  const customerId = stripeId(session?.customer);
+  const buyerEmail = buyerEmailFromSession(session);
   const priorCtx =
     existingProject.business_context &&
     typeof existingProject.business_context === "object" &&
@@ -450,6 +624,8 @@ async function unlockGoLiveAfterPayment(supabase, { projectId, session, userId }
       business_context: {
         ...priorCtx,
         hostingSubscriptionId: subId || priorCtx.hostingSubscriptionId || null,
+        hostingStripeCustomerId: customerId || priorCtx.hostingStripeCustomerId || null,
+        hostingBuyerEmail: buyerEmail || priorCtx.hostingBuyerEmail || priorCtx.purchaseInvoiceEmailTo || null,
         hostingMonthlyCents: HOSTING_MONTHLY_CENTS,
         paidAt: priorCtx.paidAt || new Date().toISOString(),
       },
@@ -499,9 +675,8 @@ async function unlockGoLiveAfterPayment(supabase, { projectId, session, userId }
   // Simple email + invoice PDF to the buyer. Idempotent across webhook + fulfill.
   if (!invoiceEmailAlreadySent && session) {
     try {
-      const email = buyerEmailFromSession(session);
+      const email = buyerEmail || buyerEmailFromSession(session);
       if (email) {
-        const stripe = stripeClient();
         const { amountCents, pdfBase64 } = await loadGoLiveInvoicePdf(stripe, session);
         const safeName = String(fresh.business_name || "invoice")
           .replace(/[^a-z0-9]+/gi, "-")
@@ -514,6 +689,8 @@ async function unlockGoLiveAfterPayment(supabase, { projectId, session, userId }
           siteUrl,
           pdfBase64,
           pdfFilename: `${safeName || "invoice"}-invoice.pdf`,
+          manageBillingUrl: hostingBillingPageUrl(projectId),
+          hostingMonthlyCents: HOSTING_MONTHLY_CENTS,
         });
         const ctxAfter =
           fresh.business_context &&
@@ -526,6 +703,9 @@ async function unlockGoLiveAfterPayment(supabase, { projectId, session, userId }
           .update({
             business_context: {
               ...ctxAfter,
+              hostingSubscriptionId: subId || ctxAfter.hostingSubscriptionId || null,
+              hostingStripeCustomerId: customerId || ctxAfter.hostingStripeCustomerId || null,
+              hostingBuyerEmail: email,
               purchaseInvoiceEmailSentAt: new Date().toISOString(),
               purchaseInvoiceEmailTo: email,
             },
@@ -600,6 +780,7 @@ const PUBLIC_PATHS = new Set([
   "/health",
   "/public-checkout",
   "/fulfill-go-live",
+  "/public-hosting-portal",
   "/embed.js",
   "/contact-form.js",
   "/contact-submit",
@@ -711,17 +892,18 @@ app.get("/health", async (_req, res) => {
 app.post("/webhooks/stripe", express.raw({ type: "application/json" }), async (req, res) => {
   const stripe = stripeClient();
   if (!stripe) return res.status(500).send("Stripe not configured");
+  const webhookSecret = String(process.env.STRIPE_WEBHOOK_SECRET || "").trim();
+  if (!webhookSecret) {
+    console.error("Stripe webhook rejected: STRIPE_WEBHOOK_SECRET is not set");
+    return res.status(503).send("Webhook not configured");
+  }
   const sig = req.headers["stripe-signature"];
   let event;
   try {
-    event = stripe.webhooks.constructEvent(
-      req.body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET || ""
-    );
+    event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
   } catch (err) {
-    console.error("Webhook signature error", err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+    console.error("Webhook signature error", err?.message || err);
+    return res.status(400).send("Webhook Error: invalid signature");
   }
 
   try {
@@ -917,6 +1099,13 @@ app.post("/webhooks/stripe", express.raw({ type: "application/json" }), async (r
               { onConflict: "stripe_session_id" }
             );
           }
+        } else if (kind === "site_hosting") {
+          // Monthly hosting renewal — email the buyer an invoice + cancel link.
+          try {
+            await emailSiteHostingInvoice(stripe, invoice, sub);
+          } catch (hostMailErr) {
+            console.error("Hosting renewal invoice email failed:", hostMailErr.message || hostMailErr);
+          }
         }
       }
     }
@@ -979,7 +1168,7 @@ app.post("/webhooks/stripe", express.raw({ type: "application/json" }), async (r
   }
 });
 
-app.use(express.json({ limit: "2mb" }));
+app.use(express.json({ limit: "8mb" }));
 
 async function requireUser(req, res, next) {
   try {
@@ -1288,8 +1477,24 @@ function loadPresetManifest() {
 }
 
 async function readPresetHtmlFile(filename) {
-  const safeName = String(filename || "").trim();
-  if (!safeName) return "";
+  const safeName = String(filename || "")
+    .trim()
+    .replace(/\\/g, "/")
+    .replace(/^\/+/, "");
+  if (!safeName || safeName.includes("..") || path.isAbsolute(safeName)) return "";
+
+  // Prefer local files when bundled (Vercel includeFiles) — faster, no GitHub rate limits.
+  const presetsRoot = path.resolve(WEBSITE_PRESETS_DIR, "presets");
+  const filePath = path.resolve(presetsRoot, safeName);
+  if (filePath.startsWith(presetsRoot + path.sep) || filePath === presetsRoot) {
+    if (fs.existsSync(filePath)) {
+      try {
+        return fs.readFileSync(filePath, "utf8");
+      } catch (_) {
+        /* fall through to GitHub */
+      }
+    }
+  }
 
   if (githubPresets.shouldUseGithub()) {
     try {
@@ -1299,13 +1504,7 @@ async function readPresetHtmlFile(filename) {
     }
   }
 
-  const filePath = path.join(WEBSITE_PRESETS_DIR, "presets", safeName);
-  if (!fs.existsSync(filePath)) return "";
-  try {
-    return fs.readFileSync(filePath, "utf8");
-  } catch (_) {
-    return "";
-  }
+  return "";
 }
 
 /** Strip comments + collapse whitespace so kit snippets stay tiny. */
@@ -1341,6 +1540,51 @@ function extractPresetSnippet(html) {
   return out;
 }
 
+/** Prefer pageReady items; fall back to full pool if none qualify. */
+function preferPageReadyPool(pool) {
+  const ready = (pool || []).filter((item) => item && item.pageReady === true);
+  return ready.length ? ready : pool || [];
+}
+
+/**
+ * Score a candidate for kit cohesion. Higher = better fit.
+ * Soft bias toward shared mood + layout family after the first pick.
+ */
+function scorePresetCandidate(item, { sectionRole, moodAnchor, layoutAnchor, seedKey }) {
+  let score = 0;
+  if (item.pageReady === true) score += 40;
+  const itemRole = String(item.role || "").trim();
+  if (itemRole && sectionRole && itemRole === sectionRole) score += 25;
+  const moods = Array.isArray(item.mood) ? item.mood : [];
+  if (moodAnchor && moodAnchor.size) {
+    for (const m of moods) {
+      if (moodAnchor.has(m)) score += 8;
+    }
+  }
+  const layout = String(item.layout || "").trim();
+  if (layoutAnchor && layout && layout === layoutAnchor) score += 10;
+  // Tiny seeded jitter so ties still vary by business/variation.
+  score += hashPick(`${seedKey}:${item.id}`, 7);
+  return score;
+}
+
+function catalogEntryFromManifest(item) {
+  return {
+    id: String(item.id),
+    title: item.title || item.slug || item.id,
+    category: item.category || "",
+    role: item.role || "",
+    layout: item.layout || "",
+    summary: item.summary || "",
+    slots: Array.isArray(item.slots) ? item.slots.slice(0, 6) : [],
+    mood: Array.isArray(item.mood) ? item.mood.slice(0, 4) : [],
+    adaptHint: item.adaptHint || "",
+    pageReady: item.pageReady === true,
+    tags: Array.isArray(item.tags) ? item.tags.slice(0, 4) : [],
+    file: item.file,
+  };
+}
+
 /**
  * Compact catalog for stage 1 - only page-building roles, a few options each.
  * No HTML bodies (keeps the vibe pass tiny + fast).
@@ -1360,24 +1604,53 @@ function buildAtmosphereCatalog(ctx) {
 
   const picked = [];
   const used = new Set();
-  for (const cats of Object.values(PLAN_ROLE_CATEGORIES)) {
-    const pool = [];
+  const moodAnchor = new Set();
+  let layoutAnchor = "";
+
+  const planRoleToSection = {
+    nav: "navigation",
+    hero: "hero",
+    features: "services",
+    proof: "testimonials",
+    cta: "cta_band",
+    form: "contact_form",
+    footer: "footer",
+    accent: "accent",
+  };
+
+  for (const [planRole, cats] of Object.entries(PLAN_ROLE_CATEGORIES)) {
+    let pool = [];
     for (const cat of cats) {
       for (const item of byCategory.get(cat) || []) pool.push(item);
     }
+    pool = preferPageReadyPool(pool);
     if (!pool.length) continue;
-    const start = hashPick(`${seed}:${cats[0]}`, pool.length);
-    for (let n = 0; n < CATALOG_PER_BUCKET && n < pool.length; n += 1) {
-      const item = pool[(start + n) % pool.length];
-      if (!item?.id || used.has(item.id)) continue;
-      used.add(item.id);
-      picked.push({
-        id: String(item.id),
-        title: item.title || item.slug || item.id,
-        category: item.category || "",
-        tags: Array.isArray(item.tags) ? item.tags.slice(0, 4) : [],
-        file: item.file,
-      });
+
+    const sectionRole = planRoleToSection[planRole] || planRole;
+    const ranked = pool
+      .filter((item) => item?.id && item.file && !used.has(String(item.id)))
+      .map((item) => ({
+        item,
+        score: scorePresetCandidate(item, {
+          sectionRole,
+          moodAnchor,
+          layoutAnchor,
+          seedKey: `${seed}:${planRole}`,
+        }),
+      }))
+      .sort((a, b) => b.score - a.score);
+
+    const start = hashPick(`${seed}:${cats[0]}`, Math.max(1, ranked.length));
+    let added = 0;
+    for (let n = 0; n < ranked.length && added < CATALOG_PER_BUCKET; n += 1) {
+      const { item } = ranked[(start + n) % ranked.length];
+      const id = String(item.id);
+      if (used.has(id)) continue;
+      used.add(id);
+      picked.push(catalogEntryFromManifest(item));
+      for (const m of Array.isArray(item.mood) ? item.mood : []) moodAnchor.add(m);
+      if (!layoutAnchor && item.layout) layoutAnchor = String(item.layout);
+      added += 1;
     }
   }
   return picked;
@@ -1414,8 +1687,15 @@ async function loadPresetsByIds(ids, roleById) {
       id: item.id,
       title: item.title,
       category: item.category,
-      role: (roleById && roleById[id]) || item.category || "",
+      role: (roleById && roleById[id]) || item.role || item.category || "",
       tags: item.tags || [],
+      layout: item.layout || "",
+      summary: item.summary || "",
+      slots: Array.isArray(item.slots) ? item.slots : [],
+      mood: Array.isArray(item.mood) ? item.mood : [],
+      adaptHint: item.adaptHint || "",
+      structure: item.structure || null,
+      pageReady: item.pageReady === true,
       html: snippet,
     });
   }
@@ -1494,10 +1774,19 @@ async function openRouterChat({ model, system, user, temperature, maxTokens, tit
  */
 const ATMOSPHERE_PROFILES = [
   {
-    match: /spa|massage|wellness|yoga|pilates|beauty|salon|nail|skin|med ?spa|facial/i,
-    atmosphere: "Calm, restorative wellness space - soft light, natural textures, unhurried luxury.",
+    match: /nail|manicure|pedicure|otter/i,
+    atmosphere:
+      "Boutique nail studio - full-bleed client photography with Ken-Burns drift, floating island nav, script brand wordmark, black/white CTAs. Quiet luxury, not template beauty.",
+    voice: "warm calm inviting",
+    palette: { bg: "#fafafa", surface: "#ffffff", ink: "#111111", muted: "#6b7280", accent: "#111111" },
+    type: { display: "script handwritten", body: "clean humanist sans" },
+  },
+  {
+    match: /spa|massage|wellness|yoga|pilates|beauty|salon|skin|med ?spa|facial/i,
+    atmosphere:
+      "Calm boutique wellness space - full-bleed real photography or soft video, floating island nav, distinctive brand type, unhurried luxury.",
     voice: "warm calm reassuring",
-    palette: { bg: "#f6f4ef", surface: "#ffffff", ink: "#2f2a24", muted: "#8a8175", accent: "#7c8a5a" },
+    palette: { bg: "#f6f4ef", surface: "#ffffff", ink: "#2f2a24", muted: "#8a8175", accent: "#1a1a1a" },
     type: { display: "elegant serif", body: "clean humanist sans" },
   },
   {
@@ -1523,10 +1812,11 @@ const ATMOSPHERE_PROFILES = [
   },
   {
     match: /plumb|electric|hvac|roof|contractor|construction|handyman|landscap|lawn|pest|clean|paint|repair|garage|auto|mechanic|towing|tire/i,
-    atmosphere: "Dependable local trade - sturdy, no-nonsense, ready-to-help and on time.",
+    atmosphere:
+      "Hands-on local trade craft - real job-site photography, charcoal and steel, island nav over a full-bleed hero, black/white CTAs. No orange-pill AI brochure look.",
     voice: "clear confident dependable",
-    palette: { bg: "#f4f6f8", surface: "#ffffff", ink: "#111827", muted: "#5b6472", accent: "#ea580c" },
-    type: { display: "strong grotesk", body: "clean sans" },
+    palette: { bg: "#f3f4f2", surface: "#ffffff", ink: "#121417", muted: "#5c6570", accent: "#1a1a1a" },
+    type: { display: "sturdy grotesk", body: "clean sans" },
   },
   {
     match: /dental|dentist|ortho|clinic|medical|doctor|health|vet|chiro|therapy|optom|derma|urgent/i,
@@ -1537,9 +1827,10 @@ const ATMOSPHERE_PROFILES = [
   },
   {
     match: /tech|software|saas|studio|agency|design|creative|marketing|media|startup|app|digital/i,
-    atmosphere: "Sharp modern studio - confident minimalism, crisp motion, forward-looking.",
+    atmosphere:
+      "Sharp creative studio - confident minimalism, full-bleed media, crisp motion. Avoid purple SaaS chrome.",
     voice: "sharp modern confident",
-    palette: { bg: "#0b0d12", surface: "#14171f", ink: "#f4f6fb", muted: "#98a2b3", accent: "#6366f1" },
+    palette: { bg: "#0b0d12", surface: "#14171f", ink: "#f4f6fb", muted: "#98a2b3", accent: "#e8e8e8" },
     type: { display: "modern grotesk", body: "clean sans" },
   },
   {
@@ -1552,10 +1843,11 @@ const ATMOSPHERE_PROFILES = [
 ];
 
 const DEFAULT_ATMOSPHERE = {
-  atmosphere: "Clean, trustworthy local business - modern, conversion-first, premium but approachable.",
+  atmosphere:
+    "Crafted local business site - full-bleed real photography, floating island nav, distinctive type, black/white CTAs. Conversion-first without looking AI-generated.",
   voice: "clear confident local",
-  palette: { bg: "#f8fafc", surface: "#ffffff", ink: "#0f172a", muted: "#64748b", accent: "#2563eb" },
-  type: { display: "modern grotesk", body: "clean sans" },
+  palette: { bg: "#f7f6f3", surface: "#ffffff", ink: "#141414", muted: "#6b6570", accent: "#1a1a1a" },
+  type: { display: "editorial serif", body: "clean humanist sans" },
 };
 
 /**
@@ -1578,7 +1870,7 @@ function buildLocalPlan(ctx) {
 
 /**
  * Pick one preset per page section from the trade-specific bone structure.
- * Instant (no network) - uses manifest + scanned real-site patterns.
+ * Instant (no network) - prefers pageReady + role match + mood/layout cohesion.
  */
 function selectKitIdsLocally(ctx) {
   const manifest = loadPresetManifest();
@@ -1598,6 +1890,9 @@ function selectKitIdsLocally(ctx) {
   const ids = [];
   const roleById = {};
   const used = new Set();
+  const moodAnchor = new Set();
+  let layoutAnchor = "";
+
   for (const { section, role, categories } of sectionRoles) {
     if (ids.length >= PRESET_MAX_FILES) break;
     let pool = [];
@@ -1605,27 +1900,46 @@ function selectKitIdsLocally(ctx) {
       for (const item of byCategory.get(cat) || []) pool.push(item);
     }
     if (section === "contact_form" && pool.length) {
-      pool = pool.filter((item) => {
+      const filtered = pool.filter((item) => {
         const slug = String(item?.slug || item?.title || "").toLowerCase();
         return !/login|subscribe|newsletter|sign-?up|inline-form|multi-step/.test(slug);
       });
-      if (!pool.length) {
-        for (const cat of categories) {
-          for (const item of byCategory.get(cat) || []) pool.push(item);
-        }
-      }
+      if (filtered.length) pool = filtered;
     }
-    if (!pool.length) continue;
-    const start = hashPick(`${seed}:${section}`, pool.length);
-    for (let n = 0; n < pool.length; n += 1) {
-      const item = pool[(start + n) % pool.length];
-      const id = String(item?.id || "");
-      if (!id || used.has(id) || !item.file) continue;
-      used.add(id);
-      ids.push(id);
-      roleById[id] = role;
-      break;
-    }
+
+    // Prefer pageReady, then role-matching subset when available.
+    let candidates = preferPageReadyPool(pool);
+    const roleMatched = candidates.filter((item) => String(item?.role || "") === role);
+    if (roleMatched.length) candidates = roleMatched;
+
+    if (!candidates.length) continue;
+
+    const ranked = candidates
+      .filter((item) => item?.id && item.file && !used.has(String(item.id)))
+      .map((item) => ({
+        item,
+        score: scorePresetCandidate(item, {
+          sectionRole: role,
+          moodAnchor,
+          layoutAnchor,
+          seedKey: `${seed}:${section}`,
+        }),
+      }))
+      .sort((a, b) => b.score - a.score);
+
+    if (!ranked.length) continue;
+
+    // Hash-stable pick among the top-scoring cluster (not the entire raw pool).
+    const topScore = ranked[0].score;
+    const topCluster = ranked.filter((row) => row.score >= topScore - 12);
+    const pickIdx = hashPick(`${seed}:${section}:pick`, topCluster.length);
+    const chosen = topCluster[pickIdx].item;
+    const id = String(chosen.id);
+    used.add(id);
+    ids.push(id);
+    roleById[id] = role;
+    for (const m of Array.isArray(chosen.mood) ? chosen.mood : []) moodAnchor.add(m);
+    if (!layoutAnchor && chosen.layout) layoutAnchor = String(chosen.layout);
   }
   return { ids, roleById, structure };
 }
@@ -1785,6 +2099,7 @@ async function generateWithOpenRouter(ctx, presetPack, plan) {
 
 /** Map manifest category/tags to bone-structure section role for assembly. */
 function inferPresetRole(item) {
+  if (item?.role) return String(item.role);
   const cat = String(item?.category || "").trim().toLowerCase();
   const tagStr = Array.isArray(item?.tags) ? item.tags.join(" ").toLowerCase() : "";
   const hay = `${cat} ${tagStr} ${String(item?.title || "").toLowerCase()}`;
@@ -1872,6 +2187,13 @@ async function loadWebsitePresetPack(ctx) {
       category: item.category,
       role: inferPresetRole(item),
       tags: item.tags || [],
+      layout: item.layout || "",
+      summary: item.summary || "",
+      slots: Array.isArray(item.slots) ? item.slots : [],
+      mood: Array.isArray(item.mood) ? item.mood : [],
+      adaptHint: item.adaptHint || "",
+      structure: item.structure || null,
+      pageReady: item.pageReady === true,
       html: snippet,
     });
   }
@@ -2064,6 +2386,15 @@ app.post("/generate", requireUser, generateLimiter, async (req, res) => {
         presetsDir: WEBSITE_PRESETS_DIR,
         manifestExists: fs.existsSync(path.join(WEBSITE_PRESETS_DIR, "presets", "manifest.json")),
       });
+      throw new Error(
+        "Website Presets components failed to load. Please try generating again in a moment."
+      );
+    }
+    if (presetPack.length < 6) {
+      console.warn("Website Presets kit is thin:", presetPack.length, {
+        presetsSource: githubPresets.getPresetSourceMeta(),
+        ids,
+      });
     } else {
       const src = githubPresets.getPresetSourceMeta();
       console.log(
@@ -2185,6 +2516,184 @@ app.post("/generate", requireUser, generateLimiter, async (req, res) => {
       error: formatted.message,
       code: formatted.code || e.code || undefined,
     });
+  }
+});
+
+app.post("/import-site", requireUser, generateLimiter, async (req, res) => {
+  try {
+    const supabase = db();
+    let html = String(req.body?.html || "");
+    if (!html.trim()) return res.status(400).json({ error: "html required" });
+    html = html.replace(/\u0000/g, "");
+    const maxBytes = Math.floor(6 * 1024 * 1024);
+    if (Buffer.byteLength(html, "utf8") > maxBytes) {
+      return res.status(400).json({ error: "HTML too large (max 6 MB)" });
+    }
+    html = stripRuntimeEmbedsFromStoredHtml(html);
+    if (!/<[a-z][\s\S]*>/i.test(html)) {
+      return res.status(400).json({ error: "Upload does not look like HTML" });
+    }
+
+    const businessName =
+      sanitizeUserText(req.body?.businessName || req.body?.business_name || "Uploaded site", 120) ||
+      "Uploaded site";
+    const watermarkEnabled = !(
+      req.body?.watermark_enabled === false ||
+      req.body?.watermark_enabled === "false" ||
+      req.body?.watermark_enabled === 0
+    );
+
+    const incoming =
+      req.body?.business_context && typeof req.body.business_context === "object"
+        ? req.body.business_context
+        : {};
+    const nextContext = withDefaultContactFormContext({
+      ...incoming,
+      businessName,
+      source: "upload",
+      showWatermark: watermarkEnabled,
+    });
+
+    const { data, error } = await supabase
+      .from("projects")
+      .insert({
+        user_id: req.user.id,
+        business_name: businessName,
+        template_id: "upload",
+        html,
+        status: "preview",
+        watermark_enabled: watermarkEnabled,
+        business_context: nextContext,
+      })
+      .select("id")
+      .single();
+    if (error) throw error;
+
+    res.json({ projectId: data.id });
+  } catch (e) {
+    respondApiError(res, e, "Could not import site");
+  }
+});
+
+app.post("/github/repos", requireUser, generateLimiter, async (req, res) => {
+  try {
+    const token = req.body?.token || req.body?.github_token || "";
+    const repos = await githubImport.listUserRepos(token);
+    res.json({ repos });
+  } catch (e) {
+    const status = e?.status && Number.isFinite(e.status) ? e.status : 500;
+    if (status >= 400 && status < 500) {
+      return res.status(status).json({ error: e.message || "Could not list GitHub repos" });
+    }
+    respondApiError(res, e, "Could not list GitHub repos");
+  }
+});
+
+app.post("/github/site-folders", requireUser, generateLimiter, async (req, res) => {
+  try {
+    const token = req.body?.token || req.body?.github_token || "";
+    const fullName = req.body?.repo || req.body?.fullName || req.body?.full_name || "";
+    if (!String(fullName || "").trim()) {
+      return res.status(400).json({ error: "Select a GitHub repository first." });
+    }
+    const data = await githubImport.listSiteFolders(token, { fullName });
+    res.json(data);
+  } catch (e) {
+    const status = e?.status && Number.isFinite(e.status) ? e.status : 500;
+    if (status >= 400 && status < 500) {
+      return res.status(status).json({ error: e.message || "Could not list site folders" });
+    }
+    respondApiError(res, e, "Could not list site folders");
+  }
+});
+
+app.post("/github/import-site", requireUser, generateLimiter, async (req, res) => {
+  try {
+    const supabase = db();
+    const token = req.body?.token || req.body?.github_token || "";
+    const fullName = req.body?.repo || req.body?.fullName || req.body?.full_name || "";
+    if (!String(fullName || "").trim()) {
+      return res.status(400).json({ error: "Select a GitHub repository first." });
+    }
+    const pathPrefix = sanitizeUserText(req.body?.path || req.body?.pathPrefix || "", 200);
+    const assembled = await githubImport.importRepoSite(token, {
+      fullName,
+      pathPrefix,
+    });
+
+    let html = String(assembled.html || "").replace(/\u0000/g, "");
+    const maxBytes = Math.floor(6 * 1024 * 1024);
+    if (Buffer.byteLength(html, "utf8") > maxBytes) {
+      return res.status(400).json({ error: "HTML too large (max 6 MB)" });
+    }
+    html = stripRuntimeEmbedsFromStoredHtml(html);
+    if (!/<[a-z][\s\S]*>/i.test(html)) {
+      return res.status(400).json({ error: "Repository does not look like an HTML site" });
+    }
+
+    const siteFiles = {};
+    const rawSite = assembled.siteFiles && typeof assembled.siteFiles === "object" ? assembled.siteFiles : {};
+    for (const [rawPath, rawHtml] of Object.entries(rawSite)) {
+      const path = String(rawPath || "")
+        .replace(/\\/g, "/")
+        .replace(/^\/+/, "")
+        .replace(/\.\./g, "");
+      if (!path || !/\.html?$/i.test(path)) continue;
+      let page = String(rawHtml || "").replace(/\u0000/g, "");
+      if (Buffer.byteLength(page, "utf8") > maxBytes) continue;
+      page = stripRuntimeEmbedsFromStoredHtml(page);
+      if (!/<[a-z][\s\S]*>/i.test(page)) continue;
+      siteFiles[path] = page;
+    }
+    if (!Object.keys(siteFiles).length) {
+      siteFiles["index.html"] = html;
+    } else if (!Object.keys(siteFiles).some((p) => /^index\.html?$/i.test(p))) {
+      siteFiles["index.html"] = html;
+    }
+
+    const businessName =
+      sanitizeUserText(req.body?.businessName || req.body?.business_name || "", 120) ||
+      sanitizeUserText(String(fullName).split("/").pop() || "Uploaded site", 120) ||
+      "Uploaded site";
+    const watermarkEnabled = !(
+      req.body?.watermark_enabled === false ||
+      req.body?.watermark_enabled === "false" ||
+      req.body?.watermark_enabled === 0
+    );
+
+    const nextContext = withDefaultContactFormContext({
+      businessName,
+      source: "upload",
+      showWatermark: watermarkEnabled,
+      uploadEntry: assembled.entryName,
+      githubRepo: assembled.repo,
+      githubBranch: assembled.branch,
+      githubPath: assembled.pathPrefix || "",
+      siteFiles,
+    });
+
+    const { data, error } = await supabase
+      .from("projects")
+      .insert({
+        user_id: req.user.id,
+        business_name: businessName,
+        template_id: "upload",
+        html,
+        status: "preview",
+        watermark_enabled: watermarkEnabled,
+        business_context: nextContext,
+      })
+      .select("id")
+      .single();
+    if (error) throw error;
+
+    res.json({ projectId: data.id, repo: assembled.repo, entry: assembled.entryName });
+  } catch (e) {
+    const status = e?.status && Number.isFinite(e.status) ? e.status : 500;
+    if (status >= 400 && status < 500) {
+      return res.status(status).json({ error: e.message || "Could not import from GitHub" });
+    }
+    respondApiError(res, e, "Could not import from GitHub");
   }
 });
 
@@ -2429,6 +2938,20 @@ app.post("/credits/plan-checkout", requireUser, checkoutLimiter, async (req, res
 
 app.post("/credits/claim-developer", requireUser, checkoutLimiter, async (req, res) => {
   try {
+    const allowList = String(
+      process.env.GO_LIVE_DEV_UNLOCK_EMAILS || process.env.MOONRISE_SUPPORT_EMAIL || ""
+    )
+      .split(/[,;\s]+/)
+      .map((s) => s.trim().toLowerCase())
+      .filter(Boolean);
+    const email = String(req.user?.email || "").trim().toLowerCase();
+    const enabled =
+      process.env.ALLOW_DEVELOPER_CREDITS === "1" ||
+      (email && allowList.includes(email));
+    if (!enabled) {
+      return res.status(404).json({ error: "Not found" });
+    }
+
     const DEVELOPER_CREDIT_GRANT = 50;
     const supabase = db();
     const userId = req.user.id;
@@ -2600,7 +3123,9 @@ function requireSecurityCardAdmin(req, res, next) {
   }
   const auth = String(req.headers.authorization || "").trim();
   const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
-  if (!token || token !== secret) {
+  const a = Buffer.from(token);
+  const b = Buffer.from(secret);
+  if (!token || a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
     return res.status(401).json({ error: "Unauthorized" });
   }
   next();
@@ -3021,14 +3546,24 @@ app.post("/contact-submit", contactSubmitLimiter, async (req, res) => {
       endpoint_url: null,
       payload,
     });
-    if (insertError) throw insertError;
+    if (insertError) {
+      // Don't block delivery if the audit table is missing/misconfigured.
+      console.warn("contact_leads insert failed:", insertError.message || insertError);
+    }
 
-    await sendContactLeadEmail({
-      to,
-      businessName: project.business_name,
-      fields: payload,
-      projectId: project.id,
-    });
+    try {
+      await sendContactLeadEmail({
+        to,
+        businessName: project.business_name,
+        fields: payload,
+        projectId: project.id,
+      });
+    } catch (mailErr) {
+      console.error("contact-submit email failed:", mailErr?.message || mailErr);
+      return res.status(502).json({
+        error: mailErr?.message || "Could not deliver email. Check the notification address and try again.",
+      });
+    }
 
     res.json({ ok: true });
   } catch (e) {
@@ -3218,7 +3753,9 @@ app.post("/fulfill-go-live", publicCheckoutLimiter, async (req, res) => {
       return res.status(400).json({ error: "Valid checkout session required" });
     }
 
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ["invoice", "subscription", "subscription.latest_invoice", "customer"],
+    });
     if (session.status !== "complete" || session.payment_status === "unpaid") {
       return res.status(409).json({ error: "Payment is not complete yet" });
     }
@@ -3256,6 +3793,148 @@ app.post("/fulfill-go-live", publicCheckoutLimiter, async (req, res) => {
   } catch (e) {
     console.error("fulfill-go-live", e);
     respondApiError(res, e, "Could not unlock site after payment");
+  }
+});
+
+/**
+ * Public billing portal for business owners who paid to remove the watermark.
+ * Verifies the checkout email, then opens Stripe Customer Portal (cancel / update card).
+ */
+app.post("/public-hosting-portal", publicCheckoutLimiter, async (req, res) => {
+  try {
+    const stripe = stripeClient();
+    if (!stripe) return sendStripeMissing(res);
+
+    const projectId = String(req.body.projectId || req.body.project_id || "").trim();
+    const email = String(req.body.email || "")
+      .trim()
+      .toLowerCase();
+    if (!projectId) return res.status(400).json({ error: "projectId required" });
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: "Enter the email you used at checkout" });
+    }
+
+    const supabase = db();
+    const { data: project, error } = await supabase
+      .from("projects")
+      .select("id,vercel_url,business_context,watermark_enabled,status")
+      .eq("id", projectId)
+      .maybeSingle();
+    if (error) throw error;
+    if (!project) return res.status(404).json({ error: "Project not found" });
+
+    const ctx =
+      project.business_context && typeof project.business_context === "object"
+        ? project.business_context
+        : {};
+    const buyer = String(ctx.hostingBuyerEmail || ctx.purchaseInvoiceEmailTo || "")
+      .trim()
+      .toLowerCase();
+    const customerId = String(ctx.hostingStripeCustomerId || "").trim();
+
+    if (!customerId.startsWith("cus_")) {
+      return res.status(404).json({
+        error: "No hosting subscription found for this site yet. Check your invoice email or contact support.",
+      });
+    }
+    if (!buyer || buyer !== email) {
+      return res.status(403).json({
+        error: "That email doesn’t match the one used to pay for this site.",
+      });
+    }
+
+    const returnUrl = String(project.vercel_url || PUBLIC_APP_URL).trim() || PUBLIC_APP_URL;
+    const portal = await stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: returnUrl,
+    });
+    res.json({ url: portal.url });
+  } catch (e) {
+    console.error("public-hosting-portal", e);
+    respondApiError(res, e, "Could not open billing portal");
+  }
+});
+
+/**
+ * Developer-only unlock (no Stripe charge).
+ * Allowed when:
+ *   - Stripe is in test mode (sk_test_ / rk_test_), OR
+ *   - GO_LIVE_DEV_UNLOCK_SECRET is set and body.secret matches, OR
+ *   - signed-in email is listed in GO_LIVE_DEV_UNLOCK_EMAILS
+ *     (falls back to MOONRISE_SUPPORT_EMAIL)
+ * Requires the project owner to be logged in.
+ */
+function canUseDevGoLiveUnlock(req) {
+  if (isStripeTestMode()) return true;
+  const envSecret = String(process.env.GO_LIVE_DEV_UNLOCK_SECRET || "").trim();
+  const provided = String(req.body?.secret || req.headers["x-dev-unlock-secret"] || "").trim();
+  if (envSecret.length >= 16 && provided === envSecret) return true;
+  const allowList = String(
+    process.env.GO_LIVE_DEV_UNLOCK_EMAILS || process.env.MOONRISE_SUPPORT_EMAIL || ""
+  )
+    .split(/[,;\s]+/)
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  const email = String(req.user?.email || "").trim().toLowerCase();
+  return !!(email && allowList.includes(email));
+}
+
+app.post("/dev-unlock-go-live", requireUser, publicCheckoutLimiter, async (req, res) => {
+  try {
+    if (!canUseDevGoLiveUnlock(req)) {
+      return res.status(404).json({ error: "Not found" });
+    }
+
+    const projectId = String(req.body.projectId || req.body.project_id || "").trim();
+    if (!projectId) return res.status(400).json({ error: "projectId required" });
+
+    const supabase = db();
+    const { data: project, error } = await supabase
+      .from("projects")
+      .select("id, user_id, watermark_enabled, vercel_url")
+      .eq("id", projectId)
+      .eq("user_id", req.user.id)
+      .maybeSingle();
+    if (error) throw error;
+    if (!project) return res.status(404).json({ error: "Project not found" });
+
+    const liveUrl = String(project.vercel_url || `${PUBLIC_APP_URL}/preview/${projectId}`);
+    if (!project.watermark_enabled) {
+      return res.json({ alreadyPaid: true, ok: true, url: liveUrl });
+    }
+
+    const session = {
+      id: `cs_test_dev_${projectId.replace(/-/g, "").slice(0, 12)}_${Date.now()}`,
+      amount_total: 0,
+      currency: "usd",
+      status: "complete",
+      payment_status: "paid",
+      customer_email: req.user.email || undefined,
+      metadata: {
+        type: "go_live",
+        projectId,
+        userId: req.user.id,
+        devUnlock: "1",
+      },
+    };
+
+    const result = await unlockGoLiveAfterPayment(supabase, {
+      projectId,
+      session,
+      userId: req.user.id,
+    });
+
+    res.json({
+      ok: true,
+      devUnlock: true,
+      watermarkEnabled: false,
+      url: result.url || liveUrl,
+      redeployed: result.redeployed,
+      redeployError: result.redeployError,
+    });
+  } catch (e) {
+    console.error("dev-unlock-go-live", e);
+    respondApiError(res, e, "Dev unlock failed");
   }
 });
 
@@ -3538,7 +4217,9 @@ function createVercelScope(kind) {
       teamQuery = `?teamId=${encodeURIComponent(teamId)}`;
     }
   } else if (kind === "client") {
-    const clientTeamId = String(process.env.VERCEL_CLIENT_SITES_TEAM_ID || "").trim();
+    const clientTeamId = String(
+      process.env.VERCEL_CLIENT_SITES_TEAM_ID || process.env.VERCEL_TEAM_ID || ""
+    ).trim();
     if (clientTeamId) {
       headers["X-Vercel-Team-Id"] = clientTeamId;
       teamQuery = `?teamId=${encodeURIComponent(clientTeamId)}`;
@@ -3843,7 +4524,7 @@ function publishSettingsHash(project) {
       ? project.business_context
       : {};
   const cf = ctx.contactForm && typeof ctx.contactForm === "object" ? ctx.contactForm : {};
-  const domain = ctx.customDomain && typeof ctx.customDomain === "object" ? ctx.customDomain : {};
+  const stored = readStoredCustomDomain(ctx);
   return publishContentHash(
     JSON.stringify({
       contactForm: {
@@ -3854,11 +4535,301 @@ function publishSettingsHash(project) {
         endpointType: String(cf.endpointType || "").trim(),
       },
       customDomain: {
-        hostname: String(domain.hostname || domain.domain || "").trim(),
-        status: String(domain.status || "").trim(),
+        hostname: stored.hostname,
+        status: stored.status,
       },
     })
   );
+}
+
+function normalizeCustomHostname(raw) {
+  return String(raw || "")
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//i, "")
+    .replace(/\/.*$/, "")
+    .replace(/:\d+$/, "")
+    .replace(/\.$/, "");
+}
+
+function isValidCustomHostname(host) {
+  return /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/i.test(
+    String(host || "")
+  );
+}
+
+function customDomainDnsHints(hostname) {
+  const host = normalizeCustomHostname(hostname);
+  const labels = host.split(".").filter(Boolean);
+  const isApex = labels.length === 2;
+  if (isApex) {
+    return {
+      type: "A",
+      name: "@",
+      value: "76.76.21.21",
+      wwwCname: "cname.vercel-dns.com",
+      tip:
+        "Point " +
+        host +
+        " with an A record → 76.76.21.21. Optional: CNAME www → cname.vercel-dns.com",
+    };
+  }
+  return {
+    type: "CNAME",
+    name: labels.slice(0, -2).join(".") || labels[0] || "www",
+    value: "cname.vercel-dns.com",
+    tip: "Point " + host + " with a CNAME → cname.vercel-dns.com",
+  };
+}
+
+function normalizeDnsTarget(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\.$/, "");
+}
+
+/**
+ * Live DNS check so pending status can say what is actually wrong
+ * (e.g. still pointing at GitHub Pages).
+ */
+async function diagnoseCustomDomainDns(hostname) {
+  const host = normalizeCustomHostname(hostname);
+  const expected = customDomainDnsHints(host);
+  if (!host || !expected) {
+    return { ok: false, message: "Enter a valid domain first.", issues: [] };
+  }
+
+  const issues = [];
+  const observed = { a: [], cname: [], wwwCname: [] };
+
+  try {
+    if (expected.type === "A") {
+      const addrs = await dns.resolve4(host).catch(() => []);
+      observed.a = addrs.slice(0, 6);
+      if (!addrs.length) {
+        issues.push(`No A record found for ${host} yet. Add Type A, Name @, Data 76.76.21.21.`);
+      } else if (!addrs.includes(expected.value)) {
+        issues.push(
+          `${host} still points to ${addrs.slice(0, 3).join(", ")}. Delete those A (@) records and keep only Data ${expected.value}.`
+        );
+      }
+
+      if (expected.wwwCname) {
+        const wwwHost = `www.${host}`;
+        const wwwCnames = await dns.resolveCname(wwwHost).catch(() => []);
+        observed.wwwCname = wwwCnames.map(normalizeDnsTarget).slice(0, 4);
+        const wwwOk = observed.wwwCname.includes(normalizeDnsTarget(expected.wwwCname));
+        if (observed.wwwCname.length && !wwwOk) {
+          issues.push(
+            `www still points to ${observed.wwwCname[0]}. Change www CNAME Data to ${expected.wwwCname}.`
+          );
+        }
+      }
+    } else {
+      const cnames = await dns.resolveCname(host).catch(() => []);
+      observed.cname = cnames.map(normalizeDnsTarget).slice(0, 4);
+      const ok = observed.cname.includes(normalizeDnsTarget(expected.value));
+      if (!observed.cname.length) {
+        const addrs = await dns.resolve4(host).catch(() => []);
+        observed.a = addrs.slice(0, 6);
+        if (!addrs.length) {
+          issues.push(
+            `No CNAME found for ${host} yet. Add Type CNAME, Name ${expected.name}, Data ${expected.value}.`
+          );
+        }
+      } else if (!ok) {
+        issues.push(
+          `${host} still points to ${observed.cname[0]}. Change Data to ${expected.value}.`
+        );
+      }
+    }
+  } catch (_) {
+    issues.push("Could not look up DNS yet. Save the records, wait 2–5 minutes, then check again.");
+  }
+
+  if (!issues.length) {
+    return {
+      ok: true,
+      message: "DNS looks right. Vercel may need another minute — check status again shortly.",
+      issues: [],
+      observed,
+      expected,
+    };
+  }
+
+  return {
+    ok: false,
+    message: issues[0],
+    issues,
+    observed,
+    expected,
+  };
+}
+
+function readStoredCustomDomain(ctx) {
+  const raw = ctx?.customDomain;
+  const enabledFlag = ctx?.customDomainEnabled;
+  if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+    const hostname = normalizeCustomHostname(raw.hostname || raw.domain || "");
+    return {
+      hostname,
+      enabled: enabledFlag === true || (enabledFlag !== false && !!hostname),
+      status: String(raw.status || "").trim(),
+      verified: !!raw.verified,
+      verification: Array.isArray(raw.verification) ? raw.verification : [],
+      dns: raw.dns && typeof raw.dns === "object" ? raw.dns : null,
+      error: String(raw.error || "").trim(),
+    };
+  }
+  const hostname = normalizeCustomHostname(raw);
+  return {
+    hostname,
+    enabled: enabledFlag === true || (enabledFlag !== false && !!hostname),
+    status: "",
+    verified: false,
+    verification: [],
+    dns: null,
+    error: "",
+  };
+}
+
+function buildCustomDomainRecord(hostname, vercelDomain, extra) {
+  const host = normalizeCustomHostname(hostname);
+  const verified = vercelDomain?.verified === true;
+  const verification = Array.isArray(vercelDomain?.verification)
+    ? vercelDomain.verification
+    : [];
+  return {
+    hostname: host,
+    status: verified ? "verified" : "pending",
+    verified,
+    verification,
+    dns: customDomainDnsHints(host),
+    apexName: String(vercelDomain?.apexName || "").trim() || undefined,
+    updatedAt: new Date().toISOString(),
+    ...(extra && typeof extra === "object" ? extra : {}),
+  };
+}
+
+async function vercelVerifyProjectDomain(scope, projectIdOrName, hostname) {
+  const host = normalizeCustomHostname(hostname);
+  if (!projectIdOrName || !host) return null;
+  const res = await fetch(
+    `https://api.vercel.com/v9/projects/${encodeURIComponent(projectIdOrName)}/domains/${encodeURIComponent(host)}/verify${scope.teamQuery}`,
+    {
+      method: "POST",
+      headers: scope.headers,
+      body: "{}",
+    }
+  );
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) return data;
+  // Verification can 400 while DNS is still propagating — treat as pending status payload.
+  if (res.status === 400 || res.status === 409) {
+    return data?.domain || data || null;
+  }
+  throw new Error(data?.error?.message || `Domain verify failed (${res.status})`);
+}
+
+async function vercelGetProjectDomain(scope, projectIdOrName, hostname) {
+  const host = normalizeCustomHostname(hostname);
+  if (!projectIdOrName || !host) return null;
+  const res = await fetch(
+    `https://api.vercel.com/v9/projects/${encodeURIComponent(projectIdOrName)}/domains/${encodeURIComponent(host)}${scope.teamQuery}`,
+    { headers: scope.headers }
+  );
+  if (res.status === 404) return null;
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data?.error?.message || `Domain lookup failed (${res.status})`);
+  }
+  return data;
+}
+
+async function vercelAddProjectDomain(scope, projectIdOrName, hostname) {
+  const host = normalizeCustomHostname(hostname);
+  const res = await fetch(
+    `https://api.vercel.com/v10/projects/${encodeURIComponent(projectIdOrName)}/domains${scope.teamQuery}`,
+    {
+      method: "POST",
+      headers: scope.headers,
+      body: JSON.stringify({ name: host }),
+    }
+  );
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) return data;
+
+  const existing = await vercelGetProjectDomain(scope, projectIdOrName, host).catch(() => null);
+  if (existing) return existing;
+
+  const msg = String(data?.error?.message || `Could not add domain (${res.status})`);
+  if (/already/i.test(msg) && /project/i.test(msg)) {
+    throw new Error(
+      "That domain is already connected to another Vercel project. Remove it there first, then try again."
+    );
+  }
+  throw new Error(msg);
+}
+
+async function vercelRemoveProjectDomain(scope, projectIdOrName, hostname) {
+  const host = normalizeCustomHostname(hostname);
+  if (!projectIdOrName || !host) return false;
+  const res = await fetch(
+    `https://api.vercel.com/v9/projects/${encodeURIComponent(projectIdOrName)}/domains/${encodeURIComponent(host)}${scope.teamQuery}`,
+    {
+      method: "DELETE",
+      headers: scope.headers,
+    }
+  );
+  if (res.ok || res.status === 404) return true;
+  const data = await res.json().catch(() => ({}));
+  throw new Error(data?.error?.message || `Could not remove domain (${res.status})`);
+}
+
+async function ensureCustomDomainOnVercel(project) {
+  const ctx =
+    project?.business_context && typeof project.business_context === "object"
+      ? project.business_context
+      : {};
+  const stored = readStoredCustomDomain(ctx);
+  if (!stored.enabled || !stored.hostname) {
+    return { attached: false, record: null, ctx };
+  }
+  if (!process.env.VERCEL_TOKEN) {
+    return {
+      attached: false,
+      record: buildCustomDomainRecord(stored.hostname, null, {
+        status: "saved",
+        error: "Vercel is not configured on the worker",
+      }),
+      ctx,
+    };
+  }
+  const slug = slugifyVercelSegment(ctx.vercelSlug) || buildVercelProjectSlug(project);
+  if (!slug) {
+    return {
+      attached: false,
+      record: buildCustomDomainRecord(stored.hostname, null, {
+        status: "error",
+        error: "Publish the site before connecting a domain",
+      }),
+      ctx,
+    };
+  }
+  const scope = createVercelScope("client");
+  const vercelDomain = await vercelAddProjectDomain(scope, slug, stored.hostname);
+  const record = buildCustomDomainRecord(stored.hostname, vercelDomain);
+  return {
+    attached: true,
+    record,
+    ctx: {
+      ...ctx,
+      vercelSlug: slug,
+      customDomain: record,
+      customDomainEnabled: true,
+    },
+  };
 }
 
 async function attachCreatorContactSnapshot(supabase, project) {
@@ -3885,6 +4856,88 @@ async function attachCreatorContactSnapshot(supabase, project) {
  * is still unpaid. Reused by /publish (seller) and the Stripe webhook (auto
  * clean redeploy after the business owner pays).
  */
+function sanitizeDeployHtmlPath(path) {
+  const safe = String(path || "")
+    .replace(/\\/g, "/")
+    .replace(/^\/+/, "")
+    .replace(/\.\./g, "")
+    .trim();
+  if (!safe || !/\.html?$/i.test(safe) || safe.length > 180) return "";
+  return safe;
+}
+
+function uploadLinkPrefixes(ctx) {
+  const prefixes = [];
+  const pathPrefix = String(ctx?.githubPath || "").trim();
+  if (pathPrefix) prefixes.push(pathPrefix);
+  const repo = String(ctx?.githubRepo || "").trim();
+  const repoShort = repo.split("/").filter(Boolean).pop();
+  if (repoShort) prefixes.push(repoShort);
+  return [...new Set(prefixes.filter(Boolean))];
+}
+
+function rewriteUploadHtmlPaths(html, ctx) {
+  try {
+    return githubImport.rewriteSiteBasePaths(html, uploadLinkPrefixes(ctx));
+  } catch (_) {
+    return String(html || "");
+  }
+}
+
+/** Multi-page upload sites store sibling HTML in business_context.siteFiles. */
+function buildVercelPublishFiles(project) {
+  const ctx =
+    project.business_context && typeof project.business_context === "object"
+      ? project.business_context
+      : {};
+  const entryPath = sanitizeDeployHtmlPath(ctx.uploadEntry || "index.html") || "index.html";
+  const mainPrepared = preparePublishedHtml({
+    ...project,
+    html: rewriteUploadHtmlPaths(project.html || "", ctx),
+  });
+  const filesByPath = new Map();
+
+  const siteFiles = ctx.siteFiles && typeof ctx.siteFiles === "object" ? ctx.siteFiles : null;
+  if (siteFiles) {
+    for (const [rawPath, rawHtml] of Object.entries(siteFiles)) {
+      let path = sanitizeDeployHtmlPath(rawPath);
+      if (!path) continue;
+      // Flatten accidental "folder/page.html" keys when folder matches known prefixes.
+      for (const prefix of uploadLinkPrefixes(ctx)) {
+        const withSlash = prefix.replace(/\/+$/, "") + "/";
+        if (path.startsWith(withSlash)) {
+          path = sanitizeDeployHtmlPath(path.slice(withSlash.length)) || path;
+          break;
+        }
+      }
+      const isEntry =
+        path === entryPath ||
+        (/^index\.html?$/i.test(path) && /^index\.html?$/i.test(entryPath));
+      const pageHtml = isEntry ? project.html || "" : String(rawHtml || "");
+      if (!pageHtml.trim()) continue;
+      filesByPath.set(
+        path,
+        preparePublishedHtml({
+          ...project,
+          html: rewriteUploadHtmlPaths(pageHtml, ctx),
+        })
+      );
+    }
+  }
+
+  // Editor HTML is always the live entry page.
+  filesByPath.set("index.html", mainPrepared);
+  if (entryPath && entryPath !== "index.html" && !/^index\.html?$/i.test(entryPath)) {
+    filesByPath.set(entryPath, mainPrepared);
+  }
+
+  return [...filesByPath.entries()].map(([file, pageHtml]) => ({
+    file,
+    data: Buffer.from(pageHtml).toString("base64"),
+    encoding: "base64",
+  }));
+}
+
 async function deployProjectToVercel(supabase, project) {
   const html = preparePublishedHtml(project);
   if (isWatermarkActive(project) && !html.includes("embed.js")) {
@@ -3921,13 +4974,7 @@ async function deployProjectToVercel(supabase, project) {
   const preferredSlug = buildVercelProjectSlug(project);
   const { slug, vercelProject } = await ensureVercelProjectForMoonrise(clientScope, project, preferredSlug);
 
-    const files = [
-      {
-        file: "index.html",
-      data: Buffer.from(html).toString("base64"),
-        encoding: "base64",
-      },
-    ];
+  const files = buildVercelPublishFiles(project);
 
     const deployRes = await fetch("https://api.vercel.com/v13/deployments", {
       method: "POST",
@@ -3948,7 +4995,7 @@ async function deployProjectToVercel(supabase, project) {
   await disableVercelDeploymentProtection(clientScope, vercelProject.id);
   const url = await resolvePublicProductionUrl(clientScope, deployData, slug);
   const publishedAt = new Date().toISOString();
-  const ctx = {
+  let ctx = {
     ...(project.business_context && typeof project.business_context === "object" ? project.business_context : {}),
     vercelSlug: slug,
     publishedAt:
@@ -3957,8 +5004,43 @@ async function deployProjectToVercel(supabase, project) {
         : publishedAt,
     lastPublishedAt: publishedAt,
     publishedContentHash: publishContentHash(html),
-    publishedSettingsHash: publishSettingsHash(project),
+    publishedSettingsHash: publishSettingsHash({
+      ...project,
+      business_context: {
+        ...(project.business_context && typeof project.business_context === "object"
+          ? project.business_context
+          : {}),
+        vercelSlug: slug,
+      },
+    }),
   };
+
+  try {
+    const ensured = await ensureCustomDomainOnVercel({
+      ...project,
+      business_context: ctx,
+    });
+    if (ensured?.ctx) ctx = { ...ctx, ...ensured.ctx, vercelSlug: slug };
+    if (ensured?.record) {
+      ctx.customDomain = ensured.record;
+      ctx.customDomainEnabled = true;
+    }
+  } catch (domainErr) {
+    console.warn("Custom domain attach on publish failed:", domainErr?.message || domainErr);
+    const stored = readStoredCustomDomain(ctx);
+    if (stored.hostname) {
+      ctx.customDomain = buildCustomDomainRecord(stored.hostname, null, {
+        status: "error",
+        error: domainErr?.message || "Could not attach domain",
+      });
+      ctx.customDomainEnabled = true;
+    }
+  }
+
+  ctx.publishedSettingsHash = publishSettingsHash({
+    ...project,
+    business_context: ctx,
+  });
 
     await supabase
       .from("projects")
@@ -4111,6 +5193,237 @@ app.post("/unpublish", requireUser, publishLimiter, async (req, res) => {
   }
 });
 
+/**
+ * Attach / remove a custom domain on the client's Vercel project.
+ * Body: { projectId, domain?, enabled? }
+ */
+app.post("/domain", requireUser, publishLimiter, async (req, res) => {
+  try {
+    const projectId = String(req.body.projectId || req.body.project_id || "").trim();
+    if (!projectId) return res.status(400).json({ error: "projectId required" });
+
+    const supabase = db();
+    const { data: project, error } = await supabase
+      .from("projects")
+      .select("*")
+      .eq("id", projectId)
+      .eq("user_id", req.user.id)
+      .maybeSingle();
+    if (error) throw error;
+    if (!project) return res.status(404).json({ error: "Project not found" });
+
+    const ctx =
+      project.business_context && typeof project.business_context === "object"
+        ? { ...project.business_context }
+        : {};
+    const enabled =
+      req.body.enabled === false || req.body.enabled === "false" || req.body.enabled === 0
+        ? false
+        : req.body.enabled === true ||
+          req.body.enabled === "true" ||
+          req.body.enabled === 1 ||
+          req.body.domain != null ||
+          req.body.hostname != null;
+
+    const previous = readStoredCustomDomain(ctx);
+    const requestedHost = normalizeCustomHostname(
+      req.body.domain || req.body.hostname || previous.hostname || ""
+    );
+
+    if (!enabled) {
+      if (previous.hostname && process.env.VERCEL_TOKEN) {
+        const slug = slugifyVercelSegment(ctx.vercelSlug) || buildVercelProjectSlug(project);
+        if (slug) {
+          try {
+            await vercelRemoveProjectDomain(createVercelScope("client"), slug, previous.hostname);
+          } catch (removeErr) {
+            console.warn("Custom domain remove failed:", removeErr?.message || removeErr);
+          }
+        }
+      }
+      ctx.customDomain = "";
+      ctx.customDomainEnabled = false;
+      delete ctx.customDomainError;
+      delete ctx.customDomainProvider;
+      await supabase.from("projects").update({ business_context: ctx }).eq("id", projectId);
+      return res.json({
+        ok: true,
+        enabled: false,
+        domain: null,
+        message: "Custom domain disconnected.",
+      });
+    }
+
+    if (!requestedHost || !isValidCustomHostname(requestedHost)) {
+      return res.status(400).json({ error: "Enter a valid domain like www.yourbusiness.com" });
+    }
+    if (!project.vercel_url && !ctx.vercelSlug) {
+      return res.status(400).json({ error: "Publish your site first to connect a domain." });
+    }
+    if (!process.env.VERCEL_TOKEN) {
+      return res.status(503).json({
+        error: "Custom domains require Vercel to be configured on the worker.",
+      });
+    }
+
+    const slug = slugifyVercelSegment(ctx.vercelSlug) || buildVercelProjectSlug(project);
+    if (!slug) {
+      return res.status(400).json({ error: "Publish your site first to connect a domain." });
+    }
+
+    const scope = createVercelScope("client");
+    // If switching domains, remove the previous one first.
+    if (previous.hostname && previous.hostname !== requestedHost) {
+      try {
+        await vercelRemoveProjectDomain(scope, slug, previous.hostname);
+      } catch (removeErr) {
+        console.warn("Previous custom domain remove failed:", removeErr?.message || removeErr);
+      }
+    }
+
+    const vercelDomain = await vercelAddProjectDomain(scope, slug, requestedHost);
+    const provider = String(req.body.provider || ctx.customDomainProvider || "")
+      .trim()
+      .toLowerCase();
+    const record = buildCustomDomainRecord(requestedHost, vercelDomain, {
+      provider: provider || undefined,
+    });
+    ctx.vercelSlug = slug;
+    ctx.customDomain = record;
+    ctx.customDomainEnabled = true;
+    if (provider) ctx.customDomainProvider = provider;
+
+    await supabase.from("projects").update({ business_context: ctx }).eq("id", projectId);
+
+    res.json({
+      ok: true,
+      enabled: true,
+      domain: record,
+      dns: record.dns,
+      provider: provider || null,
+      verified: record.verified,
+      message: record.verified
+        ? "Domain connected and verified."
+        : "Domain added to Vercel. Follow the DNS steps for your domain service, then check status.",
+    });
+  } catch (e) {
+    console.error("domain", e);
+    respondApiError(res, e, "Could not connect domain");
+  }
+});
+
+/** Refresh custom-domain verification status from Vercel. */
+app.get("/domain", requireUser, async (req, res) => {
+  try {
+    const projectId = String(req.query.projectId || req.query.project_id || "").trim();
+    if (!projectId) return res.status(400).json({ error: "projectId required" });
+    const shouldVerify =
+      req.query.verify === "1" || req.query.verify === "true" || req.query.verify === "yes";
+
+    const supabase = db();
+    const { data: project, error } = await supabase
+      .from("projects")
+      .select("*")
+      .eq("id", projectId)
+      .eq("user_id", req.user.id)
+      .maybeSingle();
+    if (error) throw error;
+    if (!project) return res.status(404).json({ error: "Project not found" });
+
+    const ctx =
+      project.business_context && typeof project.business_context === "object"
+        ? { ...project.business_context }
+        : {};
+    const stored = readStoredCustomDomain(ctx);
+    if (!stored.hostname) {
+      return res.json({ ok: true, enabled: false, domain: null });
+    }
+    if (!process.env.VERCEL_TOKEN) {
+      return res.json({
+        ok: true,
+        enabled: stored.enabled,
+        domain: buildCustomDomainRecord(stored.hostname, null, {
+          status: stored.status || "saved",
+          error: stored.error || "Vercel is not configured on the worker",
+        }),
+      });
+    }
+
+    const slug = slugifyVercelSegment(ctx.vercelSlug) || buildVercelProjectSlug(project);
+    const scope = createVercelScope("client");
+    let vercelDomain = slug
+      ? await vercelGetProjectDomain(scope, slug, stored.hostname)
+      : null;
+
+    if (shouldVerify && slug && vercelDomain && vercelDomain.verified !== true) {
+      try {
+        const verifiedPayload = await vercelVerifyProjectDomain(scope, slug, stored.hostname);
+        if (verifiedPayload) {
+          vercelDomain =
+            verifiedPayload.name || verifiedPayload.verified != null
+              ? verifiedPayload
+              : vercelDomain;
+          // Re-fetch canonical status after verify attempt.
+          vercelDomain =
+            (await vercelGetProjectDomain(scope, slug, stored.hostname)) || vercelDomain;
+        }
+      } catch (verifyErr) {
+        console.warn("Domain verify attempt:", verifyErr?.message || verifyErr);
+      }
+    }
+
+    const record = vercelDomain
+      ? buildCustomDomainRecord(stored.hostname, vercelDomain)
+      : buildCustomDomainRecord(stored.hostname, null, {
+          status: "missing",
+          error: "Domain is not attached on Vercel yet. Click Save Domain again.",
+        });
+
+    let diagnosis = null;
+    if (!record.verified) {
+      try {
+        diagnosis = await diagnoseCustomDomainDns(stored.hostname);
+      } catch (diagErr) {
+        console.warn("Domain DNS diagnosis failed:", diagErr?.message || diagErr);
+      }
+    }
+
+    if (diagnosis && !record.verified) {
+      record.diagnosis = diagnosis;
+      if (!diagnosis.ok && diagnosis.message) {
+        record.pendingReason = diagnosis.message;
+      } else if (diagnosis.ok) {
+        record.pendingReason = diagnosis.message;
+      }
+      // Surface Vercel TXT challenges when present.
+      if (Array.isArray(record.verification) && record.verification.length) {
+        const txt = record.verification.find((v) => String(v?.type || "").toUpperCase() === "TXT");
+        if (txt?.value) {
+          record.pendingReason =
+            (record.pendingReason ? record.pendingReason + " " : "") +
+            "Also add Vercel’s TXT verify record if shown below.";
+        }
+      }
+    }
+
+    ctx.customDomain = record;
+    ctx.customDomainEnabled = stored.enabled;
+    await supabase.from("projects").update({ business_context: ctx }).eq("id", projectId);
+    res.json({
+      ok: true,
+      enabled: stored.enabled,
+      domain: record,
+      dns: record.dns,
+      verified: record.verified,
+      diagnosis,
+      pendingReason: record.pendingReason || null,
+    });
+  } catch (e) {
+    console.error("domain status", e);
+    respondApiError(res, e, "Could not check domain");
+  }
+});
+
 app.post("/resolve-maps", requireUser, mapsLimiter, async (req, res) => {
   try {
     const rawUrl = sanitizeUserText(req.body.mapsUrl || req.body.url || "", 800);
@@ -4143,9 +5456,12 @@ app.post("/lead-finder/search", requireUser, leadFinderLimiter, async (req, res)
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 180000);
   try {
+    const headers = { "Content-Type": "application/json" };
+    const lfSecret = String(process.env.LEADFINDER_SEARCH_SECRET || "").trim();
+    if (lfSecret) headers["X-LeadFinder-Secret"] = lfSecret;
     const upstreamRes = await fetch(`${upstream}/search`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify(req.body || {}),
       signal: controller.signal,
     });
@@ -4154,7 +5470,6 @@ app.post("/lead-finder/search", requireUser, leadFinderLimiter, async (req, res)
       return res.status(upstreamRes.status).json({
         ok: false,
         error: data?.error || `LeadFinder upstream failed (${upstreamRes.status})`,
-        ...data,
       });
     }
     res.json(data);
@@ -4163,7 +5478,7 @@ app.post("/lead-finder/search", requireUser, leadFinderLimiter, async (req, res)
     console.error("LeadFinder proxy failed:", e?.message || e);
     res.status(502).json({
       ok: false,
-      error: aborted ? "Live search timed out" : e?.message || "LeadFinder proxy failed",
+      error: aborted ? "Live search timed out" : "LeadFinder proxy failed",
     });
   } finally {
     clearTimeout(timer);
@@ -4183,9 +5498,12 @@ app.post("/lead-finder/enrich-place", requireUser, leadFinderLimiter, async (req
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 120000);
   try {
+    const headers = { "Content-Type": "application/json" };
+    const lfSecret = String(process.env.LEADFINDER_SEARCH_SECRET || "").trim();
+    if (lfSecret) headers["X-LeadFinder-Secret"] = lfSecret;
     const upstreamRes = await fetch(`${upstream}/enrich-place`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify(req.body || {}),
       signal: controller.signal,
     });
@@ -4194,7 +5512,6 @@ app.post("/lead-finder/enrich-place", requireUser, leadFinderLimiter, async (req
       return res.status(upstreamRes.status).json({
         ok: false,
         error: data?.error || `LeadFinder enrich failed (${upstreamRes.status})`,
-        ...data,
       });
     }
     res.json(data);
@@ -4203,7 +5520,7 @@ app.post("/lead-finder/enrich-place", requireUser, leadFinderLimiter, async (req
     console.error("LeadFinder enrich proxy failed:", e?.message || e);
     res.status(502).json({
       ok: false,
-      error: aborted ? "Website verification timed out" : e?.message || "LeadFinder enrich proxy failed",
+      error: aborted ? "Website verification timed out" : "LeadFinder enrich proxy failed",
     });
   } finally {
     clearTimeout(timer);

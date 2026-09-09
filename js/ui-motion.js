@@ -18,6 +18,8 @@
     ".ms-fin-next:not([disabled])",
     ".ms-fin-save:not([disabled])",
     ".ms-lf-find:not([disabled])",
+    ".ms-lf-map-scan:not([disabled])",
+    ".ms-lf-map-all:not([disabled])",
     ".ms-onboard-next:not([disabled])",
     ".ms-onboard-actions .ms-btn:not([disabled])",
   ].join(",");

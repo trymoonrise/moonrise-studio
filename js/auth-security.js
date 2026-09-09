@@ -94,9 +94,32 @@
   /**
    * UX-only gate check (not cryptographic). Matches auth-gate-head.js rules.
    */
+  function rememberLoginEnabled() {
+    if (typeof global.SiteSupabase?.isRememberLoginEnabled === "function") {
+      return global.SiteSupabase.isRememberLoginEnabled();
+    }
+    try {
+      return global.localStorage.getItem("ms_auth_autosave_enabled") !== "0";
+    } catch (_) {
+      return true;
+    }
+  }
+
+  function readAuthStorageRaw() {
+    if (typeof global.SiteSupabase?.readStoredAuthRaw === "function") {
+      return global.SiteSupabase.readStoredAuthRaw();
+    }
+    try {
+      const store = rememberLoginEnabled() ? global.localStorage : global.sessionStorage;
+      return store.getItem(AUTH_STORAGE_KEY);
+    } catch (_) {
+      return null;
+    }
+  }
+
   function hasStoredSessionForGate() {
     try {
-      const raw = global.localStorage.getItem(AUTH_STORAGE_KEY);
+      const raw = readAuthStorageRaw();
       if (!raw) return false;
       const parsed = JSON.parse(raw);
       const token =

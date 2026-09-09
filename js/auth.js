@@ -216,6 +216,28 @@
       if (!session?.access_token || !session?.refresh_token) {
         throw new Error("Could not save your session. Try again.");
       }
+      // Belt-and-suspenders: ensure gate-readable storage is present before navigation.
+      try {
+        const key = global.SiteSupabase?.AUTH_STORAGE_KEY || "moonrise-studio-auth";
+        const raw = JSON.stringify({
+          access_token: session.access_token,
+          refresh_token: session.refresh_token,
+          expires_at: session.expires_at,
+          expires_in: session.expires_in,
+          token_type: session.token_type || "bearer",
+          user: session.user || null,
+        });
+        const remember =
+          typeof global.SiteSupabase?.isRememberLoginEnabled === "function"
+            ? global.SiteSupabase.isRememberLoginEnabled()
+            : true;
+        const store = remember ? global.localStorage : global.sessionStorage;
+        store.setItem(key, raw);
+        // Keep a copy in the other store briefly so auth-gate never misses a flip.
+        (remember ? global.sessionStorage : global.localStorage).setItem(key, raw);
+      } catch (_) {
+        /* ignore */
+      }
       global.MsAuthSecurity?.scrubUrlAuthFragments?.();
       return { ...(data || {}), session, user: session.user || data?.user };
     } catch (e) {

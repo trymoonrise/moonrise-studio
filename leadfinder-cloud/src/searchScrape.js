@@ -150,6 +150,8 @@ export async function scrapeBusinessSearch(options = {}) {
 
   const dryRun = Boolean(options.dryRun);
   const shouldUpload = options.upload !== false && !dryRun && cfg.useSupabase;
+  const enrichContacts =
+    options.enrich !== false && cfg.enrichMissingContacts !== false;
 
   const startedAt = Date.now();
   let browser = null;
@@ -173,6 +175,7 @@ export async function scrapeBusinessSearch(options = {}) {
     const searchCfg = {
       ...cfg,
       minSearchResults: minRows,
+      enrichMissingContacts: enrichContacts,
       noNewLeadTimeoutMs: cfg.searchNoNewLeadTimeoutMs || cfg.noNewLeadTimeoutMs,
     };
 
@@ -198,7 +201,11 @@ export async function scrapeBusinessSearch(options = {}) {
     let imported = 0;
     let skippedRows = 0;
 
-    if (leads.length) {
+    // Interactive Finder passes upload:false so we do not touch local CSV/state
+    // (Live Server / IDE watchers would hard-reload the page mid-scan).
+    const persistLocal = options.upload !== false && !dryRun;
+
+    if (persistLocal && leads.length) {
       await appendLeadsToMasterCsv(cfg.masterCsvFile, leads).catch(() => {});
     }
 

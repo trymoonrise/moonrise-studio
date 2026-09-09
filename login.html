@@ -1,18 +1,18 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login · Moonrise Studio</title>
+  <title>Login Â· Moonrise Studio</title>
   <meta name="description" content="Sign in or create a free Moonrise Studio account. Build websites for local businesses and get paid when clients go live.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css?v=20260907-signin-fix">
+  <link rel="stylesheet" href="css/studio.css?v=20260909-login-fix2">
   <link rel="stylesheet" href="css/studio-motion.css?v=20260719-perf">
   <meta name="color-scheme" content="light">
   <link rel="preconnect" href="https://erfaxgmnzdropviormpj.supabase.co" crossorigin>
-  <script defer src="js/config.js?v=20260719-seo"></script>
+  <script defer src="js/config.js?v=20260909-discord"></script>
   <script defer src="js/site-branding.js?v=20260719-seo"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -39,7 +39,7 @@
       <button type="button" class="ms-auth-tab" data-mode="signup">Sign up</button>
     </div>
 
-    <form id="auth-form" novalidate>
+    <form id="auth-form" method="post" action="#" novalidate>
       <div class="ms-field" id="handle-field" hidden>
         <label class="ms-label" for="handle">Handle</label>
         <input class="ms-input" id="handle" name="handle" placeholder="yourname" autocomplete="username">
@@ -76,7 +76,7 @@
             <li data-rule="length">At least 8 characters</li>
             <li data-rule="case">Upper &amp; lowercase letters</li>
             <li data-rule="number">At least one number</li>
-            <li data-rule="symbol">At least one symbol (!@#$…)</li>
+            <li data-rule="symbol">At least one symbol (!@#$â€¦)</li>
           </ul>
           <p class="ms-pw-hint" id="pw-hint">Use a unique password - avoid names, dates, or common words.</p>
         </div>
@@ -116,7 +116,7 @@
       </p>
       <button class="ms-btn" type="submit" id="auth-submit" style="width:100%">Sign in</button>
       <p class="ms-auth-home-wrap">
-        <a class="ms-auth-home" href="index.html">← Back to home</a>
+        <a class="ms-auth-home" href="index.html">â† Back to home</a>
       </p>
       <p class="ms-error" id="auth-error" hidden></p>
       <p class="ms-muted" id="auth-hint" style="margin-top:0.75rem;font-size:0.85rem"></p>
@@ -130,9 +130,9 @@
   <script defer src="js/ui-motion.js?v=20260720-login-fix"></script>
   <script defer src="js/toast.js"></script>
   <script defer src="js/handles.js"></script>
-  <script defer src="js/auth-security.js?v=20260909-signin"></script>
-  <script defer src="js/supabase-client.js?v=20260909-signin"></script>
-  <script defer src="js/auth.js?v=20260909-signin"></script>
+  <script defer src="js/auth-security.js?v=20260909-login3"></script>
+  <script defer src="js/supabase-client.js?v=20260909-login3"></script>
+  <script defer src="js/auth.js?v=20260909-login3"></script>
   <script defer>
     (async function () {
       window.StudioAuth?.warmAuthService?.();
@@ -235,8 +235,10 @@
       }
 
       function readAutosaveEnabled() {
-        if (typeof SiteSupabase?.isRememberLoginEnabled === "function") {
-          return SiteSupabase.isRememberLoginEnabled();
+        // Use window. â€” bare SiteSupabase throws ReferenceError if the script failed to load.
+        const sb = window.SiteSupabase;
+        if (typeof sb?.isRememberLoginEnabled === "function") {
+          return sb.isRememberLoginEnabled();
         }
         try {
           return localStorage.getItem(AUTOSAVE_ENABLED_KEY) !== "0";
@@ -246,8 +248,9 @@
       }
 
       function writeAutosaveEnabled(on) {
-        if (typeof SiteSupabase?.setRememberLoginEnabled === "function") {
-          SiteSupabase.setRememberLoginEnabled(on);
+        const sb = window.SiteSupabase;
+        if (typeof sb?.setRememberLoginEnabled === "function") {
+          sb.setRememberLoginEnabled(on);
           return;
         }
         try {
@@ -438,8 +441,8 @@
 
         submit.disabled = true;
         const idleLabel = submit.textContent;
-        if (mode === "signin") submit.textContent = "Signing in…";
-        else if (mode === "signup") submit.textContent = "Creating account…";
+        if (mode === "signin") submit.textContent = "Signing inâ€¦";
+        else if (mode === "signup") submit.textContent = "Creating accountâ€¦";
         try {
           writeAutosaveEnabled(isAutosaveEnabled());
           if (mode === "forgot") {
@@ -465,9 +468,9 @@
               await continueAfterAuth();
               return;
             }
-            hint.textContent = "Check your email for the Moonrise confirmation link — tap it to verify and sign in automatically.";
+            hint.textContent = "Check your email for the Moonrise confirmation link â€” tap it to verify and sign in automatically.";
             setMode("signin");
-            window.StudioToast?.info?.("We sent a confirmation email — check your inbox");
+            window.StudioToast?.info?.("We sent a confirmation email â€” check your inbox");
             try {
               sessionStorage.setItem(CHECK_EMAIL_FLAG, "1");
               const nextQs = new URLSearchParams();
@@ -532,7 +535,7 @@
           const sessionFromCallback = await StudioAuth.completeAuthCallbackFromUrl?.();
           if (sessionFromCallback && mode !== "recover" && mode !== "forgot") {
             cleanAuthCallbackUrl();
-            window.StudioToast?.success?.("Email verified! Signing you in…");
+            window.StudioToast?.success?.("Email verified! Signing you inâ€¦");
             await continueAfterAuth();
             return;
           }
@@ -549,7 +552,7 @@
         const sessionNow = await StudioAuth.getSession();
         if (sessionNow && emailConfirmPending && mode !== "recover" && mode !== "forgot") {
           cleanAuthCallbackUrl();
-          window.StudioToast?.success?.("Email verified! Signing you in…");
+          window.StudioToast?.success?.("Email verified! Signing you inâ€¦");
           await continueAfterAuth();
           return;
         }
@@ -563,8 +566,8 @@
           && mode === "signin"
           && sessionStorage.getItem(CHECK_EMAIL_FLAG) === "1"
         ) {
-          hint.textContent = "Check your email for the Moonrise confirmation link — tap it to verify and sign in automatically.";
-          window.StudioToast?.info?.("We sent a confirmation email — open it to continue");
+          hint.textContent = "Check your email for the Moonrise confirmation link â€” tap it to verify and sign in automatically.";
+          window.StudioToast?.info?.("We sent a confirmation email â€” open it to continue");
           sessionStorage.removeItem(CHECK_EMAIL_FLAG);
         }
         if (recoveryPending && sessionNow) setMode("recover", true);
@@ -703,7 +706,7 @@
 
         err.hidden = true;
         if (showForgot) {
-          hint.textContent = "We’ll email you a link to reset your password.";
+          hint.textContent = "Weâ€™ll email you a link to reset your password.";
         } else if (showRecover) {
           hint.textContent = "Choose a new password for your account.";
         } else {

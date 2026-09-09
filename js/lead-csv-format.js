@@ -210,18 +210,23 @@
       return { status: "has", hasWebsite: true, website, confirmed: true };
     }
 
-    const dbFlag = resolveSupabaseHasWebsiteFlag(lead);
-    if (dbFlag === false) {
-      return { status: "missing", hasWebsite: false, website: "", confirmed: true };
-    }
-    if (dbFlag === true) {
-      const rawUrl = raw(
-        lead?.website_url || lead?.websiteUrl || lead?.website || cell(lead, "website")
-      );
-      const fallback = normalizeWebsiteUrl(rawUrl);
-      if (fallback) {
-        return { status: "has", hasWebsite: true, website: fallback, confirmed: true };
+    // Live place-page enrichment overrides stale DB has_website flags (e.g. Crumbl).
+    if (lead?.websiteEnriched === true) {
+      const enrichedStatus = normalizeWebsiteStatus(lead);
+      if (enrichedStatus === "has") {
+        return { status: "has", hasWebsite: true, website: "", confirmed: true };
       }
+      if (enrichedStatus === "missing") {
+        return { status: "missing", hasWebsite: false, website: "", confirmed: true };
+      }
+    }
+
+    const dbFlag = resolveSupabaseHasWebsiteFlag(lead);
+    if (dbFlag === true) {
+      // DB says they have a site even if URL is missing — never treat as "no website".
+      return { status: "has", hasWebsite: true, website: "", confirmed: true };
+    }
+    if (dbFlag === false) {
       return { status: "missing", hasWebsite: false, website: "", confirmed: true };
     }
 
@@ -230,7 +235,7 @@
       return { status: "missing", hasWebsite: false, website: "", confirmed: true };
     }
     if (status === "has") {
-      return { status: "unknown", hasWebsite: false, website: "", confirmed: false };
+      return { status: "has", hasWebsite: true, website: "", confirmed: true };
     }
     if (status === "unknown") {
       return { status: "unknown", hasWebsite: false, website: "", confirmed: false };
@@ -261,11 +266,13 @@
   }
 
   function resolveLeadNeedsWebsiteCheck(lead) {
-    if (resolveSupabaseHasWebsiteFlag(lead) !== null) return false;
-    const classified = classifyLeadWebsite(lead);
-    if (classified.status === "has" || classified.status === "missing") return false;
+    if (resolveLeadHasWebsite(lead)) return false;
     const maps = raw(lead?.mapsUrl || lead?.maps_url);
-    return maps.startsWith("http");
+    if (!maps.startsWith("http")) return false;
+    // Already confirmed by a live place-page check this session.
+    if (lead?.websiteEnriched === true && lead?.websiteConfirmed === true) return false;
+    // Re-check stale DB "missing" / unknown when no concrete URL is on file.
+    return true;
   }
 
   function looksLikeHours(value) {

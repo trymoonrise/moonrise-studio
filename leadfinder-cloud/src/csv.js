@@ -155,8 +155,20 @@ export function leadToSupabaseRow(lead) {
     cleanText(pick(src, "collected_at", "Collected At")) || new Date().toISOString();
   row.scrape_source =
     cleanText(pick(src, "scrape_source", "Scrape Source")) || "leadfinder-cloud";
-  row.latitude = cleanText(src.latitude || "");
-  row.longitude = cleanText(src.longitude || "");
+  let latitude = cleanText(src.latitude || "");
+  let longitude = cleanText(src.longitude || "");
+  if (!latitude || !longitude) {
+    const href = String(row.maps_url || src.maps_url || src["hfpxzc href"] || "");
+    const at = href.match(/@(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/);
+    const bang = href.match(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/);
+    const m = at || bang;
+    if (m) {
+      if (!latitude) latitude = m[1];
+      if (!longitude) longitude = m[2];
+    }
+  }
+  row.latitude = latitude;
+  row.longitude = longitude;
   row.place_id = cleanText(src.place_id || "");
   row.plus_code = cleanText(src.plus_code || "");
   row.business_status = cleanText(src.business_status || "");

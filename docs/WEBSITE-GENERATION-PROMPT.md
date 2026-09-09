@@ -67,7 +67,8 @@ For every bone-structure section, the worker assigns a preset when possible.
 ## DESIGN PILLARS (every section)
 
 ### Typography
-- Lock **one display + one body** Google Fonts pairing in `<head>` (see atmosphere plan / blueprint).
+- Lock **one distinctive display + one body** Google Fonts pairing in `<head>` (see atmosphere plan / blueprint). Never Inter/Roboto/Arial as the brand voice.
+- Prefer Fraunces/DM Serif/Syne/script wordmarks + Sora/Manrope/DM Sans body.
 - Use the unified scale: `.eyebrow`, `h1` hero, `h2` section titles, body, muted captions — via shared classes, not per-section font swaps.
 - Hierarchy readable in under half a second from size/weight alone.
 - Body line length ~45–75 characters; headlines break at natural phrase boundaries.
@@ -102,10 +103,13 @@ For every bone-structure section, the worker assigns a preset when possible.
 - No delayed text reveals. Respect `prefers-reduced-motion: reduce`.
 
 ### UX writing
-- Section headings signal value in the business's voice — not generic labels like "Services" alone when a trade-specific headline works better.
-- CTA copy names the outcome: "Get a Free Quote," "Book Your Inspection," "Call Now — Same-Day Service."
-- Plain, confident tone matched to category (trades = direct/trust-building; boutique = warmer/editorial).
-- **Banned clichés:** "Welcome to," "Unlock," "Experience the difference," "In today's world," "Your one-stop shop," "We pride ourselves."
+- **Keep it simple.** Fewer words. Short lines. No brochure fluff.
+- Hero: 3–7 word headline + max ~10 word support line. No paragraph under the hero.
+- Section titles: 2–5 words. Body blurbs: one short sentence max (~12 words), or omit.
+- Service cards: short title + one short line only.
+- CTA copy names the outcome: "Get a Quote," "Book Now," "Call Now."
+- Plain, confident tone matched to category (trades = direct; boutique = warm but brief).
+- **Banned clichés / filler:** "Welcome to," "Unlock," "Experience the difference," "In today's world," "Your one-stop shop," "We pride ourselves," "Streamlined solutions," "real results," "simplify complexity," "measurable outcomes."
 - Never use em dashes in visible copy (use commas, periods, colons, or hyphens).
 
 ---
@@ -117,8 +121,8 @@ Moonrise does **not** use a fixed 12-section template for every trade. The worke
 | Creative brief section | Bone structure key | Notes |
 |---|---|---|
 | Announcement bar | `credibility` (optional) or omit | Only if a real promo/hours/seasonal notice exists in business data. Never fake promos. |
-| Header | `navigation` | Wordmark, 3–5 anchor links, one primary CTA. |
-| Hero | `hero` | Name + outcome subhead + location + primary/secondary CTA. Lead with strongest real differentiator. |
+| Header | `navigation` | Prefer floating island nav: wordmark, 3–5 anchor links, one primary CTA. |
+| Hero | `hero` | Full-bleed photo/video + brand signal + one headline + one support line + primary/secondary CTA. No chips, stats, or cards in the first viewport. |
 | Services | `services` | 3–6 scannable cards; outcome-led, not category labels alone. |
 | Trust bar | `credibility` | Real numbers only from profile data. Omit unverified stats. |
 | Gallery | `gallery` | Stock pack images when no client photos; alt text describes trade/context, not fake "our project." |
@@ -183,7 +187,7 @@ Build **every** section listed in `{{bone_structure}}`, in order, as real on-pag
 5. Add SEO meta, JSON-LD, and FAQ schema where applicable.
 6. Close with contact form + footer; deliver complete `</html>`.
 
-Quality bar: Stripe / Linear / high-end agency polish — confident whitespace, crisp hierarchy, restrained motion. Avoid default AI purple SaaS, neon gradients, clip-art, and per-section color themes.
+Quality bar: handmade boutique craft (MindWell / Angie’s energy) — full-bleed real media, distinctive type (never Inter/Roboto as brand voice), black/white or brand CTAs (~10–14px radius, not orange pills), island nav, 2–3 intentional motions. Ban flat navy heroes with no photo, AI orange pill CTAs, purple SaaS chrome, and hero chip clusters.
 
 ---
 

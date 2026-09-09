@@ -1,14 +1,14 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="js/auth-gate-head.js?v=20260721-perf"></script>
+  <script src="js/auth-gate-head.js?v=20260909-login3"></script>
   <title>Pending payouts · Moonrise Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css?v=20260719-no-admin-tag">
+  <link rel="stylesheet" href="css/studio.css?v=20260812-payouts-modal">
   <link rel="stylesheet" href="css/studio-motion.css?v=20260719-perf">
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -47,7 +47,7 @@
         </div>
       </header>
 
-      <div class="ms-clients-table-wrap">
+      <div class="ms-clients-table-wrap ms-payouts-list-wrap">
         <div class="ms-clients-table-toolbar">
           <label class="ms-clients-search-label ms-sr-only" for="ms-payouts-search">Search payouts</label>
           <div class="ms-clients-search-field">
@@ -62,23 +62,7 @@
             <button type="button" id="ms-payouts-search-clear" class="ms-clients-search-clear" hidden aria-label="Clear search">×</button>
           </div>
         </div>
-        <table class="ms-clients-table ms-payouts-table">
-          <thead>
-            <tr>
-              <th scope="col">Sold</th>
-              <th scope="col">Business</th>
-              <th scope="col">Live site</th>
-              <th scope="col">Creator</th>
-              <th scope="col">Sale</th>
-              <th scope="col">Owed (90%)</th>
-              <th scope="col">Payout method</th>
-              <th scope="col">Payout details</th>
-              <th scope="col">Contact</th>
-              <th scope="col"><span class="ms-sr-only">Actions</span></th>
-            </tr>
-          </thead>
-          <tbody id="ms-payouts-body"></tbody>
-        </table>
+        <div class="ms-payouts-list" id="ms-payouts-body" role="list"></div>
       </div>
 
       <div class="ms-clients-empty" id="ms-payouts-empty" hidden>
@@ -90,16 +74,40 @@
     </section>
   </div>
 
-  <script defer src="js/config.js?v=20260723-pending-payouts"></script>
+  <div class="ms-payouts-modal" id="ms-payouts-note-modal" hidden>
+    <div class="ms-payouts-modal-card" role="dialog" aria-modal="true" aria-labelledby="ms-payouts-note-title">
+      <header class="ms-payouts-modal-head">
+        <h2 id="ms-payouts-note-title">Mark payout as paid</h2>
+        <p class="ms-payouts-modal-lead" id="ms-payouts-note-lead">Confirm this creator payout. Add an optional note for your records.</p>
+      </header>
+      <div class="ms-payouts-modal-summary" id="ms-payouts-note-summary" aria-live="polite"></div>
+      <label class="ms-field ms-payouts-modal-field" for="ms-payouts-note-input">
+        <span class="ms-payouts-modal-label">Note <span class="ms-muted">(optional)</span></span>
+        <textarea
+          id="ms-payouts-note-input"
+          class="ms-textarea ms-payouts-modal-textarea"
+          rows="3"
+          maxlength="500"
+          placeholder="Reference number, date sent, Cash App confirmation…"
+        ></textarea>
+      </label>
+      <footer class="ms-payouts-modal-actions">
+        <button type="button" class="ms-redirect-cancel" id="ms-payouts-note-cancel">Cancel</button>
+        <button type="button" class="ms-btn ms-payouts-modal-confirm" id="ms-payouts-note-confirm">Mark paid</button>
+      </footer>
+    </div>
+  </div>
+
+  <script defer src="js/config.js?v=20260909-discord"></script>
   <script defer src="js/site-branding.js"></script>
-  <script defer src="js/supabase-client.js"></script>
-  <script defer src="js/auth.js"></script>
+  <script defer src="js/supabase-client.js?v=20260909-login3"></script>
+  <script defer src="js/auth.js?v=20260909-login3"></script>
   <script defer src="js/payout-profile.js"></script>
   <script defer src="js/segment-switch.js"></script>
   <script defer src="js/ui-motion.js?v=20260719-onb-motion"></script>
   <script defer src="js/toast.js"></script>
   <script defer src="js/income.js?v=20260718-income"></script>
-  <script defer src="js/app.js?v=20260721-perf"></script>
-  <script defer src="js/pending-payouts.js?v=20260723-pending-payouts"></script>
+  <script defer src="js/app.js?v=20260907-remember"></script>
+  <script defer src="js/pending-payouts.js?v=20260812-payouts-modal"></script>
 </body>
 </html>

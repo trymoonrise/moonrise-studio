@@ -8,13 +8,14 @@
   },
   "scripts": {
     "vercel-build": "node worker/scripts/ensure-website-presets.js",
-    "presets:link": "node worker/scripts/ensure-website-presets.js"
+    "presets:link": "node worker/scripts/ensure-website-presets.js",
+    "presets:manifest": "node \"Website Presets/scripts/generate-manifest.js\""
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
-    "express": "^4.21.2",
+    "express": "^4.22.2",
     "stripe": "^17.7.0",
     "web-push": "^3.6.7"
   }

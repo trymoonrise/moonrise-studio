@@ -273,7 +273,7 @@
         const web = String(row.website || "").trim();
         const webDisp = siteDisplay(web);
         const webHref = siteUrl(web);
-        const webCell = webDisp
+        const webLink = webDisp
           ? webHref
             ? '<a class="ms-clients-link" href="' +
               esc(webHref) +
@@ -281,12 +281,19 @@
               esc(webDisp) +
               "</a>"
             : esc(webDisp)
-          : emptyCell();
+          : "";
 
         const method = payoutMethodLabel(row.payout_method);
         const details = [row.payout_handle, row.category ? "Category: " + row.category : ""]
           .filter(Boolean)
           .join(" · ");
+        const sold = formatDateTime(row.sold_at);
+        const sale = formatMoney(row.sale_cents);
+        const owed = formatMoney(row.creator_share_cents);
+        const creator =
+          (row.creator_handle ? "@" + row.creator_handle : "") ||
+          row.creator_display_name ||
+          "";
 
         const contactParts = [];
         if (row.payout_email) {
@@ -299,49 +306,57 @@
           );
         }
         if (row.payout_phone) {
-          contactParts.push(esc(row.payout_phone));
+          contactParts.push('<span>' + esc(row.payout_phone) + "</span>");
         }
-        const contactCell = contactParts.length ? contactParts.join("<br>") : emptyCell();
 
-        const actionCell =
+        const action =
           view === "paid"
             ? row.paid_out_at
-              ? esc(formatDateTime(row.paid_out_at))
-              : emptyCell()
+              ? '<span class="ms-payouts-paid-stamp">Paid ' +
+                esc(formatDateTime(row.paid_out_at)) +
+                "</span>"
+              : ""
             : '<button type="button" class="ms-btn ms-btn-secondary ms-payouts-mark-paid" data-project-id="' +
               esc(row.project_id) +
               '">Mark paid</button>';
 
         return (
-          '<tr data-project-id="' +
+          '<article class="ms-payouts-item" role="listitem" data-project-id="' +
           esc(row.project_id) +
-          '"><td class="ms-payouts-when">' +
-          (formatDateTime(row.sold_at) ? esc(formatDateTime(row.sold_at)) : emptyCell()) +
-          '</td><th scope="row" class="ms-clients-business">' +
-          esc(row.business_name) +
-          (row.address
-            ? '<span class="ms-payouts-subline">' + esc(row.address) + "</span>"
+          '">' +
+          '<div class="ms-payouts-item-top">' +
+          '<div class="ms-payouts-item-title">' +
+          "<h3>" +
+          esc(row.business_name || "Untitled business") +
+          "</h3>" +
+          (row.address ? '<p class="ms-payouts-item-address">' + esc(row.address) + "</p>" : "") +
+          "</div>" +
+          '<div class="ms-payouts-item-owed">' +
+          '<span class="ms-payouts-item-owed-label">Owed (90%)</span>' +
+          "<strong>" +
+          esc(owed || "$0.00") +
+          "</strong>" +
+          "</div>" +
+          "</div>" +
+          '<div class="ms-payouts-item-meta">' +
+          (sold ? '<span><em>Sold</em> ' + esc(sold) + "</span>" : "") +
+          (sale ? "<span><em>Sale</em> " + esc(sale) + "</span>" : "") +
+          (creator ? "<span><em>Creator</em> " + esc(creator) + "</span>" : "") +
+          (webLink ? "<span><em>Live</em> " + webLink + "</span>" : "") +
+          "</div>" +
+          '<div class="ms-payouts-item-pay">' +
+          '<div class="ms-payouts-item-pay-copy">' +
+          (method ? '<p class="ms-payouts-item-method">' + esc(method) + "</p>" : "") +
+          (details ? '<p class="ms-payouts-item-details">' + esc(details) + "</p>" : "") +
+          (contactParts.length
+            ? '<div class="ms-payouts-item-contact">' + contactParts.join("") + "</div>"
             : "") +
-          '</th><td class="ms-clients-website-cell">' +
-          webCell +
-          '</td><td><span class="ms-clients-creator">' +
-          (row.creator_handle ? "@" + esc(row.creator_handle) : emptyCell()) +
-          (row.creator_display_name
-            ? '<span class="ms-payouts-subline">' + esc(row.creator_display_name) + "</span>"
-            : "") +
-          '</td><td class="ms-clients-price">' +
-          (formatMoney(row.sale_cents) ? esc(formatMoney(row.sale_cents)) : emptyCell()) +
-          '</td><td class="ms-payouts-owed">' +
-          esc(formatMoney(row.creator_share_cents)) +
-          '</td><td>' +
-          (method ? esc(method) : emptyCell()) +
-          '</td><td class="ms-payouts-details">' +
-          (details ? esc(details) : emptyCell()) +
-          '</td><td class="ms-payouts-contact">' +
-          contactCell +
-          '</td><td class="ms-clients-actions-cell"><div class="ms-clients-row-actions">' +
-          actionCell +
-          "</div></td></tr>"
+          "</div>" +
+          '<div class="ms-payouts-item-action">' +
+          action +
+          "</div>" +
+          "</div>" +
+          "</article>"
         );
       })
       .join("");
@@ -473,6 +488,76 @@
     }
   }
 
+  function askPaidNote(row) {
+    return new Promise((resolve) => {
+      const modal = $("ms-payouts-note-modal");
+      const input = $("ms-payouts-note-input");
+      const summary = $("ms-payouts-note-summary");
+      const cancelBtn = $("ms-payouts-note-cancel");
+      const confirmBtn = $("ms-payouts-note-confirm");
+      if (!modal || !input || !cancelBtn || !confirmBtn) {
+        resolve(null);
+        return;
+      }
+
+      const method = payoutMethodLabel(row.payout_method);
+      const creator = row.creator_handle ? "@" + row.creator_handle : row.creator_name || "—";
+      const owed = formatMoney(row.creator_share_cents) || "$0.00";
+      if (summary) {
+        summary.innerHTML =
+          '<div class="ms-payouts-modal-summary-row"><span>Business</span><strong>' +
+          esc(row.business_name || "Untitled business") +
+          "</strong></div>" +
+          '<div class="ms-payouts-modal-summary-row"><span>Creator</span><strong>' +
+          esc(creator) +
+          "</strong></div>" +
+          '<div class="ms-payouts-modal-summary-row"><span>Method</span><strong>' +
+          esc(method || "Not set") +
+          "</strong></div>" +
+          '<div class="ms-payouts-modal-summary-row"><span>Owed</span><strong class="is-owed">' +
+          esc(owed) +
+          "</strong></div>";
+      }
+
+      input.value = "";
+      modal.hidden = false;
+      modal.classList.add("is-open");
+      document.body.classList.add("ms-payouts-modal-open");
+      window.setTimeout(() => input.focus(), 30);
+
+      const finish = (value) => {
+        modal.hidden = true;
+        modal.classList.remove("is-open");
+        document.body.classList.remove("ms-payouts-modal-open");
+        modal.removeEventListener("click", onBackdrop);
+        cancelBtn.removeEventListener("click", onCancel);
+        confirmBtn.removeEventListener("click", onConfirm);
+        document.removeEventListener("keydown", onKey);
+        resolve(value);
+      };
+
+      const onCancel = () => finish(null);
+      const onConfirm = () => finish(String(input.value || "").trim());
+      const onBackdrop = (e) => {
+        if (e.target === modal) finish(null);
+      };
+      const onKey = (e) => {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          finish(null);
+        } else if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+          e.preventDefault();
+          finish(String(input.value || "").trim());
+        }
+      };
+
+      cancelBtn.addEventListener("click", onCancel);
+      confirmBtn.addEventListener("click", onConfirm);
+      modal.addEventListener("click", onBackdrop);
+      document.addEventListener("keydown", onKey);
+    });
+  }
+
   async function markPaid(projectId) {
     const row = rows.find((item) => String(item.project_id) === String(projectId));
     if (!row) return;
@@ -482,10 +567,7 @@
       return;
     }
 
-    const note = window.prompt(
-      "Optional note for this payout (reference number, date sent, etc.)",
-      ""
-    );
+    const note = await askPaidNote(row);
     if (note === null) return;
 
     const payload = {

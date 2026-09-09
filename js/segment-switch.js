@@ -39,6 +39,12 @@
       tone: "soft",
     },
     {
+      track: ".ms-lf-map-filters",
+      items: ":scope > .ms-lf-map-filter-btn",
+      activeClass: "is-active",
+      tone: "soft",
+    },
+    {
       track: ".lf-website-toggle",
       items: ":scope > .lf-toggle-btn",
       activeClass: "active",
@@ -97,30 +103,43 @@
   }
 
   function relativeBox(track, el) {
-    const width = el.offsetWidth || Math.round(el.getBoundingClientRect().width);
-    const height = el.offsetHeight || Math.round(el.getBoundingClientRect().height);
+    const trackRect = track.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    let width = el.offsetWidth || Math.round(elRect.width);
+    let height = el.offsetHeight || Math.round(elRect.height);
 
     // Prefer layout offsets - getBoundingClientRect drifts with zoom / subpixels
     // and was shifting the pill off the active segment.
     let left = 0;
     let top = 0;
     let node = el;
+    let usedFallback = false;
     while (node && node !== track) {
       left += node.offsetLeft;
       top += node.offsetTop;
       const parent = node.offsetParent;
       if (parent === track) break;
       if (!parent || !track.contains(parent)) {
-        const trackRect = track.getBoundingClientRect();
-        const elRect = el.getBoundingClientRect();
-        return {
-          left: Math.round(elRect.left - trackRect.left - track.clientLeft + track.scrollLeft),
-          top: Math.round(elRect.top - trackRect.top - track.clientTop + track.scrollTop),
-          width: Math.round(width),
-          height: Math.round(height),
-        };
+        left = Math.round(elRect.left - trackRect.left - track.clientLeft + track.scrollLeft);
+        top = Math.round(elRect.top - trackRect.top - track.clientTop + track.scrollTop);
+        width = Math.round(elRect.width);
+        height = Math.round(elRect.height);
+        usedFallback = true;
+        break;
       }
       node = parent;
+    }
+
+    // Guard against stretched/mis-measured grid children blowing up the pill.
+    const trackInnerH = Math.max(0, track.clientHeight || Math.round(trackRect.height));
+    const maxH = trackInnerH > 0 ? Math.min(trackInnerH, 64) : 64;
+    if (height > maxH || height < 8) {
+      height = Math.max(8, Math.min(maxH, Math.round(elRect.height) || maxH));
+      if (!usedFallback) {
+        left = Math.round(elRect.left - trackRect.left - track.clientLeft + track.scrollLeft);
+        top = Math.round(elRect.top - trackRect.top - track.clientTop + track.scrollTop);
+        width = Math.round(elRect.width) || width;
+      }
     }
 
     return {

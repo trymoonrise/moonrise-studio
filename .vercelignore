@@ -10,3 +10,12 @@ supabase
 **/*.webm
 **/*.mov
 Website Presets/stock
+.env
+.env.*
+**/.env
+**/.env.*
+worker/.env
+accesstokens.env
+.env.vercel.production
+**/secrets/**
+**/*credentials*
