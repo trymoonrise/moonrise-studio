@@ -91,12 +91,17 @@
       return "An account with this email already exists. Sign in instead.";
     }
     if (code === "email_rate_limited" || code === "over_email_send_rate_limit") {
-      return "Too many verification emails were sent. Wait about an hour and try again.";
+      return "Too many emails were sent. Wait a minute and try again.";
+    }
+    if (code === "reset_link_failed") {
+      return fallback || "Could not create a reset link right now. Please try again in a minute.";
     }
     if (code === "email_send_failed") {
       return (
         fallback ||
-        "Moonrise can't send confirmation emails yet. Verify trymoonrise.com in Resend (resend.com/domains), or sign up with trymoonrise@gmail.com for now."
+        "Moonrise couldn't send that email. Check spam, wait a minute, then try again — or contact " +
+          SUPPORT_EMAIL +
+          "."
       );
     }
     if (code === "signup_failed") {
@@ -202,8 +207,17 @@
         "Session"
       );
       if (error) throw error;
+      // Confirm the session actually stuck before the auth gate runs on the next page.
+      let session = data?.session || null;
+      if (!session) {
+        const again = await withTimeout(sb.auth.getSession(), 4000, "Session");
+        session = again?.data?.session || null;
+      }
+      if (!session?.access_token || !session?.refresh_token) {
+        throw new Error("Could not save your session. Try again.");
+      }
       global.MsAuthSecurity?.scrubUrlAuthFragments?.();
-      return data;
+      return { ...(data || {}), session, user: session.user || data?.user };
     } catch (e) {
       throw authError({
         error: friendlyAuthMessage(e, "Could not save your session. Try again."),
@@ -378,7 +392,7 @@
       /* still clear local session best-effort */
     }
     try {
-      global.localStorage.removeItem("moonrise-studio-auth");
+      global.SiteSupabase?.clearPersistedAuth?.();
     } catch (_) {
       /* ignore */
     }

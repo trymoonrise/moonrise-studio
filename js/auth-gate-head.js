@@ -36,26 +36,44 @@
     location.replace("login.html?next=" + next);
   }
 
-  function hasStoredSession() {
+  function rememberLoginEnabled() {
     try {
-      var raw = localStorage.getItem("moonrise-studio-auth");
-      if (!raw) return false;
-      var parsed = JSON.parse(raw);
-      var token =
-        parsed?.access_token ||
-        parsed?.session?.access_token ||
-        parsed?.currentSession?.access_token;
-      var refresh =
-        parsed?.refresh_token ||
-        parsed?.session?.refresh_token ||
-        parsed?.currentSession?.refresh_token;
-      if (!token || !refresh) return false;
-      var exp =
-        parsed?.expires_at ||
-        parsed?.session?.expires_at ||
-        parsed?.currentSession?.expires_at;
-      if (exp && Number(exp) * 1000 < Date.now() - 60000) return false;
+      return localStorage.getItem("ms_auth_autosave_enabled") !== "0";
+    } catch (_) {
       return true;
+    }
+  }
+
+  function hasStoredSession() {
+    function tokenFromRaw(raw) {
+      if (!raw) return false;
+      try {
+        var parsed = JSON.parse(raw);
+        var token =
+          parsed?.access_token ||
+          parsed?.session?.access_token ||
+          parsed?.currentSession?.access_token ||
+          parsed?.user?.access_token;
+        var refresh =
+          parsed?.refresh_token ||
+          parsed?.session?.refresh_token ||
+          parsed?.currentSession?.refresh_token;
+        if (!token || !refresh) return false;
+        var exp =
+          parsed?.expires_at ||
+          parsed?.session?.expires_at ||
+          parsed?.currentSession?.expires_at;
+        if (exp && Number(exp) * 1000 < Date.now() - 60000) return false;
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+    try {
+      // Check both stores — Auto save can flip between login and the next page.
+      if (tokenFromRaw(localStorage.getItem("moonrise-studio-auth"))) return true;
+      if (tokenFromRaw(sessionStorage.getItem("moonrise-studio-auth"))) return true;
+      return false;
     } catch (_) {
       return false;
     }

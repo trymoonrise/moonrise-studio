@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css?v=20260720-login-fix">
+  <link rel="stylesheet" href="css/studio.css?v=20260907-signin-fix">
   <link rel="stylesheet" href="css/studio-motion.css?v=20260719-perf">
   <meta name="color-scheme" content="light">
   <link rel="preconnect" href="https://erfaxgmnzdropviormpj.supabase.co" crossorigin>
@@ -39,7 +39,7 @@
       <button type="button" class="ms-auth-tab" data-mode="signup">Sign up</button>
     </div>
 
-    <form id="auth-form">
+    <form id="auth-form" novalidate>
       <div class="ms-field" id="handle-field" hidden>
         <label class="ms-label" for="handle">Handle</label>
         <input class="ms-input" id="handle" name="handle" placeholder="yourname" autocomplete="username">
@@ -56,8 +56,9 @@
             type="button"
             class="ms-auth-pw-reveal"
             id="password-reveal"
-            aria-label="Hold to view password"
-            title="Hold to view password"
+            aria-label="Show password"
+            title="Show password"
+            aria-pressed="false"
           >
             <svg class="ms-auth-pw-reveal-icon is-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
             <svg class="ms-auth-pw-reveal-icon is-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
@@ -88,8 +89,9 @@
             type="button"
             class="ms-auth-pw-reveal"
             id="password-confirm-reveal"
-            aria-label="Hold to view password"
-            title="Hold to view password"
+            aria-label="Show password"
+            title="Show password"
+            aria-pressed="false"
           >
             <svg class="ms-auth-pw-reveal-icon is-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
             <svg class="ms-auth-pw-reveal-icon is-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
@@ -99,10 +101,10 @@
       <div class="ms-auth-autosave" id="autosave-wrap">
         <div class="ms-auth-autosave-copy">
           <span class="ms-auth-autosave-title">Auto save</span>
-          <span class="ms-auth-autosave-hint">Remember email on this device</span>
+          <span class="ms-auth-autosave-hint">Stay signed in on this device</span>
         </div>
-        <label class="ms-switch" title="Auto save email on this device">
-          <input type="checkbox" id="auth-autosave" role="switch" aria-checked="false" aria-label="Auto save email on this device">
+        <label class="ms-switch" title="Stay signed in on this device">
+          <input type="checkbox" id="auth-autosave" role="switch" aria-checked="true" aria-label="Stay signed in on this device" checked>
           <span class="ms-switch-track" aria-hidden="true"></span>
         </label>
       </div>
@@ -128,9 +130,9 @@
   <script defer src="js/ui-motion.js?v=20260720-login-fix"></script>
   <script defer src="js/toast.js"></script>
   <script defer src="js/handles.js"></script>
-  <script defer src="js/auth-security.js?v=20260721-sec"></script>
-  <script defer src="js/supabase-client.js?v=20260719-email-auto-login"></script>
-  <script defer src="js/auth.js?v=20260719-signin-simple"></script>
+  <script defer src="js/auth-security.js?v=20260909-signin"></script>
+  <script defer src="js/supabase-client.js?v=20260909-signin"></script>
+  <script defer src="js/auth.js?v=20260909-signin"></script>
   <script defer>
     (async function () {
       window.StudioAuth?.warmAuthService?.();
@@ -155,6 +157,12 @@
           sessionStorage.setItem("ms_prompt_install_after_login", "1");
         } catch (_) {
           /* ignore */
+        }
+        // Wait until the session is readable so auth-gate-head does not bounce us back.
+        await waitForAuthSession(20);
+        const sessionReady = await StudioAuth.getSession?.();
+        if (!sessionReady) {
+          throw new Error("Signed in, but the session did not stick. Refresh and try again.");
         }
         window.StudioAuth.setFinanceOnboardingSoftSkip?.(false);
         const destination = await StudioAuth.studioOnboardingRedirect(nextUrl);
@@ -227,14 +235,21 @@
       }
 
       function readAutosaveEnabled() {
+        if (typeof SiteSupabase?.isRememberLoginEnabled === "function") {
+          return SiteSupabase.isRememberLoginEnabled();
+        }
         try {
-          return localStorage.getItem(AUTOSAVE_ENABLED_KEY) === "1";
+          return localStorage.getItem(AUTOSAVE_ENABLED_KEY) !== "0";
         } catch (_) {
-          return false;
+          return true;
         }
       }
 
       function writeAutosaveEnabled(on) {
+        if (typeof SiteSupabase?.setRememberLoginEnabled === "function") {
+          SiteSupabase.setRememberLoginEnabled(on);
+          return;
+        }
         try {
           localStorage.setItem(AUTOSAVE_ENABLED_KEY, on ? "1" : "0");
         } catch (_) {
@@ -301,50 +316,30 @@
       emailInput?.addEventListener("input", scheduleAutosave);
       handleInput?.addEventListener("input", scheduleAutosave);
 
-      function bindHoldToRevealPassword(input, button) {
+      function bindTogglePassword(input, button) {
         if (!input || !button) return;
         const eye = button.querySelector(".is-eye");
         const eyeOff = button.querySelector(".is-eye-off");
 
         function setVisible(visible) {
           input.type = visible ? "text" : "password";
-          button.classList.toggle("is-holding", visible);
+          button.classList.toggle("is-visible", visible);
           button.setAttribute("aria-pressed", visible ? "true" : "false");
+          button.setAttribute("aria-label", visible ? "Hide password" : "Show password");
+          button.title = visible ? "Hide password" : "Show password";
           if (eye) eye.hidden = !!visible;
           if (eyeOff) eyeOff.hidden = !visible;
         }
 
-        function show(event) {
-          event.preventDefault();
-          setVisible(true);
-        }
-
-        function hide() {
-          setVisible(false);
-        }
-
-        button.addEventListener("pointerdown", (event) => {
-          if (event.button != null && event.button !== 0) return;
-          try {
-            button.setPointerCapture(event.pointerId);
-          } catch (_) {
-            /* ignore */
-          }
-          show(event);
-        });
-        button.addEventListener("pointerup", hide);
-        button.addEventListener("pointercancel", hide);
-        button.addEventListener("lostpointercapture", hide);
-        // Prevent click from toggling / focusing oddly after a hold.
         button.addEventListener("click", (event) => {
           event.preventDefault();
+          setVisible(input.type === "password");
         });
-        window.addEventListener("blur", hide);
         setVisible(false);
       }
 
-      bindHoldToRevealPassword(passwordInput, document.getElementById("password-reveal"));
-      bindHoldToRevealPassword(passwordConfirm, document.getElementById("password-confirm-reveal"));
+      bindTogglePassword(passwordInput, document.getElementById("password-reveal"));
+      bindTogglePassword(passwordConfirm, document.getElementById("password-confirm-reveal"));
 
       function showAuthError(errOrMsg) {
         if (errOrMsg === "" || errOrMsg == null) {
@@ -364,8 +359,8 @@
         }
         const friendly =
           window.StudioAuth?.friendlyNetworkMessage?.({ message: text }, text) || text;
-        err.hidden = true;
-        err.textContent = "";
+        err.hidden = !friendly;
+        err.textContent = friendly || "";
         if (friendly) window.StudioToast?.error?.(friendly);
       }
 
@@ -412,6 +407,19 @@
         if (mode !== "forgot" && mode !== "signin") hint.textContent = "";
         if (mode === "signin") clearSignupEmailPrompt();
 
+        const email = String(form.email?.value || "").trim();
+        const password = String(passwordInput?.value || "");
+        if (mode !== "recover" && !email) {
+          showAuthError("Enter your email");
+          form.email?.focus();
+          return;
+        }
+        if (mode !== "forgot" && mode !== "recover" && !password) {
+          showAuthError("Enter your password");
+          passwordInput?.focus();
+          return;
+        }
+
         if (mode === "signup" || mode === "recover") {
           const strength = updatePasswordMeter();
           if (!strength.ok) {
@@ -429,9 +437,13 @@
         }
 
         submit.disabled = true;
+        const idleLabel = submit.textContent;
+        if (mode === "signin") submit.textContent = "Signing in…";
+        else if (mode === "signup") submit.textContent = "Creating account…";
         try {
+          writeAutosaveEnabled(isAutosaveEnabled());
           if (mode === "forgot") {
-            await StudioAuth.requestPasswordReset(form.email.value);
+            await StudioAuth.requestPasswordReset(email);
             sessionStorage.setItem("ms_pw_recovery", "1");
             hint.textContent = "Check your email for a reset link. You can close this tab.";
             window.StudioToast?.success?.("Reset link sent");
@@ -444,8 +456,8 @@
             return;
           } else if (mode === "signup") {
             const data = await StudioAuth.signUp(
-              form.email.value,
-              form.password.value,
+              email,
+              password,
               form.handle.value
             );
             persistAutosavedFields();
@@ -466,7 +478,10 @@
               /* ignore */
             }
           } else {
-            await StudioAuth.signIn(form.email.value, form.password.value);
+            if (!window.StudioAuth?.signIn) {
+              throw new Error("Sign-in is still loading. Refresh and try again.");
+            }
+            await StudioAuth.signIn(email, password);
             persistAutosavedFields();
             await continueAfterAuth();
           }
@@ -489,6 +504,10 @@
           }
         } finally {
           submit.disabled = false;
+          if (mode === "forgot") submit.textContent = "Send reset link";
+          else if (mode === "recover") submit.textContent = "Set new password";
+          else if (mode === "signup") submit.textContent = "Create account";
+          else submit.textContent = idleLabel || "Sign in";
         }
       });
 
@@ -663,10 +682,16 @@
         setOpen(passwordConfirmField, showConfirm, instant);
         setOpen(pwMeter, showMeter, instant);
 
+        if (handleInput) {
+          handleInput.disabled = !showSignup;
+          handleInput.required = showSignup;
+        }
         emailInput.required = !showRecover;
         emailInput.closest(".ms-field").hidden = showRecover;
         passwordInput.required = showPassword;
+        passwordInput.disabled = !showPassword;
         passwordConfirm.required = showConfirm;
+        passwordConfirm.disabled = !showConfirm;
         passwordInput.minLength = showSignup || showRecover ? 8 : 6;
         passwordInput.autocomplete =
           showSignup || showRecover ? "new-password" : "current-password";
