@@ -28,6 +28,8 @@
   const AREA_LOCATION_LABEL = "Using your location";
   const DISPLAY_PAGE = MAP_UI ? 40 : 100;
   const MAP_MARKER_LIMIT = 120;
+  let resultsEmptyHint = "";
+  let scrapeViaLeadFinderGate = Promise.resolve();
   const LOADING_CARD_COUNT = MAP_UI ? 2 : 6;
   const MIN_SEARCH_RESULTS = MAP_UI ? 18 : 50;
   const MAP_DEFAULT = { lat: 34.05, lng: -118.25, zoom: 8 };
@@ -1376,9 +1378,53 @@
   }
 
   /**
-   * Ask local LeadFinderCloud (search:server) to scrape Maps for type + location.
+   * Live Maps scrape via LeadFinder (local :8790 or worker /lead-finder → Render).
+   * Serializes requests and waits out upstream busy locks instead of failing empty.
    */
   async function scrapeViaLeadFinder(type, location, query, geo) {
+    const run = () => scrapeViaLeadFinderUnlocked(type, location, query, geo);
+    const next = scrapeViaLeadFinderGate.then(run, run);
+    scrapeViaLeadFinderGate = next.then(
+      () => undefined,
+      () => undefined
+    );
+    return next;
+  }
+
+  async function waitForLeadFinderIdle(base, headers, maxWaitMs) {
+    const deadline = Date.now() + Math.max(8_000, Number(maxWaitMs) || 170_000);
+    let attempt = 0;
+    while (Date.now() < deadline) {
+      attempt += 1;
+      try {
+        const healthHeaders = {};
+        if (headers?.Authorization) healthHeaders.Authorization = headers.Authorization;
+        if (headers?.["X-LeadFinder-Secret"]) {
+          healthHeaders["X-LeadFinder-Secret"] = headers["X-LeadFinder-Secret"];
+        }
+        const res = await fetch(base + "/health", {
+          method: "GET",
+          headers: healthHeaders,
+          cache: "no-store",
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data && data.busy === false) return true;
+        const waited = Number(data?.busyForMs) || 0;
+        setStatus(
+          waited > 0
+            ? "Maps scanner busy — waiting for the current scan to finish…"
+            : "Maps scanner busy — waiting…"
+        );
+      } catch (_) {
+        setStatus("Maps scanner busy — retrying…");
+      }
+      const delay = Math.min(12_000, 3_500 + attempt * 500);
+      await new Promise((r) => setTimeout(r, delay));
+    }
+    return false;
+  }
+
+  async function scrapeViaLeadFinderUnlocked(type, location, query, geo) {
     const candidates =
       typeof window.leadFinderUrlCandidates === "function"
         ? window.leadFinderUrlCandidates()
@@ -1427,29 +1473,42 @@
         if (isWorkerLeadFinderBase(base) && !headers.Authorization) {
           return { ok: false, skipped: true, reason: "sign_in_required" };
         }
-        const res = await fetch(base + "/search", {
+        let res = await fetch(base + "/search", {
           method: "POST",
           headers,
           body: JSON.stringify(body),
           signal: controller?.signal,
         });
-        const data = await res.json().catch(() => ({}));
+        let data = await res.json().catch(() => ({}));
         if (res.status === 409) {
-          const retryAfter = Math.min(
-            60_000,
-            Math.max(4_000, Number(data?.retryAfterMs) || 8_000)
-          );
           lastError =
             data?.error ||
             "A Maps scan is already running. Wait a moment, then try again.";
-          // One automatic retry — covers a scrape that just finished or a stale lock.
-          if (!body._retried409) {
-            await new Promise((r) => setTimeout(r, retryAfter));
-            body._retried409 = true;
-            i -= 1;
-            continue;
+          setStatus("Maps scanner busy — waiting for the current scan to finish…");
+          const idle = await waitForLeadFinderIdle(base, headers, 170000);
+          if (!idle) {
+            return {
+              ok: false,
+              error:
+                "Maps scanner is still busy. Wait about a minute, then try Near me again.",
+            };
           }
-          return { ok: false, error: lastError };
+          setStatus(MAP_UI ? "Scanning Google Maps near you…" : "Scanning Google Maps…");
+          res = await fetch(base + "/search", {
+            method: "POST",
+            headers,
+            body: JSON.stringify(body),
+            signal: controller?.signal,
+          });
+          data = await res.json().catch(() => ({}));
+          if (res.status === 409) {
+            return {
+              ok: false,
+              error:
+                data?.error ||
+                "A Maps scan is already running. Try again in a moment.",
+            };
+          }
         }
         if (!res.ok || !data?.ok) {
           lastError = data?.error || "LeadFinder scrape failed (" + res.status + ")";
@@ -1490,6 +1549,7 @@
           : lastError || "LeadFinder scrape failed",
     };
   }
+
 
   async function scrapeAuthHeadersForBase(base) {
     const headers = { "Content-Type": "application/json" };
@@ -2887,15 +2947,18 @@
     void refreshListCount(visible.length);
 
     if (!visible.length) {
-      const nearbyEmpty =
-        inMyArea &&
-        "No businesses found within 5 miles. Try a specific category (e.g. Plumber, Barbershop) or turn off Near me.";
+      const nearbyEmpty = inMyArea
+        ? resultsEmptyHint ||
+          ("No businesses found within " +
+            NEARBY_RADIUS_MILES +
+            " miles. Try a specific category (e.g. Plumber, Barbershop) or turn off Near me.")
+        : "";
       resultsEl.innerHTML =
         '<div class="ms-dash-empty">' +
         (listView === "saved"
           ? "No Quick Save businesses yet. Heart a lead on Available to keep it here."
           : nearbyEmpty
-            ? nearbyEmpty
+            ? escapeHtml(nearbyEmpty)
             : leadsReady
               ? 'No leads match "' + escapeHtml(query) + '". Try another type or city.'
               : "No leads loaded yet. Refresh the page or check your connection.") +
@@ -3076,6 +3139,7 @@
     let leads = [];
     let remoteError = "";
     let scrapedFresh = false;
+    resultsEmptyHint = "";
 
     function mergeById(base, extra) {
       const byId = new Map();
@@ -3185,15 +3249,17 @@
 
       if (!leads.length) {
         if (remoteError) {
+          resultsEmptyHint = remoteError;
           setError(remoteError);
         } else {
-          setError(
+          resultsEmptyHint =
             "No businesses found within " +
-              NEARBY_RADIUS_MILES +
-              " miles. Try All for statewide results."
-          );
+            NEARBY_RADIUS_MILES +
+            " miles. Try a specific category (e.g. Plumber, Barbershop) or turn off Near me.";
+          setError(resultsEmptyHint);
         }
       } else {
+        resultsEmptyHint = "";
         setStatus("");
         setError("");
       }

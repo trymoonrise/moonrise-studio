@@ -1244,7 +1244,7 @@ const mapsLimiter = rateLimit({
 });
 const leadFinderLimiter = rateLimit({
   windowMs: 10 * 60 * 1000,
-  max: 6,
+  max: 24,
   name: "lead-finder",
   keyFn: (req) => "lf:" + (req.user?.id || clientIp(req)),
 });
@@ -5443,9 +5443,61 @@ app.post("/resolve-maps", requireUser, mapsLimiter, async (req, res) => {
   }
 });
 
+function leadFinderUpstreamBase() {
+  return String(process.env.LEADFINDER_SEARCH_URL || "").trim().replace(/\/$/, "");
+}
+
+function leadFinderUpstreamHeaders(extra) {
+  const headers = { ...(extra || {}) };
+  const lfSecret = String(process.env.LEADFINDER_SEARCH_SECRET || "").trim();
+  if (lfSecret) headers["X-LeadFinder-Secret"] = lfSecret;
+  return headers;
+}
+
+/** Busy-lock / readiness probe for the Playwright search service. */
+app.get("/lead-finder/health", requireUser, async (req, res) => {
+  const upstream = leadFinderUpstreamBase();
+  if (!upstream) {
+    return res.status(503).json({
+      ok: false,
+      busy: true,
+      error: "Live Maps search is not available right now.",
+    });
+  }
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 12000);
+  try {
+    const upstreamRes = await fetch(`${upstream}/health`, {
+      method: "GET",
+      headers: leadFinderUpstreamHeaders(),
+      signal: controller.signal,
+    });
+    const data = await upstreamRes.json().catch(() => ({}));
+    return res.status(upstreamRes.ok ? 200 : upstreamRes.status).json({
+      ok: upstreamRes.ok && data?.ok !== false,
+      busy: Boolean(data?.busy),
+      enrichBusy: Boolean(data?.enrichBusy),
+      busyForMs: Number(data?.busyForMs) || 0,
+      enrichBusyForMs: Number(data?.enrichBusyForMs) || 0,
+      busyMaxMs: Number(data?.busyMaxMs) || 180000,
+      service: data?.service || "leadfinder-cloud-search",
+    });
+  } catch (e) {
+    const aborted = e?.name === "AbortError";
+    console.error("LeadFinder health proxy failed:", e?.message || e);
+    return res.status(502).json({
+      ok: false,
+      busy: true,
+      error: aborted ? "LeadFinder health timed out" : "LeadFinder health proxy failed",
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+});
+
 /** Proxy on-demand Maps scrapes to LeadFinderCloud search:server (Playwright on Render). */
 app.post("/lead-finder/search", requireUser, leadFinderLimiter, async (req, res) => {
-  const upstream = String(process.env.LEADFINDER_SEARCH_URL || "").trim().replace(/\/$/, "");
+  const upstream = leadFinderUpstreamBase();
   if (!upstream) {
     return res.status(503).json({
       ok: false,
@@ -5456,12 +5508,9 @@ app.post("/lead-finder/search", requireUser, leadFinderLimiter, async (req, res)
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 180000);
   try {
-    const headers = { "Content-Type": "application/json" };
-    const lfSecret = String(process.env.LEADFINDER_SEARCH_SECRET || "").trim();
-    if (lfSecret) headers["X-LeadFinder-Secret"] = lfSecret;
     const upstreamRes = await fetch(`${upstream}/search`, {
       method: "POST",
-      headers,
+      headers: leadFinderUpstreamHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify(req.body || {}),
       signal: controller.signal,
     });
@@ -5470,6 +5519,8 @@ app.post("/lead-finder/search", requireUser, leadFinderLimiter, async (req, res)
       return res.status(upstreamRes.status).json({
         ok: false,
         error: data?.error || `LeadFinder upstream failed (${upstreamRes.status})`,
+        busyForMs: data?.busyForMs,
+        retryAfterMs: data?.retryAfterMs,
       });
     }
     res.json(data);
