@@ -1473,6 +1473,34 @@
         if (isWorkerLeadFinderBase(base) && !headers.Authorization) {
           return { ok: false, skipped: true, reason: "sign_in_required" };
         }
+        // Prefer waiting before the first POST so a busy scanner doesn't spam 409s.
+        // When the upstream uses queue mode, POST immediately and let it wait server-side.
+        try {
+          const pre = await fetch(base + "/health", {
+            method: "GET",
+            headers: headers.Authorization
+              ? { Authorization: headers.Authorization }
+              : {},
+            cache: "no-store",
+          });
+          const preData = await pre.json().catch(() => ({}));
+          if (pre.ok && preData?.busy === true && preData?.queueMode !== true) {
+            setStatus("Maps scanner busy — waiting for the current scan to finish…");
+            const idle = await waitForLeadFinderIdle(base, headers, 170000);
+            if (!idle) {
+              return {
+                ok: false,
+                error:
+                  "Maps scanner is still busy. Wait about a minute, then try Near me again.",
+              };
+            }
+            setStatus(MAP_UI ? "Scanning Google Maps near you…" : "Scanning Google Maps…");
+          } else if (pre.ok && preData?.busy === true && preData?.queueMode === true) {
+            setStatus("Maps scanner busy — your scan is queued…");
+          }
+        } catch (_) {
+          /* health optional — search still attempted */
+        }
         let res = await fetch(base + "/search", {
           method: "POST",
           headers,

@@ -7,6 +7,9 @@
  *
  * Binds 127.0.0.1 by default. Set LEADFINDER_SEARCH_HOST=0.0.0.0 only if needed,
  * and set LEADFINDER_SEARCH_SECRET when exposing beyond localhost.
+ *
+ * Concurrent searches/enrichments wait in a single queue (no 409) so Near Me
+ * recovers when another scrape is already running.
  */
 import http from "node:http";
 import process from "node:process";
@@ -25,56 +28,80 @@ const HOST = String(
 );
 const SEARCH_SECRET = String(process.env.LEADFINDER_SEARCH_SECRET || "").trim();
 
-let busy = false;
-let enrichBusy = false;
-let busySince = 0;
-let enrichBusySince = 0;
-
-/** Client aborts around 180s — never leave the lock stuck longer than this. */
+/** Client aborts around 180s — never leave a lock stuck longer than this. */
 const BUSY_MAX_MS = Math.max(
   60_000,
   Number(process.env.LEADFINDER_BUSY_MAX_MS || 3 * 60_000) || 180_000,
 );
 
-function clearStaleBusy(kind) {
-  const now = Date.now();
-  if (kind === "enrich") {
-    if (enrichBusy && enrichBusySince && now - enrichBusySince > BUSY_MAX_MS) {
-      console.warn(
-        `Enrich busy lock stale (${Math.round((now - enrichBusySince) / 1000)}s) — clearing`,
-      );
-      enrichBusy = false;
-      enrichBusySince = 0;
-      return true;
-    }
-    return false;
-  }
-  if (busy && busySince && now - busySince > BUSY_MAX_MS) {
-    console.warn(`Search busy lock stale (${Math.round((now - busySince) / 1000)}s) — clearing`);
-    busy = false;
-    busySince = 0;
+/** Max time a queued request waits for the Playwright lock. */
+const QUEUE_WAIT_MAX_MS = Math.max(
+  30_000,
+  Number(process.env.LEADFINDER_QUEUE_WAIT_MAX_MS || 170_000) || 170_000,
+);
+
+let playwrightBusy = false;
+let playwrightBusySince = 0;
+let playwrightBusyKind = "";
+let queueTail = Promise.resolve();
+let queueDepth = 0;
+
+function setPlaywrightBusy(on, kind) {
+  playwrightBusy = !!on;
+  playwrightBusySince = on ? Date.now() : 0;
+  playwrightBusyKind = on ? String(kind || "playwright") : "";
+}
+
+function clearStalePlaywrightBusy() {
+  if (
+    playwrightBusy &&
+    playwrightBusySince &&
+    Date.now() - playwrightBusySince > BUSY_MAX_MS
+  ) {
+    console.warn(
+      `Playwright lock stale (${Math.round((Date.now() - playwrightBusySince) / 1000)}s, kind=${playwrightBusyKind}) — clearing`,
+    );
+    setPlaywrightBusy(false);
     return true;
   }
   return false;
 }
 
-function setBusy(on) {
-  busy = !!on;
-  busySince = on ? Date.now() : 0;
-}
-
-function setEnrichBusy(on) {
-  enrichBusy = !!on;
-  enrichBusySince = on ? Date.now() : 0;
+/**
+ * Serialize all Playwright work. Waiters stay connected instead of getting 409.
+ */
+function withPlaywrightLock(kind, work, opts = {}) {
+  const maxWaitMs = Math.max(5_000, Number(opts.maxWaitMs) || QUEUE_WAIT_MAX_MS);
+  const enqueuedAt = Date.now();
+  queueDepth += 1;
+  const run = queueTail.then(async () => {
+    queueDepth = Math.max(0, queueDepth - 1);
+    clearStalePlaywrightBusy();
+    const waited = Date.now() - enqueuedAt;
+    if (waited > maxWaitMs) {
+      const err = new Error(
+        "Maps scanner is busy. Wait a moment, then try again.",
+      );
+      err.code = "queue_timeout";
+      err.waitedMs = waited;
+      throw err;
+    }
+    setPlaywrightBusy(true, kind);
+    try {
+      return await work();
+    } finally {
+      setPlaywrightBusy(false);
+    }
+  });
+  queueTail = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  return run;
 }
 
 function corsHeaders(req) {
   const origin = String(req?.headers?.origin || "").trim();
-  const allow =
-    !origin ||
-    /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/i.test(origin) ||
-    /^https?:\/\/(192\.168\.|10\.|172\.(1[6-9]|2\d|3\[0-1])\.)/i.test(origin) ||
-    /(?:^|\.)trymoonrise\.com$/i.test(new URL(origin || "http://local").hostname || "");
   let allowOrigin = "*";
   if (origin) {
     try {
@@ -144,23 +171,6 @@ function readJson(req) {
 }
 
 async function handleEnrichPlace(req, res) {
-  clearStaleBusy("enrich");
-  if (enrichBusy) {
-    const waited = enrichBusySince ? Date.now() - enrichBusySince : 0;
-    sendJson(
-      res,
-      409,
-      {
-        ok: false,
-        error: "A place enrichment is already running. Try again in a moment.",
-        busyForMs: waited,
-        retryAfterMs: Math.max(5_000, BUSY_MAX_MS - waited),
-      },
-      req,
-    );
-    return;
-  }
-
   let body = {};
   try {
     body = await readJson(req);
@@ -181,53 +191,39 @@ async function handleEnrichPlace(req, res) {
     return;
   }
 
-  setEnrichBusy(true);
-  console.log(`Enrich place start · ${businessName || mapsUrl.slice(0, 80)}`);
+  console.log(`Enrich place queued · ${businessName || mapsUrl.slice(0, 80)} · depth=${queueDepth}`);
   try {
-    const result = await enrichMapsPlace({
-      mapsUrl,
-      businessName,
-      upload: body.upload !== false,
-      cfg: config(),
+    const result = await withPlaywrightLock("enrich", async () => {
+      console.log(`Enrich place start · ${businessName || mapsUrl.slice(0, 80)}`);
+      const out = await enrichMapsPlace({
+        mapsUrl,
+        businessName,
+        upload: body.upload !== false,
+        cfg: config(),
+      });
+      console.log(
+        `Enrich place done · website=${out.websiteUrl || "(none)"} · status=${out.websiteStatus} · ${out.durationMs}ms`,
+      );
+      return out;
     });
-    console.log(
-      `Enrich place done · website=${result.websiteUrl || "(none)"} · status=${result.websiteStatus} · ${result.durationMs}ms`,
-    );
     sendJson(res, 200, result, req);
   } catch (error) {
+    const status = error?.code === "queue_timeout" ? 503 : 500;
     console.error("Enrich place failed:", error.message || error);
     sendJson(
       res,
-      500,
+      status,
       {
         ok: false,
         error: error.message || String(error),
+        code: error?.code || undefined,
       },
       req,
     );
-  } finally {
-    setEnrichBusy(false);
   }
 }
 
 async function handleSearch(req, res) {
-  clearStaleBusy("search");
-  if (busy) {
-    const waited = busySince ? Date.now() - busySince : 0;
-    sendJson(
-      res,
-      409,
-      {
-        ok: false,
-        error: "A scrape is already running. Try again in a moment.",
-        busyForMs: waited,
-        retryAfterMs: Math.max(5_000, BUSY_MAX_MS - waited),
-      },
-      req,
-    );
-    return;
-  }
-
   let body = {};
   try {
     body = await readJson(req);
@@ -257,28 +253,35 @@ async function handleSearch(req, res) {
     return;
   }
 
-  setBusy(true);
   console.log(
-    `Search scrape start · type="${type}" location="${location}" query="${query}"` +
-      (hasGeo ? ` geo=${latitude},${longitude} r=${radiusMiles}mi` : ""),
+    `Search scrape queued · type="${type}" location="${location}" query="${query}"` +
+      (hasGeo ? ` geo=${latitude},${longitude} r=${radiusMiles}mi` : "") +
+      ` · depth=${queueDepth}`,
   );
   try {
-    const result = await scrapeBusinessSearch({
-      type,
-      location,
-      query,
-      latitude: hasGeo ? latitude : undefined,
-      longitude: hasGeo ? longitude : undefined,
-      radiusMiles: hasGeo ? radiusMiles : undefined,
-      minRows: Math.max(1, Number(body.minResults) || 50),
-      upload: body.upload !== false,
-      dryRun: Boolean(body.dryRun),
-      enrich: body.enrich !== false && body.fast !== true,
-      cfg: config(),
+    const result = await withPlaywrightLock("search", async () => {
+      console.log(
+        `Search scrape start · type="${type}" location="${location}" query="${query}"` +
+          (hasGeo ? ` geo=${latitude},${longitude} r=${radiusMiles}mi` : ""),
+      );
+      const out = await scrapeBusinessSearch({
+        type,
+        location,
+        query,
+        latitude: hasGeo ? latitude : undefined,
+        longitude: hasGeo ? longitude : undefined,
+        radiusMiles: hasGeo ? radiusMiles : undefined,
+        minRows: Math.max(1, Number(body.minResults) || 50),
+        upload: body.upload !== false,
+        dryRun: Boolean(body.dryRun),
+        enrich: body.enrich !== false && body.fast !== true,
+        cfg: config(),
+      });
+      console.log(
+        `Search scrape done · ${out.rowCount} rows · imported ${out.imported} · ${out.durationMs}ms`,
+      );
+      return out;
     });
-    console.log(
-      `Search scrape done · ${result.rowCount} rows · imported ${result.imported} · ${result.durationMs}ms`,
-    );
     sendJson(
       res,
       200,
@@ -297,18 +300,18 @@ async function handleSearch(req, res) {
       req,
     );
   } catch (error) {
+    const status = error?.code === "queue_timeout" ? 503 : 500;
     console.error("Search scrape failed:", error.message || error);
     sendJson(
       res,
-      500,
+      status,
       {
         ok: false,
         error: error.message || String(error),
+        code: error?.code || undefined,
       },
       req,
     );
-  } finally {
-    setBusy(false);
   }
 }
 
@@ -323,21 +326,26 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (method === "GET" && url.pathname === "/health") {
-    clearStaleBusy("search");
-    clearStaleBusy("enrich");
+    clearStalePlaywrightBusy();
     sendJson(
       res,
       200,
       {
         ok: true,
         service: "leadfinder-cloud-search",
-        busy,
-        enrichBusy,
-        busyForMs: busy && busySince ? Date.now() - busySince : 0,
-        enrichBusyForMs: enrichBusy && enrichBusySince ? Date.now() - enrichBusySince : 0,
+        busy: playwrightBusy,
+        enrichBusy: playwrightBusy && playwrightBusyKind === "enrich",
+        busyForMs: playwrightBusy && playwrightBusySince ? Date.now() - playwrightBusySince : 0,
+        enrichBusyForMs:
+          playwrightBusy && playwrightBusyKind === "enrich" && playwrightBusySince
+            ? Date.now() - playwrightBusySince
+            : 0,
+        busyKind: playwrightBusyKind || "",
+        queueDepth,
         busyMaxMs: BUSY_MAX_MS,
         port: PORT,
         authRequired: Boolean(SEARCH_SECRET),
+        queueMode: true,
       },
       req,
     );
@@ -346,13 +354,18 @@ const server = http.createServer(async (req, res) => {
 
   if (method === "POST" && url.pathname === "/reset-busy") {
     if (!requireSearchAuth(req, res)) return;
-    const wasBusy = busy || enrichBusy;
-    setBusy(false);
-    setEnrichBusy(false);
+    const wasBusy = playwrightBusy || queueDepth > 0;
+    setPlaywrightBusy(false);
+    // Soft-reset only the lock flag; in-flight work still finishes and releases.
     sendJson(
       res,
       200,
-      { ok: true, cleared: wasBusy, message: wasBusy ? "Busy locks cleared." : "No busy lock was set." },
+      {
+        ok: true,
+        cleared: wasBusy,
+        message: wasBusy ? "Busy lock flag cleared." : "No busy lock was set.",
+        queueDepth,
+      },
       req,
     );
     return;
@@ -376,5 +389,6 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, HOST, () => {
   console.log(`LeadFinder search server · http://${HOST}:${PORT}`);
   console.log(`POST /search  { "type": "Gyms", "location": "Austin, TX" }`);
+  console.log("Queue mode: concurrent scrapes wait instead of 409");
   if (SEARCH_SECRET) console.log("Auth: LEADFINDER_SEARCH_SECRET required");
 });

@@ -5480,6 +5480,9 @@ app.get("/lead-finder/health", requireUser, async (req, res) => {
       busyForMs: Number(data?.busyForMs) || 0,
       enrichBusyForMs: Number(data?.enrichBusyForMs) || 0,
       busyMaxMs: Number(data?.busyMaxMs) || 180000,
+      queueDepth: Number(data?.queueDepth) || 0,
+      queueMode: data?.queueMode === true,
+      busyKind: data?.busyKind || "",
       service: data?.service || "leadfinder-cloud-search",
     });
   } catch (e) {
