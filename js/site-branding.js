@@ -53,7 +53,7 @@
   const pageDesc =
     document.querySelector('meta[name="description"]')?.getAttribute("content")?.trim() ||
     String(cfg.siteDescription || "").trim() ||
-    "Moonrise is an AI-powered platform that lets you create professional websites in minutes for local business owners, creators, and more.";
+    "Moonrise is an AI-powered platform that lets you create professional websites with 1 click for local business owners, creators, and more.";
 
   const logoUrl = absoluteUrl(logoPath);
   const embedUrl = absoluteUrl(embedPath);
