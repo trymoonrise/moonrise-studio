@@ -1,6 +1,6 @@
 {
   "repo": "trymoonrise/moonrise-studio",
-  "sha": "22b7548f67833b3cb1ec72cde81b0ea1c3a51dce",
-  "committedAt": "2026-09-10T12:50:47-07:00",
-  "message": "Fix mobile chrome, encoding, and admin nav polish."
+  "sha": "6c725b293409cbfc5f673fefa3e67ee65d4f8175",
+  "committedAt": "2026-09-10T12:59:59-07:00",
+  "message": "Move last-updated under Account and match mobile sidebar scroll."
 }
