@@ -1,6 +1,6 @@
 {
   "repo": "trymoonrise/moonrise-studio",
-  "sha": "cf2dd0bd1d3649f4773390879cb7a56e6822b6d0",
-  "committedAt": "2026-09-10T12:03:05-07:00",
-  "message": "Update site description to say websites with 1 click."
+  "sha": "22b7548f67833b3cb1ec72cde81b0ea1c3a51dce",
+  "committedAt": "2026-09-10T12:50:47-07:00",
+  "message": "Fix mobile chrome, encoding, and admin nav polish."
 }
