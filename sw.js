@@ -2,7 +2,7 @@
  * Moonrise Studio service worker - PWA install + Web Push for client alerts.
  * HTML stays network-first; CSS/JS use stale-while-revalidate.
  */
-const CACHE_NAME = "ms-pwa-v50-lf-queue";
+const CACHE_NAME = "ms-pwa-v55-admin-dot";
 const CORE_ASSETS = ["./css/studio.css", "./css/studio-motion.css", "./index.html"];
 
 function isAssetPath(pathname) {
@@ -18,13 +18,13 @@ function isScriptOrStyle(pathname) {
 }
 
 function isCriticalStudioScript(pathname) {
-  return /\/js\/(?:config|builder|leads-search|auth-gate-head|auth|supabase-client|auth-security)\.js$/i.test(
+  return /\/js\/(?:config|builder|leads-search|auth-gate-head|auth|supabase-client|auth-security|app|install-hint)\.js$/i.test(
     pathname
   );
 }
 
 function isCriticalStudioStyle(pathname) {
-  return /\/css\/(?:leads-map|ms-lf-slide)\.css$/i.test(pathname);
+  return /\/css\/(?:studio|leads-map|ms-lf-slide)\.css$/i.test(pathname);
 }
 
 self.addEventListener("install", (event) => {

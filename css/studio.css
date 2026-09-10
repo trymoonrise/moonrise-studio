@@ -25,9 +25,18 @@ html.ms-auth-gating body {
   --ms-mono: "IBM Plex Mono", ui-monospace, monospace;
   --ms-channel-w: 1420px;
   --ms-content-scale: 1.2;
+  --ms-chrome-btn: 48px;
+  --ms-chrome-gap: 0.75rem;
+  --ms-chrome-top: max(var(--ms-chrome-gap), env(safe-area-inset-top, 0px));
+  --ms-chrome-left: max(var(--ms-chrome-gap), env(safe-area-inset-left, 0px));
+  --ms-chrome-right: max(var(--ms-chrome-gap), env(safe-area-inset-right, 0px));
 }
 
 * { box-sizing: border-box; }
+
+html {
+  max-width: 100%;
+}
 
 body {
   margin: 0;
@@ -35,6 +44,7 @@ body {
   background: var(--ms-bg);
   color: var(--ms-ink);
   min-height: 100vh;
+  max-width: 100%;
 }
 
 body[data-page="login"],
@@ -267,6 +277,17 @@ body.ms-sidebar-resizing iframe {
   line-height: 1;
 }
 
+.ms-sidebar-updated {
+  margin: 0 0.35rem 0.15rem;
+  padding: 0 0.45rem;
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.35;
+  color: #94a3b8;
+}
+
 .ms-nav {
   display: flex;
   flex-direction: column;
@@ -325,6 +346,23 @@ body.ms-sidebar-resizing iframe {
 
 .ms-nav-link .ms-nav-label {
   min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.ms-nav-admin-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: #ef4444;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.18);
+}
+
+.ms-nav-link.is-admin .ms-nav-label {
+  font-weight: 600;
 }
 
 .ms-nav-cancel {
@@ -723,31 +761,54 @@ body.ms-sidebar-resizing iframe {
 .ms-menu-toggle {
   display: none;
   position: fixed;
-  top: 0.75rem;
-  left: 0.75rem;
-  z-index: 50;
-  border: 1px solid var(--ms-line);
-  background: var(--ms-surface);
+  top: var(--ms-chrome-top);
+  left: var(--ms-chrome-left);
+  z-index: 140;
+  border: 1px solid #e2e8f0;
+  background: #fff;
   border-radius: 12px;
-  width: 52px;
-  height: 52px;
+  width: var(--ms-chrome-btn);
+  height: var(--ms-chrome-btn);
+  min-width: var(--ms-chrome-btn);
+  min-height: var(--ms-chrome-btn);
   font-size: 1.45rem;
   line-height: 1;
   cursor: pointer;
+  color: #0f172a;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+  appearance: none;
+  -webkit-appearance: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.ms-menu-toggle svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+  pointer-events: none;
 }
 
 .ms-hard-refresh {
   position: fixed;
-  top: max(0.75rem, env(safe-area-inset-top, 0px));
-  right: max(0.75rem, env(safe-area-inset-right, 0px));
+  top: var(--ms-chrome-top);
+  right: var(--ms-chrome-right);
+  left: auto;
   /* Above builder fullscreen preview (80) and most chrome; below toasts (100000). */
   z-index: 130;
   display: grid !important;
   place-items: center;
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  min-height: 44px;
+  width: var(--ms-chrome-btn);
+  height: var(--ms-chrome-btn);
+  min-width: var(--ms-chrome-btn);
+  min-height: var(--ms-chrome-btn);
+  max-width: var(--ms-chrome-btn);
   margin: 0;
   padding: 0;
   border: 1px solid #e2e8f0;
@@ -763,6 +824,7 @@ body.ms-sidebar-resizing iframe {
   pointer-events: auto;
   opacity: 1;
   visibility: visible;
+  box-sizing: border-box;
   transition:
     color 0.15s ease,
     background 0.15s ease,
@@ -811,13 +873,18 @@ body.ms-sidebar-resizing iframe {
 
 /* Same control on phone/tablet - larger tap target, never hide. */
 @media (max-width: 900px) {
+  :root {
+    --ms-chrome-btn: 44px;
+    --ms-chrome-gap: 0.65rem;
+  }
+
   .ms-hard-refresh {
-    top: max(0.65rem, env(safe-area-inset-top, 0px));
-    right: max(0.65rem, env(safe-area-inset-right, 0px));
-    width: 48px;
-    height: 48px;
-    min-width: 48px;
-    min-height: 48px;
+    top: var(--ms-chrome-top);
+    right: var(--ms-chrome-right);
+    width: var(--ms-chrome-btn);
+    height: var(--ms-chrome-btn);
+    min-width: var(--ms-chrome-btn);
+    min-height: var(--ms-chrome-btn);
     border-radius: 12px;
   }
 
@@ -825,14 +892,69 @@ body.ms-sidebar-resizing iframe {
     width: 20px;
     height: 20px;
   }
+
+  .ms-menu-toggle {
+    top: var(--ms-chrome-top);
+    left: var(--ms-chrome-left);
+    width: var(--ms-chrome-btn);
+    height: var(--ms-chrome-btn);
+    min-width: var(--ms-chrome-btn);
+    min-height: var(--ms-chrome-btn);
+  }
+
+  /* Keep titles clear of fixed menu / refresh chrome */
+  .ms-page-head,
+  .ms-dash-head,
+  .ms-page-head.ms-dash-head {
+    padding-left: calc(var(--ms-chrome-btn) + var(--ms-chrome-gap));
+    padding-right: calc(var(--ms-chrome-btn) + var(--ms-chrome-gap));
+    box-sizing: border-box;
+    max-width: 100%;
+  }
+
+  .ms-page-head h1,
+  .ms-dash-head h1 {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .ms-card,
+  .card,
+  .ms-dash-card,
+  .ms-settings-card,
+  .ms-dash-island,
+  .ms-dash-progress-card,
+  .ms-settings-stack,
+  .ms-dash-stack {
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .ms-dash-progress-layout,
+  .ms-dash-overview-grid,
+  .ms-dash-island-toggle {
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .ms-dash-island-toggle {
+    gap: 0.5rem;
+  }
+
+  .ms-dash-island-title {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
 }
 
 @media (pointer: coarse) {
   .ms-hard-refresh {
-    width: 48px;
-    height: 48px;
-    min-width: 48px;
-    min-height: 48px;
+    width: var(--ms-chrome-btn);
+    height: var(--ms-chrome-btn);
+    min-width: var(--ms-chrome-btn);
+    min-height: var(--ms-chrome-btn);
   }
 }
 
@@ -12464,17 +12586,19 @@ body.ms-legal-site {
       visibility 0s linear 0s;
   }
   .ms-menu-toggle {
-    display: grid;
+    display: grid !important;
     place-items: center;
     transition:
       transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-      opacity 0.2s ease,
-      background 0.2s ease;
+      background 0.2s ease,
+      border-color 0.2s ease;
   }
   body.ms-nav-open .ms-menu-toggle {
-    transform: scale(0.92);
-    opacity: 0;
-    pointer-events: none;
+    transform: none;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    z-index: 150;
   }
   .ms-sidebar-resizer { display: none; }
 
@@ -12482,7 +12606,6 @@ body.ms-legal-site {
   body[data-page="builder"].ms-lb-setup {
     --ms-sidebar-w: 0px;
     --ms-content-scale: 1;
-    overflow-x: clip;
   }
 
   #page-body,
@@ -12507,7 +12630,7 @@ body.ms-legal-site {
     padding-right: 1rem;
     padding-bottom: 3.5rem;
     box-sizing: border-box;
-    overflow-x: clip;
+    overflow-x: hidden;
   }
   .ms-page-head h1 {
     font-size: clamp(1.75rem, 7vw, 2.2rem);
@@ -15546,8 +15669,8 @@ a.ms-btn:not(.ms-btn-secondary):not(.ms-btn-danger).is-pressed,
 /* ===== Install / Add to Home Screen hint (Dashboard only) ===== */
 .ios-install-banner {
   position: fixed;
-  left: 50%;
-  right: auto;
+  left: 0;
+  right: 0;
   bottom: calc(18px + env(safe-area-inset-bottom, 0px));
   z-index: 99995;
   display: grid;
@@ -15555,9 +15678,9 @@ a.ms-btn:not(.ms-btn-secondary):not(.ms-btn-danger).is-pressed,
   align-items: center;
   column-gap: 14px;
   box-sizing: border-box;
-  width: min(420px, calc(100vw - 32px));
-  max-width: calc(100vw - 32px);
-  margin: 0;
+  width: min(420px, calc(100% - 24px));
+  max-width: calc(100% - 24px);
+  margin-inline: auto;
   padding: 14px 12px 14px 14px;
   background: #ffffff;
   color: #0f172a;
@@ -15567,7 +15690,7 @@ a.ms-btn:not(.ms-btn-secondary):not(.ms-btn-danger).is-pressed,
     0 10px 28px -10px rgba(15, 23, 42, 0.24),
     0 2px 6px rgba(15, 23, 42, 0.05);
   opacity: 0;
-  transform: translate(-50%, 18px);
+  transform: translateY(18px);
   pointer-events: none;
   transition:
     opacity 0.34s ease-out,
@@ -15575,12 +15698,12 @@ a.ms-btn:not(.ms-btn-secondary):not(.ms-btn-danger).is-pressed,
 }
 .ios-install-banner.is-visible {
   opacity: 1;
-  transform: translate(-50%, 0);
+  transform: translateY(0);
   pointer-events: auto;
 }
 .ios-install-banner.is-leaving {
   opacity: 0;
-  transform: translate(-50%, 22px);
+  transform: translateY(22px);
   pointer-events: none;
 }
 .ios-install-banner--installable {
@@ -15613,13 +15736,18 @@ a.ms-btn:not(.ms-btn-secondary):not(.ms-btn-danger).is-pressed,
   letter-spacing: -0.02em;
   line-height: 1.2;
   color: inherit;
-  white-space: nowrap;
+  white-space: normal;
   overflow: hidden;
-  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 .ios-install-banner-text span {
   color: #64748b;
-  display: block;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .ios-install-banner-text em {
   font-style: normal;
@@ -15660,8 +15788,8 @@ a.ms-btn:not(.ms-btn-secondary):not(.ms-btn-danger).is-pressed,
 
 @media (min-width: 900px) {
   .ios-install-banner {
-    width: min(520px, calc(100vw - 48px));
-    max-width: calc(100vw - 48px);
+    width: min(520px, calc(100% - 48px));
+    max-width: calc(100% - 48px);
     grid-template-columns: 56px minmax(0, 1fr) 36px;
     column-gap: 16px;
     padding: 18px 14px 18px 18px;
@@ -15693,8 +15821,8 @@ a.ms-btn:not(.ms-btn-secondary):not(.ms-btn-danger).is-pressed,
 
 @media (max-width: 420px) {
   .ios-install-banner {
-    width: calc(100vw - 24px);
-    max-width: calc(100vw - 24px);
+    width: calc(100% - 20px);
+    max-width: calc(100% - 20px);
     column-gap: 12px;
     padding: 13px 10px 13px 13px;
     border-radius: 16px;
@@ -15721,10 +15849,10 @@ a.ms-btn:not(.ms-btn-secondary):not(.ms-btn-danger).is-pressed,
 @media (prefers-reduced-motion: reduce) {
   .ios-install-banner {
     transition: opacity 0.12s linear;
-    transform: translate(-50%, 0);
+    transform: translateY(0);
   }
   .ios-install-banner.is-leaving {
-    transform: translate(-50%, 0);
+    transform: translateY(0);
   }
 }
 

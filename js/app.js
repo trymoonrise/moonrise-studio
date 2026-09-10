@@ -61,6 +61,8 @@
     bag: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
     heart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>',
     external: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>',
+    menu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>',
+    close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>',
   };
 
   const OWNER_NAV_KEY = "ms_owner_nav_v1";
@@ -267,15 +269,20 @@
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>' +
           "</button>"
         : "";
+    const adminMark = item.ownerOnly
+      ? '<span class="ms-nav-admin-dot" title="Admin channel" aria-label="Admin channel"></span>'
+      : "";
     return (
       '<a class="ms-nav-link' +
       (item.external ? " is-external" : "") +
+      (item.ownerOnly ? " is-admin" : "") +
       active +
       '" href="' +
       href +
       '" data-nav="' +
       item.id +
       '"' +
+      (item.ownerOnly ? ' data-admin="true"' : "") +
       externalAttrs +
       ">" +
       '<span class="ms-nav-ico" aria-hidden="true">' +
@@ -283,6 +290,7 @@
       "</span>" +
       '<span class="ms-nav-label">' +
       item.label +
+      adminMark +
       "</span>" +
       externalMark +
       cancelMark +
@@ -312,12 +320,12 @@
         el.setAttribute("aria-busy", "true");
         el.setAttribute(
           "title",
-          channelGeneratingCancellable ? "Generating websiteâ€¦" : "Looking up businessâ€¦"
+          channelGeneratingCancellable ? "Generating website..." : "Looking up business..."
         );
       } else {
         el.removeAttribute("aria-busy");
         const title = el.getAttribute("title");
-        if (title === "Generating websiteâ€¦" || title === "Looking up businessâ€¦") {
+        if (title === "Generating website..." || title === "Looking up business...") {
           el.removeAttribute("title");
         }
       }
@@ -372,6 +380,81 @@
     );
   }
 
+  function formatLastUpdated(iso) {
+    const then = new Date(iso).getTime();
+    if (!Number.isFinite(then)) return "";
+    const sec = Math.max(0, Math.floor((Date.now() - then) / 1000));
+    const plural = (n, unit) => (n === 1 ? "1 " + unit + " ago" : n + " " + unit + "s ago");
+    if (sec < 45) return "just now";
+    const min = Math.floor(sec / 60);
+    if (min < 60) return plural(Math.max(1, min), "minute");
+    const hr = Math.floor(min / 60);
+    if (hr < 24) return plural(hr, "hour");
+    const day = Math.floor(hr / 24);
+    if (day < 7) return plural(day, "day");
+    const week = Math.floor(day / 7);
+    if (week < 5) return plural(week, "week");
+    const month = Math.floor(day / 30);
+    if (month < 12) return plural(Math.max(1, month), "month");
+    return plural(Math.max(1, Math.floor(day / 365)), "year");
+  }
+
+  function githubRepoSlug() {
+    const cfg = window.SITE_CONFIG || {};
+    const fromCfg = String(cfg.githubRepo || cfg.studioGithubRepo || "").trim();
+    if (fromCfg) return fromCfg.replace(/^https?:\/\/github\.com\//i, "").replace(/\.git$/i, "");
+    return "trymoonrise/moonrise-studio";
+  }
+
+  async function resolveLastCommitAt() {
+    const repo = githubRepoSlug();
+    try {
+      const api = await fetch("https://api.github.com/repos/" + repo + "/commits?per_page=1", {
+        headers: { Accept: "application/vnd.github+json" },
+        cache: "no-store",
+      });
+      if (api.ok) {
+        const rows = await api.json();
+        const iso =
+          rows?.[0]?.commit?.committer?.date ||
+          rows?.[0]?.commit?.author?.date ||
+          "";
+        if (iso) return iso;
+      }
+    } catch (_) {
+      /* private repo or blocked - fall through */
+    }
+    try {
+      const local = await fetch("doc/last-commit.json?v=" + Date.now(), { cache: "no-store" });
+      if (local.ok) {
+        const data = await local.json();
+        if (data?.committedAt) return String(data.committedAt);
+      }
+    } catch (_) {
+      /* ignore */
+    }
+    return "";
+  }
+
+  function paintSidebarLastUpdated(iso) {
+    const el = document.getElementById("ms-sidebar-updated");
+    if (!el) return;
+    const rel = formatLastUpdated(iso);
+    if (!rel) {
+      el.hidden = true;
+      return;
+    }
+    el.hidden = false;
+    el.textContent = "Last updated: " + rel;
+    el.title = "GitHub · " + new Date(iso).toLocaleString();
+  }
+
+  function bootSidebarLastUpdated() {
+    resolveLastCommitAt().then((iso) => {
+      if (iso) paintSidebarLastUpdated(iso);
+    });
+  }
+
   function navGroup(label, icon, itemsHtml, ariaLabel) {
     return (
       '<div class="ms-nav-group">' +
@@ -405,7 +488,7 @@
     });
     return (
       '<nav class="ms-sidebar-legal" aria-label="Help and legal">' +
-      links.join('<span class="ms-sidebar-legal-sep" aria-hidden="true">â€¢</span>') +
+      links.join('<span class="ms-sidebar-legal-sep" aria-hidden="true">·</span>') +
       "</nav>"
     );
   }
@@ -486,8 +569,11 @@
         hardRefreshSite();
       });
       document.body.appendChild(btn);
-    } else if (btn.parentElement !== document.body) {
-      document.body.appendChild(btn);
+    } else {
+      btn.innerHTML = ICONS.refresh;
+      if (btn.parentElement !== document.body) {
+        document.body.appendChild(btn);
+      }
     }
   }
 
@@ -533,6 +619,7 @@
       "</strong>" +
       "</div></div>" +
       '<div class="ms-sidebar-scroll">' +
+      '<p class="ms-sidebar-updated" id="ms-sidebar-updated" hidden>Last updated: ...</p>' +
       navGroup("Workspace", "layers", menuHtml, "Main") +
       navGroup("Account", "user", accountHtml, "Account") +
       "</div>" +
@@ -569,8 +656,21 @@
       "</button>" +
       "</div>" +
       '</div></aside>' +
-      '<div class="ms-sidebar-resizer" id="ms-sidebar-resizer" role="separator" aria-orientation="vertical" aria-label="Resize sidebar" tabindex="0"></div>' +
-      '<button type="button" class="ms-menu-toggle" id="ms-menu-toggle" aria-label="Open menu">â˜°</button>';
+      '<div class="ms-sidebar-resizer" id="ms-sidebar-resizer" role="separator" aria-orientation="vertical" aria-label="Resize sidebar" tabindex="0"></div>';
+
+    // Mount menu on body so overflow/stacking on #shell cannot hide it.
+    let menuToggle = document.getElementById("ms-menu-toggle");
+    if (!menuToggle) {
+      menuToggle = document.createElement("button");
+      menuToggle.type = "button";
+      menuToggle.id = "ms-menu-toggle";
+      menuToggle.className = "ms-menu-toggle";
+      document.body.appendChild(menuToggle);
+    } else if (menuToggle.parentElement !== document.body) {
+      document.body.appendChild(menuToggle);
+    }
+    menuToggle.setAttribute("aria-label", "Open menu");
+    menuToggle.innerHTML = ICONS.menu;
 
     document.getElementById("ms-signout")?.addEventListener("click", async () => {
       await window.StudioAuth?.signOut?.();
@@ -578,18 +678,18 @@
     });
 
     const sidebar = document.getElementById("ms-sidebar");
-    const menuToggle = document.getElementById("ms-menu-toggle");
 
     function setNavOpen(open) {
       document.body.classList.toggle("ms-nav-open", open);
-      menuToggle?.setAttribute("aria-expanded", open ? "true" : "false");
-      menuToggle?.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+      menuToggle.setAttribute("aria-expanded", open ? "true" : "false");
+      menuToggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+      menuToggle.innerHTML = open ? ICONS.close : ICONS.menu;
     }
 
-    menuToggle?.setAttribute("aria-expanded", "false");
-    menuToggle?.addEventListener("click", () => {
+    menuToggle.setAttribute("aria-expanded", "false");
+    menuToggle.onclick = () => {
       setNavOpen(!document.body.classList.contains("ms-nav-open"));
-    });
+    };
 
     document.addEventListener("click", (event) => {
       if (!window.matchMedia("(max-width: 900px)").matches) return;
@@ -646,6 +746,7 @@
     });
 
     paintSidebarFromCache();
+    bootSidebarLastUpdated();
 
     bindExternalRedirects();
     initSidebarResize();
@@ -693,7 +794,7 @@
       TELEGRAM_LOGO +
       "</div>" +
       '<h2 id="ms-redirect-title">Open Telegram?</h2>' +
-      '<p class="ms-redirect-copy">Youâ€™re about to open <strong>Telegram</strong> in a new tab. Youâ€™ll leave Moonrise Studio temporarily.</p>' +
+      '<p class="ms-redirect-copy">You are about to open <strong>Telegram</strong> in a new tab. You will leave Moonrise Studio temporarily.</p>' +
       "</header>" +
       '<footer class="ms-redirect-actions">' +
       '<button type="button" class="ms-redirect-cancel" id="ms-redirect-cancel">Stay here</button>' +
@@ -738,9 +839,9 @@
     if (title) title.textContent = "Open " + name + "?";
     if (copy) {
       copy.innerHTML =
-        "Youâ€™re about to open <strong>" +
+        "You're about to open <strong>" +
         name.replace(/</g, "&lt;") +
-        "</strong> in a new tab. Youâ€™ll leave Moonrise Studio temporarily.";
+        "</strong> in a new tab. You'll leave Moonrise Studio temporarily.";
     }
     if (goBtn) goBtn.textContent = "Continue to " + name;
     setRedirectOpen(true);
@@ -1180,7 +1281,7 @@
   function generationBlockMessage(reason) {
     switch (reason) {
       case "offline":
-        return "You're offline. Connect to Wiâ€‘Fi or mobile data, then try again.";
+        return "You're offline. Connect to Wi-Fi or mobile data, then try again.";
       case "network":
       case "server":
         return window.isLocalDevHost?.()

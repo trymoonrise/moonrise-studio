@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Public Studio config only - never put secret keys here.
  * Worker secrets live in worker/.env / Render env vars.
  */

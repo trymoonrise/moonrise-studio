@@ -238,7 +238,7 @@ body.mr-wm-open .ms-lb-fs-exit{visibility:hidden!important;pointer-events:none!i
         : "";
     return (
       '<div class="mr-wm-vcard">' +
-      '<button type="button" class="mr-wm-vcard-back" data-mr-vcard-back>â† Back</button>' +
+      '<button type="button" class="mr-wm-vcard-back" data-mr-vcard-back>Back</button>' +
       '<div class="mr-wm-vcard-card">' +
       '<div class="mr-wm-vcard-hero" aria-hidden="true"></div>' +
       '<div class="mr-wm-vcard-body">' +
