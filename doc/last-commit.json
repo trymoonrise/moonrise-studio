@@ -1,6 +1,6 @@
 {
   "repo": "trymoonrise/moonrise-studio",
-  "sha": "6c725b293409cbfc5f673fefa3e67ee65d4f8175",
-  "committedAt": "2026-09-10T12:59:59-07:00",
-  "message": "Move last-updated under Account and match mobile sidebar scroll."
+  "sha": "d49f0fe8536fefd71d59dd25b46f242130b9c1a6",
+  "committedAt": "2026-09-10T13:19:49-07:00",
+  "message": "Keep install banner to two lines and scale it across devices."
 }
