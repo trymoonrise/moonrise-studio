@@ -1,6 +1,6 @@
 {
   "repo": "trymoonrise/moonrise-studio",
-  "sha": "d49f0fe8536fefd71d59dd25b46f242130b9c1a6",
-  "committedAt": "2026-09-10T13:19:49-07:00",
-  "message": "Keep install banner to two lines and scale it across devices."
+  "sha": "eaa16bda6b6c1c59bdc30a34411d51429f3da6cb",
+  "committedAt": "2026-09-10T13:22:28-07:00",
+  "message": "Hide floating menu button while the sidebar is open."
 }
