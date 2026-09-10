@@ -197,13 +197,13 @@
     }
     if (isDesktopDevice()) {
       return deferredInstallPrompt
-        ? "<em>Click here</em> to download the app · or use your browser menu to install"
-        : "Click here to download the app · or use your browser menu to install";
+        ? "<em>Click here</em> to install, or use your browser menu"
+        : "Use your browser menu to install the app";
     }
     if (deferredInstallPrompt) {
       return "Tap <em>Install</em> from the browser menu";
     }
-    return "Browser menu → <em>Install</em> / <em>Add to Home Screen</em>";
+    return "Use browser menu → <em>Install</em> / <em>Add to Home Screen</em>";
   }
 
   function dismissInstallHint(banner) {

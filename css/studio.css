@@ -15720,23 +15720,23 @@ a.ms-btn:not(.ms-btn-secondary):not(.ms-btn-danger).is-pressed,
 /* ===== Install / Add to Home Screen hint (Dashboard only) ===== */
 .ios-install-banner {
   position: fixed;
-  left: 0;
-  right: 0;
-  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  left: max(10px, env(safe-area-inset-left, 0px));
+  right: max(10px, env(safe-area-inset-right, 0px));
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
   z-index: 99995;
   display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) 32px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  column-gap: 14px;
+  column-gap: clamp(8px, 2.2vw, 14px);
   box-sizing: border-box;
-  width: min(420px, calc(100% - 24px));
-  max-width: calc(100% - 24px);
+  width: auto;
+  max-width: min(420px, 100%);
   margin-inline: auto;
-  padding: 14px 12px 14px 14px;
+  padding: clamp(10px, 2.4vw, 14px) clamp(8px, 2vw, 12px) clamp(10px, 2.4vw, 14px) clamp(10px, 2.4vw, 14px);
   background: #ffffff;
   color: #0f172a;
   border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: 18px;
+  border-radius: clamp(14px, 3.5vw, 18px);
   box-shadow:
     0 10px 28px -10px rgba(15, 23, 42, 0.24),
     0 2px 6px rgba(15, 23, 42, 0.05);
@@ -15761,9 +15761,9 @@ a.ms-btn:not(.ms-btn-secondary):not(.ms-btn-danger).is-pressed,
   cursor: pointer;
 }
 .ios-install-banner-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+  width: clamp(36px, 10vw, 48px);
+  height: clamp(36px, 10vw, 48px);
+  border-radius: clamp(9px, 2.5vw, 12px);
   object-fit: cover;
   object-position: center;
   background: #ffffff;
@@ -15771,34 +15771,38 @@ a.ms-btn:not(.ms-btn-secondary):not(.ms-btn-danger).is-pressed,
   box-shadow: none;
   overflow: hidden;
   display: block;
+  flex-shrink: 0;
 }
 .ios-install-banner-text {
   min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 3px;
-  font-size: 13.5px;
-  line-height: 1.4;
+  gap: 2px;
+  font-size: clamp(11px, 3.1vw, 13.5px);
+  line-height: 1.25;
 }
+/* Exactly 2 lines: title + one instruction line */
 .ios-install-banner-text strong {
-  font-size: 16px;
+  margin: 0;
+  font-size: clamp(13px, 3.6vw, 16px);
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.2;
   color: inherit;
-  white-space: normal;
+  white-space: nowrap;
   overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  text-overflow: ellipsis;
+  display: block;
 }
 .ios-install-banner-text span {
+  margin: 0;
   color: #64748b;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
+  display: block;
+  white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
 }
 .ios-install-banner-text em {
   font-style: normal;
@@ -15807,29 +15811,35 @@ a.ms-btn:not(.ms-btn-secondary):not(.ms-btn-danger).is-pressed,
 }
 .ios-install-banner-share {
   display: inline-flex;
-  vertical-align: -3px;
-  margin: 0 1px;
+  align-items: center;
+  justify-content: center;
+  vertical-align: -0.15em;
+  margin: 0 0.15em;
+  line-height: 0;
 }
 .ios-install-banner-share svg {
-  width: 14px;
-  height: 14px;
+  width: 1.05em;
+  height: 1.05em;
   color: #2563eb;
+  display: block;
+  flex-shrink: 0;
 }
 .ios-install-banner-close {
-  width: 32px;
-  height: 32px;
+  width: clamp(28px, 8vw, 32px);
+  height: clamp(28px, 8vw, 32px);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  align-self: start;
-  margin-top: -2px;
-  font-size: 20px;
+  align-self: center;
+  margin: 0;
+  font-size: clamp(18px, 5vw, 20px);
   line-height: 1;
   color: #f87171;
   background: transparent;
   border: 0;
   border-radius: 8px;
   cursor: pointer;
+  flex-shrink: 0;
   transition: background 0.15s ease-out, color 0.15s ease-out;
 }
 .ios-install-banner-close:hover {
@@ -15839,61 +15849,48 @@ a.ms-btn:not(.ms-btn-secondary):not(.ms-btn-danger).is-pressed,
 
 @media (min-width: 900px) {
   .ios-install-banner {
+    left: 0;
+    right: 0;
     width: min(520px, calc(100% - 48px));
     max-width: calc(100% - 48px);
-    grid-template-columns: 56px minmax(0, 1fr) 36px;
     column-gap: 16px;
-    padding: 18px 14px 18px 18px;
+    padding: 16px 14px 16px 18px;
     border-radius: 20px;
     bottom: calc(24px + env(safe-area-inset-bottom, 0px));
   }
   .ios-install-banner-icon {
-    width: 56px;
-    height: 56px;
+    width: 52px;
+    height: 52px;
     border-radius: 14px;
   }
   .ios-install-banner-text {
-    font-size: 14.5px;
-    gap: 4px;
+    font-size: 14px;
+    gap: 3px;
   }
   .ios-install-banner-text strong {
-    font-size: 18px;
+    font-size: 17px;
   }
   .ios-install-banner-share svg {
     width: 15px;
     height: 15px;
   }
   .ios-install-banner-close {
-    width: 36px;
-    height: 36px;
-    font-size: 22px;
+    width: 34px;
+    height: 34px;
+    font-size: 21px;
   }
 }
 
-@media (max-width: 420px) {
+@media (max-width: 380px) {
   .ios-install-banner {
-    width: calc(100% - 20px);
-    max-width: calc(100% - 20px);
-    column-gap: 12px;
-    padding: 13px 10px 13px 13px;
-    border-radius: 16px;
-    grid-template-columns: 44px minmax(0, 1fr) 30px;
-  }
-  .ios-install-banner-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 11px;
+    padding: 9px 8px 9px 10px;
+    column-gap: 8px;
   }
   .ios-install-banner-text {
-    font-size: 13px;
+    font-size: 11px;
   }
   .ios-install-banner-text strong {
-    font-size: 15px;
-  }
-  .ios-install-banner-close {
-    width: 30px;
-    height: 30px;
-    font-size: 19px;
+    font-size: 13px;
   }
 }
 
