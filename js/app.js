@@ -683,7 +683,9 @@
       document.body.classList.toggle("ms-nav-open", open);
       menuToggle.setAttribute("aria-expanded", open ? "true" : "false");
       menuToggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
-      menuToggle.innerHTML = open ? ICONS.close : ICONS.menu;
+      menuToggle.setAttribute("aria-hidden", open ? "true" : "false");
+      menuToggle.tabIndex = open ? -1 : 0;
+      menuToggle.innerHTML = ICONS.menu;
     }
 
     menuToggle.setAttribute("aria-expanded", "false");
