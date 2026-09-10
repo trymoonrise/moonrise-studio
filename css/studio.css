@@ -229,11 +229,62 @@ body.ms-sidebar-resizing iframe {
 .ms-sidebar-scroll {
   flex: 1;
   min-height: 0;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   padding-bottom: 0.5rem;
   display: flex;
   flex-direction: column;
   gap: 0.95rem;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  /* Mobile-style overlay scroll: no permanent gutter/track */
+  scrollbar-width: none;
+  scrollbar-gutter: auto;
+}
+
+.ms-sidebar-scroll::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* Desktop: thin overlay thumb only while interacting (still mobile-like, not a fixed rail) */
+@media (hover: hover) and (pointer: fine) and (min-width: 901px) {
+  .ms-sidebar-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  .ms-sidebar-scroll:hover,
+  .ms-sidebar-scroll:focus-within,
+  .ms-sidebar-scroll.is-scrolling {
+    scrollbar-color: rgba(148, 163, 184, 0.55) transparent;
+  }
+
+  .ms-sidebar-scroll::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+    display: block;
+  }
+
+  .ms-sidebar-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .ms-sidebar-scroll::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 999px;
+  }
+
+  .ms-sidebar-scroll:hover::-webkit-scrollbar-thumb,
+  .ms-sidebar-scroll:focus-within::-webkit-scrollbar-thumb,
+  .ms-sidebar-scroll.is-scrolling::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.55);
+  }
+
+  .ms-sidebar-scroll::-webkit-scrollbar-corner {
+    background: transparent;
+  }
 }
 
 .ms-nav-group {
@@ -278,8 +329,8 @@ body.ms-sidebar-resizing iframe {
 }
 
 .ms-sidebar-updated {
-  margin: 0 0.35rem 0.15rem;
-  padding: 0 0.45rem;
+  margin: 0.15rem 0.35rem 0;
+  padding: 0.15rem 0.45rem 0;
   text-align: center;
   font-size: 0.68rem;
   font-weight: 600;

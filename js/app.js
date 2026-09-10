@@ -619,9 +619,9 @@
       "</strong>" +
       "</div></div>" +
       '<div class="ms-sidebar-scroll">' +
-      '<p class="ms-sidebar-updated" id="ms-sidebar-updated" hidden>Last updated: ...</p>' +
       navGroup("Workspace", "layers", menuHtml, "Main") +
       navGroup("Account", "user", accountHtml, "Account") +
+      '<p class="ms-sidebar-updated" id="ms-sidebar-updated" hidden>Last updated: ...</p>' +
       "</div>" +
       '<a class="ms-credits-tag ms-income-tag" id="ms-user-income" href="dashboard.html" title="View income on Dashboard">' +
       '<span class="ms-credits-tag-label">Income</span>' +
@@ -747,9 +747,25 @@
 
     paintSidebarFromCache();
     bootSidebarLastUpdated();
+    bindSidebarScrollChrome();
 
     bindExternalRedirects();
     initSidebarResize();
+  }
+
+  function bindSidebarScrollChrome() {
+    const scroller = document.querySelector(".ms-sidebar-scroll");
+    if (!scroller || scroller.dataset.scrollChromeBound === "1") return;
+    scroller.dataset.scrollChromeBound = "1";
+    let hideTimer = 0;
+    const markScrolling = () => {
+      scroller.classList.add("is-scrolling");
+      window.clearTimeout(hideTimer);
+      hideTimer = window.setTimeout(() => {
+        scroller.classList.remove("is-scrolling");
+      }, 700);
+    };
+    scroller.addEventListener("scroll", markScrolling, { passive: true });
   }
 
   const TELEGRAM_LOGO =
