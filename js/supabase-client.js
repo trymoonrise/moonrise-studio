@@ -32,12 +32,32 @@
   }
 
   function setRememberLoginEnabled(on) {
+    const enabled = !!on;
     try {
-      global.localStorage.setItem(REMEMBER_LOGIN_KEY, on ? "1" : "0");
+      global.localStorage.setItem(REMEMBER_LOGIN_KEY, enabled ? "1" : "0");
     } catch (_) {
       /* ignore */
     }
-    if (rememberForClient !== null && rememberForClient !== !!on) {
+    try {
+      if (enabled) {
+        // Promote tab session → durable so Auto save ON actually stays signed in.
+        const raw = global.sessionStorage.getItem(AUTH_STORAGE_KEY);
+        if (raw && !global.localStorage.getItem(AUTH_STORAGE_KEY)) {
+          global.localStorage.setItem(AUTH_STORAGE_KEY, raw);
+        }
+        global.sessionStorage.removeItem(AUTH_STORAGE_KEY);
+      } else {
+        // Max security: keep this tab only; never leave a durable session on disk.
+        const raw = global.localStorage.getItem(AUTH_STORAGE_KEY);
+        if (raw && !global.sessionStorage.getItem(AUTH_STORAGE_KEY)) {
+          global.sessionStorage.setItem(AUTH_STORAGE_KEY, raw);
+        }
+        global.localStorage.removeItem(AUTH_STORAGE_KEY);
+      }
+    } catch (_) {
+      /* ignore */
+    }
+    if (rememberForClient !== null && rememberForClient !== enabled) {
       resetClient();
     }
   }
@@ -117,12 +137,14 @@
         storage: authStorage(),
         // Password sign-in goes through the worker then setSession — not PKCE.
         flowType: "implicit",
+        // WebAuthn passkeys (Face ID / fingerprint / password manager).
+        experimental: { passkey: true },
       },
     });
     rememberForClient = remember;
     try {
-      const activeHas = !!authStorage().getItem(AUTH_STORAGE_KEY);
-      if (activeHas) dropInactiveAuthCopy(remember);
+      // Always drop the inactive store so Auto save off cannot leave a durable session behind.
+      dropInactiveAuthCopy(remember);
     } catch (_) {
       /* ignore */
     }

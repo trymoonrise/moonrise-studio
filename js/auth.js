@@ -216,7 +216,9 @@
       if (!session?.access_token || !session?.refresh_token) {
         throw new Error("Could not save your session. Try again.");
       }
-      // Belt-and-suspenders: ensure gate-readable storage is present before navigation.
+      // Persist only in the store that matches Auto save.
+      // Writing to both stores previously kept people signed in after browser restart
+      // even when Auto save was off (max-security mode).
       try {
         const key = global.SiteSupabase?.AUTH_STORAGE_KEY || "moonrise-studio-auth";
         const raw = JSON.stringify({
@@ -231,10 +233,14 @@
           typeof global.SiteSupabase?.isRememberLoginEnabled === "function"
             ? global.SiteSupabase.isRememberLoginEnabled()
             : true;
-        const store = remember ? global.localStorage : global.sessionStorage;
-        store.setItem(key, raw);
-        // Keep a copy in the other store briefly so auth-gate never misses a flip.
-        (remember ? global.sessionStorage : global.localStorage).setItem(key, raw);
+        const active = remember ? global.localStorage : global.sessionStorage;
+        const inactive = remember ? global.sessionStorage : global.localStorage;
+        active.setItem(key, raw);
+        try {
+          inactive.removeItem(key);
+        } catch (_) {
+          /* ignore */
+        }
       } catch (_) {
         /* ignore */
       }
@@ -398,6 +404,130 @@
       Promise.resolve(ensureProfile(user)).catch(() => {});
     }
     return sessionData || payload;
+  }
+
+  /** Passkeys only verify for the configured relying party (trymoonrise.com). */
+  function passkeyHostAllowed() {
+    try {
+      const host = String(global.location?.hostname || "").toLowerCase();
+      return host === "trymoonrise.com" || host === "www.trymoonrise.com";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function canUsePasskeys() {
+    try {
+      if (!passkeyHostAllowed()) return false;
+      if (!global.isSecureContext) return false;
+      if (!global.PublicKeyCredential) return false;
+      const sb = getClient();
+      return (
+        typeof sb?.auth?.signInWithPasskey === "function" &&
+        typeof sb?.auth?.registerPasskey === "function"
+      );
+    } catch (_) {
+      return false;
+    }
+  }
+
+  async function signInWithPasskey() {
+    const sb = getClient();
+    if (!sb) throw new Error("Supabase is not configured");
+    if (!canUsePasskeys()) {
+      throw authError({
+        error: "Passkeys are not available on this device or browser.",
+        code: "passkey_unavailable",
+      });
+    }
+    const { data, error } = await withTimeout(
+      sb.auth.signInWithPasskey(),
+      AUTH_TIMEOUT_MS,
+      "Passkey sign-in"
+    );
+    if (error) {
+      const cancelled =
+        /cancel|abort|not allowed|timed out/i.test(String(error.message || "")) ||
+        error.name === "NotAllowedError";
+      throw authError({
+        error: cancelled
+          ? "Passkey sign-in was cancelled."
+          : friendlyAuthMessage(error, error.message || "Passkey sign-in failed"),
+        code: error.code || (cancelled ? "passkey_cancelled" : "passkey_failed"),
+      });
+    }
+    const user = data?.user || data?.session?.user;
+    if (user) {
+      Promise.resolve(ensureProfile(user)).catch(() => {});
+    }
+    return data;
+  }
+
+  async function registerPasskey() {
+    const sb = getClient();
+    if (!sb) throw new Error("Supabase is not configured");
+    if (!canUsePasskeys()) {
+      throw authError({
+        error: "Passkeys are not available on this device or browser.",
+        code: "passkey_unavailable",
+      });
+    }
+    const { data, error } = await withTimeout(
+      sb.auth.registerPasskey(),
+      AUTH_TIMEOUT_MS,
+      "Passkey setup"
+    );
+    if (error) {
+      const cancelled =
+        /cancel|abort|not allowed|timed out/i.test(String(error.message || "")) ||
+        error.name === "NotAllowedError";
+      throw authError({
+        error: cancelled
+          ? "Passkey setup was cancelled."
+          : friendlyAuthMessage(error, error.message || "Could not create passkey"),
+        code: error.code || (cancelled ? "passkey_cancelled" : "passkey_failed"),
+      });
+    }
+    return data;
+  }
+
+  async function listPasskeys() {
+    const sb = getClient();
+    if (!sb?.auth?.passkey?.list) return [];
+    const { data, error } = await withTimeout(sb.auth.passkey.list(), 8000, "Passkeys");
+    if (error) throw authError({ error: error.message || "Could not load passkeys", code: error.code });
+    return Array.isArray(data) ? data : data?.passkeys || [];
+  }
+
+  async function deletePasskey(passkeyId) {
+    const sb = getClient();
+    if (!sb?.auth?.passkey?.delete) {
+      throw new Error("Passkey management is not available");
+    }
+    const id = String(passkeyId || "").trim();
+    if (!id) throw new Error("Missing passkey");
+    const { error } = await withTimeout(
+      sb.auth.passkey.delete({ passkeyId: id }),
+      8000,
+      "Remove passkey"
+    );
+    if (error) throw authError({ error: error.message || "Could not remove passkey", code: error.code });
+    return true;
+  }
+
+  /** Best-effort password-manager save prompt (Chromium PasswordCredential). */
+  async function offerPasswordManagerSave(email, password) {
+    try {
+      if (!global.PasswordCredential || !global.navigator?.credentials?.store) return false;
+      const id = String(email || "").trim();
+      const pw = String(password || "");
+      if (!id || !pw) return false;
+      const cred = new global.PasswordCredential({ id, password: pw, name: id });
+      await global.navigator.credentials.store(cred);
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   async function signOut() {
@@ -701,6 +831,13 @@
     setForceOnboardingReplay,
     signUp,
     signIn,
+    canUsePasskeys,
+    passkeyHostAllowed,
+    signInWithPasskey,
+    registerPasskey,
+    listPasskeys,
+    deletePasskey,
+    offerPasswordManagerSave,
     signOut,
     completeAuthCallbackFromUrl,
     clearAuthCallbackFromUrl,

@@ -1,16 +1,16 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <script src="js/auth-gate-head.js?v=20260909-login3"></script>
-  <title>Settings · Moonrise Studio</title>
+  <script src="js/auth-gate-head.js?v=20260910-autosave1"></script>
+  <title>Settings � Moonrise Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/studio.css?v=20260910-menu-hide">
   <link rel="stylesheet" href="css/studio-motion.css?v=20260719-perf">
-  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0"></script>
 </head>
 <body data-page="settings">
   <div id="shell"></div>
@@ -91,6 +91,21 @@
           <p class="ms-error" id="set-pw-error" hidden></p>
           <p class="ms-settings-status is-ok" id="set-pw-ok" hidden>Password updated.</p>
         </section>
+
+        <section class="ms-card ms-settings-card" id="settings-passkeys" hidden>
+          <h2 class="ms-settings-card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Passkeys
+          </h2>
+          <p class="ms-settings-hint ms-muted">Sign in with Face ID, fingerprint, Windows Hello, or your password manager - no password typing.</p>
+          <ul class="ms-passkey-list" id="set-passkey-list"></ul>
+          <p class="ms-muted" id="set-passkey-empty" hidden style="margin:0 0 0.75rem;font-size:0.9rem">No passkeys on this account yet.</p>
+          <div class="ms-settings-actions">
+            <button type="button" class="ms-btn" id="set-passkey-add">Create passkey</button>
+          </div>
+          <p class="ms-error" id="set-passkey-error" hidden></p>
+          <p class="ms-settings-status is-ok" id="set-passkey-ok" hidden>Passkey saved.</p>
+        </section>
       </div>
 
       <div class="ms-settings-row">
@@ -122,7 +137,7 @@
               <img class="ms-settings-install-icon" id="set-install-icon" src="" alt="" width="56" height="56" decoding="async">
               <div class="ms-settings-install-copy">
                 <strong id="set-install-title">Moonrise</strong>
-                <span class="ms-muted" id="set-install-status">Checking install options…</span>
+                <span class="ms-muted" id="set-install-status">Checking install options�</span>
               </div>
             </div>
             <p class="ms-settings-install-steps ms-muted" id="set-install-instructions"></p>
@@ -170,8 +185,8 @@
   <script defer src="js/config.js?v=20260909-discord"></script>
   <script defer src="js/site-branding.js"></script>
   <script defer src="js/handles.js"></script>
-  <script defer src="js/supabase-client.js?v=20260909-login3"></script>
-  <script defer src="js/auth.js?v=20260909-login3"></script>
+  <script defer src="js/supabase-client.js?v=20260910-autosave1"></script>
+  <script defer src="js/auth.js?v=20260910-autosave1"></script>
   <script defer src="js/segment-switch.js"></script>
   <script defer src="js/ui-motion.js?v=20260719-onb-motion"></script>
   <script defer src="js/toast.js"></script>

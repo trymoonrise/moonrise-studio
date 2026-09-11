@@ -400,6 +400,126 @@
     }
   });
 
+  const passkeySection = document.getElementById("settings-passkeys");
+  const passkeyList = document.getElementById("set-passkey-list");
+  const passkeyEmpty = document.getElementById("set-passkey-empty");
+  const passkeyAdd = document.getElementById("set-passkey-add");
+  const passkeyErr = document.getElementById("set-passkey-error");
+  const passkeyOk = document.getElementById("set-passkey-ok");
+
+  function setPasskeyError(msg) {
+    if (passkeyOk) passkeyOk.hidden = true;
+    if (!passkeyErr) return;
+    passkeyErr.hidden = !msg;
+    passkeyErr.textContent = msg || "";
+  }
+
+  function setPasskeyOk(msg) {
+    setPasskeyError("");
+    if (!passkeyOk) return;
+    passkeyOk.hidden = !msg;
+    passkeyOk.textContent = msg || "Passkey saved.";
+  }
+
+  function formatPasskeyWhen(iso) {
+    try {
+      if (!iso) return "";
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return "";
+      return d.toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    } catch (_) {
+      return "";
+    }
+  }
+
+  async function refreshPasskeys() {
+    if (!passkeySection) return;
+    if (!window.StudioAuth?.canUsePasskeys?.()) {
+      passkeySection.hidden = true;
+      return;
+    }
+    passkeySection.hidden = false;
+    try {
+      const items = await window.StudioAuth.listPasskeys();
+      if (passkeyList) passkeyList.innerHTML = "";
+      if (!items.length) {
+        if (passkeyEmpty) passkeyEmpty.hidden = false;
+        return;
+      }
+      if (passkeyEmpty) passkeyEmpty.hidden = true;
+      items.forEach((pk) => {
+        const li = document.createElement("li");
+        li.className = "ms-passkey-item";
+        const copy = document.createElement("div");
+        copy.className = "ms-passkey-item-copy";
+        const title = document.createElement("strong");
+        title.textContent = pk.friendly_name || "Passkey";
+        const meta = document.createElement("span");
+        const created = formatPasskeyWhen(pk.created_at);
+        const used = formatPasskeyWhen(pk.last_used_at);
+        meta.textContent = used
+          ? `Last used ${used}`
+          : created
+            ? `Added ${created}`
+            : "Saved on this account";
+        copy.appendChild(title);
+        copy.appendChild(meta);
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "ms-passkey-remove";
+        remove.textContent = "Remove";
+        remove.addEventListener("click", async () => {
+          if (!window.confirm("Remove this passkey? You can still sign in with your password.")) {
+            return;
+          }
+          remove.disabled = true;
+          try {
+            await window.StudioAuth.deletePasskey(pk.id);
+            setPasskeyOk("Passkey removed.");
+            await refreshPasskeys();
+          } catch (e) {
+            setPasskeyError(friendlyMessage(e, "Could not remove passkey"));
+            remove.disabled = false;
+          }
+        });
+        li.appendChild(copy);
+        li.appendChild(remove);
+        passkeyList?.appendChild(li);
+      });
+    } catch (e) {
+      console.warn("passkeys", e);
+      setPasskeyError(friendlyMessage(e, "Could not load passkeys"));
+    }
+  }
+
+  passkeyAdd?.addEventListener("click", async () => {
+    setPasskeyError("");
+    passkeyAdd.disabled = true;
+    try {
+      await window.StudioAuth.registerPasskey();
+      try {
+        localStorage.removeItem("ms_passkey_offer_declined");
+      } catch (_) {
+        /* ignore */
+      }
+      setPasskeyOk("Passkey saved on this device.");
+      window.StudioToast?.success?.("Passkey saved");
+      await refreshPasskeys();
+    } catch (e) {
+      if (e?.code === "passkey_cancelled") {
+        setPasskeyError("");
+      } else {
+        setPasskeyError(friendlyMessage(e, "Could not create passkey"));
+      }
+    } finally {
+      passkeyAdd.disabled = false;
+    }
+  });
+
   document.getElementById("set-sign-out")?.addEventListener("click", async () => {
     try {
       await window.StudioAuth.signOut();
@@ -448,6 +568,7 @@
     started = true;
     try {
       await load();
+      await refreshPasskeys();
     } catch (e) {
       console.warn(e);
       setError(friendlyMessage(e, "Could not load settings"));

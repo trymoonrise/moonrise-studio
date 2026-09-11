@@ -70,10 +70,13 @@
       }
     }
     try {
-      // Check both stores — Auto save can flip between login and the next page.
-      if (tokenFromRaw(localStorage.getItem("moonrise-studio-auth"))) return true;
-      if (tokenFromRaw(sessionStorage.getItem("moonrise-studio-auth"))) return true;
-      return false;
+      // Auto save ON = durable localStorage session (auto login).
+      // Auto save OFF = sessionStorage only (must sign in every browser visit).
+      if (rememberLoginEnabled()) {
+        if (tokenFromRaw(localStorage.getItem("moonrise-studio-auth"))) return true;
+        return tokenFromRaw(sessionStorage.getItem("moonrise-studio-auth"));
+      }
+      return tokenFromRaw(sessionStorage.getItem("moonrise-studio-auth"));
     } catch (_) {
       return false;
     }

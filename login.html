@@ -115,6 +115,12 @@
         <button type="button" class="ms-auth-forgot" id="resend-confirm-link">Resend confirmation email</button>
       </p>
       <button class="ms-btn" type="submit" id="auth-submit" style="width:100%">Sign in</button>
+      <div class="ms-auth-passkey" id="passkey-wrap" hidden>
+        <p class="ms-auth-or" aria-hidden="true"><span>or</span></p>
+        <button class="ms-btn ms-btn-secondary" type="button" id="auth-passkey" style="width:100%">
+          Sign in with passkey
+        </button>
+      </div>
       <p class="ms-auth-home-wrap">
         <a class="ms-auth-home" href="index.html">Back to home</a>
       </p>
@@ -147,7 +153,7 @@
         location.replace("orders.html");
         return;
       }
-      async function continueAfterAuth() {
+      async function continueAfterAuth(opts) {
         if (isLocate) {
           location.replace("orders.html");
           return;
@@ -164,9 +170,45 @@
         if (!sessionReady) {
           throw new Error("Signed in, but the session did not stick. Refresh and try again.");
         }
+        if (opts?.email && opts?.password) {
+          try {
+            await StudioAuth.offerPasswordManagerSave?.(opts.email, opts.password);
+          } catch (_) {
+            /* ignore — password managers may refuse this origin */
+          }
+        }
+        await maybeOfferPasskeyAfterLogin();
         window.StudioAuth.setFinanceOnboardingSoftSkip?.(false);
         const destination = await StudioAuth.studioOnboardingRedirect(nextUrl);
         location.replace(destination);
+      }
+
+      async function maybeOfferPasskeyAfterLogin() {
+        try {
+          if (!isAutosaveEnabled()) return;
+          if (!StudioAuth.canUsePasskeys?.()) return;
+          if (localStorage.getItem("ms_passkey_offer_declined") === "1") return;
+          const existing = await StudioAuth.listPasskeys?.();
+          if (Array.isArray(existing) && existing.length) return;
+          const want = window.confirm(
+            "Create a passkey for this device? Next time you can sign in with Face ID, fingerprint, Windows Hello, or your password manager."
+          );
+          if (!want) {
+            try {
+              localStorage.setItem("ms_passkey_offer_declined", "1");
+            } catch (_) {
+              /* ignore */
+            }
+            return;
+          }
+          await StudioAuth.registerPasskey();
+          window.StudioToast?.success?.("Passkey saved on this device");
+        } catch (ex) {
+          const code = ex?.code || "";
+          if (code === "passkey_cancelled" || /cancel/i.test(String(ex?.message || ""))) return;
+          // Non-fatal — password login already succeeded.
+          console.warn("passkey offer", ex);
+        }
       }
       let mode = params.get("mode") === "signup" ? "signup"
         : params.get("mode") === "forgot" ? "forgot"
@@ -219,6 +261,8 @@
       const backWrap = document.getElementById("back-wrap");
       const autosaveWrap = document.getElementById("autosave-wrap");
       const autosaveToggle = document.getElementById("auth-autosave");
+      const passkeyWrap = document.getElementById("passkey-wrap");
+      const passkeyBtn = document.getElementById("auth-passkey");
       const handleInput = document.getElementById("handle");
       const AUTOSAVE_ENABLED_KEY = "ms_auth_autosave_enabled";
       const AUTOSAVE_EMAIL_KEY = "ms_auth_autosave_email";
@@ -309,12 +353,28 @@
 
       syncAutosaveToggleUi();
       restoreAutosavedFields();
+      // If Auto save is off, scrub any leftover durable session from older builds.
+      if (!readAutosaveEnabled()) {
+        try {
+          localStorage.removeItem("moonrise-studio-auth");
+        } catch (_) {
+          /* ignore */
+        }
+      }
       autosaveToggle?.addEventListener("change", () => {
         const on = !!autosaveToggle.checked;
         autosaveToggle.setAttribute("aria-checked", on ? "true" : "false");
         writeAutosaveEnabled(on);
-        if (on) persistAutosavedFields();
-        else clearAutosavedFields();
+        if (on) {
+          persistAutosavedFields();
+        } else {
+          clearAutosavedFields();
+          try {
+            localStorage.removeItem("moonrise-studio-auth");
+          } catch (_) {
+            /* ignore */
+          }
+        }
       });
       emailInput?.addEventListener("input", scheduleAutosave);
       handleInput?.addEventListener("input", scheduleAutosave);
@@ -404,6 +464,39 @@
       passwordInput.addEventListener("input", updatePasswordMeter);
       setMode(mode, true);
 
+      function syncPasskeyUi() {
+        if (!passkeyWrap) return;
+        const show = mode === "signin" && !!window.StudioAuth?.canUsePasskeys?.();
+        passkeyWrap.hidden = !show;
+      }
+
+      passkeyBtn?.addEventListener("click", async () => {
+        showAuthError("");
+        if (hint) hint.textContent = "";
+        writeAutosaveEnabled(isAutosaveEnabled());
+        passkeyBtn.disabled = true;
+        const idle = passkeyBtn.textContent;
+        passkeyBtn.textContent = "Waiting for passkey...";
+        try {
+          await StudioAuth.signInWithPasskey();
+          persistAutosavedFields();
+          await continueAfterAuth();
+        } catch (ex) {
+          if (ex?.code === "passkey_cancelled") {
+            /* user dismissed OS prompt — stay quiet */
+          } else {
+            showAuthError(ex);
+          }
+        } finally {
+          passkeyBtn.disabled = false;
+          passkeyBtn.textContent = idle || "Sign in with passkey";
+        }
+      });
+
+      // SDK may load just after this script; refresh passkey button once ready.
+      setTimeout(syncPasskeyUi, 0);
+      setTimeout(syncPasskeyUi, 400);
+
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
         showAuthError("");
@@ -465,7 +558,7 @@
             );
             persistAutosavedFields();
             if (data?.session || data?.access_token) {
-              await continueAfterAuth();
+              await continueAfterAuth({ email, password });
               return;
             }
             hint.textContent = "Check your email for the Moonrise confirmation link - tap it to verify and sign in automatically.";
@@ -486,7 +579,7 @@
             }
             await StudioAuth.signIn(email, password);
             persistAutosavedFields();
-            await continueAfterAuth();
+            await continueAfterAuth({ email, password });
           }
         } catch (ex) {
           if (ex.code === "email_not_confirmed") {
@@ -668,6 +761,7 @@
         if (autosaveWrap) {
           autosaveWrap.hidden = showForgot || showRecover;
         }
+        syncPasskeyUi();
 
         if (emailInput) {
           if (mode === "signup") {
@@ -676,7 +770,9 @@
           } else {
             emailInput.type = "text";
             emailInput.inputMode = "email";
-            emailInput.autocomplete = mode === "signin" ? "username" : "email";
+            // username + webauthn helps password managers and conditional passkey UI.
+            emailInput.autocomplete =
+              mode === "signin" ? "username webauthn" : "email";
           }
         }
 
