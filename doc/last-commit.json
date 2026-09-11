@@ -1,6 +1,6 @@
 {
   "repo": "trymoonrise/moonrise-studio",
-  "sha": "ae764057dbf6b4ba7e76404338cabbce532d793c",
-  "committedAt": "2026-09-10T19:54:14-07:00",
-  "message": "Wait for StudioAuth before login bootstrap."
+  "sha": "5bb8f49386adc2c46eb9128f4665b0e7722b939d",
+  "committedAt": "2026-09-10T20:02:02-07:00",
+  "message": "Keep sidebar Last updated in sync with every GitHub commit."
 }
