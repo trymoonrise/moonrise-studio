@@ -3,7 +3,7 @@
 <head>
   <script>
     (function () {
-      var BUILD = "20260911-passkey2";
+      var BUILD = "20260911-passkey3";
       try {
         var prev = localStorage.getItem("ms_asset_build");
         localStorage.setItem("ms_asset_build", BUILD);
@@ -36,7 +36,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css?v=20260911-passkey2">
+  <link rel="stylesheet" href="css/studio.css?v=20260911-passkey3">
   <link rel="stylesheet" href="css/studio-motion.css?v=20260719-perf">
   <meta name="color-scheme" content="light">
   <link rel="preconnect" href="https://erfaxgmnzdropviormpj.supabase.co" crossorigin>
@@ -146,10 +146,10 @@
       <div class="ms-auth-passkey" id="passkey-wrap" hidden>
         <p class="ms-auth-or" aria-hidden="true"><span>or</span></p>
         <button class="ms-btn ms-btn-secondary" type="button" id="auth-passkey" style="width:100%">
-          Sign in with passkey
+          Passkey
         </button>
         <p class="ms-auth-passkey-hint ms-muted" id="passkey-hint">
-          First time? Sign in with your password, then create a passkey in Settings.
+          Signs you in with a saved passkey, or creates one using your email &amp; password.
         </p>
       </div>
       <p class="ms-auth-home-wrap">
@@ -167,9 +167,9 @@
   <script defer src="js/ui-motion.js?v=20260720-login-fix"></script>
   <script defer src="js/toast.js"></script>
   <script defer src="js/handles.js"></script>
-  <script defer src="js/auth-security.js?v=20260911-passkey2"></script>
-  <script defer src="js/supabase-client.js?v=20260911-passkey2"></script>
-  <script defer src="js/auth.js?v=20260911-passkey2"></script>
+  <script defer src="js/auth-security.js?v=20260911-passkey3"></script>
+  <script defer src="js/supabase-client.js?v=20260911-passkey3"></script>
+  <script defer src="js/auth.js?v=20260911-passkey3"></script>
   <script defer>
     (async function () {
       window.StudioAuth?.warmAuthService?.();
@@ -208,7 +208,9 @@
             /* ignore — password managers may refuse this origin */
           }
         }
-        await maybeOfferPasskeyAfterLogin();
+        if (!opts?.skipPasskeyOffer) {
+          await maybeOfferPasskeyAfterLogin();
+        }
         window.StudioAuth.setFinanceOnboardingSoftSkip?.(false);
         const destination = await window.StudioAuth.studioOnboardingRedirect(nextUrl);
         location.replace(destination);
@@ -219,38 +221,24 @@
           if (!window.StudioAuth?.canUsePasskeys?.()) return;
           const existing = await window.StudioAuth.listPasskeys?.();
           if (Array.isArray(existing) && existing.length) return;
-          // Only skip for this browser tab if they already declined once this session.
           try {
             if (sessionStorage.getItem("ms_passkey_offer_declined") === "1") return;
           } catch (_) {
             /* ignore */
           }
-          const want = window.confirm(
-            "Create a passkey for this device?\n\nNext time you can sign in with Face ID, fingerprint, Windows Hello, or your password manager — without typing a password."
-          );
+          const want = window.confirm("Save a passkey on this device for one-tap sign-in next time?");
           if (!want) {
             try {
               sessionStorage.setItem("ms_passkey_offer_declined", "1");
-              localStorage.removeItem("ms_passkey_offer_declined");
             } catch (_) {
               /* ignore */
             }
             return;
           }
           await window.StudioAuth.registerPasskey();
-          try {
-            sessionStorage.removeItem("ms_passkey_offer_declined");
-            localStorage.removeItem("ms_passkey_offer_declined");
-          } catch (_) {
-            /* ignore */
-          }
-          window.StudioToast?.success?.("Passkey saved on this device");
+          window.StudioToast?.success?.("Passkey saved");
         } catch (ex) {
-          const code = ex?.code || "";
-          if (code === "passkey_cancelled" || /cancel/i.test(String(ex?.message || ""))) return;
-          window.StudioToast?.error?.(
-            ex?.message || "Could not create a passkey. You can try again in Settings → Passkeys."
-          );
+          if (ex?.code === "passkey_cancelled" || /cancel/i.test(String(ex?.message || ""))) return;
           console.warn("passkey offer", ex);
         }
       }
@@ -522,7 +510,7 @@
         if (passkeyBtn) {
           passkeyBtn.disabled = show && !apiOk;
           passkeyBtn.title = apiOk
-            ? "Sign in with Face ID, fingerprint, Windows Hello, or your password manager"
+            ? "Sign in with a passkey, or create one with your email and password"
             : "Loading passkey support...";
         }
       }
@@ -531,40 +519,56 @@
         showAuthError("");
         if (hint) hint.textContent = "";
         writeAutosaveEnabled(isAutosaveEnabled());
-        if (!window.StudioAuth?.signInWithPasskey) {
-          showAuthError("Passkey sign-in is still loading. Try again in a moment.");
+        if (!window.StudioAuth?.continueWithPasskey && !window.StudioAuth?.signInWithPasskey) {
+          showAuthError("Passkey support is still loading. Try again in a moment.");
           return;
         }
+        const email = String(form.email?.value || "").trim();
+        const password = String(passwordInput?.value || "");
         passkeyBtn.disabled = true;
-        const idle = passkeyBtn.textContent;
-        passkeyBtn.textContent = "Waiting for passkey...";
+        const idle = "Passkey";
+        passkeyBtn.textContent = "Checking passkey...";
         try {
-          await window.StudioAuth.signInWithPasskey();
+          const run =
+            window.StudioAuth.continueWithPasskey ||
+            (async (opts) => {
+              await window.StudioAuth.signInWithPasskey();
+              return { created: false };
+            });
+          // First attempt may open the OS sheet; if none exist, continueWithPasskey
+          // falls through to password + create using the fields above.
+          passkeyBtn.textContent = "Waiting for passkey...";
+          const result = await run({ email, password });
+          if (result?.created) {
+            window.StudioToast?.success?.("Passkey created — you are signed in");
+          }
           persistAutosavedFields();
-          await continueAfterAuth();
+          await continueAfterAuth({
+            email,
+            password,
+            skipPasskeyOffer: true,
+          });
         } catch (ex) {
-          if (ex?.code === "passkey_cancelled") {
-            showAuthError(
-              "Passkey sign-in was cancelled. If none are saved yet, sign in with your password, then create a passkey in Settings."
-            );
-          } else if (ex?.code === "passkey_missing") {
-            try {
-              localStorage.removeItem("ms_passkey_offer_declined");
-              sessionStorage.removeItem("ms_passkey_offer_declined");
-            } catch (_) {
-              /* ignore */
-            }
+          if (ex?.sessionOk) {
+            window.StudioToast?.info?.(ex.message || "Signed in without saving a passkey");
+            persistAutosavedFields();
+            await continueAfterAuth({ email, password, skipPasskeyOffer: true });
+            return;
+          }
+          if (ex?.code === "passkey_needs_password") {
             showAuthError(ex);
             if (hint) {
               hint.textContent =
-                "Sign in with your password first, then open Settings → Passkeys and tap Create passkey.";
+                "Fill email and password, then tap Passkey once to create it and sign in.";
             }
+            if (!email) form.email?.focus();
+            else passwordInput?.focus();
           } else {
             showAuthError(ex);
           }
         } finally {
           passkeyBtn.disabled = false;
-          passkeyBtn.textContent = idle || "Sign in with passkey";
+          passkeyBtn.textContent = idle;
           syncPasskeyUi();
         }
       });

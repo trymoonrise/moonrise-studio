@@ -456,9 +456,9 @@
         );
       throw authError({
         error: missing
-          ? "No passkey is saved for this account yet. Sign in with your password, then create one in Settings → Passkeys."
+          ? "No passkey is saved for this account yet."
           : cancelled
-            ? "Passkey sign-in was cancelled. If you have not created a passkey yet, sign in with your password first."
+            ? "Passkey sign-in was cancelled."
             : friendlyAuthMessage(error, error.message || "Passkey sign-in failed"),
         code: missing
           ? "passkey_missing"
@@ -469,7 +469,65 @@
     if (user) {
       Promise.resolve(ensureProfile(user)).catch(() => {});
     }
-    return data;
+    return { ...(data || {}), created: false };
+  }
+
+  /**
+   * One-button passkey flow:
+   * 1) Try passkey sign-in
+   * 2) If none exist, use email+password once to sign in and create a passkey
+   */
+  async function continueWithPasskey(opts) {
+    const email = String(opts?.email || "").trim();
+    const password = String(opts?.password || "");
+    try {
+      return await signInWithPasskey();
+    } catch (ex) {
+      const raw = String(ex?.message || "");
+      const missing =
+        ex?.code === "passkey_missing" || /no passkey|not saved|credential_not_found/i.test(raw);
+      const cancelled =
+        ex?.code === "passkey_cancelled" || /cancel|abort|not allowed/i.test(raw);
+      // Create path: no passkey yet, or user dismissed the empty OS sheet after filling password.
+      const tryCreate = missing || (cancelled && email && password);
+      if (!tryCreate) {
+        if (cancelled) {
+          throw authError({
+            error:
+              "Enter your email and password, then tap Passkey to create one and sign in.",
+            code: "passkey_needs_password",
+          });
+        }
+        throw ex;
+      }
+      if (!email || !password) {
+        throw authError({
+          error:
+            "Enter your email and password, then tap Passkey again to create one and sign in.",
+          code: "passkey_needs_password",
+        });
+      }
+      await signIn(email, password);
+      try {
+        await registerPasskey();
+        return { created: true };
+      } catch (regEx) {
+        const regCancelled =
+          regEx?.code === "passkey_cancelled" ||
+          /cancel|abort|not allowed/i.test(String(regEx?.message || ""));
+        if (regCancelled) {
+          return { created: false, signedInWithPassword: true };
+        }
+        const err = authError({
+          error:
+            regEx?.message ||
+            "Signed in, but the passkey was not saved. You can add one in Settings → Passkeys.",
+          code: "passkey_create_failed",
+        });
+        err.sessionOk = true;
+        throw err;
+      }
+    }
   }
 
   async function registerPasskey() {
@@ -843,6 +901,7 @@
     canUsePasskeys,
     passkeyHostAllowed,
     signInWithPasskey,
+    continueWithPasskey,
     registerPasskey,
     listPasskeys,
     deletePasskey,
