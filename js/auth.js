@@ -446,14 +446,23 @@
       "Passkey sign-in"
     );
     if (error) {
+      const raw = String(error.message || error.name || "");
       const cancelled =
-        /cancel|abort|not allowed|timed out/i.test(String(error.message || "")) ||
+        /cancel|abort|not allowed|timed out/i.test(raw) ||
         error.name === "NotAllowedError";
+      const missing =
+        /no passkey|not saved|no credential|credential_not_found|empty allowlist|no.*available/i.test(
+          raw
+        );
       throw authError({
-        error: cancelled
-          ? "Passkey sign-in was cancelled."
-          : friendlyAuthMessage(error, error.message || "Passkey sign-in failed"),
-        code: error.code || (cancelled ? "passkey_cancelled" : "passkey_failed"),
+        error: missing
+          ? "No passkey is saved for this account yet. Sign in with your password, then create one in Settings → Passkeys."
+          : cancelled
+            ? "Passkey sign-in was cancelled. If you have not created a passkey yet, sign in with your password first."
+            : friendlyAuthMessage(error, error.message || "Passkey sign-in failed"),
+        code: missing
+          ? "passkey_missing"
+          : error.code || (cancelled ? "passkey_cancelled" : "passkey_failed"),
       });
     }
     const user = data?.user || data?.session?.user;

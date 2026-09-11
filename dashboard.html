@@ -1,45 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script>
-    (function () {
-      var BUILD = "20260911-live2";
-      try {
-        var prev = localStorage.getItem("ms_asset_build");
-        localStorage.setItem("ms_asset_build", BUILD);
-        if (prev && prev !== BUILD && !sessionStorage.getItem("ms_build_reloaded_" + BUILD)) {
-          sessionStorage.setItem("ms_build_reloaded_" + BUILD, "1");
-          var jobs = [];
-          if ("serviceWorker" in navigator) {
-            jobs.push(navigator.serviceWorker.getRegistrations().then(function (regs) {
-              return Promise.all((regs || []).map(function (r) { return r.unregister(); }));
-            }));
-          }
-          if ("caches" in window) {
-            jobs.push(caches.keys().then(function (keys) {
-              return Promise.all((keys || []).map(function (k) { return caches.delete(k); }));
-            }));
-          }
-          Promise.allSettled(jobs).then(function () {
-            var url = new URL(location.href);
-            url.searchParams.set("_ms_b", BUILD);
-            location.replace(url.pathname + url.search + url.hash);
-          });
-        }
-      } catch (e) {}
-    })();
-  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <script src="js/auth-gate-head.js?v=20260911-live2"></script>
+  <script src="js/auth-gate-head.js?v=20260909-login3"></script>
   <title>Dashboard - Moonrise Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://erfaxgmnzdropviormpj.supabase.co" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css?v=20260911-live2">
+  <link rel="stylesheet" href="css/studio.css?v=20260910-admin-dot">
   <link rel="stylesheet" href="css/studio-motion.css?v=20260719-perf">
-  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body data-page="dashboard">
   <div id="shell"></div>
@@ -105,14 +77,14 @@
                 type="search"
                 id="dash-projects-search"
                 class="ms-dash-projects-search-input"
-                placeholder="Search name, location, category, phone, domainâ€¦"
+                placeholder="Search name, location, category, phone, domain…"
                 autocomplete="off"
                 spellcheck="false"
                 aria-autocomplete="list"
                 aria-controls="dash-projects-suggest"
                 aria-expanded="false"
               >
-              <button type="button" class="ms-dash-projects-search-clear" id="dash-projects-search-clear" hidden aria-label="Clear search">Ã—</button>
+              <button type="button" class="ms-dash-projects-search-clear" id="dash-projects-search-clear" hidden aria-label="Clear search">×</button>
             </div>
             <ul class="ms-dash-projects-suggest" id="dash-projects-suggest" role="listbox" hidden></ul>
             <p class="ms-dash-projects-search-hint" id="dash-projects-search-hint" hidden></p>
@@ -144,14 +116,14 @@
 
   <script defer src="js/config.js?v=20260909-discord"></script>
   <script defer src="js/site-branding.js"></script>
-  <script defer src="js/supabase-client.js?v=20260911-live2"></script>
-  <script defer src="js/auth.js?v=20260911-live2"></script>
+  <script defer src="js/supabase-client.js?v=20260909-login3"></script>
+  <script defer src="js/auth.js?v=20260909-login3"></script>
   <script defer src="js/segment-switch.js"></script>
   <script defer src="js/ui-motion.js?v=20260719-perf"></script>
   <script defer src="js/toast.js"></script>
   <script defer src="js/income.js?v=20260718-income"></script>
   <script defer src="js/project-lifecycle.js?v=20260718-delete-fix"></script>
-  <script defer src="js/app.js?v=20260911-lastupd1"></script>
+  <script defer src="js/app.js?v=20260911-passkey2"></script>
   <script defer src="js/install-hint.js"></script>
   <script defer src="js/dashboard.js?v=20260721-perf"></script>
 </body>

@@ -3,7 +3,7 @@
 <head>
   <script>
     (function () {
-      var BUILD = "20260911-live2";
+      var BUILD = "20260911-passkey2";
       try {
         var prev = localStorage.getItem("ms_asset_build");
         localStorage.setItem("ms_asset_build", BUILD);
@@ -36,7 +36,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css?v=20260911-live2">
+  <link rel="stylesheet" href="css/studio.css?v=20260911-passkey2">
   <link rel="stylesheet" href="css/studio-motion.css?v=20260719-perf">
   <meta name="color-scheme" content="light">
   <link rel="preconnect" href="https://erfaxgmnzdropviormpj.supabase.co" crossorigin>
@@ -148,6 +148,9 @@
         <button class="ms-btn ms-btn-secondary" type="button" id="auth-passkey" style="width:100%">
           Sign in with passkey
         </button>
+        <p class="ms-auth-passkey-hint ms-muted" id="passkey-hint">
+          First time? Sign in with your password, then create a passkey in Settings.
+        </p>
       </div>
       <p class="ms-auth-home-wrap">
         <a class="ms-auth-home" href="index.html">Back to home</a>
@@ -164,9 +167,9 @@
   <script defer src="js/ui-motion.js?v=20260720-login-fix"></script>
   <script defer src="js/toast.js"></script>
   <script defer src="js/handles.js"></script>
-  <script defer src="js/auth-security.js?v=20260911-live2"></script>
-  <script defer src="js/supabase-client.js?v=20260911-live2"></script>
-  <script defer src="js/auth.js?v=20260911-live2"></script>
+  <script defer src="js/auth-security.js?v=20260911-passkey2"></script>
+  <script defer src="js/supabase-client.js?v=20260911-passkey2"></script>
+  <script defer src="js/auth.js?v=20260911-passkey2"></script>
   <script defer>
     (async function () {
       window.StudioAuth?.warmAuthService?.();
@@ -213,28 +216,41 @@
 
       async function maybeOfferPasskeyAfterLogin() {
         try {
-          if (!isAutosaveEnabled()) return;
-          if (!window.StudioAuth.canUsePasskeys?.()) return;
-          if (localStorage.getItem("ms_passkey_offer_declined") === "1") return;
+          if (!window.StudioAuth?.canUsePasskeys?.()) return;
           const existing = await window.StudioAuth.listPasskeys?.();
           if (Array.isArray(existing) && existing.length) return;
+          // Only skip for this browser tab if they already declined once this session.
+          try {
+            if (sessionStorage.getItem("ms_passkey_offer_declined") === "1") return;
+          } catch (_) {
+            /* ignore */
+          }
           const want = window.confirm(
-            "Create a passkey for this device? Next time you can sign in with Face ID, fingerprint, Windows Hello, or your password manager."
+            "Create a passkey for this device?\n\nNext time you can sign in with Face ID, fingerprint, Windows Hello, or your password manager — without typing a password."
           );
           if (!want) {
             try {
-              localStorage.setItem("ms_passkey_offer_declined", "1");
+              sessionStorage.setItem("ms_passkey_offer_declined", "1");
+              localStorage.removeItem("ms_passkey_offer_declined");
             } catch (_) {
               /* ignore */
             }
             return;
           }
           await window.StudioAuth.registerPasskey();
+          try {
+            sessionStorage.removeItem("ms_passkey_offer_declined");
+            localStorage.removeItem("ms_passkey_offer_declined");
+          } catch (_) {
+            /* ignore */
+          }
           window.StudioToast?.success?.("Passkey saved on this device");
         } catch (ex) {
           const code = ex?.code || "";
           if (code === "passkey_cancelled" || /cancel/i.test(String(ex?.message || ""))) return;
-          // Non-fatal — password login already succeeded.
+          window.StudioToast?.error?.(
+            ex?.message || "Could not create a passkey. You can try again in Settings → Passkeys."
+          );
           console.warn("passkey offer", ex);
         }
       }
@@ -528,7 +544,21 @@
           await continueAfterAuth();
         } catch (ex) {
           if (ex?.code === "passkey_cancelled") {
-            /* user dismissed OS prompt — stay quiet */
+            showAuthError(
+              "Passkey sign-in was cancelled. If none are saved yet, sign in with your password, then create a passkey in Settings."
+            );
+          } else if (ex?.code === "passkey_missing") {
+            try {
+              localStorage.removeItem("ms_passkey_offer_declined");
+              sessionStorage.removeItem("ms_passkey_offer_declined");
+            } catch (_) {
+              /* ignore */
+            }
+            showAuthError(ex);
+            if (hint) {
+              hint.textContent =
+                "Sign in with your password first, then open Settings → Passkeys and tap Create passkey.";
+            }
           } else {
             showAuthError(ex);
           }
