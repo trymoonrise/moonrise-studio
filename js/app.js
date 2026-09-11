@@ -510,6 +510,89 @@
     }
   }
 
+  /** Keys that must survive a deep hard reset so the user stays signed in. */
+  const DEEP_RESET_KEEP_KEYS = new Set([
+    "moonrise-studio-auth",
+    "ms_auth_autosave_enabled",
+    "ms_auth_autosave_email",
+    "ms_auth_autosave_handle",
+  ]);
+
+  function clearStorageDeep(storage) {
+    if (!storage) return;
+    try {
+      const keep = [];
+      for (let i = 0; i < storage.length; i++) {
+        const key = storage.key(i);
+        if (key && DEEP_RESET_KEEP_KEYS.has(key)) {
+          keep.push([key, storage.getItem(key)]);
+        }
+      }
+      storage.clear();
+      keep.forEach(([key, value]) => {
+        try {
+          if (value != null) storage.setItem(key, value);
+        } catch (_) {
+          /* ignore */
+        }
+      });
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  function clearOriginCookies() {
+    try {
+      const raw = String(document.cookie || "");
+      if (!raw) return;
+      const host = String(location.hostname || "");
+      const parts = host.split(".").filter(Boolean);
+      const domains = [""];
+      if (parts.length >= 2) {
+        domains.push(parts.slice(-2).join("."));
+        domains.push("." + parts.slice(-2).join("."));
+      }
+      raw.split(";").forEach((piece) => {
+        const name = piece.split("=")[0].trim();
+        if (!name) return;
+        domains.forEach((domain) => {
+          const domainPart = domain ? "; domain=" + domain : "";
+          document.cookie =
+            name + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/" + domainPart;
+        });
+      });
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  function deleteAllIndexedDatabases() {
+    if (!("indexedDB" in window)) return Promise.resolve();
+    const finishDelete = (name) =>
+      new Promise((resolve) => {
+        try {
+          const req = indexedDB.deleteDatabase(name);
+          req.onsuccess = req.onerror = req.onblocked = () => resolve();
+        } catch (_) {
+          resolve();
+        }
+      });
+    try {
+      if (typeof indexedDB.databases === "function") {
+        return indexedDB
+          .databases()
+          .then((dbs) =>
+            Promise.all((dbs || []).map((db) => (db?.name ? finishDelete(db.name) : null)))
+          )
+          .catch(() => undefined);
+      }
+    } catch (_) {
+      /* ignore */
+    }
+    return Promise.resolve();
+  }
+
+  /** Deep hard reset: wipe SW, Cache Storage, IndexedDB, cookies, and non-auth storage, then reload. */
   function hardRefreshSite() {
     const btn = document.getElementById("ms-hard-refresh");
     if (btn) {
@@ -520,6 +603,7 @@
       try {
         const url = new URL(location.href);
         url.searchParams.set("_ms_r", String(Date.now()));
+        // Bypass bfcache / soft reload — always hit the network for HTML.
         location.replace(url.pathname + url.search + url.hash);
       } catch (_) {
         location.reload();
@@ -530,20 +614,43 @@
       if ("serviceWorker" in navigator) {
         jobs.push(
           navigator.serviceWorker.getRegistrations().then((regs) =>
-            Promise.all(regs.map((reg) => reg.unregister()))
+            Promise.all(
+              (regs || []).map(async (reg) => {
+                try {
+                  if (reg.active) reg.active.postMessage({ type: "SKIP_WAITING" });
+                } catch (_) {
+                  /* ignore */
+                }
+                try {
+                  await reg.unregister();
+                } catch (_) {
+                  /* ignore */
+                }
+              })
+            )
           )
         );
       }
       if ("caches" in window) {
-        jobs.push(caches.keys().then((keys) => Promise.all(keys.map((key) => caches.delete(key)))));
+        jobs.push(
+          caches.keys().then((keys) => Promise.all((keys || []).map((key) => caches.delete(key))))
+        );
       }
+      jobs.push(deleteAllIndexedDatabases());
+    } catch (_) {
+      /* ignore */
+    }
+    try {
+      clearStorageDeep(window.localStorage);
+      clearStorageDeep(window.sessionStorage);
+      clearOriginCookies();
     } catch (_) {
       /* ignore */
     }
     Promise.allSettled(jobs).then(reload, reload);
   }
 
-  /** Fixed top-right hard refresh - all Studio pages / phones / tablets / desktop. */
+  /** Fixed top-right deep hard reset - all Studio pages / phones / tablets / desktop. */
   function ensureHardRefreshButton() {
     stripHardRefreshParam();
     if (!document.body) return;
@@ -560,8 +667,8 @@
       btn.type = "button";
       btn.id = "ms-hard-refresh";
       btn.className = "ms-hard-refresh";
-      btn.setAttribute("aria-label", "Hard refresh");
-      btn.title = "Hard refresh";
+      btn.setAttribute("aria-label", "Deep hard reset");
+      btn.title = "Deep hard reset — clear cache and reload";
       btn.innerHTML = ICONS.refresh;
       btn.addEventListener("click", (e) => {
         e.preventDefault();
@@ -571,6 +678,8 @@
       document.body.appendChild(btn);
     } else {
       btn.innerHTML = ICONS.refresh;
+      btn.setAttribute("aria-label", "Deep hard reset");
+      btn.title = "Deep hard reset — clear cache and reload";
       if (btn.parentElement !== document.body) {
         document.body.appendChild(btn);
       }
