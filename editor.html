@@ -1,16 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    (function () {
+      var BUILD = "20260911-live2";
+      try {
+        var prev = localStorage.getItem("ms_asset_build");
+        localStorage.setItem("ms_asset_build", BUILD);
+        if (prev && prev !== BUILD && !sessionStorage.getItem("ms_build_reloaded_" + BUILD)) {
+          sessionStorage.setItem("ms_build_reloaded_" + BUILD, "1");
+          var jobs = [];
+          if ("serviceWorker" in navigator) {
+            jobs.push(navigator.serviceWorker.getRegistrations().then(function (regs) {
+              return Promise.all((regs || []).map(function (r) { return r.unregister(); }));
+            }));
+          }
+          if ("caches" in window) {
+            jobs.push(caches.keys().then(function (keys) {
+              return Promise.all((keys || []).map(function (k) { return caches.delete(k); }));
+            }));
+          }
+          Promise.allSettled(jobs).then(function () {
+            var url = new URL(location.href);
+            url.searchParams.set("_ms_b", BUILD);
+            location.replace(url.pathname + url.search + url.hash);
+          });
+        }
+      } catch (e) {}
+    })();
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <script src="js/auth-gate-head.js?v=20260911-live1"></script>
+  <script src="js/auth-gate-head.js?v=20260911-live2"></script>
   <title>Editor Â· Moonrise Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/generation-announce.css?v=20260721-float">
-  <link rel="stylesheet" href="css/studio.css?v=20260911-live1">
+  <link rel="stylesheet" href="css/studio.css?v=20260911-live2">
   <link rel="stylesheet" href="css/studio-motion.css?v=20260719-perf">
   <link rel="stylesheet" href="css/mvp-gate.css?v=20260717-mvp-fix">
   <style>
@@ -688,18 +716,18 @@
     </div>
   </div>
 
-  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"></script>
   <script defer src="js/config.js?v=20260909-discord"></script>
   <script defer src="js/site-branding.js"></script>
-  <script defer src="js/auth-security.js?v=20260911-live1"></script>
-  <script defer src="js/supabase-client.js?v=20260911-live1"></script>
-  <script defer src="js/auth.js?v=20260911-live1"></script>
+  <script defer src="js/auth-security.js?v=20260911-live2"></script>
+  <script defer src="js/supabase-client.js?v=20260911-live2"></script>
+  <script defer src="js/auth.js?v=20260911-live2"></script>
   <script defer src="js/segment-switch.js"></script>
   <script defer src="js/ui-motion.js?v=20260719-perf"></script>
   <script defer src="js/toast.js"></script>
   <script defer src="js/income.js?v=20260718-income"></script>
   <script defer src="js/generation-announce.js?v=20260721-float"></script>
-  <script defer src="js/app.js?v=20260911-live1"></script>
+  <script defer src="js/app.js?v=20260911-live2"></script>
   <script defer src="js/creator-contact.js?v=20260719-watermark-contact"></script>
   <script defer src="js/generation-lock.js?v=20260721-one-gen"></script>
   <script defer src="js/builder.js?v=20260909-qr-vert"></script>

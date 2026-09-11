@@ -1,6 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    (function () {
+      var BUILD = "20260911-live2";
+      try {
+        var prev = localStorage.getItem("ms_asset_build");
+        localStorage.setItem("ms_asset_build", BUILD);
+        if (prev && prev !== BUILD && !sessionStorage.getItem("ms_build_reloaded_" + BUILD)) {
+          sessionStorage.setItem("ms_build_reloaded_" + BUILD, "1");
+          var jobs = [];
+          if ("serviceWorker" in navigator) {
+            jobs.push(navigator.serviceWorker.getRegistrations().then(function (regs) {
+              return Promise.all((regs || []).map(function (r) { return r.unregister(); }));
+            }));
+          }
+          if ("caches" in window) {
+            jobs.push(caches.keys().then(function (keys) {
+              return Promise.all((keys || []).map(function (k) { return caches.delete(k); }));
+            }));
+          }
+          Promise.allSettled(jobs).then(function () {
+            var url = new URL(location.href);
+            url.searchParams.set("_ms_b", BUILD);
+            location.replace(url.pathname + url.search + url.hash);
+          });
+        }
+      } catch (e) {}
+    })();
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Locate My Order · Moonrise Studio</title>
@@ -8,7 +36,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css?v=20260911-live1">
+  <link rel="stylesheet" href="css/studio.css?v=20260911-live2">
   <link rel="stylesheet" href="css/studio-motion.css?v=20260719-perf">
   <meta name="color-scheme" content="light">
   <script defer src="js/config.js?v=20260909-discord"></script>

@@ -1,6 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    (function () {
+      var BUILD = "20260911-live2";
+      try {
+        var prev = localStorage.getItem("ms_asset_build");
+        localStorage.setItem("ms_asset_build", BUILD);
+        if (prev && prev !== BUILD && !sessionStorage.getItem("ms_build_reloaded_" + BUILD)) {
+          sessionStorage.setItem("ms_build_reloaded_" + BUILD, "1");
+          var jobs = [];
+          if ("serviceWorker" in navigator) {
+            jobs.push(navigator.serviceWorker.getRegistrations().then(function (regs) {
+              return Promise.all((regs || []).map(function (r) { return r.unregister(); }));
+            }));
+          }
+          if ("caches" in window) {
+            jobs.push(caches.keys().then(function (keys) {
+              return Promise.all((keys || []).map(function (k) { return caches.delete(k); }));
+            }));
+          }
+          Promise.allSettled(jobs).then(function () {
+            var url = new URL(location.href);
+            url.searchParams.set("_ms_b", BUILD);
+            location.replace(url.pathname + url.search + url.hash);
+          });
+        }
+      } catch (e) {}
+    })();
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Login - Moonrise Studio</title>
@@ -8,13 +36,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css?v=20260911-live1">
+  <link rel="stylesheet" href="css/studio.css?v=20260911-live2">
   <link rel="stylesheet" href="css/studio-motion.css?v=20260719-perf">
   <meta name="color-scheme" content="light">
   <link rel="preconnect" href="https://erfaxgmnzdropviormpj.supabase.co" crossorigin>
   <script defer src="js/config.js?v=20260909-discord"></script>
   <script defer src="js/site-branding.js?v=20260719-seo"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"></script>
 </head>
 <body data-page="login">
   <p class="ms-auth-file-warning" id="auth-file-warning" hidden role="alert">
@@ -136,9 +164,9 @@
   <script defer src="js/ui-motion.js?v=20260720-login-fix"></script>
   <script defer src="js/toast.js"></script>
   <script defer src="js/handles.js"></script>
-  <script defer src="js/auth-security.js?v=20260911-live1"></script>
-  <script defer src="js/supabase-client.js?v=20260911-live1"></script>
-  <script defer src="js/auth.js?v=20260911-live1"></script>
+  <script defer src="js/auth-security.js?v=20260911-live2"></script>
+  <script defer src="js/supabase-client.js?v=20260911-live2"></script>
+  <script defer src="js/auth.js?v=20260911-live2"></script>
   <script defer>
     (async function () {
       window.StudioAuth?.warmAuthService?.();
@@ -166,29 +194,29 @@
         }
         // Wait until the session is readable so auth-gate-head does not bounce us back.
         await waitForAuthSession(20);
-        const sessionReady = await StudioAuth.getSession?.();
+        const sessionReady = await window.StudioAuth?.getSession?.();
         if (!sessionReady) {
           throw new Error("Signed in, but the session did not stick. Refresh and try again.");
         }
         if (opts?.email && opts?.password) {
           try {
-            await StudioAuth.offerPasswordManagerSave?.(opts.email, opts.password);
+            await window.StudioAuth.offerPasswordManagerSave?.(opts.email, opts.password);
           } catch (_) {
             /* ignore — password managers may refuse this origin */
           }
         }
         await maybeOfferPasskeyAfterLogin();
         window.StudioAuth.setFinanceOnboardingSoftSkip?.(false);
-        const destination = await StudioAuth.studioOnboardingRedirect(nextUrl);
+        const destination = await window.StudioAuth.studioOnboardingRedirect(nextUrl);
         location.replace(destination);
       }
 
       async function maybeOfferPasskeyAfterLogin() {
         try {
           if (!isAutosaveEnabled()) return;
-          if (!StudioAuth.canUsePasskeys?.()) return;
+          if (!window.StudioAuth.canUsePasskeys?.()) return;
           if (localStorage.getItem("ms_passkey_offer_declined") === "1") return;
-          const existing = await StudioAuth.listPasskeys?.();
+          const existing = await window.StudioAuth.listPasskeys?.();
           if (Array.isArray(existing) && existing.length) return;
           const want = window.confirm(
             "Create a passkey for this device? Next time you can sign in with Face ID, fingerprint, Windows Hello, or your password manager."
@@ -201,7 +229,7 @@
             }
             return;
           }
-          await StudioAuth.registerPasskey();
+          await window.StudioAuth.registerPasskey();
           window.StudioToast?.success?.("Passkey saved on this device");
         } catch (ex) {
           const code = ex?.code || "";
@@ -236,7 +264,7 @@
       }
 
       async function waitForAuthSession(maxAttempts) {
-        for (let i = 0; i < maxAttempts && !(await StudioAuth.getSession()); i++) {
+        for (let i = 0; i < maxAttempts && !(await window.StudioAuth?.getSession?.()); i++) {
           await new Promise((r) => setTimeout(r, 150));
         }
       }
@@ -450,7 +478,7 @@
         }
         resendConfirmLink.disabled = true;
         try {
-          await StudioAuth.resendConfirmationEmail(email);
+          await window.StudioAuth.resendConfirmationEmail(email);
           hint.textContent =
             "We sent another confirmation email. Tap the link in your inbox to verify and sign in automatically.";
           window.StudioToast?.success?.("Confirmation email sent");
@@ -466,19 +494,36 @@
 
       function syncPasskeyUi() {
         if (!passkeyWrap) return;
-        const show = mode === "signin" && !!window.StudioAuth?.canUsePasskeys?.();
+        let hostOk = false;
+        try {
+          const host = String(location.hostname || "").toLowerCase();
+          hostOk = host === "trymoonrise.com" || host === "www.trymoonrise.com";
+        } catch (_) {}
+        const deviceOk = !!(window.isSecureContext && window.PublicKeyCredential);
+        const apiOk = !!window.StudioAuth?.canUsePasskeys?.();
+        const show = mode === "signin" && hostOk && deviceOk;
         passkeyWrap.hidden = !show;
+        if (passkeyBtn) {
+          passkeyBtn.disabled = show && !apiOk;
+          passkeyBtn.title = apiOk
+            ? "Sign in with Face ID, fingerprint, Windows Hello, or your password manager"
+            : "Loading passkey support...";
+        }
       }
 
       passkeyBtn?.addEventListener("click", async () => {
         showAuthError("");
         if (hint) hint.textContent = "";
         writeAutosaveEnabled(isAutosaveEnabled());
+        if (!window.StudioAuth?.signInWithPasskey) {
+          showAuthError("Passkey sign-in is still loading. Try again in a moment.");
+          return;
+        }
         passkeyBtn.disabled = true;
         const idle = passkeyBtn.textContent;
         passkeyBtn.textContent = "Waiting for passkey...";
         try {
-          await StudioAuth.signInWithPasskey();
+          await window.StudioAuth.signInWithPasskey();
           persistAutosavedFields();
           await continueAfterAuth();
         } catch (ex) {
@@ -490,12 +535,12 @@
         } finally {
           passkeyBtn.disabled = false;
           passkeyBtn.textContent = idle || "Sign in with passkey";
+          syncPasskeyUi();
         }
       });
 
-      // SDK may load just after this script; refresh passkey button once ready.
-      setTimeout(syncPasskeyUi, 0);
-      setTimeout(syncPasskeyUi, 400);
+      syncPasskeyUi();
+      [0, 100, 300, 800, 1600, 3200].forEach((ms) => setTimeout(syncPasskeyUi, ms));
 
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -539,19 +584,19 @@
         try {
           writeAutosaveEnabled(isAutosaveEnabled());
           if (mode === "forgot") {
-            await StudioAuth.requestPasswordReset(email);
+            await window.StudioAuth.requestPasswordReset(email);
             sessionStorage.setItem("ms_pw_recovery", "1");
             hint.textContent = "Check your email for a reset link. You can close this tab.";
             window.StudioToast?.success?.("Reset link sent");
           } else if (mode === "recover") {
-            await StudioAuth.setPassword(passwordInput.value);
+            await window.StudioAuth.setPassword(passwordInput.value);
             sessionStorage.removeItem("ms_pw_recovery");
             recoveryPending = false;
             window.StudioToast?.success?.("Password updated");
             location.replace(nextUrl);
             return;
           } else if (mode === "signup") {
-            const data = await StudioAuth.signUp(
+            const data = await window.StudioAuth.signUp(
               email,
               password,
               form.handle.value
@@ -577,7 +622,7 @@
             if (!window.StudioAuth?.signIn) {
               throw new Error("Sign-in is still loading. Refresh and try again.");
             }
-            await StudioAuth.signIn(email, password);
+            await window.StudioAuth.signIn(email, password);
             persistAutosavedFields();
             await continueAfterAuth({ email, password });
           }
@@ -608,7 +653,7 @@
       });
 
       async function bootstrapAuthSession() {
-        const sb = StudioAuth.getClient?.();
+        const sb = window.StudioAuth?.getClient?.();
         if (sb?.auth?.onAuthStateChange) {
           sb.auth.onAuthStateChange((event) => {
             if (event === "PASSWORD_RECOVERY") {
@@ -625,7 +670,7 @@
           || hashParams.get("access_token")
           || params.get("token_hash");
         if (hasAuthCallback) {
-          const sessionFromCallback = await StudioAuth.completeAuthCallbackFromUrl?.();
+          const sessionFromCallback = await window.StudioAuth?.completeAuthCallbackFromUrl?.();
           if (sessionFromCallback && mode !== "recover" && mode !== "forgot") {
             cleanAuthCallbackUrl();
             window.StudioToast?.success?.("Email verified! Signing you in...");
@@ -634,7 +679,7 @@
           }
         }
 
-        const session = await StudioAuth.getSession();
+        const session = await window.StudioAuth?.getSession?.();
         if (
           (recoveryPending || emailConfirmPending)
           && !session
@@ -642,7 +687,7 @@
         ) {
           await waitForAuthSession(emailConfirmPending ? 24 : 12);
         }
-        const sessionNow = await StudioAuth.getSession();
+        const sessionNow = await window.StudioAuth?.getSession?.();
         if (sessionNow && emailConfirmPending && mode !== "recover" && mode !== "forgot") {
           cleanAuthCallbackUrl();
           window.StudioToast?.success?.("Email verified! Signing you in...");
