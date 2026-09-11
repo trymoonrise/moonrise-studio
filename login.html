@@ -652,7 +652,17 @@
         }
       });
 
+      async function waitForStudioAuth(maxAttempts) {
+        const max = Math.max(1, Number(maxAttempts) || 40);
+        for (let i = 0; i < max; i++) {
+          if (window.StudioAuth?.getSession) return window.StudioAuth;
+          await new Promise((r) => setTimeout(r, 50));
+        }
+        return window.StudioAuth || null;
+      }
+
       async function bootstrapAuthSession() {
+        await waitForStudioAuth(60);
         const sb = window.StudioAuth?.getClient?.();
         if (sb?.auth?.onAuthStateChange) {
           sb.auth.onAuthStateChange((event) => {
