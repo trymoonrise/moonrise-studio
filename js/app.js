@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Moonrise Studio shell - SiteDrop-style sidebar layout.
  */
 (function (global) {

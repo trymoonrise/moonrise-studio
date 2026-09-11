@@ -1,6 +1,6 @@
 {
   "repo": "trymoonrise/moonrise-studio",
-  "sha": "5bb8f49386adc2c46eb9128f4665b0e7722b939d",
-  "committedAt": "2026-09-10T20:02:02-07:00",
-  "message": "Keep sidebar Last updated in sync with every GitHub commit."
+  "sha": "72e11775bb553d7f96a21f8e215672dea8f160ff",
+  "committedAt": "2026-09-10T20:23:44-07:00",
+  "message": "Use one Passkey button for both sign-in and first-time create."
 }
