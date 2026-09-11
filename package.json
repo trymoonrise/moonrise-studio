@@ -7,7 +7,7 @@
     "node": ">=18"
   },
   "scripts": {
-    "vercel-build": "node worker/scripts/ensure-website-presets.js",
+    "vercel-build": "node worker/scripts/ensure-website-presets.js && node worker/scripts/sync-last-commit.js",
     "presets:link": "node worker/scripts/ensure-website-presets.js",
     "presets:manifest": "node \"Website Presets/scripts/generate-manifest.js\""
   },

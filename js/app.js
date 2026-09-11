@@ -408,11 +408,50 @@
 
   async function resolveLastCommitAt() {
     const repo = githubRepoSlug();
+    const branch = String(
+      (window.SITE_CONFIG && (window.SITE_CONFIG.githubBranch || window.SITE_CONFIG.studioGithubBranch)) ||
+        "main"
+    ).trim() || "main";
+
+    // 1) Same-origin worker (bypasses CSP / uses server GitHub token when set).
     try {
-      const api = await fetch("https://api.github.com/repos/" + repo + "/commits?per_page=1", {
-        headers: { Accept: "application/vnd.github+json" },
-        cache: "no-store",
-      });
+      const bases = [];
+      try {
+        if (typeof window.workerUrlCandidates === "function") {
+          bases.push(...window.workerUrlCandidates());
+        }
+      } catch (_) {
+        /* ignore */
+      }
+      bases.push("");
+      for (const base of bases) {
+        const url = String(base || "").replace(/\/$/, "") + "/studio-last-commit";
+        try {
+          const res = await fetch(url, { cache: "no-store", credentials: "omit" });
+          if (!res.ok) continue;
+          const data = await res.json();
+          if (data?.committedAt) return String(data.committedAt);
+        } catch (_) {
+          /* try next */
+        }
+      }
+    } catch (_) {
+      /* fall through */
+    }
+
+    // 2) Direct GitHub API (requires api.github.com in CSP connect-src).
+    try {
+      const api = await fetch(
+        "https://api.github.com/repos/" +
+          repo +
+          "/commits?sha=" +
+          encodeURIComponent(branch) +
+          "&per_page=1",
+        {
+          headers: { Accept: "application/vnd.github+json" },
+          cache: "no-store",
+        }
+      );
       if (api.ok) {
         const rows = await api.json();
         const iso =
@@ -422,8 +461,10 @@
         if (iso) return iso;
       }
     } catch (_) {
-      /* private repo or blocked - fall through */
+      /* private repo, rate limit, or blocked - fall through */
     }
+
+    // 3) Static fallback shipped with the deploy.
     try {
       const local = await fetch("doc/last-commit.json?v=" + Date.now(), { cache: "no-store" });
       if (local.ok) {
@@ -447,11 +488,19 @@
     el.hidden = false;
     el.textContent = "Last updated: " + rel;
     el.title = "GitHub · " + new Date(iso).toLocaleString();
+    el.dataset.committedAt = iso;
   }
 
   function bootSidebarLastUpdated() {
     resolveLastCommitAt().then((iso) => {
-      if (iso) paintSidebarLastUpdated(iso);
+      if (!iso) return;
+      paintSidebarLastUpdated(iso);
+      // Keep relative wording fresh ("just now" → "5 minutes ago") without another network trip.
+      if (bootSidebarLastUpdated._timer) clearInterval(bootSidebarLastUpdated._timer);
+      bootSidebarLastUpdated._timer = setInterval(() => {
+        const kept = document.getElementById("ms-sidebar-updated")?.dataset?.committedAt;
+        if (kept) paintSidebarLastUpdated(kept);
+      }, 60000);
     });
   }
 

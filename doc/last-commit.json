@@ -1,6 +1,6 @@
 {
   "repo": "trymoonrise/moonrise-studio",
-  "sha": "eaa16bda6b6c1c59bdc30a34411d51429f3da6cb",
-  "committedAt": "2026-09-10T13:22:28-07:00",
-  "message": "Hide floating menu button while the sidebar is open."
+  "sha": "ae764057dbf6b4ba7e76404338cabbce532d793c",
+  "committedAt": "2026-09-10T19:54:14-07:00",
+  "message": "Wait for StudioAuth before login bootstrap."
 }

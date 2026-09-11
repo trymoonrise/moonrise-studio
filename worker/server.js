@@ -888,6 +888,59 @@ app.get("/health", async (_req, res) => {
   });
 });
 
+/** Public: latest moonrise-studio commit time for the sidebar "Last updated" label. */
+app.get("/studio-last-commit", async (_req, res) => {
+  res.setHeader("Cache-Control", "no-store");
+  const repo = String(
+    process.env.STUDIO_GITHUB_REPO ||
+      process.env.GITHUB_REPO ||
+      "trymoonrise/moonrise-studio"
+  )
+    .trim()
+    .replace(/^https?:\/\/github\.com\//i, "")
+    .replace(/\.git$/i, "");
+  const branch = String(process.env.STUDIO_GITHUB_BRANCH || "main").trim() || "main";
+  const headers = {
+    Accept: "application/vnd.github+json",
+    "User-Agent": "moonrise-studio-last-commit",
+  };
+  const token = String(process.env.GITHUB_TOKEN || process.env.GH_TOKEN || "").trim();
+  if (token) headers.Authorization = "Bearer " + token;
+  try {
+    const gh = await fetch(
+      `https://api.github.com/repos/${repo}/commits?sha=${encodeURIComponent(branch)}&per_page=1`,
+      { headers }
+    );
+    if (!gh.ok) {
+      return res.status(gh.status === 404 ? 404 : 502).json({
+        ok: false,
+        error: "github_unavailable",
+        status: gh.status,
+      });
+    }
+    const rows = await gh.json();
+    const row = Array.isArray(rows) ? rows[0] : null;
+    const committedAt =
+      row?.commit?.committer?.date || row?.commit?.author?.date || "";
+    if (!committedAt) {
+      return res.status(502).json({ ok: false, error: "missing_commit_date" });
+    }
+    return res.json({
+      ok: true,
+      repo,
+      branch,
+      sha: row?.sha || "",
+      committedAt,
+      message: String(row?.commit?.message || "").split("\n")[0] || "",
+    });
+  } catch (e) {
+    return res.status(502).json({
+      ok: false,
+      error: e.message || "github_fetch_failed",
+    });
+  }
+});
+
 /** Stripe webhook needs raw body - mount before json parser. */
 app.post("/webhooks/stripe", express.raw({ type: "application/json" }), async (req, res) => {
   const stripe = stripeClient();
