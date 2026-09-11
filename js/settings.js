@@ -403,7 +403,10 @@
   const passkeySection = document.getElementById("settings-passkeys");
   const passkeyList = document.getElementById("set-passkey-list");
   const passkeyEmpty = document.getElementById("set-passkey-empty");
+  const passkeyUnavailable = document.getElementById("set-passkey-unavailable");
+  const passkeyActions = document.getElementById("set-passkey-actions");
   const passkeyAdd = document.getElementById("set-passkey-add");
+  const passkeyChange = document.getElementById("set-passkey-change");
   const passkeyErr = document.getElementById("set-passkey-error");
   const passkeyOk = document.getElementById("set-passkey-ok");
 
@@ -436,17 +439,32 @@
     }
   }
 
+  function setPasskeyControlsEnabled(enabled) {
+    if (passkeyActions) passkeyActions.hidden = !enabled;
+    if (passkeyAdd) passkeyAdd.disabled = !enabled;
+    if (passkeyChange) passkeyChange.disabled = !enabled;
+  }
+
   async function refreshPasskeys() {
     if (!passkeySection) return;
-    if (!window.StudioAuth?.canUsePasskeys?.()) {
-      passkeySection.hidden = true;
+    passkeySection.hidden = false;
+    const usable = !!window.StudioAuth?.canUsePasskeys?.();
+    if (passkeyUnavailable) passkeyUnavailable.hidden = usable;
+    if (!usable) {
+      if (passkeyList) passkeyList.innerHTML = "";
+      if (passkeyEmpty) passkeyEmpty.hidden = true;
+      if (passkeyChange) passkeyChange.hidden = true;
+      setPasskeyControlsEnabled(false);
       return;
     }
-    passkeySection.hidden = false;
+    setPasskeyControlsEnabled(true);
     try {
       const items = await window.StudioAuth.listPasskeys();
       if (passkeyList) passkeyList.innerHTML = "";
-      if (!items.length) {
+      const hasAny = Array.isArray(items) && items.length > 0;
+      if (passkeyChange) passkeyChange.hidden = !hasAny;
+      if (passkeyAdd) passkeyAdd.textContent = hasAny ? "Add another" : "Add passkey";
+      if (!hasAny) {
         if (passkeyEmpty) passkeyEmpty.hidden = false;
         return;
       }
@@ -499,6 +517,7 @@
   passkeyAdd?.addEventListener("click", async () => {
     setPasskeyError("");
     passkeyAdd.disabled = true;
+    if (passkeyChange) passkeyChange.disabled = true;
     try {
       await window.StudioAuth.registerPasskey();
       try {
@@ -517,6 +536,46 @@
       }
     } finally {
       passkeyAdd.disabled = false;
+      if (passkeyChange) passkeyChange.disabled = false;
+    }
+  });
+
+  passkeyChange?.addEventListener("click", async () => {
+    setPasskeyError("");
+    if (
+      !window.confirm(
+        "Create a new passkey on this device and remove your previous ones from this account?"
+      )
+    ) {
+      return;
+    }
+    passkeyChange.disabled = true;
+    if (passkeyAdd) passkeyAdd.disabled = true;
+    const idle = passkeyChange.textContent;
+    passkeyChange.textContent = "Waiting for passkey...";
+    try {
+      const run =
+        window.StudioAuth.replacePasskey ||
+        (async () => window.StudioAuth.registerPasskey());
+      await run();
+      try {
+        localStorage.removeItem("ms_passkey_offer_declined");
+      } catch (_) {
+        /* ignore */
+      }
+      setPasskeyOk("Passkey updated on this device.");
+      window.StudioToast?.success?.("Passkey changed");
+      await refreshPasskeys();
+    } catch (e) {
+      if (e?.code === "passkey_cancelled") {
+        setPasskeyError("");
+      } else {
+        setPasskeyError(friendlyMessage(e, "Could not change passkey"));
+      }
+    } finally {
+      passkeyChange.disabled = false;
+      passkeyChange.textContent = idle || "Change passkey";
+      if (passkeyAdd) passkeyAdd.disabled = false;
     }
   });
 

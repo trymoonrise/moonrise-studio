@@ -530,6 +530,57 @@
     }
   }
 
+  /** Sign up, then create a passkey while the new session is active. */
+  async function signUpWithPasskey(email, password, handle) {
+    const data = await signUp(email, password, handle);
+    if (!(data?.session || data?.access_token || data?.user)) {
+      return { ...(data || {}), created: false, needsEmailConfirm: true };
+    }
+    // Need an active session to register.
+    const session = await getSession();
+    if (!session) {
+      return { ...(data || {}), created: false, needsEmailConfirm: !!data?.needsEmailConfirm };
+    }
+    try {
+      await registerPasskey();
+      return { ...(data || {}), created: true };
+    } catch (regEx) {
+      const cancelled =
+        regEx?.code === "passkey_cancelled" ||
+        /cancel|abort|not allowed/i.test(String(regEx?.message || ""));
+      if (cancelled) {
+        return { ...(data || {}), created: false, signedUp: true };
+      }
+      const err = authError({
+        error:
+          regEx?.message ||
+          "Account created, but the passkey was not saved. Add one in Settings → Passkeys.",
+        code: "passkey_create_failed",
+      });
+      err.sessionOk = true;
+      throw err;
+    }
+  }
+
+  /** Register a new passkey and remove previous ones (change/replace). */
+  async function replacePasskey() {
+    const before = await listPasskeys();
+    const created = await registerPasskey();
+    const newId = created?.id || null;
+    if (newId && before.length) {
+      for (const pk of before) {
+        if (pk?.id && pk.id !== newId) {
+          try {
+            await deletePasskey(pk.id);
+          } catch (_) {
+            /* keep going */
+          }
+        }
+      }
+    }
+    return created;
+  }
+
   async function registerPasskey() {
     const sb = getClient();
     if (!sb) throw new Error("Supabase is not configured");
@@ -902,6 +953,8 @@
     passkeyHostAllowed,
     signInWithPasskey,
     continueWithPasskey,
+    signUpWithPasskey,
+    replacePasskey,
     registerPasskey,
     listPasskeys,
     deletePasskey,

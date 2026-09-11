@@ -3,7 +3,7 @@
 <head>
   <script>
     (function () {
-      var BUILD = "20260911-passkey3";
+      var BUILD = "20260911-passkey4";
       try {
         var prev = localStorage.getItem("ms_asset_build");
         localStorage.setItem("ms_asset_build", BUILD);
@@ -36,7 +36,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css?v=20260911-passkey3">
+  <link rel="stylesheet" href="css/studio.css?v=20260911-passkey4">
   <link rel="stylesheet" href="css/studio-motion.css?v=20260719-perf">
   <meta name="color-scheme" content="light">
   <link rel="preconnect" href="https://erfaxgmnzdropviormpj.supabase.co" crossorigin>
@@ -149,7 +149,7 @@
           Passkey
         </button>
         <p class="ms-auth-passkey-hint ms-muted" id="passkey-hint">
-          Signs you in with a saved passkey, or creates one using your email &amp; password.
+          Sign in with a saved passkey.
         </p>
       </div>
       <p class="ms-auth-home-wrap">
@@ -167,9 +167,9 @@
   <script defer src="js/ui-motion.js?v=20260720-login-fix"></script>
   <script defer src="js/toast.js"></script>
   <script defer src="js/handles.js"></script>
-  <script defer src="js/auth-security.js?v=20260911-passkey3"></script>
-  <script defer src="js/supabase-client.js?v=20260911-passkey3"></script>
-  <script defer src="js/auth.js?v=20260911-passkey3"></script>
+  <script defer src="js/auth-security.js?v=20260911-passkey4"></script>
+  <script defer src="js/supabase-client.js?v=20260911-passkey4"></script>
+  <script defer src="js/auth.js?v=20260911-passkey4"></script>
   <script defer>
     (async function () {
       window.StudioAuth?.warmAuthService?.();
@@ -295,6 +295,7 @@
       const autosaveToggle = document.getElementById("auth-autosave");
       const passkeyWrap = document.getElementById("passkey-wrap");
       const passkeyBtn = document.getElementById("auth-passkey");
+      const passkeyHint = document.getElementById("passkey-hint");
       const handleInput = document.getElementById("handle");
       const AUTOSAVE_ENABLED_KEY = "ms_auth_autosave_enabled";
       const AUTOSAVE_EMAIL_KEY = "ms_auth_autosave_email";
@@ -505,13 +506,26 @@
         } catch (_) {}
         const deviceOk = !!(window.isSecureContext && window.PublicKeyCredential);
         const apiOk = !!window.StudioAuth?.canUsePasskeys?.();
-        const show = mode === "signin" && hostOk && deviceOk;
+        const show = (mode === "signin" || mode === "signup") && hostOk && deviceOk;
         passkeyWrap.hidden = !show;
         if (passkeyBtn) {
           passkeyBtn.disabled = show && !apiOk;
-          passkeyBtn.title = apiOk
-            ? "Sign in with a passkey, or create one with your email and password"
-            : "Loading passkey support...";
+          if (mode === "signup") {
+            passkeyBtn.textContent = "Create account with passkey";
+            passkeyBtn.title = "Create your account and save a passkey on this device";
+            if (passkeyHint) {
+              passkeyHint.textContent =
+                "Creates your account, then saves a passkey for one-tap sign-in next time.";
+            }
+          } else {
+            passkeyBtn.textContent = "Passkey";
+            passkeyBtn.title = "Sign in with a passkey, or create one with email and password";
+            if (passkeyHint) {
+              passkeyHint.textContent =
+                "Signs you in with a saved passkey, or creates one using your email & password.";
+            }
+          }
+          if (!apiOk) passkeyBtn.title = "Loading passkey support...";
         }
       }
 
@@ -519,25 +533,93 @@
         showAuthError("");
         if (hint) hint.textContent = "";
         writeAutosaveEnabled(isAutosaveEnabled());
+        const email = String(form.email?.value || "").trim();
+        const password = String(passwordInput?.value || "");
+        const handle = String(form.handle?.value || "").trim();
+
+        if (mode === "signup") {
+          if (!window.StudioAuth?.signUpWithPasskey && !window.StudioAuth?.signUp) {
+            showAuthError("Sign-up is still loading. Try again in a moment.");
+            return;
+          }
+          if (!handle) {
+            showAuthError("Choose a handle");
+            form.handle?.focus();
+            return;
+          }
+          if (!email || !password) {
+            showAuthError("Enter your email and password to create a passkey account");
+            (!email ? form.email : passwordInput)?.focus();
+            return;
+          }
+          const strength = updatePasswordMeter();
+          if (!strength.ok) {
+            showAuthError(
+              "Choose a stronger password: 8+ characters with upper & lowercase letters and a number."
+            );
+            passwordInput.focus();
+            return;
+          }
+          passkeyBtn.disabled = true;
+          passkeyBtn.textContent = "Creating account...";
+          try {
+            const run = window.StudioAuth.signUpWithPasskey
+              ? () => window.StudioAuth.signUpWithPasskey(email, password, handle)
+              : async () => {
+                  const data = await window.StudioAuth.signUp(email, password, handle);
+                  if (data?.session || data?.access_token) {
+                    try {
+                      await window.StudioAuth.registerPasskey();
+                      return { ...data, created: true };
+                    } catch (_) {
+                      return { ...data, created: false };
+                    }
+                  }
+                  return { ...data, created: false, needsEmailConfirm: true };
+                };
+            const data = await run();
+            persistAutosavedFields();
+            if (data?.session || data?.access_token || data?.created || data?.signedUp) {
+              if (data?.created) {
+                window.StudioToast?.success?.("Account and passkey created");
+              }
+              await continueAfterAuth({ email, password, skipPasskeyOffer: true });
+              return;
+            }
+            hint.textContent =
+              "Check your email for the Moonrise confirmation link - after you verify, you can create a passkey from Settings.";
+            setMode("signin");
+            window.StudioToast?.info?.("We sent a confirmation email - check your inbox");
+          } catch (ex) {
+            if (ex?.sessionOk) {
+              window.StudioToast?.info?.(ex.message || "Account created");
+              persistAutosavedFields();
+              await continueAfterAuth({ email, password, skipPasskeyOffer: true });
+              return;
+            }
+            showAuthError(ex);
+          } finally {
+            passkeyBtn.disabled = false;
+            syncPasskeyUi();
+          }
+          return;
+        }
+
+        // Sign in mode
         if (!window.StudioAuth?.continueWithPasskey && !window.StudioAuth?.signInWithPasskey) {
           showAuthError("Passkey support is still loading. Try again in a moment.");
           return;
         }
-        const email = String(form.email?.value || "").trim();
-        const password = String(passwordInput?.value || "");
         passkeyBtn.disabled = true;
         const idle = "Passkey";
-        passkeyBtn.textContent = "Checking passkey...";
+        passkeyBtn.textContent = "Waiting for passkey...";
         try {
           const run =
             window.StudioAuth.continueWithPasskey ||
-            (async (opts) => {
+            (async () => {
               await window.StudioAuth.signInWithPasskey();
               return { created: false };
             });
-          // First attempt may open the OS sheet; if none exist, continueWithPasskey
-          // falls through to password + create using the fields above.
-          passkeyBtn.textContent = "Waiting for passkey...";
           const result = await run({ email, password });
           if (result?.created) {
             window.StudioToast?.success?.("Passkey created — you are signed in");
@@ -630,14 +712,36 @@
             location.replace(nextUrl);
             return;
           } else if (mode === "signup") {
-            const data = await window.StudioAuth.signUp(
-              email,
-              password,
-              form.handle.value
-            );
+            const handleVal = form.handle.value;
+            const usePasskeySignup =
+              !!window.StudioAuth?.signUpWithPasskey &&
+              !!window.StudioAuth?.canUsePasskeys?.();
+            let data;
+            try {
+              data = usePasskeySignup
+                ? await window.StudioAuth.signUpWithPasskey(email, password, handleVal)
+                : await window.StudioAuth.signUp(email, password, handleVal);
+            } catch (signupEx) {
+              if (signupEx?.sessionOk) {
+                persistAutosavedFields();
+                window.StudioToast?.info?.(
+                  signupEx.message || "Account created — add a passkey anytime in Settings"
+                );
+                await continueAfterAuth({ email, password, skipPasskeyOffer: true });
+                return;
+              }
+              throw signupEx;
+            }
             persistAutosavedFields();
-            if (data?.session || data?.access_token) {
-              await continueAfterAuth({ email, password });
+            if (data?.session || data?.access_token || data?.created || data?.signedUp) {
+              if (data?.created) {
+                window.StudioToast?.success?.("Account and passkey created");
+              }
+              await continueAfterAuth({
+                email,
+                password,
+                skipPasskeyOffer: !!data?.created || usePasskeySignup,
+              });
               return;
             }
             hint.textContent = "Check your email for the Moonrise confirmation link - tap it to verify and sign in automatically.";
