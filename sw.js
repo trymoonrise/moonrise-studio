@@ -2,7 +2,7 @@
  * Moonrise Studio service worker - PWA install + Web Push for client alerts.
  * HTML stays network-first; CSS/JS use stale-while-revalidate.
  */
-const CACHE_NAME = "ms-pwa-v58-deep-reset";
+const CACHE_NAME = "ms-pwa-v59-live1";
 const CORE_ASSETS = ["./css/studio.css", "./css/studio-motion.css", "./index.html"];
 
 function isAssetPath(pathname) {
